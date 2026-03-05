@@ -1,25 +1,26 @@
 services:
-  # ── Backend (FastAPI) ────────────────────────────────────────────────────────
+  # ── Backend (FastAPI — native Python, free tier) ─────────────────────────────
   - type: web
     name: nest-api
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     plan: free
     healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
-        sync: false          # set in Render dashboard
+        sync: false
       - key: SECRET_KEY
-        generateValue: true  # Render auto-generates a secure random string
+        generateValue: true
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_KEY
         sync: false
       - key: CORS_ORIGINS
-        sync: false          # set to ["https://nest-app.onrender.com"] after frontend deploys
+        sync: false
       - key: FRONTEND_URL
-        sync: false          # set to https://nest-app.onrender.com
+        sync: false
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
@@ -31,7 +32,7 @@ services:
       - key: SMTP_FROM
         sync: false
 
-  # ── Frontend (React + Vite) ──────────────────────────────────────────────────
+  # ── Frontend (React + Vite static site, free tier) ───────────────────────────
   - type: web
     name: nest-app
     runtime: static
@@ -44,6 +45,6 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        sync: false          # set to https://nest-api.onrender.com (no trailing slash)
+        sync: false
       - key: VITE_WS_URL
-        sync: false          # set to wss://nest-api.onrender.com
+        sync: false
