@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply text-gray-900 bg-gray-50 antialiased;
+    font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+
+  /* Focus visible */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-1;
+  }
+
+  /* Video element */
+  video::-webkit-media-controls {
+    display: none !important;
+  }
+  video::-webkit-media-controls-enclosure {
+    display: none !important;
+  }
+}
+
+@layer utilities {
+  .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+  .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+}
+
+/* ─── Rich text editor (Tiptap / prose) ─────────────────────────────────── */
+.prose h1 { @apply text-2xl font-bold text-gray-900 mt-4 mb-2; }
+.prose h2 { @apply text-xl font-bold text-gray-900 mt-4 mb-2; }
+.prose h3 { @apply text-lg font-semibold text-gray-800 mt-3 mb-1.5; }
+.prose p  { @apply text-gray-700 text-sm leading-relaxed my-1.5; }
+.prose ul { @apply list-disc pl-5 my-2 space-y-1; }
+.prose ol { @apply list-decimal pl-5 my-2 space-y-1; }
+.prose li { @apply text-sm text-gray-700 leading-relaxed; }
+.prose blockquote { @apply border-l-4 border-brand-300 pl-4 italic text-gray-500 my-3; }
+.prose a  { @apply text-brand-600 underline; }
+.prose strong { @apply font-semibold text-gray-900; }
+.prose em { @apply italic; }
+.prose s  { @apply line-through text-gray-400; }
+.prose hr { @apply border-gray-200 my-4; }
+.prose code { @apply bg-gray-100 text-gray-800 rounded px-1 py-0.5 text-xs font-mono; }
+.prose pre  { @apply bg-gray-900 text-gray-100 rounded-xl p-4 my-3 overflow-x-auto text-xs font-mono; }

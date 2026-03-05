@@ -1,0 +1,499 @@
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List
+from datetime import datetime
+from models import UserRole, QuestionStatus, ModuleStatus, QuestionType, Plan, SubscriptionStatus, MeetingStatus
+
+
+# ─── Organization ─────────────────────────────────────────────────────────────
+
+class OrganizationCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    slug: Optional[str] = None  # auto-generated if omitted
+
+
+class OrganizationUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    logo_url: Optional[str] = None
+    brand_color: Optional[str] = None  # hex string e.g. "#6366f1"
+
+
+class OrganizationOut(BaseModel):
+    id: str
+    name: str
+    slug: str
+    logo_url: Optional[str]
+    brand_color: Optional[str]
+    plan: Plan
+    subscription_status: SubscriptionStatus
+    trial_ends_at: Optional[datetime]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Auth ─────────────────────────────────────────────────────────────────────
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: "UserOut"
+    organization: Optional[OrganizationOut] = None
+
+
+class TokenData(BaseModel):
+    user_id: str
+    org_id: Optional[str] = None
+
+
+# ─── Register Org (Company signup) ────────────────────────────────────────────
+
+class RegisterOrgRequest(BaseModel):
+    org_name: str = Field(..., min_length=2, max_length=100)
+    full_name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+
+
+# ─── Password Reset / Change ──────────────────────────────────────────────────
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=8)
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=8)
+
+
+# ─── Invitations ──────────────────────────────────────────────────────────────
+
+class InvitationCreate(BaseModel):
+    email: EmailStr
+    role: UserRole = UserRole.employee
+
+
+class InvitationOut(BaseModel):
+    id: str
+    email: str
+    role: UserRole
+    is_accepted: bool
+    created_at: datetime
+    expires_at: datetime
+    invite_url: Optional[str] = None  # populated on create response only
+
+    class Config:
+        from_attributes = True
+
+
+class InviteInfoOut(BaseModel):
+    """Public info returned before accepting an invite (no auth required)."""
+    org_name: str
+    org_logo_url: Optional[str]
+    invited_role: UserRole
+    expires_at: datetime
+
+
+class AcceptInviteRequest(BaseModel):
+    token: str
+    full_name: str = Field(..., min_length=2, max_length=100)
+    password: str = Field(..., min_length=8)
+
+
+# ─── User ─────────────────────────────────────────────────────────────────────
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    full_name: str
+    password: str
+    role: UserRole = UserRole.employee
+    department: Optional[str] = None
+
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    department: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class UserRoleUpdate(BaseModel):
+    role: UserRole
+
+
+class UserOut(BaseModel):
+    id: str
+    organization_id: Optional[str]
+    email: str
+    full_name: str
+    role: UserRole
+    avatar_url: Optional[str]
+    department: Optional[str]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Module ───────────────────────────────────────────────────────────────────
+
+class ModuleCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    resources: Optional[list] = None
+    thumbnail_url: Optional[str] = None
+    order_index: int = 0
+
+
+class ModuleUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    resources: Optional[list] = None
+    thumbnail_url: Optional[str] = None
+    order_index: Optional[int] = None
+    is_published: Optional[bool] = None
+
+
+class ModuleOut(BaseModel):
+    id: str
+    title: str
+    description: Optional[str]
+    resources: Optional[list] = None
+    thumbnail_url: Optional[str]
+    duration_seconds: int
+    order_index: int
+    is_published: bool
+    created_at: datetime
+    video_count: int = 0
+    question_count: int = 0
+
+    class Config:
+        from_attributes = True
+
+
+class ModuleWithProgress(ModuleOut):
+    status: ModuleStatus = ModuleStatus.not_started
+    progress_seconds: float = 0
+    last_viewed_at: Optional[datetime] = None
+
+
+# ─── Video ────────────────────────────────────────────────────────────────────
+
+class VideoCreate(BaseModel):
+    module_id: str
+    title: str
+    description: Optional[str] = None
+    video_url: str
+    thumbnail_url: Optional[str] = None
+    duration_seconds: int = 0
+    order_index: int = 0
+    captions_url: Optional[str] = None
+
+
+class VideoUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    video_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    duration_seconds: Optional[int] = None
+    captions_url: Optional[str] = None
+
+
+class VideoOut(BaseModel):
+    id: str
+    module_id: str
+    title: str
+    description: Optional[str]
+    video_url: str
+    thumbnail_url: Optional[str]
+    duration_seconds: int
+    order_index: int
+    captions_url: Optional[str]
+    created_at: datetime
+    question_count: int = 0
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Answer ───────────────────────────────────────────────────────────────────
+
+class AnswerCreate(BaseModel):
+    answer_text: str
+    is_official: bool = False
+
+
+class AnswerOut(BaseModel):
+    id: str
+    question_id: str
+    answer_text: str
+    is_official: bool
+    created_at: datetime
+    answered_by_user: UserOut
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Question ─────────────────────────────────────────────────────────────────
+
+class QuestionCreate(BaseModel):
+    video_id: str
+    timestamp_seconds: float
+    question_text: str
+    is_public: bool = True
+
+
+class QuestionUpdate(BaseModel):
+    question_text: Optional[str] = None
+    status: Optional[QuestionStatus] = None
+    is_public: Optional[bool] = None
+
+
+class QuestionOut(BaseModel):
+    id: str
+    video_id: str
+    timestamp_seconds: float
+    question_text: str
+    status: QuestionStatus
+    is_public: bool
+    view_count: int
+    created_at: datetime
+    updated_at: Optional[datetime]
+    asked_by_user: UserOut
+    answers: List[AnswerOut] = []
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Timeline Marker ──────────────────────────────────────────────────────────
+
+class TimelineMarker(BaseModel):
+    timestamp_seconds: float
+    question_id: str
+    question_preview: str
+    status: QuestionStatus
+    answer_count: int
+
+
+# ─── Notification ─────────────────────────────────────────────────────────────
+
+class NotificationOut(BaseModel):
+    id: str
+    type: str
+    title: str
+    message: str
+    reference_id: Optional[str]
+    is_read: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Analytics ────────────────────────────────────────────────────────────────
+
+class ModuleAnalytics(BaseModel):
+    module_id: str
+    module_title: str
+    total_questions: int
+    answered_questions: int
+    pending_questions: int
+    avg_response_time_hours: float
+    top_confusion_timestamps: List[float]
+
+
+class DashboardStats(BaseModel):
+    total_questions: int
+    pending_questions: int
+    answered_questions: int
+    total_employees: int
+    avg_response_time_hours: float
+    modules_with_questions: int
+
+
+# ─── Progress ─────────────────────────────────────────────────────────────────
+
+class ProgressUpdate(BaseModel):
+    video_id: str
+    progress_seconds: float
+    status: Optional[ModuleStatus] = None
+
+
+# ─── Quiz ─────────────────────────────────────────────────────────────────────
+
+class QuizOptionCreate(BaseModel):
+    option_text: str
+    is_correct: bool = False
+    order_index: int = 0
+
+
+class QuizOptionOut(BaseModel):
+    id: str
+    option_text: str
+    is_correct: bool
+    order_index: int
+
+    class Config:
+        from_attributes = True
+
+
+class QuizOptionPublic(BaseModel):
+    id: str
+    option_text: str
+    order_index: int
+
+    class Config:
+        from_attributes = True
+
+
+class QuizQuestionCreate(BaseModel):
+    question_text: str
+    question_type: QuestionType
+    order_index: int = 0
+    is_required: bool = True
+    explanation: Optional[str] = None
+    options: List[QuizOptionCreate] = []
+
+
+class QuizQuestionUpdate(BaseModel):
+    question_text: Optional[str] = None
+    question_type: Optional[QuestionType] = None
+    order_index: Optional[int] = None
+    is_required: Optional[bool] = None
+    explanation: Optional[str] = None
+    options: Optional[List[QuizOptionCreate]] = None
+
+
+class QuizQuestionOut(BaseModel):
+    id: str
+    video_id: str
+    question_text: str
+    question_type: QuestionType
+    order_index: int
+    is_required: bool
+    explanation: Optional[str]
+    created_at: datetime
+    options: List[QuizOptionOut] = []
+
+    class Config:
+        from_attributes = True
+
+
+class QuizQuestionPublic(BaseModel):
+    id: str
+    video_id: str
+    question_text: str
+    question_type: QuestionType
+    order_index: int
+    is_required: bool
+    options: List[QuizOptionPublic] = []
+
+    class Config:
+        from_attributes = True
+
+
+class QuizAnswerSubmit(BaseModel):
+    question_id: str
+    selected_option_id: Optional[str] = None
+    answer_text: Optional[str] = None
+
+
+class QuizSubmitRequest(BaseModel):
+    video_id: str
+    answers: List[QuizAnswerSubmit]
+
+
+class QuizAnswerResult(BaseModel):
+    question_id: str
+    question_text: str
+    question_type: QuestionType
+    selected_option_id: Optional[str]
+    answer_text: Optional[str]
+    is_correct: Optional[bool]
+    correct_option_id: Optional[str]
+    explanation: Optional[str]
+
+
+class QuizSubmissionResult(BaseModel):
+    submission_id: str
+    score: Optional[float]
+    max_score: int
+    passed: bool
+    answers: List[QuizAnswerResult]
+
+
+# ─── Admin Course Management ───────────────────────────────────────────────────
+
+class VideoReorder(BaseModel):
+    video_id: str
+    order_index: int
+
+
+Token.model_rebuild()
+
+
+# ─── Video Notes ──────────────────────────────────────────────────────────────
+
+# ─── Meetings ─────────────────────────────────────────────────────────────────
+
+class MeetingCreate(BaseModel):
+    module_id: Optional[str] = None
+    requested_at: Optional[datetime] = None
+    note: Optional[str] = Field(None, max_length=1000)
+
+
+class MeetingConfirm(BaseModel):
+    confirmed_at: datetime
+    meeting_link: str = Field(..., min_length=5, max_length=500)
+
+
+class MeetingDecline(BaseModel):
+    decline_reason: Optional[str] = Field(None, max_length=500)
+
+
+class MeetingOut(BaseModel):
+    id: str
+    organization_id: str
+    employee_id: str
+    module_id: Optional[str]
+    admin_id: Optional[str]
+    requested_at: Optional[datetime]
+    confirmed_at: Optional[datetime]
+    note: Optional[str]
+    meeting_link: Optional[str]
+    decline_reason: Optional[str]
+    status: MeetingStatus
+    created_at: datetime
+    updated_at: Optional[datetime]
+    employee: UserOut
+    admin: Optional[UserOut]
+    module_title: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Video Notes ──────────────────────────────────────────────────────────────
+
+class NoteCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=5000)
+    timestamp_seconds: Optional[float] = None
+
+class NoteUpdate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=5000)
+
+class NoteOut(BaseModel):
+    id: str
+    content: str
+    timestamp_seconds: Optional[float]
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True

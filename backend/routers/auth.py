@@ -1,0 +1,237 @@
+import re
+from datetime import datetime, timedelta
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from database import get_db
+import models
+import schemas
+import auth as auth_utils
+from config import settings
+import email_utils
+
+limiter = Limiter(key_func=get_remote_address)
+
+router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+
+# ─── Helpers ──────────────────────────────────────────────────────────────────
+
+def _generate_slug(name: str) -> str:
+    slug = name.lower().strip()
+    slug = re.sub(r"[^a-z0-9\s-]", "", slug)
+    slug = re.sub(r"[\s_]+", "-", slug)
+    slug = re.sub(r"-+", "-", slug)
+    return slug.strip("-") or "org"
+
+
+def _unique_slug(base: str, db: Session) -> str:
+    slug = base
+    counter = 1
+    while db.query(models.Organization).filter(models.Organization.slug == slug).first():
+        slug = f"{base}-{counter}"
+        counter += 1
+    return slug
+
+
+def _build_token_response(user: models.User, db: Session) -> schemas.Token:
+    org = (
+        db.query(models.Organization).filter(models.Organization.id == user.organization_id).first()
+        if user.organization_id else None
+    )
+    token = auth_utils.create_access_token({
+        "sub": user.id,
+        "org_id": user.organization_id,
+    })
+    return schemas.Token(
+        access_token=token,
+        token_type="bearer",
+        user=user,
+        organization=org,
+    )
+
+
+# ─── Standard login ───────────────────────────────────────────────────────────
+
+@router.post("/login", response_model=schemas.Token)
+@limiter.limit("10/minute")
+def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == form.username).first()
+    if not user or not auth_utils.verify_password(form.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Account deactivated")
+    return _build_token_response(user, db)
+
+
+# ─── Company / Organisation registration ──────────────────────────────────────
+
+@router.post("/register-org", response_model=schemas.Token, status_code=201)
+def register_org(payload: schemas.RegisterOrgRequest, db: Session = Depends(get_db)):
+    """
+    Self-service company signup. Creates an Organization + first Admin user
+    in a single transaction, then returns a login token (auto-login).
+    """
+    if db.query(models.User).filter(models.User.email == payload.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    base_slug = _generate_slug(payload.org_name)
+    slug = _unique_slug(base_slug, db)
+
+    org = models.Organization(
+        name=payload.org_name,
+        slug=slug,
+        plan=models.Plan.trial,
+        subscription_status=models.SubscriptionStatus.active,
+        trial_ends_at=datetime.utcnow() + timedelta(days=14),
+        is_active=True,
+    )
+    db.add(org)
+    db.flush()  # get org.id before creating user
+
+    user = models.User(
+        organization_id=org.id,
+        email=payload.email,
+        full_name=payload.full_name,
+        hashed_password=auth_utils.hash_password(payload.password),
+        role=models.UserRole.admin,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    db.refresh(org)
+
+    return _build_token_response(user, db)
+
+
+# ─── Invite info (public — no auth) ──────────────────────────────────────────
+
+@router.get("/invite-info/{token}", response_model=schemas.InviteInfoOut)
+def invite_info(token: str, db: Session = Depends(get_db)):
+    invite = db.query(models.Invitation).filter(models.Invitation.token == token).first()
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    if invite.is_accepted:
+        raise HTTPException(status_code=400, detail="Invite already used")
+    if invite.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Invite has expired")
+    return schemas.InviteInfoOut(
+        org_name=invite.organization.name,
+        org_logo_url=invite.organization.logo_url,
+        invited_role=invite.role,
+        expires_at=invite.expires_at,
+    )
+
+
+# ─── Accept invite ────────────────────────────────────────────────────────────
+
+@router.post("/accept-invite", response_model=schemas.Token, status_code=201)
+def accept_invite(payload: schemas.AcceptInviteRequest, db: Session = Depends(get_db)):
+    invite = db.query(models.Invitation).filter(models.Invitation.token == payload.token).first()
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    if invite.is_accepted:
+        raise HTTPException(status_code=400, detail="Invite already used")
+    if invite.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Invite has expired")
+    if db.query(models.User).filter(models.User.email == invite.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    user = models.User(
+        organization_id=invite.organization_id,
+        email=invite.email,
+        full_name=payload.full_name,
+        hashed_password=auth_utils.hash_password(payload.password),
+        role=invite.role,
+    )
+    db.add(user)
+    invite.is_accepted = True
+    db.commit()
+    db.refresh(user)
+
+    return _build_token_response(user, db)
+
+
+# ─── Password Reset ───────────────────────────────────────────────────────────
+
+@router.post("/forgot-password", status_code=200)
+@limiter.limit("5/minute")
+def forgot_password(request: Request, payload: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Always returns 200 so we don't leak whether an email exists."""
+    user = db.query(models.User).filter(models.User.email == payload.email).first()
+    if user and user.is_active:
+        # Invalidate any existing unused tokens for this user
+        db.query(models.PasswordResetToken).filter(
+            models.PasswordResetToken.user_id == user.id,
+            models.PasswordResetToken.used == False,
+        ).delete()
+
+        reset_token = models.PasswordResetToken(
+            user_id=user.id,
+            expires_at=datetime.utcnow() + timedelta(hours=1),
+        )
+        db.add(reset_token)
+        db.commit()
+        db.refresh(reset_token)
+
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{reset_token.token}"
+        email_utils.send_password_reset(to=user.email, reset_url=reset_url)
+
+    return {"message": "If that email exists, a reset link has been sent."}
+
+
+@router.post("/reset-password", status_code=200)
+def reset_password(payload: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
+    record = db.query(models.PasswordResetToken).filter(
+        models.PasswordResetToken.token == payload.token,
+    ).first()
+
+    if not record or record.used or record.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    user = db.query(models.User).filter(models.User.id == record.user_id).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=400, detail="User not found")
+
+    user.hashed_password = auth_utils.hash_password(payload.new_password)
+    record.used = True
+    db.commit()
+
+    return {"message": "Password updated successfully"}
+
+
+# ─── Change password (authenticated) ─────────────────────────────────────────
+
+@router.post("/change-password", status_code=200)
+def change_password(
+    payload: schemas.ChangePasswordRequest,
+    current_user: models.User = Depends(auth_utils.get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not auth_utils.verify_password(payload.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    current_user.hashed_password = auth_utils.hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Password changed successfully"}
+
+
+# ─── Profile ──────────────────────────────────────────────────────────────────
+
+@router.get("/me", response_model=schemas.UserOut)
+def get_me(current_user: models.User = Depends(auth_utils.get_current_user)):
+    return current_user
+
+
+@router.put("/me", response_model=schemas.UserOut)
+def update_me(
+    payload: schemas.UserUpdate,
+    current_user: models.User = Depends(auth_utils.get_current_user),
+    db: Session = Depends(get_db),
+):
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(current_user, field, value)
+    db.commit()
+    db.refresh(current_user)
+    return current_user

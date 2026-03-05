@@ -1,0 +1,214 @@
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ChevronLeft, ChevronRight, List } from 'lucide-react';
+import api from '../api/client';
+import type { Video, Module, TimelineMarker, QuizQuestion, QuizSubmissionResult } from '../types';
+import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
+import QASidebar from '../components/QA/QASidebar';
+import QuestionForm from '../components/QA/QuestionForm';
+import QuizModal from '../components/Quiz/QuizModal';
+import { useUIStore, usePlayerStore } from '../store';
+import { useQueryInvalidation } from '../hooks/useQueryInvalidation';
+import { Skeleton } from '../components/UI/Skeleton';
+import { useCallback, useState } from 'react';
+import FloatingNotes from '../components/Notes/FloatingNotes';
+
+export default function VideoPage() {
+  const { videoId } = useParams<{ videoId: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { showQuestionForm, activeQuestionId, sidebarOpen, setSidebarOpen } = useUIStore();
+  const { seekTo } = usePlayerStore();
+  const [showQuiz, setShowQuiz] = useState(false);
+
+  useQueryInvalidation();
+
+  const { data: video, isLoading: videoLoading } = useQuery<Video>({
+    queryKey: ['video', videoId],
+    queryFn: () => api.get(`/videos/${videoId}`).then(r => r.data),
+    enabled: !!videoId,
+  });
+
+  const { data: markers = [] } = useQuery<TimelineMarker[]>({
+    queryKey: ['timeline', videoId],
+    queryFn: () => api.get(`/videos/${videoId}/timeline`).then(r => r.data),
+    enabled: !!videoId,
+    refetchInterval: 10000,
+  });
+
+  const { data: module } = useQuery<Module>({
+    queryKey: ['module', video?.module_id],
+    queryFn: () => api.get(`/modules/${video!.module_id}`).then(r => r.data),
+    enabled: !!video?.module_id,
+  });
+
+  const { data: moduleVideos = [] } = useQuery<Video[]>({
+    queryKey: ['module-videos', video?.module_id],
+    queryFn: () => api.get(`/videos/module/${video!.module_id}`).then(r => r.data),
+    enabled: !!video?.module_id,
+  });
+
+  // Quiz data
+  const { data: quizQuestions = [] } = useQuery<QuizQuestion[]>({
+    queryKey: ['quiz', videoId],
+    queryFn: () => api.get(`/quiz/video/${videoId}`).then(r => r.data),
+    enabled: !!videoId,
+  });
+
+  const { data: existingSubmission } = useQuery<QuizSubmissionResult | null>({
+    queryKey: ['quiz-submission', videoId],
+    queryFn: () => api.get(`/quiz/video/${videoId}/my-submission`).then(r => r.data),
+    enabled: !!videoId,
+  });
+
+  const trackProgress = useMutation({
+    mutationFn: (progressSeconds: number) =>
+      api.post('/progress/update', { video_id: videoId, progress_seconds: progressSeconds }),
+  });
+
+  const handleTimeUpdate = useCallback((t: number) => {
+    if (Math.round(t) % 30 === 0 && Math.round(t) > 0) {
+      trackProgress.mutate(t);
+    }
+  }, []);
+
+  const handleVideoEnd = useCallback(() => {
+    // Mark as complete
+    if (videoId) {
+      api.post('/progress/update', { video_id: videoId, progress_seconds: video?.duration_seconds ?? 0, status: 'completed' });
+    }
+    // Show quiz if questions exist
+    if (quizQuestions.length > 0) {
+      setShowQuiz(true);
+    }
+  }, [videoId, video?.duration_seconds, quizQuestions.length]);
+
+  const currentIndex = moduleVideos.findIndex(v => v.id === videoId);
+  const prevVideo = moduleVideos[currentIndex - 1];
+  const nextVideo = moduleVideos[currentIndex + 1];
+
+  if (videoLoading) {
+    return (
+      <div className="flex h-[calc(100vh-56px)]">
+        <div className="flex-1 p-6">
+          <Skeleton className="aspect-video w-full rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!video) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-56px)]">
+        <p className="text-gray-500">Video not found.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-[calc(100vh-56px)] overflow-hidden">
+      {/* Main content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm mb-4">
+            <Link to="/modules" className="text-gray-500 hover:text-brand-600 transition-colors">Modules</Link>
+            <span className="text-gray-300">/</span>
+            {module && (
+              <>
+                <Link to={`/modules/${module.id}`} className="text-gray-500 hover:text-brand-600 transition-colors">
+                  {module.title}
+                </Link>
+                <span className="text-gray-300">/</span>
+              </>
+            )}
+            <span className="text-gray-900 font-medium">{video.title}</span>
+          </nav>
+
+          {/* Video player */}
+          <div className="max-w-4xl mx-auto relative">
+            <VideoPlayer
+              videoUrl={video.video_url}
+              markers={markers}
+              videoId={video.id}
+              onTimeUpdate={handleTimeUpdate}
+              onVideoEnd={handleVideoEnd}
+            />
+            <FloatingNotes videoId={video.id} onSeek={seekTo} />
+          </div>
+
+          {/* Video info */}
+          <div className="mt-4 flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">{video.title}</h1>
+              {video.description && (
+                <p className="text-gray-500 text-sm mt-1">{video.description}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {quizQuestions.length > 0 && (
+                <button
+                  onClick={() => setShowQuiz(true)}
+                  className="flex items-center gap-1.5 text-sm font-medium text-brand-600 border border-brand-200 px-3 py-1.5 rounded-lg hover:bg-brand-50 transition-all"
+                >
+                  {existingSubmission ? `Quiz · ${Math.round(existingSubmission.score ?? 0)}%` : `Quiz · ${quizQuestions.length}Q`}
+                </button>
+              )}
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-brand-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-brand-300 transition-all"
+              >
+                <List size={15} />
+                {sidebarOpen ? 'Hide' : 'Show'} Q&A
+              </button>
+            </div>
+          </div>
+
+          {/* Video navigation */}
+          {moduleVideos.length > 1 && (
+            <div className="flex items-center gap-3 mt-6 pt-5 border-t border-gray-100">
+              <button
+                onClick={() => prevVideo && navigate(`/video/${prevVideo.id}`)}
+                disabled={!prevVideo}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:border-brand-300 hover:text-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronLeft size={16} />
+                {prevVideo?.title ?? 'Previous'}
+              </button>
+              <span className="text-xs text-gray-400 mx-auto">
+                {currentIndex + 1} of {moduleVideos.length}
+              </span>
+              <button
+                onClick={() => nextVideo && navigate(`/video/${nextVideo.id}`)}
+                disabled={!nextVideo}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:border-brand-300 hover:text-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                {nextVideo?.title ?? 'Next'}
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* Q&A Sidebar */}
+      {sidebarOpen && videoId && (
+        <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} />
+      )}
+
+      {/* Question form modal */}
+      {showQuestionForm && videoId && <QuestionForm videoId={videoId} />}
+
+      {/* End-of-video quiz modal */}
+      {showQuiz && videoId && quizQuestions.length > 0 && (
+        <QuizModal
+          videoId={videoId}
+          questions={quizQuestions}
+          onClose={() => setShowQuiz(false)}
+          existingResult={existingSubmission}
+        />
+      )}
+    </div>
+  );
+}

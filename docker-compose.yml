@@ -1,0 +1,48 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Usage:
+#   Development  : docker compose up --build
+#   Production   : APP_URL=https://yourdomain.com docker compose up --build -d
+#
+# The backend reads all secrets from ./backend/.env
+# Set APP_URL to your public domain to fix CORS and email links.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nest-backend
+    env_file: ./backend/.env
+    environment:
+      # Override CORS + frontend URL with the public domain when set
+      - CORS_ORIGINS=["http://localhost","http://localhost:80","${APP_URL:-http://localhost}"]
+      - FRONTEND_URL=${APP_URL:-http://localhost}
+    volumes:
+      - backend_uploads:/app/uploads
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nest-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  backend_uploads:
