@@ -1,38 +1,6 @@
 services:
-  # ── Backend (FastAPI — native Python) ────────────────────────────────────────
-  - type: web
-    name: nest-api
-    runtime: python
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-    plan: starter
-    healthCheckPath: /api/health
-    envVars:
-      - key: DATABASE_URL
-        sync: false
-      - key: SECRET_KEY
-        generateValue: true
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_SERVICE_KEY
-        sync: false
-      - key: CORS_ORIGINS
-        sync: false
-      - key: FRONTEND_URL
-        sync: false
-      - key: SMTP_HOST
-        sync: false
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_USER
-        sync: false
-      - key: SMTP_PASSWORD
-        sync: false
-      - key: SMTP_FROM
-        sync: false
-
   # ── Frontend (React + Vite static site — free) ───────────────────────────────
+  # Backend is deployed separately on Railway (free tier)
   - type: web
     name: nest-app
     runtime: static
@@ -43,6 +11,8 @@ services:
         source: /*
         destination: /index.html
     envVars:
+      # Set these to your Railway backend URL after deploying the backend
+      # e.g. https://nest-api-production.up.railway.app
       - key: VITE_API_URL
         sync: false
       - key: VITE_WS_URL
