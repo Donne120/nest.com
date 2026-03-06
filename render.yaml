@@ -33,8 +33,9 @@ services:
         sync: false
 
   # ── Frontend (React + Vite static site — free) ───────────────────────────────
-  - type: static
+  - type: web
     name: nest-app
+    runtime: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
     routes:
