@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -303,7 +304,7 @@ function StatCard({
 }: {
   label: string;
   value: number;
-  icon: React.ReactNode;
+  icon: ReactNode;
   color: 'emerald' | 'amber' | 'indigo';
 }) {
   const palette = {
@@ -325,7 +326,7 @@ function StatCard({
   );
 }
 
-function Meta({ icon, label }: { icon: React.ReactNode; label: string }) {
+function Meta({ icon, label }: { icon: ReactNode; label: string }) {
   return (
     <span className="flex items-center gap-1 text-xs text-gray-400">
       <span className="text-gray-300">{icon}</span>

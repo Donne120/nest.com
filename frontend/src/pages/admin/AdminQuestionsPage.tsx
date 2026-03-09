@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -322,7 +323,7 @@ function Sep() {
 function StatPill({
   icon, label, color,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   color: 'amber' | 'emerald' | 'indigo';
 }) {
