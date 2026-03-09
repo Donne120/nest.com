@@ -24,22 +24,26 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup — create all tables
-    models.Base.metadata.create_all(bind=engine)
-
-    # Column migrations (idempotent) — disable timeout so Supabase pooler doesn't cancel DDL
+def _run_db_setup():
+    """Run table creation and migrations in a background thread after startup."""
     try:
+        models.Base.metadata.create_all(bind=engine)
         with engine.connect() as conn:
             conn.execute(text("SET statement_timeout = 0"))
             conn.execute(text(
                 "ALTER TABLE answers ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL"
             ))
             conn.commit()
+        logger.info("DB setup complete")
     except Exception as e:
-        # Column already exists or DB not reachable — safe to continue
-        logger.warning(f"Startup migration skipped: {e}")
+        logger.warning(f"DB setup warning (non-fatal): {e}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Run DB setup in background so the server binds the port immediately
+    import asyncio
+    asyncio.get_event_loop().run_in_executor(None, _run_db_setup)
 
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     logger.info("Nest Onboarding API started")
