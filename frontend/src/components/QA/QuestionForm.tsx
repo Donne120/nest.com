@@ -112,7 +112,7 @@ export default function QuestionForm({ videoId }: Props) {
             icon={<Send size={14} />}
             className="flex-1"
           >
-            Submit Question
+            Submit
           </Button>
         </div>
       </div>

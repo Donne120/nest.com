@@ -59,6 +59,7 @@ export interface Answer {
   question_id: string;
   answer_text: string;
   is_official: boolean;
+  is_ai_generated: boolean;
   created_at: string;
   answered_by_user: User;
 }

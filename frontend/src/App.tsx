@@ -67,7 +67,7 @@ function AppLayout({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ErrorBoundary>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

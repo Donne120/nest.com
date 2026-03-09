@@ -77,10 +77,20 @@ interface UIState {
   activeQuestionId: string | null;
   showQuestionForm: boolean;
   questionFormTimestamp: number | null;
+  whiteboardQuestionId: string | null;
+  whiteboardQuestionText: string;
+  // Direct AI ask (no Q&A, no DB, no admin)
+  aiAskOpen: boolean;
+  aiAskVideoId: string | null;
+  aiAskTimestamp: number;
   setSidebarOpen: (o: boolean) => void;
   setActiveQuestion: (id: string | null) => void;
   openQuestionForm: (ts: number) => void;
   closeQuestionForm: () => void;
+  openWhiteboard: (questionId: string, questionText?: string) => void;
+  closeWhiteboard: () => void;
+  openAIAsk: (videoId: string, timestamp?: number) => void;
+  closeAIAsk: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -88,8 +98,19 @@ export const useUIStore = create<UIState>((set) => ({
   activeQuestionId: null,
   showQuestionForm: false,
   questionFormTimestamp: null,
+  whiteboardQuestionId: null,
+  whiteboardQuestionText: '',
+  aiAskOpen: false,
+  aiAskVideoId: null,
+  aiAskTimestamp: 0,
   setSidebarOpen: (o) => set({ sidebarOpen: o }),
   setActiveQuestion: (id) => set({ activeQuestionId: id }),
   openQuestionForm: (ts) => set({ showQuestionForm: true, questionFormTimestamp: ts }),
   closeQuestionForm: () => set({ showQuestionForm: false, questionFormTimestamp: null }),
+  openWhiteboard: (questionId, questionText = '') =>
+    set({ whiteboardQuestionId: questionId, whiteboardQuestionText: questionText }),
+  closeWhiteboard: () => set({ whiteboardQuestionId: null, whiteboardQuestionText: '' }),
+  openAIAsk: (videoId, timestamp = 0) =>
+    set({ aiAskOpen: true, aiAskVideoId: videoId, aiAskTimestamp: timestamp }),
+  closeAIAsk: () => set({ aiAskOpen: false, aiAskVideoId: null, aiAskTimestamp: 0 }),
 }));

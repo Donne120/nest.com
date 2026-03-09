@@ -60,6 +60,15 @@ class MeetingStatus(str, enum.Enum):
     completed = "completed"
 
 
+class TranscriptStatus(str, enum.Enum):
+    pending = "pending"
+    processing = "processing"
+    done = "done"
+    failed = "failed"
+    too_large = "too_large"
+    manual = "manual"
+
+
 # ─── Organization (Tenant root) ───────────────────────────────────────────────
 
 class Organization(Base):
@@ -180,8 +189,29 @@ class Video(Base):
 
     module = relationship("Module", back_populates="videos")
     questions = relationship("Question", back_populates="video", order_by="Question.timestamp_seconds")
+    transcript = relationship("VideoTranscript", back_populates="video", uselist=False, cascade="all, delete-orphan")
     quiz_questions = relationship("QuizQuestion", back_populates="video", order_by="QuizQuestion.order_index", cascade="all, delete-orphan")
 
+
+
+
+# --- Video Transcript ---
+
+class VideoTranscript(Base):
+    __tablename__ = "video_transcripts"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    video_id = Column(String, ForeignKey("videos.id"), nullable=False, unique=True)
+    full_text = Column(Text, nullable=True)
+    segments = Column(JSON, nullable=True)
+    language = Column(String, nullable=True, default="en")
+    status = Column(SAEnum(TranscriptStatus), default=TranscriptStatus.pending, nullable=False)
+    error_message = Column(String, nullable=True)
+    word_count = Column(Integer, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    video = relationship("Video", back_populates="transcript")
 
 # ─── Q&A ──────────────────────────────────────────────────────────────────────
 
@@ -212,6 +242,7 @@ class Answer(Base):
     answered_by = Column(String, ForeignKey("users.id"), nullable=False)
     answer_text = Column(Text, nullable=False)
     is_official = Column(Boolean, default=False)
+    is_ai_generated = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

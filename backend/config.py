@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SUPABASE_SERVICE_KEY: str = ""
 
+    # Groq AI
+    GROQ_API_KEY: str = ""
+
     # SMTP (optional — invitations fall back to URL-only if not set)
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587

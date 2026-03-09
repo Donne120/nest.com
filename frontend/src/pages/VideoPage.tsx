@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, List, Sparkles } from 'lucide-react';
 import api from '../api/client';
 import type { Video, Module, TimelineMarker, QuizQuestion, QuizSubmissionResult } from '../types';
 import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
@@ -12,13 +12,15 @@ import { useQueryInvalidation } from '../hooks/useQueryInvalidation';
 import { Skeleton } from '../components/UI/Skeleton';
 import { useCallback, useState } from 'react';
 import FloatingNotes from '../components/Notes/FloatingNotes';
+import WhiteboardModal from '../components/AI/WhiteboardModal';
+import AskAIModal from '../components/AI/AskAIModal';
 
 export default function VideoPage() {
   const { videoId } = useParams<{ videoId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { showQuestionForm, activeQuestionId, sidebarOpen, setSidebarOpen } = useUIStore();
-  const { seekTo } = usePlayerStore();
+  const { showQuestionForm, activeQuestionId, sidebarOpen, setSidebarOpen, whiteboardQuestionId, whiteboardQuestionText, aiAskOpen, openAIAsk } = useUIStore();
+  const { seekTo, currentTime } = usePlayerStore();
   const [showQuiz, setShowQuiz] = useState(false);
 
   useQueryInvalidation();
@@ -208,6 +210,30 @@ export default function VideoPage() {
           onClose={() => setShowQuiz(false)}
           existingResult={existingSubmission}
         />
+      )}
+
+      {/* AI Whiteboard modal (linked to Q&A questions) */}
+      {whiteboardQuestionId && videoId && (
+        <WhiteboardModal
+          questionId={whiteboardQuestionId}
+          questionText={whiteboardQuestionText}
+          videoId={videoId}
+        />
+      )}
+
+      {/* Direct AI Ask modal (standalone, private, no DB) */}
+      {aiAskOpen && videoId && <AskAIModal />}
+
+      {/* Floating Ask AI button */}
+      {videoId && !aiAskOpen && !whiteboardQuestionId && (
+        <button
+          onClick={() => openAIAsk(videoId, currentTime)}
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-indigo-900/30 transition-all hover:scale-105 active:scale-95"
+          title="Ask the AI tutor anything about this lesson"
+        >
+          <Sparkles size={16} />
+          Ask AI
+        </button>
       )}
     </div>
   );

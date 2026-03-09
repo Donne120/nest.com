@@ -10,6 +10,7 @@ import api from '../../api/client';
 import type { Module, Video as VideoType, ModuleResource } from '../../types';
 import Button from '../../components/UI/Button';
 import QuizBuilder from '../../components/Admin/QuizBuilder';
+import TranscriptManager from '../../components/Admin/TranscriptManager';
 import RichTextEditor from '../../components/Editor/RichTextEditor';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
@@ -83,6 +84,7 @@ export default function AdminModuleEditor() {
   const [editingVideo, setEditingVideo] = useState<VideoForm | null>(null);
   const [quizVideoId, setQuizVideoId] = useState<string | null>(null);
   const [quizVideoTitle, setQuizVideoTitle] = useState('');
+  const [transcriptVideoId, setTranscriptVideoId] = useState<string | null>(null);
 
   // Fetch existing data
   const { data: module } = useQuery<Module>({
@@ -407,10 +409,27 @@ export default function AdminModuleEditor() {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => {
+                        if (transcriptVideoId === v.id) { setTranscriptVideoId(null); return; }
+                        setTranscriptVideoId(v.id);
+                        setQuizVideoId(null);
+                        setEditingVideo(null);
+                      }}
+                      className={clsx(
+                        'text-xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all',
+                        transcriptVideoId === v.id
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'text-indigo-600 border-indigo-200 hover:bg-indigo-50'
+                      )}
+                    >
+                      Transcript
+                    </button>
+                    <button
+                      onClick={() => {
                         if (quizVideoId === v.id) { setQuizVideoId(null); return; }
                         setQuizVideoId(v.id);
                         setQuizVideoTitle(v.title);
                         setEditingVideo(null);
+                        setTranscriptVideoId(null);
                       }}
                       className={clsx(
                         'text-xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all',
@@ -430,6 +449,7 @@ export default function AdminModuleEditor() {
                           captions_url: v.captions_url || '',
                         });
                         setQuizVideoId(null);
+                        setTranscriptVideoId(null);
                       }}
                       className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-700 font-semibold transition-all"
                     >
@@ -453,6 +473,20 @@ export default function AdminModuleEditor() {
                       onSave={() => saveVideo.mutate(editingVideo)}
                       onCancel={() => setEditingVideo(null)}
                       saving={saveVideo.isPending}
+                    />
+                  </div>
+                )}
+
+                {/* Transcript manager */}
+                {transcriptVideoId === v.id && (
+                  <div className="border-t border-indigo-100 p-4 bg-indigo-50/20">
+                    <p className="text-xs font-semibold text-indigo-700 mb-3 flex items-center gap-1.5">
+                      Transcript for: {v.title}
+                    </p>
+                    <TranscriptManager
+                      videoId={v.id}
+                      videoTitle={v.title}
+                      hasVideoUrl={!!v.video_url}
                     />
                   </div>
                 )}

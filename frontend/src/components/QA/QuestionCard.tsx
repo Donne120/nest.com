@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, MessageSquare, Clock, CheckCircle2, Pencil, Trash2, X, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp, MessageSquare, Clock, CheckCircle2, Pencil, Trash2, X, Check, Sparkles } from 'lucide-react';
 import { usePlayerStore, useUIStore, useAuthStore } from '../../store';
 import type { Question, Answer } from '../../types';
 import Avatar from '../UI/Avatar';
@@ -236,10 +236,18 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
   return (
     <div className="px-4 py-3 border-b border-gray-50 last:border-0 group">
       <div className="flex items-center gap-2 mb-2">
-        <Avatar name={answer.answered_by_user.full_name} url={answer.answered_by_user.avatar_url} size="sm" />
+        {!answer.is_ai_generated && (
+          <Avatar name={answer.answered_by_user.full_name} url={answer.answered_by_user.avatar_url} size="sm" />
+        )}
         <div className="flex-1">
-          <span className="text-xs font-medium text-gray-800">{answer.answered_by_user.full_name}</span>
-          {answer.is_official && (
+          {answer.is_ai_generated ? (
+            <span className="inline-flex items-center gap-1 text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full font-semibold">
+              <Sparkles size={9} /> AI Teacher
+            </span>
+          ) : (
+            <span className="text-xs font-medium text-gray-800">{answer.answered_by_user.full_name}</span>
+          )}
+          {answer.is_official && !answer.is_ai_generated && (
             <span className="ml-1.5 text-[10px] bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded font-medium">Official</span>
           )}
         </div>

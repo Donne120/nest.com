@@ -232,6 +232,7 @@ class AnswerOut(BaseModel):
     question_id: str
     answer_text: str
     is_official: bool
+    is_ai_generated: bool = False
     created_at: datetime
     answered_by_user: UserOut
 
@@ -295,6 +296,27 @@ class NotificationOut(BaseModel):
     class Config:
         from_attributes = True
 
+
+
+# --- Transcript ---
+
+class TranscriptManualSet(BaseModel):
+    text: str
+
+class TranscriptOut(BaseModel):
+    id: str
+    video_id: str
+    full_text: Optional[str]
+    segments: Optional[list] = None
+    language: Optional[str]
+    status: str
+    error_message: Optional[str]
+    word_count: Optional[int]
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
 
 # ─── Analytics ────────────────────────────────────────────────────────────────
 

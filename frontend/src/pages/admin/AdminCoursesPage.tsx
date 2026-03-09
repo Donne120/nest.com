@@ -1,19 +1,88 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Eye, EyeOff, BookOpen, Video, MessageSquare, GripVertical } from 'lucide-react';
+import {
+  Plus, Pencil, Trash2, Eye, EyeOff, BookOpen,
+  Video, MessageSquare, Clock, MoreVertical, Layers,
+} from 'lucide-react';
 import api from '../../api/client';
 import type { Module } from '../../types';
-import Button from '../../components/UI/Button';
 import { Skeleton } from '../../components/UI/Skeleton';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
+import { useState, useRef, useEffect } from 'react';
 
 function formatDuration(s: number) {
-  if (!s) return '—';
+  if (!s) return null;
   const m = Math.floor(s / 60);
   return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
+// ─── Row action menu ───────────────────────────────────────────────────────────
+function ActionMenu({
+  module: m,
+  onEdit,
+  onToggle,
+  onDelete,
+}: {
+  module: Module;
+  onEdit: () => void;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+        title="Actions"
+      >
+        <MoreVertical size={16} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-20 py-1 overflow-hidden">
+          <button
+            onClick={() => { onEdit(); setOpen(false); }}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Pencil size={14} className="text-gray-400" />
+            Edit module
+          </button>
+          <button
+            onClick={() => { onToggle(); setOpen(false); }}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            {m.is_published
+              ? <EyeOff size={14} className="text-gray-400" />
+              : <Eye size={14} className="text-gray-400" />}
+            {m.is_published ? 'Unpublish' : 'Publish'}
+          </button>
+          <div className="border-t border-gray-100 my-1" />
+          <button
+            onClick={() => { onDelete(); setOpen(false); }}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 size={14} />
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main page ─────────────────────────────────────────────────────────────────
 export default function AdminCoursesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -26,9 +95,10 @@ export default function AdminCoursesPage() {
   const togglePublish = useMutation({
     mutationFn: ({ id, published }: { id: string; published: boolean }) =>
       api.put(`/modules/${id}`, { is_published: published }),
-    onSuccess: () => {
+    onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['admin-modules'] });
       queryClient.invalidateQueries({ queryKey: ['modules'] });
+      toast.success(vars.published ? 'Module published' : 'Module unpublished');
     },
     onError: () => toast.error('Failed to update'),
   });
@@ -44,153 +114,226 @@ export default function AdminCoursesPage() {
   });
 
   const publishedCount = modules.filter(m => m.is_published).length;
-  const draftCount = modules.length - publishedCount;
+  const draftCount     = modules.length - publishedCount;
+  const totalVideos    = modules.reduce((s, m) => s + (m.video_count ?? 0), 0);
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl">
+    <div className="p-6 lg:p-10 max-w-6xl">
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+      {/* ── Page header ── */}
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Course Manager</h1>
-          <p className="text-sm text-gray-400 mt-1">Create and manage your onboarding modules</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Course Manager</h1>
+          <p className="text-sm text-gray-500 mt-1">Build and manage your onboarding content library</p>
         </div>
-        <Button icon={<Plus size={14} />} onClick={() => navigate('/admin/courses/new')}>
+        <button
+          onClick={() => navigate('/admin/courses/new')}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+        >
+          <Plus size={15} />
           New Module
-        </Button>
+        </button>
       </div>
 
-      {/* Summary strip */}
-      {!isLoading && modules.length > 0 && (
-        <div className="flex items-center gap-6 mb-5 px-1">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-gray-600 font-medium">{publishedCount} published</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="w-2 h-2 rounded-full bg-gray-300" />
-            <span className="text-gray-400">{draftCount} draft{draftCount !== 1 ? 's' : ''}</span>
-          </div>
-          <span className="text-gray-300">·</span>
-          <span className="text-sm text-gray-400">{modules.length} total</span>
+      {/* ── Stat cards ── */}
+      {!isLoading && (
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <StatCard
+            label="Published"
+            value={publishedCount}
+            icon={<Eye size={16} />}
+            color="emerald"
+          />
+          <StatCard
+            label="Drafts"
+            value={draftCount}
+            icon={<EyeOff size={16} />}
+            color="amber"
+          />
+          <StatCard
+            label="Total Videos"
+            value={totalVideos}
+            icon={<Video size={16} />}
+            color="indigo"
+          />
         </div>
       )}
 
-      {/* Content */}
+      {/* ── Content ── */}
       {isLoading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[76px] rounded-2xl" />)}
         </div>
+
       ) : modules.length === 0 ? (
-        <div className="bg-white border border-dashed border-gray-300 rounded-xl py-20 text-center">
-          <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <BookOpen size={22} className="text-gray-400" />
+        <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl py-24 text-center">
+          <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Layers size={24} className="text-indigo-400" />
           </div>
-          <p className="text-gray-700 font-semibold">No modules yet</p>
-          <p className="text-sm text-gray-400 mt-1 mb-5">Create your first onboarding module to get started</p>
-          <Button icon={<Plus size={14} />} onClick={() => navigate('/admin/courses/new')}>
-            Create your first module
-          </Button>
+          <p className="text-gray-900 font-semibold text-lg">No modules yet</p>
+          <p className="text-sm text-gray-400 mt-1.5 mb-6">Create your first onboarding module to get started.</p>
+          <button
+            onClick={() => navigate('/admin/courses/new')}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+          >
+            <Plus size={15} /> Create module
+          </button>
         </div>
+
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          {/* Table header */}
-          <div className="grid grid-cols-[1fr_auto] px-5 py-2.5 border-b border-gray-100 bg-gray-50/50">
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Module</span>
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Actions</span>
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+
+          {/* Table head */}
+          <div className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 w-7">#</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Module</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Status</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 pr-1"></span>
           </div>
 
-          {/* Module rows */}
+          {/* Rows */}
           <div className="divide-y divide-gray-100">
-            {modules.map((m, idx) => (
-              <div
-                key={m.id}
-                className={clsx(
-                  'flex items-center gap-4 px-5 py-4 hover:bg-gray-50/60 transition-colors group',
-                  !m.is_published && 'opacity-70'
-                )}
-              >
-                {/* Drag handle */}
-                <GripVertical size={14} className="text-gray-300 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
-
-                {/* Thumbnail */}
-                {m.thumbnail_url ? (
-                  <img
-                    src={m.thumbnail_url}
-                    alt={m.title}
-                    className="w-14 h-9 object-cover rounded-lg flex-shrink-0 border border-gray-200"
-                  />
-                ) : (
-                  <div className="w-14 h-9 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200">
-                    <BookOpen size={14} className="text-gray-400" />
-                  </div>
-                )}
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-medium text-gray-300 tabular-nums">
-                      {String(idx + 1).padStart(2, '0')}
-                    </span>
-                    <h3 className="text-[14px] font-semibold text-gray-900 truncate">{m.title}</h3>
-                    {!m.is_published && (
-                      <span className="inline-flex items-center text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full flex-shrink-0">
-                        DRAFT
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="flex items-center gap-1 text-[12px] text-gray-400">
-                      <Video size={11} className="text-gray-300" /> {m.video_count} video{m.video_count !== 1 ? 's' : ''}
-                    </span>
-                    <span className="text-gray-200">·</span>
-                    <span className="flex items-center gap-1 text-[12px] text-gray-400">
-                      <MessageSquare size={11} className="text-gray-300" /> {m.question_count} Q&A
-                    </span>
-                    <span className="text-gray-200">·</span>
-                    <span className="text-[12px] text-gray-400">{formatDuration(m.duration_seconds)}</span>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <button
-                  onClick={() => togglePublish.mutate({ id: m.id, published: !m.is_published })}
+            {modules.map((m, idx) => {
+              const duration = formatDuration(m.duration_seconds);
+              return (
+                <div
+                  key={m.id}
                   className={clsx(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
-                    m.is_published
-                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
-                      : 'text-gray-500 bg-gray-50 border-gray-200 hover:bg-gray-100 hover:text-gray-700'
+                    'grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-6 py-4 hover:bg-slate-50/70 transition-colors group',
                   )}
                 >
-                  {m.is_published ? <Eye size={12} /> : <EyeOff size={12} />}
-                  {m.is_published ? 'Published' : 'Draft'}
-                </button>
+                  {/* Index */}
+                  <span className="text-sm font-bold text-gray-300 tabular-nums w-7 text-center">
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
 
-                {/* Edit */}
-                <button
-                  onClick={() => navigate(`/admin/courses/${m.id}/edit`)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-700 transition-all"
-                >
-                  <Pencil size={12} /> Edit
-                </button>
+                  {/* Module info */}
+                  <div className="flex items-center gap-4 min-w-0">
+                    {/* Thumbnail */}
+                    {m.thumbnail_url ? (
+                      <img
+                        src={m.thumbnail_url}
+                        alt={m.title}
+                        className="w-16 h-10 object-cover rounded-lg flex-shrink-0 border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-16 h-10 bg-gradient-to-br from-indigo-50 to-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-100">
+                        <BookOpen size={15} className="text-indigo-300" />
+                      </div>
+                    )}
 
-                {/* Delete */}
-                <button
-                  onClick={() => {
-                    if (confirm(`Delete "${m.title}"? This will also delete all videos and Q&A.`)) {
-                      deleteModule.mutate(m.id);
-                    }
-                  }}
-                  className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Delete module"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate leading-snug">{m.title}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <Meta icon={<Video size={11} />} label={`${m.video_count} video${m.video_count !== 1 ? 's' : ''}`} />
+                        <Dot />
+                        <Meta icon={<MessageSquare size={11} />} label={`${m.question_count} Q&A`} />
+                        {duration && (
+                          <>
+                            <Dot />
+                            <Meta icon={<Clock size={11} />} label={duration} />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status badge */}
+                  <span className={clsx(
+                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold',
+                    m.is_published
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                  )}>
+                    <span className={clsx(
+                      'w-1.5 h-1.5 rounded-full',
+                      m.is_published ? 'bg-emerald-500' : 'bg-amber-400'
+                    )} />
+                    {m.is_published ? 'Published' : 'Draft'}
+                  </span>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => navigate(`/admin/courses/${m.id}/edit`)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-lg transition-colors"
+                    >
+                      <Pencil size={12} />
+                      Edit
+                    </button>
+                    <ActionMenu
+                      module={m}
+                      onEdit={() => navigate(`/admin/courses/${m.id}/edit`)}
+                      onToggle={() => togglePublish.mutate({ id: m.id, published: !m.is_published })}
+                      onDelete={() => {
+                        if (confirm(`Delete "${m.title}"?\n\nThis will permanently remove all videos and Q&A.`)) {
+                          deleteModule.mutate(m.id);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+            <p className="text-xs text-gray-400">
+              {modules.length} module{modules.length !== 1 ? 's' : ''} · {totalVideos} videos total
+            </p>
+            <button
+              onClick={() => navigate('/admin/courses/new')}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+            >
+              <Plus size={13} />
+              Add module
+            </button>
           </div>
         </div>
       )}
     </div>
   );
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function StatCard({
+  label, value, icon, color,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  color: 'emerald' | 'amber' | 'indigo';
+}) {
+  const palette = {
+    emerald: { bg: 'bg-emerald-50', border: 'border-emerald-100', icon: 'text-emerald-500', value: 'text-emerald-700' },
+    amber:   { bg: 'bg-amber-50',   border: 'border-amber-100',   icon: 'text-amber-500',   value: 'text-amber-700'   },
+    indigo:  { bg: 'bg-indigo-50',  border: 'border-indigo-100',  icon: 'text-indigo-500',  value: 'text-indigo-700'  },
+  }[color];
+
+  return (
+    <div className={clsx('rounded-2xl border p-5 flex items-center gap-4', palette.bg, palette.border)}>
+      <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-sm', palette.icon)}>
+        {icon}
+      </div>
+      <div>
+        <p className={clsx('text-2xl font-bold leading-none', palette.value)}>{value}</p>
+        <p className="text-xs text-gray-500 mt-1 font-medium">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function Meta({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <span className="flex items-center gap-1 text-xs text-gray-400">
+      <span className="text-gray-300">{icon}</span>
+      {label}
+    </span>
+  );
+}
+
+function Dot() {
+  return <span className="w-0.5 h-0.5 rounded-full bg-gray-300 flex-shrink-0" />;
 }
