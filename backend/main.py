@@ -26,20 +26,24 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    # Startup — create all tables
     models.Base.metadata.create_all(bind=engine)
-    # Column migrations (idempotent)
-    with engine.connect() as conn:
-        conn.execute(text(
-            "ALTER TABLE answers ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL"
-        ))
-        conn.commit()
-    # Create video_transcripts table if it doesn't exist (handled by create_all above)
-    # No additional column migrations needed for new tables
+
+    # Column migrations (idempotent) — disable timeout so Supabase pooler doesn't cancel DDL
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SET statement_timeout = 0"))
+            conn.execute(text(
+                "ALTER TABLE answers ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL"
+            ))
+            conn.commit()
+    except Exception as e:
+        # Column already exists or DB not reachable — safe to continue
+        logger.warning(f"Startup migration skipped: {e}")
+
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    logger.info("🚀 Nest Onboarding API started")
+    logger.info("Nest Onboarding API started")
     yield
-    # Shutdown
     logger.info("Shutting down...")
 
 
