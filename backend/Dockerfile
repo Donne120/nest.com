@@ -18,6 +18,6 @@ COPY . .
 RUN mkdir -p /app/data /app/uploads
 
 # Start server (run seed scripts manually: docker exec -it <container> python seed_ai_ethics_course.py)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
 
 EXPOSE 8000
