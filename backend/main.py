@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
     asyncio.get_event_loop().run_in_executor(None, _run_db_setup)
 
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    logger.info("Nest Onboarding API started")
+    logger.info(f"Nest Onboarding API started — CORS origins: {settings.get_cors_origins()}")
     yield
     logger.info("Shutting down...")
 
