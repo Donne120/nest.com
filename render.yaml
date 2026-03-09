@@ -1,19 +1,31 @@
 services:
-  # ── Frontend (React + Vite static site — free) ───────────────────────────────
-  # Backend is deployed separately on Railway (free tier)
+  # ── Backend (FastAPI — Render free web service) ───────────────────────────────
   - type: web
-    name: nest-app
-    runtime: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    name: nest-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
     envVars:
-      # Set these to your Railway backend URL after deploying the backend
-      # e.g. https://nest-api-production.up.railway.app
-      - key: VITE_API_URL
+      - key: DATABASE_URL
         sync: false
-      - key: VITE_WS_URL
+      - key: SECRET_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false          # set to your Vercel URL e.g. https://nest-app.vercel.app
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
         sync: false
