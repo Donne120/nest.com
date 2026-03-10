@@ -10,7 +10,7 @@ import type { Module } from '../../types';
 import { Skeleton } from '../../components/UI/Skeleton';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 function formatDuration(s: number) {
   if (!s) return null;
@@ -87,6 +87,8 @@ function ActionMenu({
 export default function AdminCoursesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const { data: modules = [], isLoading } = useQuery<Module[]>({
     queryKey: ['admin-modules'],
@@ -114,6 +116,35 @@ export default function AdminCoursesPage() {
     onError: () => toast.error('Failed to delete'),
   });
 
+  const toggleSelect = useCallback((id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
+
+  const allSelected = modules.length > 0 && selected.size === modules.length;
+  const toggleAll = () =>
+    setSelected(allSelected ? new Set() : new Set(modules.map(m => m.id)));
+
+  const handleBulkDelete = async () => {
+    const count = selected.size;
+    if (!confirm(`Delete ${count} module${count > 1 ? 's' : ''}?\n\nThis will permanently remove all videos, Q&A, and quiz data inside them.`)) return;
+    setBulkDeleting(true);
+    let failed = 0;
+    for (const id of selected) {
+      try { await api.delete(`/modules/${id}`); }
+      catch { failed++; }
+    }
+    setBulkDeleting(false);
+    setSelected(new Set());
+    queryClient.invalidateQueries({ queryKey: ['admin-modules'] });
+    queryClient.invalidateQueries({ queryKey: ['modules'] });
+    if (failed === 0) toast.success(`Deleted ${count} module${count > 1 ? 's' : ''}`);
+    else toast.error(`${count - failed} deleted, ${failed} failed`);
+  };
+
   const publishedCount = modules.filter(m => m.is_published).length;
   const draftCount     = modules.length - publishedCount;
   const totalVideos    = modules.reduce((s, m) => s + (m.video_count ?? 0), 0);
@@ -127,13 +158,25 @@ export default function AdminCoursesPage() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Course Manager</h1>
           <p className="text-sm text-gray-500 mt-1">Build and manage your onboarding content library</p>
         </div>
-        <button
-          onClick={() => navigate('/admin/courses/new')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
-        >
-          <Plus size={15} />
-          New Module
-        </button>
+        <div className="flex items-center gap-2">
+          {selected.size > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+            >
+              <Trash2 size={14} />
+              {bulkDeleting ? 'Deleting…' : `Delete ${selected.size} selected`}
+            </button>
+          )}
+          <button
+            onClick={() => navigate('/admin/courses/new')}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+          >
+            <Plus size={15} />
+            New Module
+          </button>
+        </div>
       </div>
 
       {/* ── Stat cards ── */}
@@ -185,7 +228,14 @@ export default function AdminCoursesPage() {
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
 
           {/* Table head */}
-          <div className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50">
+          <div className="grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={toggleAll}
+              className="w-4 h-4 rounded border-gray-300 text-indigo-600 cursor-pointer"
+              title="Select all"
+            />
             <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 w-7">#</span>
             <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Module</span>
             <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Status</span>
@@ -196,13 +246,23 @@ export default function AdminCoursesPage() {
           <div className="divide-y divide-gray-100">
             {modules.map((m, idx) => {
               const duration = formatDuration(m.duration_seconds);
+              const isChecked = selected.has(m.id);
               return (
                 <div
                   key={m.id}
                   className={clsx(
-                    'grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-6 py-4 hover:bg-slate-50/70 transition-colors group',
+                    'grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-4 hover:bg-slate-50/70 transition-colors group',
+                    isChecked && 'bg-red-50/40',
                   )}
                 >
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => toggleSelect(m.id)}
+                    className="w-4 h-4 rounded border-gray-300 text-indigo-600 cursor-pointer"
+                  />
+
                   {/* Index */}
                   <span className="text-sm font-bold text-gray-300 tabular-nums w-7 text-center">
                     {String(idx + 1).padStart(2, '0')}
@@ -281,15 +341,25 @@ export default function AdminCoursesPage() {
           {/* Footer */}
           <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
             <p className="text-xs text-gray-400">
+              {selected.size > 0
+                ? <span className="text-red-600 font-semibold">{selected.size} selected — </span>
+                : null}
               {modules.length} module{modules.length !== 1 ? 's' : ''} · {totalVideos} videos total
             </p>
-            <button
-              onClick={() => navigate('/admin/courses/new')}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
-            >
-              <Plus size={13} />
-              Add module
-            </button>
+            <div className="flex items-center gap-3">
+              {selected.size > 0 && (
+                <button onClick={() => setSelected(new Set())} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                  Clear selection
+                </button>
+              )}
+              <button
+                onClick={() => navigate('/admin/courses/new')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+              >
+                <Plus size={13} />
+                Add module
+              </button>
+            </div>
           </div>
         </div>
       )}
