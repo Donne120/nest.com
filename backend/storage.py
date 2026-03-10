@@ -2,9 +2,9 @@
 Supabase Storage helper.
 Handles upload/delete for video files and thumbnails.
 
-Buckets (create once in Supabase dashboard → Storage):
-  - videos      : private  (signed URLs, 1-hour expiry)
-  - thumbnails  : public   (direct public URL)
+Buckets (auto-created on startup via setup_buckets()):
+  - videos      : private  (signed URLs, 1-year expiry)
+  - thumbnails  : public   (direct public URL, no auth needed)
 """
 
 import uuid
@@ -24,6 +24,39 @@ def get_client() -> Client:
             raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in .env")
         _client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
     return _client
+
+
+def setup_buckets() -> None:
+    """
+    Ensure required Supabase Storage buckets exist with the correct policies.
+    Called once on app startup — safe to call multiple times.
+
+    - thumbnails : PUBLIC  (browser-loadable image URLs, no auth)
+    - videos     : PRIVATE (signed URLs only)
+    """
+    if not settings.SUPABASE_URL or not settings.SUPABASE_SERVICE_KEY:
+        logger.warning("Supabase not configured — skipping bucket setup")
+        return
+    try:
+        client = get_client()
+        existing = {b.name for b in client.storage.list_buckets()}
+
+        if "thumbnails" not in existing:
+            client.storage.create_bucket("thumbnails", options={"public": True})
+            logger.info("Storage: created 'thumbnails' bucket (public)")
+        else:
+            # Ensure it's still public (idempotent update)
+            client.storage.update_bucket("thumbnails", options={"public": True})
+            logger.info("Storage: 'thumbnails' bucket confirmed public")
+
+        if "videos" not in existing:
+            client.storage.create_bucket("videos", options={"public": False})
+            logger.info("Storage: created 'videos' bucket (private)")
+        else:
+            logger.info("Storage: 'videos' bucket already exists")
+
+    except Exception as e:
+        logger.warning(f"Storage bucket setup warning (non-fatal): {e}")
 
 
 def upload_video(file_bytes: bytes, filename: str, content_type: str = "video/mp4") -> str:
@@ -61,8 +94,17 @@ def upload_thumbnail(file_bytes: bytes, filename: str, content_type: str = "imag
         file_options={"content-type": content_type, "upsert": "false"},
     )
 
-    res = client.storage.from_("thumbnails").get_public_url(path)
-    return res
+    url = client.storage.from_("thumbnails").get_public_url(path)
+
+    # storage3 2.x returns a str; guard against any future dict shape
+    if isinstance(url, dict):
+        url = url.get("publicUrl") or url.get("publicURL") or ""
+
+    if not url or not url.startswith("http"):
+        raise RuntimeError(f"get_public_url returned unexpected value: {url!r}")
+
+    logger.info(f"Thumbnail uploaded: {url}")
+    return url
 
 
 def delete_file(bucket: str, url: str) -> None:

@@ -236,12 +236,13 @@ export default function AdminModuleEditor() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Thumbnail URL</label>
-              <input
+              <UploadField
+                label="Module Cover Image"
                 value={thumbnailUrl}
-                onChange={e => setThumbnailUrl(e.target.value)}
-                placeholder="https://…"
-                className={inputCls}
+                onChange={setThumbnailUrl}
+                accept=".jpg,.jpeg,.png,.webp"
+                endpoint="/videos/upload/thumbnail"
+                urlPlaceholder="https://…"
               />
               {thumbnailUrl && (
                 <img src={thumbnailUrl} alt="Thumbnail" className="mt-2 h-16 w-full object-cover rounded-lg border border-gray-200" onError={() => {}} />

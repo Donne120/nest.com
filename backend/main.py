@@ -17,6 +17,7 @@ from sqlalchemy import text
 import models
 from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription
 from sqlalchemy import text
+import storage as storage_helper
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 def _run_db_setup():
-    """Run table creation and migrations in a background thread after startup."""
+    """Run table creation, migrations, and storage bucket setup in a background thread."""
     try:
         models.Base.metadata.create_all(bind=engine)
         with engine.connect() as conn:
@@ -37,6 +38,9 @@ def _run_db_setup():
         logger.info("DB setup complete")
     except Exception as e:
         logger.warning(f"DB setup warning (non-fatal): {e}")
+
+    # Ensure Supabase Storage buckets exist with the right policies
+    storage_helper.setup_buckets()
 
 
 @asynccontextmanager
