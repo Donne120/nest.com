@@ -69,7 +69,7 @@ export default function QuizModal({ videoId, questions, onClose, existingResult 
 
         {/* ── Intro screen ── */}
         {step === 'intro' && (
-          <div className="p-8 text-center">
+          <div className="p-5 sm:p-8 text-center">
             <div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Trophy size={28} className="text-brand-600" />
             </div>
@@ -89,7 +89,7 @@ export default function QuizModal({ videoId, questions, onClose, existingResult 
         {step === 'quiz' && currentQ && (
           <div>
             {/* Header */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
+            <div className="flex items-center justify-between px-4 sm:px-6 pt-5 pb-4 border-b border-gray-100">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-medium text-gray-500">
@@ -110,7 +110,7 @@ export default function QuizModal({ videoId, questions, onClose, existingResult 
               </button>
             </div>
 
-            <div className="px-6 py-5">
+            <div className="px-4 sm:px-6 py-5">
               {/* Type badge */}
               <div className="mb-3">
                 <span className={clsx('text-xs font-medium px-2.5 py-1 rounded-full border', {
@@ -182,7 +182,7 @@ export default function QuizModal({ videoId, questions, onClose, existingResult 
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-6 pb-5">
+            <div className="flex items-center justify-between px-4 sm:px-6 pb-5">
               <button
                 onClick={() => setCurrent(Math.max(0, current - 1))}
                 disabled={current === 0}
@@ -204,7 +204,7 @@ export default function QuizModal({ videoId, questions, onClose, existingResult 
 
         {/* ── Results screen ── */}
         {step === 'result' && result && (
-          <div className="p-8">
+          <div className="p-5 sm:p-8">
             {/* Score header */}
             <div className="text-center mb-6">
               <div className={clsx(

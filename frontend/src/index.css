@@ -12,6 +12,11 @@
     font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
   }
 
+  /* ── Dark mode body ── */
+  .dark body {
+    @apply text-slate-100 bg-slate-950;
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
@@ -23,13 +28,22 @@
   ::-webkit-scrollbar-thumb {
     @apply bg-gray-300 rounded-full;
   }
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-slate-600;
+  }
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-gray-400;
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500;
   }
 
   /* Focus visible */
   :focus-visible {
     @apply outline-none ring-2 ring-brand-500 ring-offset-1;
+  }
+  .dark :focus-visible {
+    @apply ring-offset-slate-900;
   }
 
   /* Video element */
@@ -62,3 +76,12 @@
 .prose hr { @apply border-gray-200 my-4; }
 .prose code { @apply bg-gray-100 text-gray-800 rounded px-1 py-0.5 text-xs font-mono; }
 .prose pre  { @apply bg-gray-900 text-gray-100 rounded-xl p-4 my-3 overflow-x-auto text-xs font-mono; }
+
+/* Dark prose */
+.dark .prose h1, .dark .prose h2 { @apply text-slate-100; }
+.dark .prose h3 { @apply text-slate-200; }
+.dark .prose p, .dark .prose li { @apply text-slate-300; }
+.dark .prose strong { @apply text-slate-100; }
+.dark .prose blockquote { @apply text-slate-400 border-brand-500; }
+.dark .prose hr { @apply border-slate-700; }
+.dark .prose code { @apply bg-slate-700 text-slate-200; }

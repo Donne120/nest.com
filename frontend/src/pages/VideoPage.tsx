@@ -92,7 +92,7 @@ export default function VideoPage() {
   if (videoLoading) {
     return (
       <div className="flex h-[calc(100vh-56px)]">
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-3 sm:p-6">
           <Skeleton className="aspect-video w-full rounded-xl" />
         </div>
       </div>
@@ -111,9 +111,9 @@ export default function VideoPage() {
     <div className="flex h-[calc(100vh-56px)] overflow-hidden">
       {/* Main content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm mb-4">
+          <nav className="flex items-center gap-2 text-sm mb-4 overflow-hidden">
             <Link to="/modules" className="text-gray-500 hover:text-brand-600 transition-colors">Modules</Link>
             <span className="text-gray-300">/</span>
             {module && (
@@ -140,9 +140,9 @@ export default function VideoPage() {
           </div>
 
           {/* Video info */}
-          <div className="mt-4 flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">{video.title}</h1>
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-semibold text-gray-900">{video.title}</h1>
               {video.description && (
                 <p className="text-gray-500 text-sm mt-1">{video.description}</p>
               )}
@@ -151,14 +151,14 @@ export default function VideoPage() {
               {quizQuestions.length > 0 && (
                 <button
                   onClick={() => setShowQuiz(true)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-brand-600 border border-brand-200 px-3 py-1.5 rounded-lg hover:bg-brand-50 transition-all"
+                  className="flex items-center gap-1.5 text-sm font-medium text-brand-600 border border-brand-200 px-3 py-2 rounded-lg hover:bg-brand-50 transition-all"
                 >
                   {existingSubmission ? `Quiz · ${Math.round(existingSubmission.score ?? 0)}%` : `Quiz · ${quizQuestions.length}Q`}
                 </button>
               )}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-brand-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-brand-300 transition-all"
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-brand-600 border border-gray-200 px-3 py-2 rounded-lg hover:border-brand-300 transition-all"
               >
                 <List size={15} />
                 {sidebarOpen ? 'Hide' : 'Show'} Q&A
@@ -172,21 +172,23 @@ export default function VideoPage() {
               <button
                 onClick={() => prevVideo && navigate(`/video/${prevVideo.id}`)}
                 disabled={!prevVideo}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:border-brand-300 hover:text-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:border-brand-300 hover:text-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all min-w-0 max-w-[40%]"
               >
-                <ChevronLeft size={16} />
-                {prevVideo?.title ?? 'Previous'}
+                <ChevronLeft size={16} className="flex-shrink-0" />
+                <span className="truncate hidden sm:inline">{prevVideo?.title ?? 'Previous'}</span>
+                <span className="sm:hidden">Prev</span>
               </button>
-              <span className="text-xs text-gray-400 mx-auto">
-                {currentIndex + 1} of {moduleVideos.length}
+              <span className="text-xs text-gray-400 mx-auto whitespace-nowrap">
+                {currentIndex + 1} / {moduleVideos.length}
               </span>
               <button
                 onClick={() => nextVideo && navigate(`/video/${nextVideo.id}`)}
                 disabled={!nextVideo}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:border-brand-300 hover:text-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:border-brand-300 hover:text-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all min-w-0 max-w-[40%]"
               >
-                {nextVideo?.title ?? 'Next'}
-                <ChevronRight size={16} />
+                <span className="truncate hidden sm:inline">{nextVideo?.title ?? 'Next'}</span>
+                <span className="sm:hidden">Next</span>
+                <ChevronRight size={16} className="flex-shrink-0" />
               </button>
             </div>
           )}
@@ -194,9 +196,23 @@ export default function VideoPage() {
         </div>
       </div>
 
-      {/* Q&A Sidebar */}
+      {/* Q&A Sidebar — overlay drawer on mobile, inline on desktop */}
       {sidebarOpen && videoId && (
-        <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} />
+        <>
+          {/* Mobile backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 z-30 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+          {/* Sidebar container: fixed on mobile, inline on desktop */}
+          <div className="fixed inset-y-14 right-0 z-40 w-full max-w-sm md:relative md:inset-auto md:z-auto md:w-auto md:max-w-none">
+            <QASidebar
+              videoId={videoId}
+              activeQuestionId={activeQuestionId}
+              onClose={() => setSidebarOpen(false)}
+            />
+          </div>
+        </>
       )}
 
       {/* Question form modal */}

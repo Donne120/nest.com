@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageCirclePlus, Filter, Search, X } from 'lucide-react';
+import { MessageCirclePlus, Search, X } from 'lucide-react';
 import { useUIStore, useAuthStore, usePlayerStore } from '../../store';
 import api from '../../api/client';
 import type { Question, QuestionStatus } from '../../types';
@@ -15,9 +15,10 @@ type Filter = 'all' | 'answered' | 'pending' | 'mine';
 interface Props {
   videoId: string;
   activeQuestionId: string | null;
+  onClose?: () => void;
 }
 
-export default function QASidebar({ videoId, activeQuestionId }: Props) {
+export default function QASidebar({ videoId, activeQuestionId, onClose }: Props) {
   const { openQuestionForm } = useUIStore();
   const { user } = useAuthStore();
   const { currentTime } = usePlayerStore();
@@ -63,7 +64,7 @@ export default function QASidebar({ videoId, activeQuestionId }: Props) {
   const pendingCount = questions.filter(q => q.status === 'pending').length;
 
   return (
-    <aside className="flex flex-col h-full bg-white border-l border-gray-200 w-[360px] flex-shrink-0">
+    <aside className="flex flex-col h-full bg-white border-l border-gray-200 w-full md:w-[360px] md:flex-shrink-0">
       {/* Header */}
       <div className="px-5 pt-5 pb-3 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
@@ -78,14 +79,25 @@ export default function QASidebar({ videoId, activeQuestionId }: Props) {
               )}
             </p>
           </div>
-          <Button
-            size="sm"
-            variant="primary"
-            icon={<MessageCirclePlus size={14} />}
-            onClick={() => openQuestionForm(currentTime)}
-          >
-            Ask
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="primary"
+              icon={<MessageCirclePlus size={14} />}
+              onClick={() => openQuestionForm(currentTime)}
+            >
+              Ask
+            </Button>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+                aria-label="Close Q&A"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Search */}

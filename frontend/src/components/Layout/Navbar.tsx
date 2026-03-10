@@ -49,55 +49,55 @@ export default function Navbar() {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
-    <header className="h-14 bg-white border-b border-gray-200 flex items-center px-6 gap-4 z-40 relative">
+    <header className="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 flex items-center px-3 sm:px-6 gap-2 sm:gap-4 z-40 relative">
       {/* Logo */}
-      <Link to="/" className="flex items-center gap-2 mr-4">
+      <Link to="/" className="flex items-center gap-2 mr-2 sm:mr-4 flex-shrink-0">
         <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center">
           <span className="text-white font-bold text-sm">N</span>
         </div>
-        <span className="font-semibold text-gray-900 text-sm">Nest Onboarding</span>
+        <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm hidden sm:block">Nest Onboarding</span>
       </Link>
 
       {/* Nav links */}
-      <nav className="flex items-center gap-1">
+      <nav className="flex items-center gap-0.5 sm:gap-1">
         <Link
           to="/modules"
           className={clsx(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+            'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
             isActive('/modules') || isActive('/video')
-              ? 'bg-brand-50 text-brand-700'
-              : 'text-gray-600 hover:bg-gray-100'
+              ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
+              : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
           )}
         >
           <BookOpen size={15} />
-          Modules
+          <span className="hidden xs:inline sm:inline">Modules</span>
         </Link>
         {!isManager && (
           <Link
             to="/meetings"
             className={clsx(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+              'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
               isActive('/meetings')
-                ? 'bg-brand-50 text-brand-700'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
+                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
             )}
           >
             <Video size={15} />
-            Meetings
+            <span className="hidden sm:inline">Meetings</span>
           </Link>
         )}
         {isManager && (
           <Link
             to="/admin"
             className={clsx(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+              'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
               isActive('/admin')
-                ? 'bg-brand-50 text-brand-700'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
+                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
             )}
           >
             <LayoutDashboard size={15} />
-            Admin
+            <span className="hidden sm:inline">Admin</span>
           </Link>
         )}
       </nav>
@@ -107,7 +107,7 @@ export default function Navbar() {
         <div className="relative">
           <button
             onClick={() => { setNotifOpen(!notifOpen); if (unread > 0) markAllRead.mutate(); }}
-            className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="relative p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
             aria-label="Notifications"
           >
             <Bell size={18} />
@@ -119,20 +119,20 @@ export default function Navbar() {
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-10 w-80 bg-white border border-gray-200 rounded-xl shadow-modal z-50 overflow-hidden animate-fade-in">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
+            <div className="absolute right-0 top-10 w-[calc(100vw-1rem)] max-w-xs sm:w-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-modal z-50 overflow-hidden animate-fade-in">
+              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
+                <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm">Notifications</h3>
               </div>
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <p className="text-sm text-gray-500 p-4 text-center">No notifications</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 p-4 text-center">No notifications</p>
                 ) : (
                   notifications.slice(0, 10).map((n) => (
                     <div
                       key={n.id}
                       className={clsx(
-                        'px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer',
-                        !n.is_read && 'bg-blue-50/40'
+                        'px-4 py-3 border-b border-gray-50 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer transition-colors',
+                        !n.is_read && 'bg-blue-50/40 dark:bg-blue-900/20'
                       )}
                       onClick={() => {
                         setNotifOpen(false);
@@ -143,8 +143,8 @@ export default function Navbar() {
                         }
                       }}
                     >
-                      <p className="text-sm font-medium text-gray-900">{n.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{n.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</p>
                     </div>
                   ))
                 )}
@@ -154,33 +154,33 @@ export default function Navbar() {
         </div>
 
         {/* User menu */}
-        <div className="relative pl-2 border-l border-gray-200" ref={userMenuRef}>
+        <div className="relative pl-2 border-l border-gray-200 dark:border-slate-700" ref={userMenuRef}>
           <button
             onClick={() => setUserMenuOpen(o => !o)}
-            className="flex items-center gap-2 hover:bg-gray-100 rounded-lg px-2 py-1.5 transition-colors"
+            className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg px-2 py-1.5 transition-colors"
           >
             <Avatar name={user?.full_name ?? 'U'} url={user?.avatar_url} size="sm" />
-            <span className="text-sm font-medium text-gray-700 hidden sm:block">{user?.full_name}</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-slate-200 hidden sm:block">{user?.full_name}</span>
           </button>
 
           {userMenuOpen && (
-            <div className="absolute right-0 top-10 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden animate-fade-in">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <p className="text-sm font-semibold text-gray-900 truncate">{user?.full_name}</p>
-                <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+            <div className="absolute right-0 top-10 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50 overflow-hidden animate-fade-in">
+              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
+                <p className="text-sm font-semibold text-gray-900 dark:text-slate-100 truncate">{user?.full_name}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{user?.email}</p>
               </div>
               <div className="py-1">
                 <Link
                   to="/profile"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
-                  <UserCircle size={15} className="text-gray-400" />
-                  Profile settings
+                  <UserCircle size={15} className="text-gray-400 dark:text-slate-500" />
+                  Profile & Appearance
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   <LogOut size={15} />
                   Sign out
