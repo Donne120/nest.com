@@ -177,7 +177,7 @@ class Video(Base):
     __tablename__ = "videos"
 
     id = Column(String, primary_key=True, default=gen_uuid)
-    module_id = Column(String, ForeignKey("modules.id"), nullable=False)
+    module_id = Column(String, ForeignKey("modules.id", ondelete="CASCADE"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     video_url = Column(String, nullable=False)
@@ -201,7 +201,7 @@ class VideoTranscript(Base):
     __tablename__ = "video_transcripts"
 
     id = Column(String, primary_key=True, default=gen_uuid)
-    video_id = Column(String, ForeignKey("videos.id"), nullable=False, unique=True)
+    video_id = Column(String, ForeignKey("videos.id", ondelete="CASCADE"), nullable=False, unique=True)
     full_text = Column(Text, nullable=True)
     segments = Column(JSON, nullable=True)
     language = Column(String, nullable=True, default="en")
@@ -219,7 +219,7 @@ class Question(Base):
     __tablename__ = "questions"
 
     id = Column(String, primary_key=True, default=gen_uuid)
-    video_id = Column(String, ForeignKey("videos.id"), nullable=False)
+    video_id = Column(String, ForeignKey("videos.id", ondelete="CASCADE"), nullable=False)
     asked_by = Column(String, ForeignKey("users.id"), nullable=False)
     timestamp_seconds = Column(Float, nullable=False)
     question_text = Column(Text, nullable=False)
@@ -238,7 +238,7 @@ class Answer(Base):
     __tablename__ = "answers"
 
     id = Column(String, primary_key=True, default=gen_uuid)
-    question_id = Column(String, ForeignKey("questions.id"), nullable=False)
+    question_id = Column(String, ForeignKey("questions.id", ondelete="CASCADE"), nullable=False)
     answered_by = Column(String, ForeignKey("users.id"), nullable=False)
     answer_text = Column(Text, nullable=False)
     is_official = Column(Boolean, default=False)
@@ -257,8 +257,8 @@ class UserProgress(Base):
 
     id = Column(String, primary_key=True, default=gen_uuid)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    module_id = Column(String, ForeignKey("modules.id"), nullable=False)
-    video_id = Column(String, ForeignKey("videos.id"), nullable=True)
+    module_id = Column(String, ForeignKey("modules.id", ondelete="CASCADE"), nullable=False)
+    video_id = Column(String, ForeignKey("videos.id", ondelete="SET NULL"), nullable=True)
     status = Column(SAEnum(ModuleStatus), default=ModuleStatus.not_started)
     progress_seconds = Column(Float, default=0)
     completed_at = Column(DateTime(timezone=True), nullable=True)
@@ -274,7 +274,7 @@ class QuizQuestion(Base):
     __tablename__ = "quiz_questions"
 
     id = Column(String, primary_key=True, default=gen_uuid)
-    video_id = Column(String, ForeignKey("videos.id"), nullable=False)
+    video_id = Column(String, ForeignKey("videos.id", ondelete="CASCADE"), nullable=False)
     question_text = Column(Text, nullable=False)
     question_type = Column(SAEnum(QuestionType), nullable=False, default=QuestionType.mcq)
     order_index = Column(Integer, default=0)
@@ -292,7 +292,7 @@ class QuizOption(Base):
     __tablename__ = "quiz_options"
 
     id = Column(String, primary_key=True, default=gen_uuid)
-    question_id = Column(String, ForeignKey("quiz_questions.id"), nullable=False)
+    question_id = Column(String, ForeignKey("quiz_questions.id", ondelete="CASCADE"), nullable=False)
     option_text = Column(String, nullable=False)
     is_correct = Column(Boolean, default=False)
     order_index = Column(Integer, default=0)
@@ -304,7 +304,7 @@ class QuizSubmission(Base):
     __tablename__ = "quiz_submissions"
 
     id = Column(String, primary_key=True, default=gen_uuid)
-    video_id = Column(String, ForeignKey("videos.id"), nullable=False)
+    video_id = Column(String, ForeignKey("videos.id", ondelete="CASCADE"), nullable=False)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     score = Column(Float, nullable=True)
     max_score = Column(Integer, nullable=True)
@@ -318,9 +318,9 @@ class QuizAnswer(Base):
     __tablename__ = "quiz_answers"
 
     id = Column(String, primary_key=True, default=gen_uuid)
-    submission_id = Column(String, ForeignKey("quiz_submissions.id"), nullable=False)
-    question_id = Column(String, ForeignKey("quiz_questions.id"), nullable=False)
-    selected_option_id = Column(String, ForeignKey("quiz_options.id"), nullable=True)
+    submission_id = Column(String, ForeignKey("quiz_submissions.id", ondelete="CASCADE"), nullable=False)
+    question_id = Column(String, ForeignKey("quiz_questions.id", ondelete="CASCADE"), nullable=False)
+    selected_option_id = Column(String, ForeignKey("quiz_options.id", ondelete="SET NULL"), nullable=True)
     answer_text = Column(Text, nullable=True)
     is_correct = Column(Boolean, nullable=True)
 
@@ -336,7 +336,7 @@ class VideoNote(Base):
 
     id = Column(String, primary_key=True, default=gen_uuid)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    video_id = Column(String, ForeignKey("videos.id"), nullable=False)
+    video_id = Column(String, ForeignKey("videos.id", ondelete="CASCADE"), nullable=False)
     content = Column(Text, nullable=False)
     timestamp_seconds = Column(Float, nullable=True)   # None = general note
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -371,7 +371,7 @@ class MeetingBooking(Base):
     id = Column(String, primary_key=True, default=gen_uuid)
     organization_id = Column(String, ForeignKey("organizations.id"), nullable=False)
     employee_id = Column(String, ForeignKey("users.id"), nullable=False)
-    module_id = Column(String, ForeignKey("modules.id"), nullable=True)
+    module_id = Column(String, ForeignKey("modules.id", ondelete="SET NULL"), nullable=True)
     admin_id = Column(String, ForeignKey("users.id"), nullable=True)  # assigned on confirm
 
     requested_at = Column(DateTime(timezone=True), nullable=True)   # preferred time from employee
