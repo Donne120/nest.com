@@ -15,7 +15,7 @@ from config import settings
 from database import engine
 from sqlalchemy import text
 import models
-from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription
+from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats
 from sqlalchemy import text
 import storage as storage_helper
 
@@ -91,6 +91,8 @@ app.include_router(notes.router)
 app.include_router(meetings.router)
 app.include_router(ai_assist.router)
 app.include_router(transcription.router)
+app.include_router(certificates.router)
+app.include_router(ats.router)
 
 
 @app.get("/api/health")

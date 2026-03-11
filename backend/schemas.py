@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
-from models import UserRole, QuestionStatus, ModuleStatus, QuestionType, Plan, SubscriptionStatus, MeetingStatus
+from models import UserRole, QuestionStatus, ModuleStatus, QuestionType, Plan, SubscriptionStatus, MeetingStatus, ATSProvider
 
 
 # ─── Organization ─────────────────────────────────────────────────────────────
@@ -502,6 +502,78 @@ class MeetingOut(BaseModel):
 
 
 # ─── Video Notes ──────────────────────────────────────────────────────────────
+
+# ─── Certificates ─────────────────────────────────────────────────────────────
+
+class CertificateOut(BaseModel):
+    id: str
+    cert_number: str
+    module_id: str
+    org_id: str
+    issued_at: datetime
+    user: "UserOut"
+    module: "ModuleOut"
+    organization: "OrganizationOut"
+
+    class Config:
+        from_attributes = True
+
+
+# ─── People Analytics ─────────────────────────────────────────────────────────
+
+class EmployeePeopleStats(BaseModel):
+    id: str
+    name: str
+    email: str
+    role: str
+    department: Optional[str]
+    joined: datetime
+    days_since_joined: int
+    last_active_at: Optional[datetime]
+    days_since_active: Optional[int]
+    completion_pct: int
+    completed_modules: int
+    total_modules: int
+    time_to_complete_days: Optional[int]
+    is_at_risk: bool
+    is_star: bool
+
+
+class PeopleReport(BaseModel):
+    employees: List[EmployeePeopleStats]
+    summary: dict
+
+
+# ─── Benchmarks ───────────────────────────────────────────────────────────────
+
+class BenchmarkData(BaseModel):
+    org_completion_rate: float
+    platform_avg_completion_rate: float
+    org_avg_days_to_complete: Optional[float]
+    platform_avg_days_to_complete: Optional[float]
+    org_rank_percentile: int
+    total_orgs_compared: int
+
+
+# ─── ATS ──────────────────────────────────────────────────────────────────────
+
+class ATSConnectionCreate(BaseModel):
+    provider: ATSProvider
+    api_key: str
+    default_role: UserRole = UserRole.employee
+
+
+class ATSConnectionOut(BaseModel):
+    id: str
+    provider: ATSProvider
+    default_role: UserRole
+    is_active: bool
+    webhook_secret: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 
 class NoteCreate(BaseModel):
     content: str = Field(..., min_length=1, max_length=5000)

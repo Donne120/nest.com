@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, MessageSquare, TrendingUp, BookOpen, Settings,
   LogOut, Bell, ArrowUpRight, ChevronRight, Video, Users, Menu, X,
-  Sun, Moon, Monitor
+  Sun, Moon, Monitor, HeartPulse,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuthStore } from '../../store';
@@ -19,6 +19,7 @@ const navLinks = [
   { to: '/admin/courses', end: false, icon: BookOpen, label: 'Courses' },
   { to: '/admin/questions', end: false, icon: MessageSquare, label: 'Questions' },
   { to: '/admin/analytics', end: false, icon: TrendingUp, label: 'Analytics' },
+  { to: '/admin/people', end: false, icon: HeartPulse, label: 'People' },
   { to: '/admin/meetings', end: false, icon: Video, label: 'Meetings' },
   { to: '/admin/users', end: false, icon: Users, label: 'Users' },
   { to: '/admin/settings', end: false, icon: Settings, label: 'Settings' },
@@ -31,6 +32,7 @@ const PAGE_TITLES: [string, string][] = [
   ['/admin/questions/', 'Question Detail'],
   ['/admin/questions', 'Questions'],
   ['/admin/analytics', 'Analytics'],
+  ['/admin/people', 'People'],
   ['/admin/meetings', 'Meetings'],
   ['/admin/users', 'Users'],
   ['/admin/settings', 'Settings'],

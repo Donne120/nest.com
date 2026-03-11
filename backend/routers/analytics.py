@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
+from datetime import datetime
 import io
 import csv
 from database import get_db
@@ -159,6 +160,189 @@ def mark_read(
     if notif:
         notif.is_read = True
         db.commit()
+
+
+@router.get("/people")
+def get_people_analytics(
+    current_user: models.User = Depends(auth_utils.require_manager),
+    db: Session = Depends(get_db),
+):
+    """Per-employee engagement and completion scorecards."""
+    org_id = current_user.organization_id
+    now = datetime.utcnow()
+
+    employees = (
+        db.query(models.User)
+        .filter(
+            models.User.organization_id == org_id,
+            models.User.is_active == True,
+            models.User.role != models.UserRole.super_admin,
+        )
+        .order_by(models.User.created_at)
+        .all()
+    )
+
+    modules = (
+        db.query(models.Module)
+        .filter(
+            models.Module.organization_id == org_id,
+            models.Module.is_published == True,
+        )
+        .all()
+    )
+    total_modules = len(modules)
+
+    result = []
+    for emp in employees:
+        days_since_joined = (now - emp.created_at.replace(tzinfo=None)).days
+
+        # Last activity: most recent progress update
+        last_progress = (
+            db.query(models.UserProgress)
+            .filter(models.UserProgress.user_id == emp.id)
+            .order_by(models.UserProgress.last_viewed_at.desc().nullslast())
+            .first()
+        )
+        last_active_at = (
+            last_progress.last_viewed_at if last_progress and last_progress.last_viewed_at else None
+        )
+        days_since_active = (
+            (now - last_active_at.replace(tzinfo=None)).days if last_active_at else None
+        )
+
+        # Completion
+        completed = sum(
+            1 for m in modules
+            if db.query(models.UserProgress).filter(
+                models.UserProgress.user_id == emp.id,
+                models.UserProgress.module_id == m.id,
+                models.UserProgress.status == models.ModuleStatus.completed,
+            ).first()
+        )
+        pct = round((completed / total_modules) * 100) if total_modules else 0
+
+        # Time to fully complete (days from join to last module completion)
+        time_to_complete = None
+        if pct == 100:
+            last_completion = (
+                db.query(func.max(models.UserProgress.completed_at))
+                .filter(
+                    models.UserProgress.user_id == emp.id,
+                    models.UserProgress.status == models.ModuleStatus.completed,
+                )
+                .scalar()
+            )
+            if last_completion:
+                time_to_complete = (last_completion.replace(tzinfo=None) - emp.created_at.replace(tzinfo=None)).days
+
+        is_at_risk = (
+            pct < 100
+            and (days_since_active is None or days_since_active >= 5)
+            and days_since_joined >= 3
+        )
+
+        result.append({
+            "id": emp.id,
+            "name": emp.full_name,
+            "email": emp.email,
+            "role": emp.role,
+            "department": emp.department,
+            "joined": emp.created_at.isoformat(),
+            "days_since_joined": days_since_joined,
+            "last_active_at": last_active_at.isoformat() if last_active_at else None,
+            "days_since_active": days_since_active,
+            "completion_pct": pct,
+            "completed_modules": completed,
+            "total_modules": total_modules,
+            "time_to_complete_days": time_to_complete,
+            "is_at_risk": is_at_risk,
+            "is_star": pct == 100,
+        })
+
+    summary = {
+        "total": len(result),
+        "stars": sum(1 for e in result if e["is_star"]),
+        "at_risk": sum(1 for e in result if e["is_at_risk"]),
+        "avg_completion": round(sum(e["completion_pct"] for e in result) / len(result)) if result else 0,
+    }
+
+    return {"employees": result, "summary": summary}
+
+
+@router.get("/benchmarks")
+def get_benchmarks(
+    current_user: models.User = Depends(auth_utils.require_manager),
+    db: Session = Depends(get_db),
+):
+    """Compare this org's onboarding metrics against the platform average."""
+    org_id = current_user.organization_id
+    now = datetime.utcnow()
+
+    def _org_completion_rate(oid: str) -> float:
+        employees = db.query(models.User).filter(
+            models.User.organization_id == oid,
+            models.User.role == models.UserRole.employee,
+            models.User.is_active == True,
+        ).all()
+        modules = db.query(models.Module).filter(
+            models.Module.organization_id == oid,
+            models.Module.is_published == True,
+        ).all()
+        if not employees or not modules:
+            return 0.0
+        total_possible = len(employees) * len(modules)
+        completed = db.query(func.count(models.UserProgress.id)).filter(
+            models.UserProgress.module_id.in_([m.id for m in modules]),
+            models.UserProgress.status == models.ModuleStatus.completed,
+        ).scalar() or 0
+        return round((completed / total_possible) * 100, 1)
+
+    # This org's rate
+    org_rate = _org_completion_rate(org_id)
+
+    # Platform: all active orgs
+    all_org_ids = [
+        r[0] for r in db.query(models.Organization.id).filter(
+            models.Organization.is_active == True
+        ).all()
+    ]
+    all_rates = [_org_completion_rate(oid) for oid in all_org_ids]
+    active_rates = [r for r in all_rates if r > 0]
+
+    platform_avg = round(sum(active_rates) / len(active_rates), 1) if active_rates else 0.0
+
+    # Rank percentile (what % of orgs this org beats)
+    better_than = sum(1 for r in active_rates if org_rate > r)
+    percentile = round((better_than / len(active_rates)) * 100) if active_rates else 50
+
+    # Avg days to complete for this org
+    completions = db.query(models.UserProgress).join(
+        models.Module, models.UserProgress.module_id == models.Module.id
+    ).filter(
+        models.Module.organization_id == org_id,
+        models.UserProgress.status == models.ModuleStatus.completed,
+        models.UserProgress.completed_at.isnot(None),
+    ).all()
+
+    avg_days = None
+    if completions:
+        days_list = []
+        for p in completions:
+            user = db.query(models.User).filter(models.User.id == p.user_id).first()
+            if user and p.completed_at:
+                d = (p.completed_at.replace(tzinfo=None) - user.created_at.replace(tzinfo=None)).days
+                if d >= 0:
+                    days_list.append(d)
+        avg_days = round(sum(days_list) / len(days_list), 1) if days_list else None
+
+    return {
+        "org_completion_rate": org_rate,
+        "platform_avg_completion_rate": platform_avg,
+        "org_avg_days_to_complete": avg_days,
+        "platform_avg_days_to_complete": 8.0,  # seeded platform baseline
+        "org_rank_percentile": percentile,
+        "total_orgs_compared": len(active_rates),
+    }
 
 
 @router.get("/completion-report")

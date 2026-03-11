@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Search } from 'lucide-react';
+import { BookOpen, Search, Award } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
-import type { Module } from '../types';
+import type { Module, Certificate } from '../types';
 import ModuleCard from '../components/ModuleLibrary/ModuleCard';
 import { Skeleton } from '../components/UI/Skeleton';
 import { useState } from 'react';
@@ -15,6 +16,15 @@ export default function ModulesPage() {
     queryKey: ['modules'],
     queryFn: () => api.get('/modules').then(r => r.data),
   });
+
+  const { data: certificates = [] } = useQuery<Certificate[]>({
+    queryKey: ['my-certificates'],
+    queryFn: () => api.get('/certificates/me').then(r => r.data),
+    enabled: !!user,
+  });
+
+  // Map moduleId → certificate for quick lookup
+  const certByModule = Object.fromEntries(certificates.map(c => [c.module.id, c]));
 
   const filtered = modules.filter(m =>
     !search || m.title.toLowerCase().includes(search.toLowerCase())
@@ -83,7 +93,21 @@ export default function ModulesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((m) => <ModuleCard key={m.id} module={m} />)}
+          {filtered.map((m) => (
+            <div key={m.id} className="relative">
+              <ModuleCard module={m} />
+              {certByModule[m.id] && (
+                <Link
+                  to={`/certificate/${certByModule[m.id].id}`}
+                  className="absolute top-3 right-3 flex items-center gap-1.5 bg-amber-400 hover:bg-amber-500 text-amber-900 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm transition-colors"
+                  title="View your certificate"
+                >
+                  <Award size={11} />
+                  Certificate
+                </Link>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

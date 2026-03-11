@@ -5,6 +5,7 @@ from database import get_db
 import models
 import schemas
 import auth as auth_utils
+from routers.certificates import issue_if_not_exists
 
 router = APIRouter(prefix="/api/progress", tags=["progress"])
 
@@ -52,5 +53,14 @@ def update_progress(
 
     if payload.status == models.ModuleStatus.completed:
         progress.completed_at = func.now()
+        # Auto-issue completion certificate
+        cert = issue_if_not_exists(
+            user_id=current_user.id,
+            module_id=video.module_id,
+            org_id=current_user.organization_id,
+            db=db,
+        )
+        if cert and not cert.id:
+            db.flush()  # ensure cert gets its id before commit
 
     db.commit()

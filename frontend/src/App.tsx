@@ -26,7 +26,9 @@ import LandingPage from './pages/LandingPage';
 import MeetingsPage from './pages/MeetingsPage';
 import AdminMeetingsPage from './pages/admin/AdminMeetingsPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminPeoplePage from './pages/admin/AdminPeoplePage';
 import ProfilePage from './pages/ProfilePage';
+import CertificatePage from './pages/CertificatePage';
 import type { ReactNode } from 'react';
 
 const queryClient = new QueryClient({
@@ -83,6 +85,7 @@ export default function App() {
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/invite/:token" element={<InvitePage />} />
+          <Route path="/certificate/:certId" element={<CertificatePage />} />
 
           <Route path="/" element={<HomeRoute />} />
 
@@ -170,6 +173,7 @@ export default function App() {
             <Route path="questions" element={<AdminQuestionsPage />} />
             <Route path="questions/:questionId" element={<AdminQuestionDetail />} />
             <Route path="analytics" element={<AdminAnalyticsPage />} />
+            <Route path="people" element={<AdminPeoplePage />} />
             <Route path="meetings" element={<AdminMeetingsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="settings" element={<OrgSettingsPage />} />

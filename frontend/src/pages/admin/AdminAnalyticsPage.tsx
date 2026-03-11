@@ -5,7 +5,7 @@ import {
   LineChart, Line, CartesianGrid, Legend,
 } from 'recharts';
 import api from '../../api/client';
-import type { ModuleAnalytics, DashboardStats } from '../../types';
+import type { ModuleAnalytics, DashboardStats, BenchmarkData } from '../../types';
 import { Skeleton } from '../../components/UI/Skeleton';
 import {
   TrendingUp, Clock, Users, MessageSquare, Zap,
@@ -94,6 +94,102 @@ const tooltipStyle = {
   fontSize: 12,
   fontFamily: 'inherit',
 };
+
+// ─── Benchmarks ───────────────────────────────────────────────────────────────
+
+function BenchmarksSection() {
+  const { data } = useQuery<BenchmarkData>({
+    queryKey: ['benchmarks'],
+    queryFn: () => api.get('/analytics/benchmarks').then(r => r.data),
+    staleTime: 300_000,
+  });
+
+  if (!data) return null;
+
+  const pct = (val: number, max: number) => Math.min(Math.round((val / max) * 100), 100);
+  const maxRate = Math.max(data.org_completion_rate, data.platform_avg_completion_rate, 1);
+  const maxDays = Math.max(data.org_avg_days_to_complete ?? 0, data.platform_avg_days_to_complete ?? 0, 1);
+
+  const rankColor =
+    data.org_rank_percentile >= 75 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' :
+    data.org_rank_percentile >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' :
+    'text-red-600 bg-red-50 border-red-200';
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
+      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-gray-900">Platform Benchmarks</h2>
+            <span className={`text-[10px] font-bold uppercase tracking-wider border rounded-full px-2 py-0.5 ${rankColor}`}>
+              Top {100 - data.org_rank_percentile}%
+            </span>
+          </div>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Your org vs. {data.total_orgs_compared} companies on Nest
+          </p>
+        </div>
+      </div>
+      <div className="px-6 py-5 space-y-5">
+        {/* Completion rate */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-gray-600">Completion Rate</span>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="font-bold text-brand-700">You: {data.org_completion_rate}%</span>
+              <span className="text-gray-400">Avg: {data.platform_avg_completion_rate}%</span>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-brand-600 font-semibold w-7">You</span>
+              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-brand-500 rounded-full transition-all" style={{ width: `${pct(data.org_completion_rate, maxRate)}%` }} />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-gray-400 font-semibold w-7">Avg</span>
+              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-gray-300 rounded-full transition-all" style={{ width: `${pct(data.platform_avg_completion_rate, maxRate)}%` }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Time to complete */}
+        {(data.org_avg_days_to_complete !== null || data.platform_avg_days_to_complete !== null) && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-gray-600">Avg Days to Complete</span>
+              <div className="flex items-center gap-3 text-xs">
+                <span className="font-bold text-brand-700">
+                  You: {data.org_avg_days_to_complete !== null ? `${data.org_avg_days_to_complete}d` : '—'}
+                </span>
+                <span className="text-gray-400">Avg: {data.platform_avg_days_to_complete}d</span>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              {data.org_avg_days_to_complete !== null && (
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-brand-600 font-semibold w-7">You</span>
+                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-brand-500 rounded-full" style={{ width: `${pct(data.org_avg_days_to_complete, maxDays)}%` }} />
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-gray-400 font-semibold w-7">Avg</span>
+                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gray-300 rounded-full" style={{ width: `${pct(data.platform_avg_days_to_complete ?? 0, maxDays)}%` }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ─── Completion Report ────────────────────────────────────────────────────────
 
@@ -322,6 +418,9 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
       )}
+
+      {/* ── Benchmarks ── */}
+      <BenchmarksSection />
 
       {/* ── Completion Report ── */}
       <div className="mb-6">

@@ -53,6 +53,12 @@ class QuestionType(str, enum.Enum):
     true_false = "true_false"
 
 
+class ATSProvider(str, enum.Enum):
+    greenhouse = "greenhouse"
+    lever = "lever"
+    workable = "workable"
+
+
 class MeetingStatus(str, enum.Enum):
     pending = "pending"
     confirmed = "confirmed"
@@ -388,3 +394,38 @@ class MeetingBooking(Base):
     employee = relationship("User", foreign_keys=[employee_id])
     admin = relationship("User", foreign_keys=[admin_id])
     module = relationship("Module")
+
+
+# ─── Completion Certificates ──────────────────────────────────────────────────
+
+class Certificate(Base):
+    __tablename__ = "certificates"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    cert_number = Column(String, unique=True, nullable=False, index=True)  # NEST-2026-00001
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    module_id = Column(String, ForeignKey("modules.id", ondelete="CASCADE"), nullable=False)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    issued_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", foreign_keys=[user_id])
+    module = relationship("Module")
+    organization = relationship("Organization")
+
+
+# ─── ATS Integration ──────────────────────────────────────────────────────────
+
+class ATSConnection(Base):
+    __tablename__ = "ats_connections"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    org_id = Column(String, ForeignKey("organizations.id"), unique=True, nullable=False)
+    provider = Column(SAEnum(ATSProvider), nullable=False)
+    api_key = Column(String, nullable=False)
+    webhook_secret = Column(String, nullable=True, default=gen_uuid)
+    default_role = Column(SAEnum(UserRole), default=UserRole.employee, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    organization = relationship("Organization")

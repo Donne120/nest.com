@@ -229,3 +229,65 @@ export interface QuizSubmissionResult {
   passed: boolean;
   answers: QuizAnswerResult[];
 }
+
+// ─── Certificates ─────────────────────────────────────────────────────────────
+
+export interface Certificate {
+  id: string;
+  cert_number: string;
+  module_id: string;
+  org_id: string;
+  issued_at: string;
+  user: User;
+  module: Module;
+  organization: Organization;
+}
+
+// ─── People Analytics ─────────────────────────────────────────────────────────
+
+export interface EmployeePeopleStats {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string | null;
+  joined: string;
+  days_since_joined: number;
+  last_active_at: string | null;
+  days_since_active: number | null;
+  completion_pct: number;
+  completed_modules: number;
+  total_modules: number;
+  time_to_complete_days: number | null;
+  is_at_risk: boolean;
+  is_star: boolean;
+}
+
+export interface PeopleReport {
+  employees: EmployeePeopleStats[];
+  summary: { total: number; stars: number; at_risk: number; avg_completion: number };
+}
+
+// ─── Benchmarks ───────────────────────────────────────────────────────────────
+
+export interface BenchmarkData {
+  org_completion_rate: number;
+  platform_avg_completion_rate: number;
+  org_avg_days_to_complete: number | null;
+  platform_avg_days_to_complete: number | null;
+  org_rank_percentile: number;
+  total_orgs_compared: number;
+}
+
+// ─── ATS ──────────────────────────────────────────────────────────────────────
+
+export type ATSProvider = 'greenhouse' | 'lever' | 'workable';
+
+export interface ATSConnection {
+  id: string;
+  provider: ATSProvider;
+  default_role: UserRole;
+  is_active: boolean;
+  webhook_secret: string | null;
+  created_at: string;
+}
