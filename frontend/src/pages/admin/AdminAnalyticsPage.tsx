@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, ElementType } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -9,9 +9,28 @@ import type { ModuleAnalytics, DashboardStats } from '../../types';
 import { Skeleton } from '../../components/UI/Skeleton';
 import {
   TrendingUp, Clock, Users, MessageSquare, Zap,
-  CheckCircle2, AlertCircle, BarChart2,
+  CheckCircle2, AlertCircle, BarChart2, Download, Circle,
 } from 'lucide-react';
-import type { ElementType } from 'react';
+
+// ─── Completion report types ───────────────────────────────────────────────────
+
+interface EmployeeCompletion {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string | null;
+  joined: string;
+  completed_modules: number;
+  total_modules: number;
+  completion_pct: number;
+}
+
+interface CompletionReport {
+  modules: { id: string; title: string }[];
+  employees: EmployeeCompletion[];
+  summary: { total: number; completed: number; in_progress: number; not_started: number };
+}
 
 function fmt(s: number) {
   const m = Math.floor(s / 60);
@@ -75,6 +94,129 @@ const tooltipStyle = {
   fontSize: 12,
   fontFamily: 'inherit',
 };
+
+// ─── Completion Report ────────────────────────────────────────────────────────
+
+function CompletionReportSection() {
+  const { data, isLoading } = useQuery<CompletionReport>({
+    queryKey: ['completion-report'],
+    queryFn: () => api.get('/analytics/completion-report').then(r => r.data),
+  });
+
+  const downloadCsv = async () => {
+    try {
+      const response = await api.get('/analytics/export.csv', { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'nest-onboarding-report.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // silent
+    }
+  };
+
+  const pctColor = (pct: number) =>
+    pct === 100 ? '#16a34a' : pct >= 50 ? '#d97706' : pct > 0 ? '#2563eb' : '#94a3b8';
+
+  if (isLoading) return <Skeleton className="h-64 rounded-2xl" />;
+  if (!data) return null;
+
+  const { summary, employees } = data;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-bold text-gray-900">Completion Report</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Who's finished, who's stuck, who hasn't started</p>
+        </div>
+        <button
+          onClick={downloadCsv}
+          className="flex items-center gap-1.5 text-xs font-semibold text-brand-600 border border-brand-200 hover:bg-brand-50 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          <Download size={12} />
+          Export CSV
+        </button>
+      </div>
+
+      {/* Summary pills */}
+      <div className="flex gap-3 flex-wrap px-6 py-4 border-b border-gray-50 bg-gray-50/50">
+        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1.5">
+          <CheckCircle2 size={13} className="text-emerald-500" />
+          <span className="text-xs font-semibold text-emerald-700">{summary.completed} completed</span>
+        </div>
+        <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-full px-3 py-1.5">
+          <AlertCircle size={13} className="text-amber-500" />
+          <span className="text-xs font-semibold text-amber-700">{summary.in_progress} in progress</span>
+        </div>
+        <div className="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5">
+          <Circle size={13} className="text-gray-400" />
+          <span className="text-xs font-semibold text-gray-500">{summary.not_started} not started</span>
+        </div>
+      </div>
+
+      {/* Table */}
+      {employees.length === 0 ? (
+        <div className="py-16 text-center">
+          <Users size={24} className="text-gray-200 mx-auto mb-3" />
+          <p className="text-sm text-gray-500">No employees yet. Invite your team to get started.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Employee</th>
+                <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Role</th>
+                <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-4 py-3 hidden md:table-cell">Joined</th>
+                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Progress</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {employees.map((emp) => (
+                <tr key={emp.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-6 py-3.5">
+                    <p className="text-[13px] font-semibold text-gray-900">{emp.name}</p>
+                    <p className="text-[11px] text-gray-400">{emp.email}</p>
+                  </td>
+                  <td className="px-4 py-3.5 hidden sm:table-cell">
+                    <span className="text-[11px] font-medium capitalize text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                      {emp.role}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5 hidden md:table-cell">
+                    <span className="text-[12px] text-gray-400">
+                      {new Date(emp.joined).toLocaleDateString()}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3.5">
+                    <div className="flex items-center justify-end gap-3">
+                      <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden hidden sm:block">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${emp.completion_pct}%`, backgroundColor: pctColor(emp.completion_pct) }}
+                        />
+                      </div>
+                      <span className="text-[12px] font-bold tabular-nums" style={{ color: pctColor(emp.completion_pct) }}>
+                        {emp.completion_pct}%
+                      </span>
+                      <span className="text-[11px] text-gray-400 hidden sm:inline">
+                        {emp.completed_modules}/{emp.total_modules}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function AdminAnalyticsPage() {
@@ -180,6 +322,11 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
       )}
+
+      {/* ── Completion Report ── */}
+      <div className="mb-6">
+        <CompletionReportSection />
+      </div>
 
       {/* ── Charts ── */}
       {isLoading ? (

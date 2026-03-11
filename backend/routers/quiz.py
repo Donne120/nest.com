@@ -5,6 +5,7 @@ from database import get_db
 import models
 import schemas
 import auth as auth_utils
+import email_utils
 
 router = APIRouter(prefix="/api/quiz", tags=["quiz"])
 
@@ -225,7 +226,21 @@ def submit_quiz(
     db.commit()
     db.refresh(submission)
 
-    return _build_result(submission, db)
+    result = _build_result(submission, db)
+
+    # Send quiz result email
+    video = db.query(models.Video).filter(models.Video.id == payload.video_id).first()
+    if video:
+        email_utils.send_quiz_result(
+            to=current_user.email,
+            employee_name=current_user.full_name,
+            video_title=video.title,
+            passed=result.passed,
+            score=result.score or 0,
+            max_score=result.max_score,
+        )
+
+    return result
 
 
 def _build_result(submission: models.QuizSubmission, db: Session) -> schemas.QuizSubmissionResult:

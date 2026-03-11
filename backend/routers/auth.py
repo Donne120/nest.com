@@ -103,6 +103,14 @@ def register_org(payload: schemas.RegisterOrgRequest, db: Session = Depends(get_
     db.refresh(user)
     db.refresh(org)
 
+    dashboard_url = f"{settings.FRONTEND_URL}/admin"
+    email_utils.send_welcome(
+        to=user.email,
+        admin_name=user.full_name,
+        org_name=org.name,
+        dashboard_url=dashboard_url,
+    )
+
     return _build_token_response(user, db)
 
 

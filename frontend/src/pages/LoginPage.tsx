@@ -35,12 +35,6 @@ export default function LoginPage() {
     }
   };
 
-  const demoLogins = [
-    { label: 'Admin', email: 'admin@acme.com', password: 'admin123' },
-    { label: 'Manager', email: 'manager@acme.com', password: 'manager123' },
-    { label: 'Employee', email: 'alice@acme.com', password: 'employee123' },
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -103,21 +97,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Demo credentials */}
-          <div className="mt-6 pt-5 border-t border-gray-100">
-            <p className="text-xs text-gray-400 text-center mb-3">Demo accounts (Acme Corp)</p>
-            <div className="grid grid-cols-3 gap-2">
-              {demoLogins.map((d) => (
-                <button
-                  key={d.label}
-                  onClick={() => { setEmail(d.email); setPassword(d.password); }}
-                  className="text-xs text-brand-600 border border-brand-200 rounded-lg py-2 px-2 hover:bg-brand-50 transition-colors font-medium"
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Signup CTA */}

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store';
+import { useBrandColor } from './hooks/useBrandColor';
 import Navbar from './components/Layout/Navbar';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
@@ -17,6 +18,7 @@ import AdminQuestionDetail from './pages/admin/AdminQuestionDetail';
 import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 import AdminCoursesPage from './pages/admin/AdminCoursesPage';
 import AdminModuleEditor from './pages/admin/AdminModuleEditor';
+import OnboardingWizard from './pages/admin/OnboardingWizard';
 import SignupPage from './pages/SignupPage';
 import InvitePage from './pages/InvitePage';
 import OrgSettingsPage from './pages/admin/OrgSettingsPage';
@@ -39,7 +41,7 @@ const queryClient = new QueryClient({
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { token } = useAuthStore();
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -64,10 +66,16 @@ function AppLayout({ children }: { children: ReactNode }) {
   );
 }
 
+function BrandColorApplier() {
+  useBrandColor();
+  return null;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrandColorApplier />
         <ErrorBoundary>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -130,6 +138,17 @@ export default function App() {
                   <Navbar />
                   <VideoPage />
                 </div>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/admin/onboarding"
+            element={
+              <RequireAuth>
+                <RequireManager>
+                  <OnboardingWizard />
+                </RequireManager>
               </RequireAuth>
             }
           />

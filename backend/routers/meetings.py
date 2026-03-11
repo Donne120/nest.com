@@ -66,6 +66,19 @@ async def request_meeting(
         "meeting_id": meeting.id,
         "requested_by": current_user.full_name,
     })
+
+    # Email each manager
+    from config import settings as _settings
+    meetings_url = f"{_settings.FRONTEND_URL}/admin/meetings"
+    for mgr in managers:
+        email_utils.send_meeting_request_to_manager(
+            to=mgr.email,
+            manager_name=mgr.full_name,
+            employee_name=current_user.full_name,
+            note=payload.note,
+            meetings_url=meetings_url,
+        )
+
     return _to_out(meeting)
 
 
@@ -161,6 +174,18 @@ async def decline_meeting(
         "meeting_id": meeting.id,
         "employee_id": meeting.employee_id,
     })
+
+    # Email the employee
+    employee = db.query(models.User).filter_by(id=meeting.employee_id).first()
+    if employee:
+        from config import settings as _settings
+        email_utils.send_meeting_declined(
+            to=employee.email,
+            employee_name=employee.full_name,
+            reason=payload.decline_reason,
+            meetings_url=f"{_settings.FRONTEND_URL}/meetings",
+        )
+
     return _to_out(meeting)
 
 

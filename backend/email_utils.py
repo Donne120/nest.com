@@ -1,5 +1,5 @@
 """
-Simple SMTP email utility.
+Transactional email utility.
 If SMTP_HOST is not configured in .env, send() is a no-op and returns False.
 """
 
@@ -40,86 +40,269 @@ def send(to: str, subject: str, html: str) -> bool:
         return False
 
 
+# ─── Shared layout helper ──────────────────────────────────────────────────────
+
+def _wrap(body: str, preheader: str = "") -> str:
+    """Wrap body HTML in a consistent, mobile-friendly email shell."""
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nest</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Inter',Arial,sans-serif;">
+  {"<div style='display:none;max-height:0;overflow:hidden;'>" + preheader + "</div>" if preheader else ""}
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+
+        <!-- Logo header -->
+        <tr><td style="padding-bottom:24px;">
+          <table cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="width:36px;height:36px;background:#2563eb;border-radius:10px;text-align:center;vertical-align:middle;">
+                <span style="color:#fff;font-weight:700;font-size:18px;line-height:36px;">N</span>
+              </td>
+              <td style="padding-left:10px;font-size:15px;font-weight:700;color:#1e293b;">Nest Onboarding</td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <!-- Card -->
+        <tr><td style="background:#ffffff;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;">
+          {body}
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding-top:24px;text-align:center;">
+          <p style="font-size:11px;color:#94a3b8;margin:0;">
+            &copy; Nest Onboarding Platform &mdash; You received this because you have an account on Nest.
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+
+def _btn(url: str, label: str, color: str = "#2563eb") -> str:
+    return f"""<table cellpadding="0" cellspacing="0" style="margin-top:24px;">
+  <tr><td style="background:{color};border-radius:10px;">
+    <a href="{url}" style="display:inline-block;padding:12px 28px;color:#fff;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.01em;">{label}</a>
+  </td></tr>
+</table>"""
+
+
+# ─── Invitation ────────────────────────────────────────────────────────────────
+
 def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
     subject = f"You're invited to join {org_name} on Nest"
-    html = f"""
-    <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#1e293b">
-      <div style="margin-bottom:24px">
-        <div style="width:40px;height:40px;background:#6366f1;border-radius:10px;display:flex;align-items:center;justify-content:center">
-          <span style="color:white;font-weight:700;font-size:18px">N</span>
-        </div>
-      </div>
-
-      <h1 style="font-size:22px;font-weight:700;margin:0 0 8px">You've been invited</h1>
-      <p style="color:#64748b;margin:0 0 24px;line-height:1.6">
-        You've been invited to join <strong>{org_name}</strong> on Nest as a <strong>{role}</strong>.
-        Click the button below to set up your account.
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Team Invitation</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">You've been invited to join {org_name}</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 4px;">
+        Someone at <strong style="color:#0f172a;">{org_name}</strong> has invited you as a
+        <strong style="color:#0f172a;text-transform:capitalize;">{role}</strong>.
       </p>
-
-      <a href="{invite_url}"
-         style="display:inline-block;background:#6366f1;color:white;font-weight:600;
-                font-size:14px;padding:12px 24px;border-radius:10px;text-decoration:none">
-        Accept Invitation
-      </a>
-
-      <p style="margin:24px 0 0;font-size:12px;color:#94a3b8">
-        This invitation expires in 7 days. If you didn't expect this email, you can safely ignore it.
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+        Click the button below to set up your account and start your onboarding journey.
       </p>
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">
-      <p style="font-size:11px;color:#cbd5e1;margin:0">
-        Nest Onboarding Platform
+      {_btn(invite_url, "Accept Invitation")}
+      <p style="font-size:12px;color:#94a3b8;margin:20px 0 0;">
+        This invitation expires in 7 days. If you weren't expecting this, you can safely ignore it.
       </p>
-    </div>
-    """
-    return send(to, subject, html)
+    </div>"""
+    return send(to, subject, _wrap(body, f"You've been invited to join {org_name}"))
 
+
+# ─── Password reset ────────────────────────────────────────────────────────────
 
 def send_password_reset(to: str, reset_url: str) -> bool:
     subject = "Reset your Nest password"
-    html = f"""
-    <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#1e293b">
-      <div style="margin-bottom:24px">
-        <div style="width:40px;height:40px;background:#6366f1;border-radius:10px;display:flex;align-items:center;justify-content:center">
-          <span style="color:white;font-weight:700;font-size:18px">N</span>
-        </div>
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Security</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Reset your password</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+        We received a password reset request for your Nest account.
+        This link will expire in <strong style="color:#0f172a;">1 hour</strong>.
+      </p>
+      {_btn(reset_url, "Choose New Password")}
+      <div style="margin-top:24px;padding:14px 16px;background:#fef3c7;border-radius:10px;border:1px solid #fde68a;">
+        <p style="font-size:12px;color:#92400e;margin:0;line-height:1.6;">
+          If you didn't request this, your account is safe. No action is needed.
+        </p>
       </div>
-      <h1 style="font-size:22px;font-weight:700;margin:0 0 8px">Reset your password</h1>
-      <p style="color:#64748b;margin:0 0 24px;line-height:1.6">
-        We received a request to reset your Nest password. Click the button below to choose a new password.
-        This link expires in 1 hour.
-      </p>
-      <a href="{reset_url}"
-         style="display:inline-block;background:#6366f1;color:white;font-weight:600;
-                font-size:14px;padding:12px 24px;border-radius:10px;text-decoration:none">
-        Reset Password
-      </a>
-      <p style="margin:24px 0 0;font-size:12px;color:#94a3b8">
-        If you didn't request this, you can safely ignore this email. Your password won't change.
-      </p>
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">
-      <p style="font-size:11px;color:#cbd5e1;margin:0">Nest Onboarding Platform</p>
-    </div>
-    """
-    return send(to, subject, html)
+    </div>"""
+    return send(to, subject, _wrap(body, "Someone requested a password reset for your account"))
 
+
+# ─── Welcome email ─────────────────────────────────────────────────────────────
+
+def send_welcome(to: str, admin_name: str, org_name: str, dashboard_url: str) -> bool:
+    """Sent to the admin right after their organization is created."""
+    first = admin_name.split(" ")[0]
+    subject = f"Welcome to Nest, {first} — your workspace is ready"
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Getting Started</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Welcome aboard, {first}!</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
+        Your <strong style="color:#0f172a;">{org_name}</strong> workspace is live on Nest.
+        You're on a <strong style="color:#0f172a;">14-day free trial</strong> — no credit card required.
+      </p>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+        Here's what to do next:
+      </p>
+      <table cellpadding="0" cellspacing="0" style="margin:20px 0;width:100%;">
+        <tr>
+          <td style="padding:12px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:8px;">
+            <p style="margin:0;font-size:14px;color:#0f172a;font-weight:600;">1. Create your first course</p>
+            <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Upload videos and build your onboarding program.</p>
+          </td>
+        </tr>
+        <tr><td style="height:8px;"></td></tr>
+        <tr>
+          <td style="padding:12px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+            <p style="margin:0;font-size:14px;color:#0f172a;font-weight:600;">2. Invite your team</p>
+            <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Send invite links to managers and employees.</p>
+          </td>
+        </tr>
+      </table>
+      {_btn(dashboard_url, "Open Dashboard")}
+    </div>"""
+    return send(to, subject, _wrap(body, f"Your {org_name} workspace is ready on Nest"))
+
+
+# ─── Quiz result ───────────────────────────────────────────────────────────────
+
+def send_quiz_result(to: str, employee_name: str, video_title: str, passed: bool, score: float, max_score: int) -> bool:
+    """Sent to employee after submitting a quiz."""
+    first = employee_name.split(" ")[0]
+    pct = round((score / max_score) * 100) if max_score > 0 else 0
+    subject = f"{'Quiz passed!' if passed else 'Quiz result'} — {video_title}"
+
+    if passed:
+        badge_bg, badge_color, badge_text = "#dcfce7", "#166534", "Passed"
+        heading = f"Well done, {first}!"
+        message = f"You scored <strong style='color:#0f172a;'>{pct}%</strong> on the quiz for <em>{video_title}</em>. Keep it up!"
+        accent = "#16a34a"
+    else:
+        badge_bg, badge_color, badge_text = "#fee2e2", "#991b1b", "Not Passed"
+        heading = f"Quiz result, {first}"
+        message = f"You scored <strong style='color:#0f172a;'>{pct}%</strong> on the quiz for <em>{video_title}</em>. You need 70% to pass — you can try again!"
+        accent = "#dc2626"
+
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Quiz Result</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 16px;line-height:1.3;">{heading}</h1>
+
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+        <span style="display:inline-block;padding:4px 14px;background:{badge_bg};color:{badge_color};font-size:13px;font-weight:700;border-radius:999px;">{badge_text}</span>
+      </div>
+
+      <div style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:20px;">
+        <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Score</p>
+        <p style="margin:0;font-size:36px;font-weight:800;color:{accent};">{pct}%</p>
+        <p style="margin:4px 0 0;font-size:13px;color:#64748b;">{int(score)} out of {max_score} questions correct</p>
+      </div>
+
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">{message}</p>
+    </div>"""
+    return send(to, subject, _wrap(body, f"Your quiz result for {video_title}"))
+
+
+# ─── Meeting request (to manager) ─────────────────────────────────────────────
+
+def send_meeting_request_to_manager(
+    to: str, manager_name: str, employee_name: str,
+    note: str | None, meetings_url: str
+) -> bool:
+    """Sent to each manager when an employee requests a 1-on-1."""
+    first = manager_name.split(" ")[0]
+    subject = f"{employee_name} requested a 1-on-1 meeting"
+    note_block = (
+        f"""<div style="margin:16px 0;padding:14px 16px;background:#f0f9ff;border-left:3px solid #38bdf8;border-radius:0 10px 10px 0;">
+          <p style="font-size:13px;font-weight:600;color:#0369a1;margin:0 0 4px;">Note from {employee_name}:</p>
+          <p style="font-size:13px;color:#0c4a6e;margin:0;line-height:1.6;font-style:italic;">"{note}"</p>
+        </div>"""
+        if note else ""
+    )
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Meeting Request</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Hey {first}, someone wants to meet</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+        <strong style="color:#0f172a;">{employee_name}</strong> has requested a 1-on-1 meeting
+        and is waiting for your confirmation.
+      </p>
+      {note_block}
+      {_btn(meetings_url, "Review Request")}
+    </div>"""
+    return send(to, subject, _wrap(body, f"{employee_name} is requesting a 1-on-1 with you"))
+
+
+# ─── Meeting confirmed ─────────────────────────────────────────────────────────
 
 def send_meeting_confirmed(to: str, employee_name: str, confirmed_at: str, meeting_link: str) -> bool:
+    first = employee_name.split(" ")[0]
     subject = "Your 1-on-1 meeting has been confirmed"
-    html = f"""
-    <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#1e293b">
-      <h1 style="font-size:22px;font-weight:700;margin:0 0 8px">Meeting Confirmed</h1>
-      <p style="color:#64748b;margin:0 0 16px;line-height:1.6">
-        Hi {employee_name}, your 1-on-1 session has been confirmed.
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Meeting Confirmed</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">You're all set, {first}!</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+        Your 1-on-1 session has been confirmed. Here are the details:
       </p>
-      <p style="margin:0 0 8px"><strong>When:</strong> {confirmed_at}</p>
-      <p style="margin:0 0 24px"><strong>Link:</strong>
-        <a href="{meeting_link}" style="color:#6366f1">{meeting_link}</a>
+      <div style="background:#f0fdf4;border-radius:12px;border:1px solid #bbf7d0;padding:20px 24px;margin-bottom:20px;">
+        <table cellpadding="0" cellspacing="0" style="width:100%;">
+          <tr>
+            <td style="padding-bottom:10px;">
+              <p style="margin:0;font-size:11px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.08em;">When</p>
+              <p style="margin:4px 0 0;font-size:14px;font-weight:600;color:#0f172a;">{confirmed_at}</p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p style="margin:0;font-size:11px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.08em;">Meeting Link</p>
+              <p style="margin:4px 0 0;font-size:13px;color:#2563eb;word-break:break-all;">
+                <a href="{meeting_link}" style="color:#2563eb;">{meeting_link}</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      {_btn(meeting_link, "Join Meeting", "#16a34a")}
+    </div>"""
+    return send(to, subject, _wrap(body, f"Your 1-on-1 is confirmed for {confirmed_at}"))
+
+
+# ─── Meeting declined ──────────────────────────────────────────────────────────
+
+def send_meeting_declined(to: str, employee_name: str, reason: str | None, meetings_url: str) -> bool:
+    """Sent to employee when their meeting request is declined."""
+    first = employee_name.split(" ")[0]
+    subject = "Your meeting request was declined"
+    reason_block = (
+        f"""<div style="margin:16px 0;padding:14px 16px;background:#fef2f2;border-left:3px solid #fca5a5;border-radius:0 10px 10px 0;">
+          <p style="font-size:13px;color:#7f1d1d;margin:0;line-height:1.6;">{reason}</p>
+        </div>"""
+        if reason else ""
+    )
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Meeting Update</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Sorry, {first}</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+        Your 1-on-1 meeting request was declined.
+        You can submit a new request at a different time.
       </p>
-      <a href="{meeting_link}"
-         style="display:inline-block;background:#6366f1;color:white;font-weight:600;
-                font-size:14px;padding:12px 24px;border-radius:10px;text-decoration:none">
-        Join Meeting
-      </a>
-    </div>
-    """
-    return send(to, subject, html)
+      {reason_block}
+      {_btn(meetings_url, "Request Another Time")}
+    </div>"""
+    return send(to, subject, _wrap(body, "Your meeting request was not confirmed"))

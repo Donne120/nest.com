@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
+import io
+import csv
 from database import get_db
 import models
 import schemas
@@ -156,6 +159,147 @@ def mark_read(
     if notif:
         notif.is_read = True
         db.commit()
+
+
+@router.get("/completion-report")
+def get_completion_report(
+    current_user: models.User = Depends(auth_utils.require_manager),
+    db: Session = Depends(get_db),
+):
+    """Per-employee completion status for all published modules."""
+    org_id = current_user.organization_id
+
+    employees = (
+        db.query(models.User)
+        .filter(
+            models.User.organization_id == org_id,
+            models.User.is_active == True,
+            models.User.role != models.UserRole.super_admin,
+        )
+        .order_by(models.User.created_at)
+        .all()
+    )
+
+    modules = (
+        db.query(models.Module)
+        .filter(
+            models.Module.organization_id == org_id,
+            models.Module.is_published == True,
+        )
+        .order_by(models.Module.order_index)
+        .all()
+    )
+
+    report = []
+    for emp in employees:
+        completed = 0
+        for m in modules:
+            done = db.query(models.UserProgress).filter(
+                models.UserProgress.user_id == emp.id,
+                models.UserProgress.module_id == m.id,
+                models.UserProgress.status == models.ModuleStatus.completed,
+            ).first()
+            if done:
+                completed += 1
+
+        pct = round((completed / len(modules)) * 100) if modules else 0
+        report.append({
+            "id": emp.id,
+            "name": emp.full_name,
+            "email": emp.email,
+            "role": emp.role,
+            "department": emp.department,
+            "joined": emp.created_at.isoformat(),
+            "completed_modules": completed,
+            "total_modules": len(modules),
+            "completion_pct": pct,
+        })
+
+    return {
+        "modules": [{"id": m.id, "title": m.title} for m in modules],
+        "employees": report,
+        "summary": {
+            "total": len(report),
+            "completed": sum(1 for e in report if e["completion_pct"] == 100),
+            "in_progress": sum(1 for e in report if 0 < e["completion_pct"] < 100),
+            "not_started": sum(1 for e in report if e["completion_pct"] == 0),
+        },
+    }
+
+
+@router.get("/export.csv")
+def export_completion_csv(
+    current_user: models.User = Depends(auth_utils.require_manager),
+    db: Session = Depends(get_db),
+):
+    """Download completion report as CSV (Excel-compatible)."""
+    org_id = current_user.organization_id
+
+    employees = (
+        db.query(models.User)
+        .filter(
+            models.User.organization_id == org_id,
+            models.User.is_active == True,
+            models.User.role != models.UserRole.super_admin,
+        )
+        .order_by(models.User.full_name)
+        .all()
+    )
+
+    modules = (
+        db.query(models.Module)
+        .filter(
+            models.Module.organization_id == org_id,
+            models.Module.is_published == True,
+        )
+        .order_by(models.Module.order_index)
+        .all()
+    )
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header
+    writer.writerow([
+        "Name", "Email", "Role", "Department", "Joined",
+        *[m.title for m in modules],
+        "Completion %",
+    ])
+
+    for emp in employees:
+        completed = 0
+        module_statuses = []
+        for m in modules:
+            done = db.query(models.UserProgress).filter(
+                models.UserProgress.user_id == emp.id,
+                models.UserProgress.module_id == m.id,
+                models.UserProgress.status == models.ModuleStatus.completed,
+            ).first()
+            if done:
+                completed += 1
+                module_statuses.append("Complete")
+            else:
+                in_prog = db.query(models.UserProgress).filter(
+                    models.UserProgress.user_id == emp.id,
+                    models.UserProgress.module_id == m.id,
+                    models.UserProgress.status == models.ModuleStatus.in_progress,
+                ).first()
+                module_statuses.append("In Progress" if in_prog else "Not Started")
+
+        pct = round((completed / len(modules)) * 100) if modules else 0
+        writer.writerow([
+            emp.full_name, emp.email, emp.role,
+            emp.department or "", emp.created_at.strftime("%Y-%m-%d"),
+            *module_statuses,
+            f"{pct}%",
+        ])
+
+    output.seek(0)
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode("utf-8-sig")),  # utf-8-sig = Excel BOM
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="nest-onboarding-report.csv"'},
+    )
 
 
 @router.put("/notifications/read-all", status_code=204)

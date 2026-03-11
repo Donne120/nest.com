@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, LogOut, BookOpen, LayoutDashboard, Video, UserCircle } from 'lucide-react';
 import { useAuthStore } from '../../store';
+import { useBrandColor } from '../../hooks/useBrandColor';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
 import type { Notification } from '../../types';
@@ -9,7 +10,8 @@ import { useState, useRef, useEffect } from 'react';
 import clsx from 'clsx';
 
 export default function Navbar() {
-  const { user, clearAuth } = useAuthStore();
+  const { user, organization, clearAuth } = useAuthStore();
+  useBrandColor();
   const navigate = useNavigate();
   const location = useLocation();
   const [notifOpen, setNotifOpen] = useState(false);
@@ -52,10 +54,22 @@ export default function Navbar() {
     <header className="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 flex items-center px-3 sm:px-6 gap-2 sm:gap-4 z-40 relative">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 mr-2 sm:mr-4 flex-shrink-0">
-        <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">N</span>
-        </div>
-        <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm hidden sm:block">Nest Onboarding</span>
+        {organization?.logo_url ? (
+          <img
+            src={organization.logo_url}
+            alt={organization.name}
+            className="h-7 w-auto object-contain max-w-[120px]"
+          />
+        ) : (
+          <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-sm">
+              {organization?.name?.[0]?.toUpperCase() ?? 'N'}
+            </span>
+          </div>
+        )}
+        <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm hidden sm:block">
+          {organization?.name ?? 'Nest Onboarding'}
+        </span>
       </Link>
 
       {/* Nav links */}

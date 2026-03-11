@@ -72,7 +72,7 @@ export default function SignupPage() {
       });
       setAuth(data.user, data.access_token, data.organization);
       setStep(3);
-      setTimeout(() => navigate('/admin'), 2000);
+      setTimeout(() => navigate('/admin/onboarding'), 1500);
     } catch (err: any) {
       toast.error(err?.response?.data?.detail || 'Registration failed. Please try again.');
     } finally {
