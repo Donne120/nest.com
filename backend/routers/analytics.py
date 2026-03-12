@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 import io
 import csv
 from database import get_db
@@ -169,7 +169,7 @@ def get_people_analytics(
 ):
     """Per-employee engagement and completion scorecards."""
     org_id = current_user.organization_id
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     employees = (
         db.query(models.User)
@@ -276,7 +276,7 @@ def get_benchmarks(
 ):
     """Compare this org's onboarding metrics against the platform average."""
     org_id = current_user.organization_id
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     def _org_completion_rate(oid: str) -> float:
         employees = db.query(models.User).filter(

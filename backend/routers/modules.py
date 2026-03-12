@@ -100,14 +100,33 @@ def create_module(
     )
 
 
-@router.get("/{module_id}", response_model=schemas.ModuleOut)
+@router.get("/{module_id}", response_model=schemas.ModuleWithProgress)
 def get_module(
     module_id: str,
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
     m = _org_module(module_id, current_user.organization_id, db)
-    return _module_out(m, db)
+    video_ids = [v.id for v in m.videos]
+    q_count = (
+        db.query(func.count(models.Question.id))
+        .filter(models.Question.video_id.in_(video_ids))
+        .scalar()
+    ) if video_ids else 0
+    progress = db.query(models.UserProgress).filter(
+        models.UserProgress.user_id == current_user.id,
+        models.UserProgress.module_id == m.id,
+    ).first()
+    return schemas.ModuleWithProgress(
+        id=m.id, title=m.title, description=m.description,
+        thumbnail_url=m.thumbnail_url,
+        duration_seconds=sum(v.duration_seconds for v in m.videos),
+        order_index=m.order_index, is_published=m.is_published,
+        created_at=m.created_at, video_count=len(m.videos), question_count=q_count,
+        status=progress.status if progress else models.ModuleStatus.not_started,
+        progress_seconds=progress.progress_seconds if progress else 0,
+        last_viewed_at=progress.last_viewed_at if progress else None,
+    )
 
 
 @router.put("/{module_id}", response_model=schemas.ModuleOut)

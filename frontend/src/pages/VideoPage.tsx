@@ -10,7 +10,7 @@ import QuizModal from '../components/Quiz/QuizModal';
 import { useUIStore, usePlayerStore } from '../store';
 import { useQueryInvalidation } from '../hooks/useQueryInvalidation';
 import { Skeleton } from '../components/UI/Skeleton';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import FloatingNotes from '../components/Notes/FloatingNotes';
 import WhiteboardModal from '../components/AI/WhiteboardModal';
 import AskAIModal from '../components/AI/AskAIModal';
@@ -20,7 +20,9 @@ export default function VideoPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showQuestionForm, activeQuestionId, sidebarOpen, setSidebarOpen, whiteboardQuestionId, whiteboardQuestionText, aiAskOpen, openAIAsk } = useUIStore();
-  const { seekTo, currentTime } = usePlayerStore();
+  const { seekTo, currentTime, duration: playerDuration } = usePlayerStore();
+  // Access live player state without causing re-renders (avoids re-render on every tick)
+  const getPlayerDuration = () => usePlayerStore.getState().duration;
   const [showQuiz, setShowQuiz] = useState(false);
 
   useQueryInvalidation();
@@ -63,27 +65,73 @@ export default function VideoPage() {
     enabled: !!videoId,
   });
 
+  const invalidateProgress = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['modules'] });
+    if (video?.module_id) {
+      queryClient.invalidateQueries({ queryKey: ['module', video.module_id] });
+    }
+  }, [queryClient, video?.module_id]);
+
+  // As soon as the player reports a real duration, save it to the DB if the
+  // video record still has duration_seconds = 0 (common for YouTube videos).
+  const durationSavedRef = useRef(false);
+  useEffect(() => {
+    if (
+      playerDuration > 0 &&
+      videoId &&
+      video &&
+      video.duration_seconds === 0 &&
+      !durationSavedRef.current
+    ) {
+      durationSavedRef.current = true;
+      api.post('/progress/update', {
+        video_id: videoId,
+        progress_seconds: 0,
+        duration_seconds: Math.round(playerDuration),
+      }).then(() => invalidateProgress()).catch(() => {});
+    }
+  }, [playerDuration, videoId, video?.duration_seconds]);
+
   const trackProgress = useMutation({
-    mutationFn: (progressSeconds: number) =>
-      api.post('/progress/update', { video_id: videoId, progress_seconds: progressSeconds }),
+    mutationFn: ({ progressSeconds, durationSeconds }: { progressSeconds: number; durationSeconds?: number }) =>
+      api.post('/progress/update', {
+        video_id: videoId,
+        progress_seconds: progressSeconds,
+        ...(durationSeconds && durationSeconds > 0 ? { duration_seconds: Math.round(durationSeconds) } : {}),
+      }),
+    onSuccess: invalidateProgress,
   });
 
+  // Fire an initial "in_progress" save as soon as the video starts playing
+  const hasStartedRef = useRef(false);
   const handleTimeUpdate = useCallback((t: number) => {
-    if (Math.round(t) % 30 === 0 && Math.round(t) > 0) {
-      trackProgress.mutate(t);
+    const dur = getPlayerDuration();
+    if (t > 1 && !hasStartedRef.current) {
+      hasStartedRef.current = true;
+      trackProgress.mutate({ progressSeconds: t, durationSeconds: dur });
+    } else if (Math.round(t) % 30 === 0 && Math.round(t) > 0) {
+      trackProgress.mutate({ progressSeconds: t, durationSeconds: dur });
     }
-  }, []);
+  }, [trackProgress]);
 
-  const handleVideoEnd = useCallback(() => {
-    // Mark as complete
+  const handleVideoEnd = useCallback(async () => {
+    // Mark as complete and invalidate cache
     if (videoId) {
-      api.post('/progress/update', { video_id: videoId, progress_seconds: video?.duration_seconds ?? 0, status: 'completed' });
+      const dur = getPlayerDuration();
+      const finalDuration = dur > 0 ? Math.round(dur) : (video?.duration_seconds ?? 0);
+      await api.post('/progress/update', {
+        video_id: videoId,
+        progress_seconds: finalDuration,
+        duration_seconds: dur > 0 ? Math.round(dur) : undefined,
+        status: 'completed',
+      });
+      invalidateProgress();
     }
     // Show quiz if questions exist
     if (quizQuestions.length > 0) {
       setShowQuiz(true);
     }
-  }, [videoId, video?.duration_seconds, quizQuestions.length]);
+  }, [videoId, video?.duration_seconds, quizQuestions.length, invalidateProgress]);
 
   const currentIndex = moduleVideos.findIndex(v => v.id === videoId);
   const prevVideo = moduleVideos[currentIndex - 1];

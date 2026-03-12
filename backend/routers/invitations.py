@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
@@ -27,7 +27,7 @@ def create_invitation(
         models.Invitation.organization_id == current_user.organization_id,
         models.Invitation.email == payload.email,
         models.Invitation.is_accepted == False,
-        models.Invitation.expires_at > datetime.utcnow(),
+        models.Invitation.expires_at > datetime.now(timezone.utc),
     ).first()
     if existing:
         raise HTTPException(
@@ -47,7 +47,7 @@ def create_invitation(
         email=payload.email,
         role=payload.role,
         invited_by=current_user.id,
-        expires_at=datetime.utcnow() + timedelta(days=7),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7),
     )
     db.add(invite)
     db.commit()

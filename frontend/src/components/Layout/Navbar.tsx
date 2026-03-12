@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
 import type { Notification } from '../../types';
 import Avatar from '../UI/Avatar';
+import NestLogo from '../UI/NestLogo';
 import { useState, useRef, useEffect } from 'react';
 import clsx from 'clsx';
 
@@ -61,11 +62,10 @@ export default function Navbar() {
             className="h-7 w-auto object-contain max-w-[120px]"
           />
         ) : (
-          <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">
-              {organization?.name?.[0]?.toUpperCase() ?? 'N'}
-            </span>
-          </div>
+          <NestLogo
+            size={28}
+            showText={false}
+          />
         )}
         <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm hidden sm:block">
           {organization?.name ?? 'Nest Onboarding'}

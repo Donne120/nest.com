@@ -29,6 +29,10 @@ def update_progress(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
+    # Persist the real duration when the DB value is still 0 (e.g. YouTube videos)
+    if payload.duration_seconds and payload.duration_seconds > 0 and video.duration_seconds == 0:
+        video.duration_seconds = payload.duration_seconds
+
     progress = db.query(models.UserProgress).filter(
         models.UserProgress.user_id == current_user.id,
         models.UserProgress.module_id == video.module_id,
@@ -53,14 +57,17 @@ def update_progress(
 
     if payload.status == models.ModuleStatus.completed:
         progress.completed_at = func.now()
-        # Auto-issue completion certificate
-        cert = issue_if_not_exists(
-            user_id=current_user.id,
-            module_id=video.module_id,
-            org_id=current_user.organization_id,
-            db=db,
-        )
-        if cert and not cert.id:
-            db.flush()  # ensure cert gets its id before commit
+        # Auto-issue completion certificate (best-effort — don't fail the progress save)
+        try:
+            cert = issue_if_not_exists(
+                user_id=current_user.id,
+                module_id=video.module_id,
+                org_id=current_user.organization_id,
+                db=db,
+            )
+            if cert and not cert.id:
+                db.flush()  # ensure cert gets its id before commit
+        except Exception:
+            pass
 
     db.commit()

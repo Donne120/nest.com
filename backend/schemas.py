@@ -344,6 +344,7 @@ class DashboardStats(BaseModel):
 class ProgressUpdate(BaseModel):
     video_id: str
     progress_seconds: float
+    duration_seconds: Optional[int] = None   # real duration from player; saves to DB if video has 0
     status: Optional[ModuleStatus] = None
 
 

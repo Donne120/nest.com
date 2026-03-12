@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -85,7 +85,7 @@ def register_org(payload: schemas.RegisterOrgRequest, db: Session = Depends(get_
         slug=slug,
         plan=models.Plan.trial,
         subscription_status=models.SubscriptionStatus.active,
-        trial_ends_at=datetime.utcnow() + timedelta(days=14),
+        trial_ends_at=datetime.now(timezone.utc) + timedelta(days=14),
         is_active=True,
     )
     db.add(org)
@@ -123,7 +123,7 @@ def invite_info(token: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Invite not found")
     if invite.is_accepted:
         raise HTTPException(status_code=400, detail="Invite already used")
-    if invite.expires_at < datetime.utcnow():
+    if invite.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invite has expired")
     return schemas.InviteInfoOut(
         org_name=invite.organization.name,
@@ -142,7 +142,7 @@ def accept_invite(payload: schemas.AcceptInviteRequest, db: Session = Depends(ge
         raise HTTPException(status_code=404, detail="Invite not found")
     if invite.is_accepted:
         raise HTTPException(status_code=400, detail="Invite already used")
-    if invite.expires_at < datetime.utcnow():
+    if invite.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invite has expired")
     if db.query(models.User).filter(models.User.email == invite.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -178,7 +178,7 @@ def forgot_password(request: Request, payload: schemas.ForgotPasswordRequest, db
 
         reset_token = models.PasswordResetToken(
             user_id=user.id,
-            expires_at=datetime.utcnow() + timedelta(hours=1),
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
         )
         db.add(reset_token)
         db.commit()
@@ -196,7 +196,7 @@ def reset_password(payload: schemas.ResetPasswordRequest, db: Session = Depends(
         models.PasswordResetToken.token == payload.token,
     ).first()
 
-    if not record or record.used or record.expires_at < datetime.utcnow():
+    if not record or record.used or record.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invalid or expired reset token")
 
     user = db.query(models.User).filter(models.User.id == record.user_id).first()

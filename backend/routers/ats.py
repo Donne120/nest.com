@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from database import get_db
 import models
 import schemas
@@ -146,7 +146,7 @@ async def ats_webhook(org_slug: str, payload: dict, db: Session = Depends(get_db
         email=email,
         role=conn.default_role,
         invited_by=admin.id,
-        expires_at=datetime.utcnow() + timedelta(days=30),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=30),
     )
     db.add(invite)
     db.commit()
