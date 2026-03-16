@@ -55,7 +55,17 @@ def update_progress(
     elif progress.status == models.ModuleStatus.not_started:
         progress.status = models.ModuleStatus.in_progress
 
+    # Only honour a 'completed' status when the user has watched at least 80% of the video
+    min_watch_pct = 0.80
     if payload.status == models.ModuleStatus.completed:
+        actual_duration = video.duration_seconds or 0
+        watched = max(progress.progress_seconds, payload.progress_seconds)
+        if actual_duration > 0 and watched < actual_duration * min_watch_pct:
+            # Silently downgrade to in_progress — don't let client skip ahead
+            progress.status = models.ModuleStatus.in_progress
+            db.commit()
+            return
+
         progress.completed_at = func.now()
         # Auto-issue completion certificate (best-effort — don't fail the progress save)
         try:

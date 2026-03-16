@@ -131,16 +131,34 @@ def update_video(
     return _video_out(v, db)
 
 
+_VIDEO_MAX_BYTES = 500 * 1024 * 1024   # 500 MB
+_IMAGE_MAX_BYTES = 10 * 1024 * 1024    # 10 MB
+
+_ALLOWED_VIDEO_MIME = {"video/mp4", "video/webm", "video/ogg", "video/quicktime"}
+_ALLOWED_VIDEO_EXT = {".mp4", ".webm", ".ogg", ".mov"}
+_ALLOWED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp"}
+_ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp"}
+
+
+def _check_upload(data: bytes, filename: str, allowed_mime: set, allowed_ext: set, max_bytes: int, label: str):
+    import os
+    ext = os.path.splitext(filename.lower())[1]
+    if ext not in allowed_ext:
+        raise HTTPException(status_code=400, detail=f"Unsupported {label} extension: {ext}")
+    if len(data) > max_bytes:
+        raise HTTPException(status_code=413, detail=f"{label.capitalize()} exceeds maximum size of {max_bytes // (1024*1024)} MB")
+
+
 @router.post("/upload/video", status_code=201)
 async def upload_video_file(
     file: UploadFile = File(...),
     current_user: models.User = Depends(auth_utils.require_manager),
 ):
     """Upload a video file to Supabase Storage. Returns the signed URL."""
-    allowed = {"video/mp4", "video/webm", "video/ogg", "video/quicktime"}
-    if file.content_type not in allowed:
+    if file.content_type not in _ALLOWED_VIDEO_MIME:
         raise HTTPException(status_code=400, detail=f"Unsupported video type: {file.content_type}")
     data = await file.read()
+    _check_upload(data, file.filename or "video.mp4", _ALLOWED_VIDEO_MIME, _ALLOWED_VIDEO_EXT, _VIDEO_MAX_BYTES, "video")
     url = storage.upload_video(data, file.filename or "video.mp4", file.content_type)
     return {"url": url}
 
@@ -151,10 +169,10 @@ async def upload_thumbnail_file(
     current_user: models.User = Depends(auth_utils.require_manager),
 ):
     """Upload a thumbnail image to Supabase Storage. Returns the public URL."""
-    allowed = {"image/jpeg", "image/png", "image/webp"}
-    if file.content_type not in allowed:
+    if file.content_type not in _ALLOWED_IMAGE_MIME:
         raise HTTPException(status_code=400, detail=f"Unsupported image type: {file.content_type}")
     data = await file.read()
+    _check_upload(data, file.filename or "thumb.jpg", _ALLOWED_IMAGE_MIME, _ALLOWED_IMAGE_EXT, _IMAGE_MAX_BYTES, "image")
     url = storage.upload_thumbnail(data, file.filename or "thumb.jpg", file.content_type)
     return {"url": url}
 

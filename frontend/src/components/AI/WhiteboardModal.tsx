@@ -4,6 +4,7 @@ import { useUIStore } from '../../store';
 import { useQueryClient } from '@tanstack/react-query';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import DOMPurify from 'dompurify';
 
 interface Props {
   questionId: string;
@@ -86,7 +87,12 @@ export default function WhiteboardModal({ questionId, questionText, videoId }: P
   // Render full markdown+math when streaming completes
   useEffect(() => {
     if (isDone && streamedText) {
-      setRendered(renderToken(streamedText));
+      const raw = renderToken(streamedText);
+      const clean = DOMPurify.sanitize(raw, {
+        ALLOWED_TAGS: ['h1','h2','h3','p','strong','em','li','ul','ol','code','div','br','span'],
+        ALLOWED_ATTR: ['class'],
+      });
+      setRendered(clean);
       // Invalidate questions so AI answer appears in sidebar
       queryClient.invalidateQueries({ queryKey: ['questions', videoId] });
     }

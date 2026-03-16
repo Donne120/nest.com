@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./nest_fledge.db"
     SECRET_KEY: str = "dev-secret-key-change-in-production-32chars"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 hours — balance security vs UX
     CORS_ORIGINS: str = '["http://localhost:5173","http://localhost:3000"]'
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_MB: int = 500

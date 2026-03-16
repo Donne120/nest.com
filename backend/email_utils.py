@@ -5,6 +5,7 @@ If SMTP_HOST is not configured in .env, send() is a no-op and returns False.
 
 import smtplib
 import logging
+import html
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from config import settings
@@ -99,6 +100,8 @@ def _btn(url: str, label: str, color: str = "#2563eb") -> str:
 # ─── Invitation ────────────────────────────────────────────────────────────────
 
 def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
+    org_name = html.escape(org_name)
+    role = html.escape(role)
     subject = f"You're invited to join {org_name} on Nest"
     body = f"""
     <div style="padding:36px 40px;">
@@ -145,7 +148,9 @@ def send_password_reset(to: str, reset_url: str) -> bool:
 
 def send_welcome(to: str, admin_name: str, org_name: str, dashboard_url: str) -> bool:
     """Sent to the admin right after their organization is created."""
-    first = admin_name.split(" ")[0]
+    admin_name = html.escape(admin_name)
+    org_name = html.escape(org_name)
+    first = html.escape(admin_name.split(" ")[0])
     subject = f"Welcome to Nest, {first} — your workspace is ready"
     body = f"""
     <div style="padding:36px 40px;">
@@ -182,7 +187,9 @@ def send_welcome(to: str, admin_name: str, org_name: str, dashboard_url: str) ->
 
 def send_quiz_result(to: str, employee_name: str, video_title: str, passed: bool, score: float, max_score: int) -> bool:
     """Sent to employee after submitting a quiz."""
-    first = employee_name.split(" ")[0]
+    employee_name = html.escape(employee_name)
+    video_title = html.escape(video_title)
+    first = html.escape(employee_name.split(" ")[0])
     pct = round((score / max_score) * 100) if max_score > 0 else 0
     subject = f"{'Quiz passed!' if passed else 'Quiz result'} — {video_title}"
 
@@ -224,7 +231,11 @@ def send_meeting_request_to_manager(
     note: str | None, meetings_url: str
 ) -> bool:
     """Sent to each manager when an employee requests a 1-on-1."""
-    first = manager_name.split(" ")[0]
+    manager_name = html.escape(manager_name)
+    employee_name = html.escape(employee_name)
+    if note:
+        note = html.escape(note)
+    first = html.escape(manager_name.split(" ")[0])
     subject = f"{employee_name} requested a 1-on-1 meeting"
     note_block = (
         f"""<div style="margin:16px 0;padding:14px 16px;background:#f0f9ff;border-left:3px solid #38bdf8;border-radius:0 10px 10px 0;">
@@ -250,7 +261,9 @@ def send_meeting_request_to_manager(
 # ─── Meeting confirmed ─────────────────────────────────────────────────────────
 
 def send_meeting_confirmed(to: str, employee_name: str, confirmed_at: str, meeting_link: str) -> bool:
-    first = employee_name.split(" ")[0]
+    employee_name = html.escape(employee_name)
+    confirmed_at = html.escape(confirmed_at)
+    first = html.escape(employee_name.split(" ")[0])
     subject = "Your 1-on-1 meeting has been confirmed"
     body = f"""
     <div style="padding:36px 40px;">
@@ -286,7 +299,10 @@ def send_meeting_confirmed(to: str, employee_name: str, confirmed_at: str, meeti
 
 def send_meeting_declined(to: str, employee_name: str, reason: str | None, meetings_url: str) -> bool:
     """Sent to employee when their meeting request is declined."""
-    first = employee_name.split(" ")[0]
+    employee_name = html.escape(employee_name)
+    if reason:
+        reason = html.escape(reason)
+    first = html.escape(employee_name.split(" ")[0])
     subject = "Your meeting request was declined"
     reason_block = (
         f"""<div style="margin:16px 0;padding:14px 16px;background:#fef2f2;border-left:3px solid #fca5a5;border-radius:0 10px 10px 0;">

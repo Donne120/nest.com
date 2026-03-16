@@ -69,13 +69,14 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
 # ─── Company / Organisation registration ──────────────────────────────────────
 
 @router.post("/register-org", response_model=schemas.Token, status_code=201)
-def register_org(payload: schemas.RegisterOrgRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/hour")
+def register_org(request: Request, payload: schemas.RegisterOrgRequest, db: Session = Depends(get_db)):
     """
     Self-service company signup. Creates an Organization + first Admin user
     in a single transaction, then returns a login token (auto-login).
     """
     if db.query(models.User).filter(models.User.email == payload.email).first():
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Unable to create account with that email")
 
     base_slug = _generate_slug(payload.org_name)
     slug = _unique_slug(base_slug, db)
@@ -136,7 +137,8 @@ def invite_info(token: str, db: Session = Depends(get_db)):
 # ─── Accept invite ────────────────────────────────────────────────────────────
 
 @router.post("/accept-invite", response_model=schemas.Token, status_code=201)
-def accept_invite(payload: schemas.AcceptInviteRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def accept_invite(request: Request, payload: schemas.AcceptInviteRequest, db: Session = Depends(get_db)):
     invite = db.query(models.Invitation).filter(models.Invitation.token == payload.token).first()
     if not invite:
         raise HTTPException(status_code=404, detail="Invite not found")
@@ -145,7 +147,7 @@ def accept_invite(payload: schemas.AcceptInviteRequest, db: Session = Depends(ge
     if invite.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invite has expired")
     if db.query(models.User).filter(models.User.email == invite.email).first():
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Unable to complete registration")
 
     user = models.User(
         organization_id=invite.organization_id,
@@ -191,7 +193,8 @@ def forgot_password(request: Request, payload: schemas.ForgotPasswordRequest, db
 
 
 @router.post("/reset-password", status_code=200)
-def reset_password(payload: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def reset_password(request: Request, payload: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
     record = db.query(models.PasswordResetToken).filter(
         models.PasswordResetToken.token == payload.token,
     ).first()
