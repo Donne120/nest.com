@@ -84,7 +84,7 @@ export default function CertificatePage() {
 
           <div className="px-10 py-12 text-center relative">
             {/* Watermark */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
+            <div className="absolute inset-0 flex items-center justify-center opacity-[0.07] pointer-events-none select-none">
               <Award size={320} className="text-slate-900" />
             </div>
 
@@ -137,7 +137,7 @@ export default function CertificatePage() {
                 <Shield size={11} className="text-emerald-500" />
                 <span className="font-mono">{cert.cert_number}</span>
               </div>
-              <span>Verified · Nest Onboarding Platform</span>
+              <span>Verified · Nest Fledge</span>
             </div>
           </div>
 
@@ -149,16 +149,24 @@ export default function CertificatePage() {
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <LinkedInShareButton cert={cert} />
           <button
+            onClick={() => navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!'))}
+            className="inline-flex items-center gap-2 border border-white/20 text-white hover:text-white hover:border-white/40 text-sm px-5 py-2.5 rounded-xl transition-colors"
+            aria-label="Copy certificate link"
+          >
+            Copy Link
+          </button>
+          <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 border border-white/20 text-white/70 hover:text-white hover:border-white/40 text-sm px-5 py-2.5 rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 border border-white/20 text-white hover:text-white hover:border-white/40 text-sm px-5 py-2.5 rounded-xl transition-colors"
+            aria-label="Print or save certificate as PDF"
           >
             Print / Save as PDF
           </button>
         </div>
 
-        <p className="text-center text-white/30 text-xs mt-5">
+        <p className="text-center text-slate-400 text-xs mt-5">
           Powered by{' '}
-          <a href="/" className="text-white/50 hover:text-white/70 transition-colors">Nest Onboarding</a>
+          <a href="/" className="text-slate-300 hover:text-white transition-colors">Nest Fledge</a>
         </p>
       </div>
     </div>

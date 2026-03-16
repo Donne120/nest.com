@@ -37,9 +37,9 @@ export default function ModulesPage() {
     <div className="max-w-6xl mx-auto px-6 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Onboarding Modules</h1>
-        <p className="text-gray-500 mt-1">
-          Welcome, {user?.full_name?.split(' ')[0]}! Complete your onboarding journey below.
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Learning Modules</h1>
+        <p className="text-gray-500 dark:text-slate-400 mt-1">
+          Welcome, {user?.full_name?.split(' ')[0]}! Continue your flight path below.
         </p>
 
         {/* Progress summary */}
@@ -88,8 +88,15 @@ export default function ModulesPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
-          <BookOpen size={48} className="text-gray-200 mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">No modules found</p>
+          <BookOpen size={40} className="text-gray-200 dark:text-slate-600 mx-auto mb-4" />
+          {search ? (
+            <>
+              <p className="text-gray-500 dark:text-slate-400 font-medium">No modules match "{search}"</p>
+              <p className="text-gray-400 dark:text-slate-500 text-sm mt-1">Try a different search term</p>
+            </>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 font-medium">No modules available yet</p>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

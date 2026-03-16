@@ -43,17 +43,18 @@ export default function LoginPage() {
           <div className="w-14 h-14 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elevated">
             <span className="text-white font-bold text-2xl">N</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome to Nest</h1>
-          <p className="text-gray-500 mt-1 text-sm">Interactive Video Onboarding Platform</p>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome to Nest Fledge</h1>
+          <p className="text-gray-500 mt-1 text-sm">Where careers take flight</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-elevated border border-gray-100 p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Work Email
               </label>
               <input
+                id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -64,11 +65,12 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Password
               </label>
               <div className="relative">
                 <input
+                  id="password"
                   type={showPw ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -78,8 +80,9 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-700"
                 >
                   {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>

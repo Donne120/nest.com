@@ -15,7 +15,7 @@ from config import settings
 from database import engine
 from sqlalchemy import text
 import models
-from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats
+from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats, search
 from sqlalchemy import text
 import storage as storage_helper
 
@@ -50,14 +50,14 @@ async def lifespan(app: FastAPI):
     asyncio.get_event_loop().run_in_executor(None, _run_db_setup)
 
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    logger.info(f"Nest Onboarding API started — CORS origins: {settings.get_cors_origins()}")
+    logger.info(f"Nest Fledge API started — CORS origins: {settings.get_cors_origins()}")
     yield
     logger.info("Shutting down...")
 
 
 app = FastAPI(
-    title="Nest Interactive Onboarding API",
-    description="Production API for the Nest Interactive Video Onboarding Platform",
+    title="Nest Fledge API",
+    description="Production API for the Nest Fledge Platform",
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/api/docs",
@@ -93,11 +93,12 @@ app.include_router(ai_assist.router)
 app.include_router(transcription.router)
 app.include_router(certificates.router)
 app.include_router(ats.router)
+app.include_router(search.router)
 
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "version": "1.0.0", "service": "nest-onboarding"}
+    return {"status": "ok", "version": "1.0.0", "service": "nest-fledge"}
 
 
 if __name__ == "__main__":

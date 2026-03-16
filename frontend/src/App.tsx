@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store';
 import { useBrandColor } from './hooks/useBrandColor';
 import Navbar from './components/Layout/Navbar';
+import BottomNav from './components/Layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -61,9 +62,10 @@ function RequireManager({ children }: { children: ReactNode }) {
 
 function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 font-sans">
       <Navbar />
-      <main>{children}</main>
+      <main className="pb-16 md:pb-0">{children}</main>
+      <BottomNav />
     </div>
   );
 }

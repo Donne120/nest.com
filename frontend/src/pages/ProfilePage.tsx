@@ -57,7 +57,7 @@ export default function ProfilePage() {
 
   const previewName = name.trim() || (user?.full_name ?? '');
 
-  const inputCls = "w-full border border-gray-200 dark:border-slate-600 rounded-xl px-3.5 py-2.5 text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400";
+  const inputCls = "w-full border border-gray-200 dark:border-slate-600 rounded-xl px-3.5 py-2.5 text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400";
   const disabledInputCls = "w-full border border-gray-100 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-slate-500 cursor-not-allowed";
   const labelCls = "block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1.5";
   const cardCls = "bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 overflow-hidden";
@@ -109,18 +109,18 @@ export default function ProfilePage() {
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelCls}>Full name</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} required className={inputCls} />
+                <label htmlFor="full-name" className={labelCls}>Full name</label>
+                <input id="full-name" type="text" value={name} onChange={e => setName(e.target.value)} required className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Department</label>
-                <input type="text" value={department} onChange={e => setDepartment(e.target.value)} placeholder="e.g. Engineering" className={inputCls} />
+                <label htmlFor="department" className={labelCls}>Department</label>
+                <input id="department" type="text" value={department} onChange={e => setDepartment(e.target.value)} placeholder="e.g. Engineering" className={inputCls} />
               </div>
             </div>
 
             <div>
-              <label className={labelCls}>Avatar URL <span className="text-gray-400 dark:text-slate-500 font-normal">(optional)</span></label>
-              <input type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://..." className={inputCls} />
+              <label htmlFor="avatar-url" className={labelCls}>Avatar URL <span className="text-gray-400 dark:text-slate-500 font-normal">(optional)</span></label>
+              <input id="avatar-url" type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://..." className={inputCls} />
             </div>
 
             {/* Read-only fields */}
@@ -139,7 +139,7 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={saveProfile.isPending}
-                className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                className="bg-brand-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saveProfile.isPending ? 'Saving...' : 'Save changes'}
               </button>
@@ -157,18 +157,24 @@ export default function ProfilePage() {
 
         <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
           <div>
-            <label className={labelCls}>Current password</label>
-            <input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} required placeholder="••••••••" className={inputCls} />
+            <label htmlFor="current-pw" className={labelCls}>Current password</label>
+            <input id="current-pw" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} required placeholder="••••••••" className={inputCls} />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>New password</label>
-              <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} required minLength={8} placeholder="At least 8 characters" className={inputCls} />
+              <label htmlFor="new-pw" className={labelCls}>New password</label>
+              <input id="new-pw" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} required minLength={8} placeholder="At least 8 characters" className={inputCls} />
+              {newPw.length > 0 && newPw.length < 8 && (
+                <p className="text-xs text-red-500 mt-1">Password must be at least 8 characters</p>
+              )}
             </div>
             <div>
-              <label className={labelCls}>Confirm new password</label>
-              <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} required placeholder="Same as above" className={inputCls} />
+              <label htmlFor="confirm-pw" className={labelCls}>Confirm new password</label>
+              <input id="confirm-pw" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} required placeholder="Same as above" className={inputCls} />
+              {confirmPw.length > 0 && confirmPw !== newPw && (
+                <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+              )}
             </div>
           </div>
 
@@ -176,7 +182,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={changePassword.isPending}
-              className="bg-gray-900 dark:bg-slate-600 dark:hover:bg-slate-500 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60"
+              className="bg-gray-900 dark:bg-slate-600 dark:hover:bg-slate-500 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {changePassword.isPending ? 'Updating...' : 'Update password'}
             </button>

@@ -137,7 +137,7 @@ export default function AdminDashboard() {
       ) : null}
 
       {/* ─── Main grid ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-5">
 
         {/* Pending questions queue */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 flex flex-col">

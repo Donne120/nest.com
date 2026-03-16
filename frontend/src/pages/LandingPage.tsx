@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import {
   PlayCircle, BarChart3, Users, MessageSquare,
   Check, ArrowRight, Zap, Shield, Globe,
-  ChevronRight,
+  ChevronRight, Upload, BookOpen, Trophy,
 } from 'lucide-react';
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -48,19 +48,19 @@ function LandingNav() {
 function Hero() {
   return (
     <section className="pt-32 pb-20 px-6 text-center bg-gradient-to-b from-brand-50/60 via-white to-white">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-200 text-brand-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
           <Zap size={12} className="fill-brand-600 text-brand-600" />
           14-day free trial · No credit card required
         </div>
 
         <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-[1.1] tracking-tight mb-6">
-          Onboard your team with{' '}
+          Help your team take flight with{' '}
           <span className="text-brand-600">interactive video</span>
         </h1>
 
         <p className="text-lg text-gray-500 max-w-xl mx-auto mb-8 leading-relaxed">
-          Nest turns your onboarding videos into engaging, quiz-driven learning journeys.
+          Nest Fledge turns your training videos into engaging, quiz-driven learning journeys.
           Track progress, collect questions, and give every new hire a great first week.
         </p>
 
@@ -80,7 +80,7 @@ function Hero() {
         </div>
 
         {/* Mock dashboard preview */}
-        <div className="relative mx-auto max-w-4xl">
+        <div className="relative mx-auto max-w-5xl">
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
             {/* Fake browser bar */}
             <div className="bg-gray-100 px-4 py-3 flex items-center gap-2 border-b border-gray-200">
@@ -91,34 +91,43 @@ function Hero() {
                 app.nestapp.com/modules
               </div>
             </div>
-            {/* Fake content grid */}
-            <div className="p-6 bg-gray-50/50">
+            {/* Real content grid */}
+            <div className="p-8 bg-gray-50/50">
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <div className="h-5 w-40 bg-gray-200 rounded-md mb-1.5" />
-                  <div className="h-3 w-24 bg-gray-100 rounded-md" />
+                  <p className="text-sm font-semibold text-gray-800">Learning Modules</p>
+                  <p className="text-xs text-gray-400 mt-0.5">3 modules · 2 in progress</p>
                 </div>
-                <div className="h-8 w-28 bg-brand-600 rounded-xl" />
+                <div className="h-8 w-28 bg-brand-600 rounded-xl flex items-center justify-center">
+                  <span className="text-white text-xs font-semibold">+ New Module</span>
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                {['Welcome & Culture', 'Tools & Systems', 'Security'].map((title, i) => (
+              <div className="grid grid-cols-3 gap-5">
+                {[
+                  { src: '/preview-1.mp4', title: 'Welcome & Culture',  progress: 100, pct: 'w-full',   label: '100%', bar: 'bg-brand-500' },
+                  { src: '/preview-2.mp4', title: 'Tools & Systems',    progress:  66, pct: 'w-2/3',    label: '66%',  bar: 'bg-brand-400' },
+                  { src: '/preview-3.mp4', title: 'Security & Access',  progress:   0, pct: 'w-0',      label: '0%',   bar: 'bg-gray-300'  },
+                ].map(({ src, title, pct, label, bar }) => (
                   <div key={title} className="bg-white rounded-xl border border-gray-200 p-4">
-                    <div className={`w-full aspect-video rounded-lg mb-3 flex items-center justify-center ${
-                      i === 0 ? 'bg-brand-100' : i === 1 ? 'bg-blue-50' : 'bg-purple-50'
-                    }`}>
-                      <PlayCircle size={28} className={
-                        i === 0 ? 'text-brand-400' : i === 1 ? 'text-blue-400' : 'text-purple-400'
-                      } />
-                    </div>
-                    <div className="h-3.5 w-3/4 bg-gray-200 rounded mb-1.5" />
-                    <div className="h-2.5 w-1/2 bg-gray-100 rounded mb-3" />
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 flex-1 bg-gray-100 rounded-full">
-                        <div className={`h-1.5 rounded-full ${
-                          i === 0 ? 'bg-brand-500 w-full' : i === 1 ? 'bg-brand-400 w-2/3' : 'bg-gray-300 w-0'
-                        }`} />
+                    <div className="w-full aspect-video rounded-lg mb-4 overflow-hidden bg-gray-900 relative group">
+                      <video
+                        src={src}
+                        className="w-full h-full object-cover opacity-90"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <PlayCircle size={32} className="text-white drop-shadow" />
                       </div>
-                      <span className="text-xs text-gray-400">{i === 0 ? '100%' : i === 1 ? '66%' : '0%'}</span>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800 truncate mb-2">{title}</p>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 flex-1 bg-gray-100 rounded-full">
+                        <div className={`h-2 rounded-full ${bar} ${pct}`} />
+                      </div>
+                      <span className="text-xs text-gray-400 tabular-nums font-medium">{label}</span>
                     </div>
                   </div>
                 ))}
@@ -185,10 +194,10 @@ function Features() {
         <div className="text-center mb-14">
           <p className="text-brand-600 font-semibold text-sm mb-3 uppercase tracking-widest">Features</p>
           <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-            Everything you need to onboard well
+            Everything your team needs to grow
           </h2>
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
-            Built for HR teams and managers who want onboarding that actually sticks.
+            Built for HR teams and managers who want learning that actually sticks.
           </p>
         </div>
 
@@ -213,13 +222,13 @@ const plans = [
     name: 'Starter',
     price: '$29',
     period: '/month',
-    description: 'Perfect for small teams getting started with structured onboarding.',
+    description: 'Perfect for small teams getting started with structured learning.',
     cta: 'Start free trial',
     ctaTo: '/signup',
     highlighted: false,
     features: [
       'Up to 15 employees',
-      '5 onboarding modules',
+      '5 learning modules',
       'Unlimited videos per module',
       'Quiz engine',
       'Q&A on videos',
@@ -359,7 +368,7 @@ function CtaBanner() {
       <div className="max-w-3xl mx-auto text-center">
         <Globe size={36} className="text-brand-300 mx-auto mb-4" />
         <h2 className="text-4xl font-extrabold text-white tracking-tight mb-4">
-          Ready to transform your onboarding?
+          Ready to help your team take flight?
         </h2>
         <p className="text-brand-200 text-lg mb-8">
           Join companies that use Nest to give every new hire a great first week.
@@ -392,7 +401,7 @@ function Footer() {
             <span className="text-white font-bold text-xs">N</span>
           </div>
           <span className="font-semibold text-white">Nest</span>
-          <span className="text-gray-600 text-sm">Interactive Video Onboarding</span>
+          <span className="text-gray-600 text-sm">Where careers take flight</span>
         </div>
         <div className="flex items-center gap-6 text-sm">
           <a href="#features" className="hover:text-white transition-colors">Features</a>
@@ -404,9 +413,75 @@ function Footer() {
         </div>
       </div>
       <div className="max-w-6xl mx-auto mt-8 pt-6 border-t border-gray-800 text-xs text-gray-600 text-center">
-        &copy; {new Date().getFullYear()} Nest Onboarding Platform. All rights reserved.
+        &copy; {new Date().getFullYear()} Nest Fledge. All rights reserved.
       </div>
     </footer>
+  );
+}
+
+// ── How it works ──────────────────────────────────────────────────────────────
+
+function HowItWorks() {
+  const steps = [
+    {
+      icon: Upload,
+      color: 'bg-brand-50 text-brand-600',
+      step: '01',
+      title: 'Upload your videos',
+      description: 'Bring your existing training content — YouTube links or direct uploads. Nest Fledge organises them into modules automatically.',
+    },
+    {
+      icon: BookOpen,
+      color: 'bg-blue-50 text-blue-600',
+      step: '02',
+      title: 'Employees learn on their own flight path',
+      description: 'Each hire follows a personalised learning journey. Quizzes, Q&A, and an AI tutor keep them engaged far beyond the first week.',
+    },
+    {
+      icon: Trophy,
+      color: 'bg-amber-50 text-amber-600',
+      step: '03',
+      title: 'Track, certify, and grow',
+      description: 'Managers see real-time progress, answer questions in context, and issue certificates. Spot blockers before they become problems.',
+    },
+  ];
+
+  return (
+    <section className="py-20 px-6 bg-gray-50">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-14">
+          <p className="text-brand-600 font-semibold text-sm mb-3 uppercase tracking-widest">How it works</p>
+          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+            From upload to fledged — in minutes
+          </h2>
+          <p className="text-gray-500 text-lg max-w-xl mx-auto">
+            No complex setup. No new habits to force on your team. Just paste your videos and go.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {steps.map(({ icon: Icon, color, step, title, description }) => (
+            <div key={step} className="relative">
+              <div className="flex items-start gap-4">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${color}`}>
+                  <Icon size={22} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-300 mb-1 tracking-widest">{step}</p>
+                  <h3 className="font-bold text-gray-900 mb-2 leading-snug">{title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+                </div>
+              </div>
+              {step !== '03' && (
+                <div className="hidden md:block absolute top-6 left-full w-8 -translate-x-4">
+                  <ArrowRight size={16} className="text-gray-300" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -417,6 +492,7 @@ export default function LandingPage() {
     <div className="font-sans">
       <LandingNav />
       <Hero />
+      <HowItWorks />
       <Features />
       <Pricing />
       <CtaBanner />

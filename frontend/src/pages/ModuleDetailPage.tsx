@@ -119,7 +119,7 @@ export default function ModuleDetailPage() {
   const totalQuizzes = 31; // enriched from seed; fallback for display
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
 
       {/* ═══════════════════════════════════════════════════════════════
           HERO
@@ -160,8 +160,8 @@ export default function ModuleDetailPage() {
           {/* Status pill */}
           <div className="mb-3">
             {status === 'not_started' && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/40 border border-white/10 rounded-full px-3 py-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-slate-400 border border-white/10 rounded-full px-3 py-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
                 Not Started
               </span>
             )}
@@ -185,7 +185,7 @@ export default function ModuleDetailPage() {
           </h1>
 
           {/* Stats row */}
-          <div className="flex items-center flex-wrap gap-x-5 gap-y-2 mt-5 text-sm text-white/55">
+          <div className="flex items-center flex-wrap gap-x-5 gap-y-2 mt-5 text-sm text-slate-300">
             <span className="flex items-center gap-1.5">
               <Clock size={13} className="text-indigo-400" />
               {fmt(module.duration_seconds)}
@@ -215,7 +215,7 @@ export default function ModuleDetailPage() {
             <button
               onClick={() => firstVideo && navigate(`/video/${firstVideo}`)}
               disabled={!firstVideo}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-900/40 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-brand-900/40 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Play size={15} fill="currentColor" />
               {ctaLabel}
@@ -242,16 +242,16 @@ export default function ModuleDetailPage() {
 
             {/* What You'll Learn */}
             {learnItems.length > 0 && (
-              <section className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-sm">
-                <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <BookOpen size={16} className="text-indigo-500" />
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-base font-bold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                  <BookOpen size={16} className="text-brand-500" />
                   What You'll Learn
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {learnItems.map((item, i) => (
                     <div key={i} className="flex items-start gap-2.5">
-                      <CheckCircle2 size={15} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-gray-700 leading-snug">{item}</p>
+                      <CheckCircle2 size={15} className="text-brand-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-slate-300 leading-snug">{item}</p>
                     </div>
                   ))}
                 </div>
@@ -260,8 +260,8 @@ export default function ModuleDetailPage() {
 
             {/* About */}
             {module.description && (
-              <section className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-sm">
-                <h2 className="text-base font-bold text-gray-900 mb-4">About This Course</h2>
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-base font-bold text-gray-900 dark:text-slate-100 mb-4">About This Course</h2>
                 <div
                   className="prose prose-sm prose-gray max-w-none
                     prose-h2:text-base prose-h2:font-bold prose-h2:text-gray-800 prose-h2:mt-5 prose-h2:mb-2
@@ -274,17 +274,17 @@ export default function ModuleDetailPage() {
             )}
 
             {/* Curriculum */}
-            <section className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-base font-bold text-gray-900">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <h2 className="text-base font-bold text-gray-900 dark:text-slate-100">
                   Course Curriculum
                 </h2>
-                <span className="text-xs text-gray-400 font-medium">
+                <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">
                   {videos.length} lessons · {fmt(module.duration_seconds)} total
                 </span>
               </div>
 
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-gray-50 dark:divide-slate-700/50">
                 {videos.map((video, idx) => (
                   <LessonRow
                     key={video.id}
@@ -301,7 +301,7 @@ export default function ModuleDetailPage() {
           <div className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-6 space-y-4">
 
             {/* Progress card */}
-            <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
 
               {/* Progress ring area */}
               <div className="bg-gradient-to-br from-slate-900 to-indigo-950 px-6 pt-7 pb-6 flex flex-col items-center text-center">
@@ -309,10 +309,10 @@ export default function ModuleDetailPage() {
                   <ProgressRing pct={pct} />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-xl font-extrabold text-white leading-none">{pct}%</span>
-                    <span className="text-[10px] text-white/40 mt-0.5 font-medium uppercase tracking-wide">done</span>
+                    <span className="text-[10px] text-slate-400 mt-0.5 font-medium uppercase tracking-wide">done</span>
                   </div>
                 </div>
-                <p className="text-white/60 text-xs mt-3 font-medium">
+                <p className="text-slate-300 text-xs mt-3 font-medium">
                   {pct === 0 ? 'Ready to start' : pct === 100 ? 'Course completed!' : `${fmt(module.progress_seconds ?? 0)} watched`}
                 </p>
               </div>
@@ -322,7 +322,7 @@ export default function ModuleDetailPage() {
                 <button
                   onClick={() => firstVideo && navigate(`/video/${firstVideo}`)}
                   disabled={!firstVideo}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm shadow shadow-indigo-200 transition-all hover:shadow-md disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl text-sm shadow shadow-brand-200 transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Play size={14} fill="currentColor" />
                   {ctaLabel}
@@ -341,13 +341,13 @@ export default function ModuleDetailPage() {
               </div>
 
               {/* Divider */}
-              <div className="mx-5 border-t border-gray-100 mb-4" />
+              <div className="mx-5 border-t border-gray-100 dark:border-slate-700 mb-4" />
 
               {/* Book 1-on-1 */}
-              <div className="px-5 pb-5">
+              <div className="px-5 pb-5 dark:bg-slate-800">
                 <button
                   onClick={() => setShowMeetingModal(true)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 font-medium rounded-xl text-sm transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 border border-brand-200 text-brand-600 bg-brand-50 hover:bg-brand-100 font-medium rounded-xl text-sm transition-colors"
                 >
                   <VideoIcon size={13} />
                   Book a 1-on-1 with trainer
@@ -357,8 +357,8 @@ export default function ModuleDetailPage() {
 
             {/* Resources */}
             {hasResources && (
-              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-3">Resources</h3>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-sm p-5">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 mb-3">Resources</h3>
                 <div className="space-y-2">
                   {module.resources!.map((r) => {
                     const Icon = RESOURCE_ICON[r.type] ?? Globe;
@@ -375,12 +375,12 @@ export default function ModuleDetailPage() {
                           <Icon size={12} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-700 truncate group-hover:text-indigo-700 transition-colors">
+                          <p className="text-xs font-medium text-gray-700 truncate group-hover:text-brand-700 transition-colors">
                             {r.title || r.url}
                           </p>
                           <p className="text-[10px] text-gray-400 capitalize">{r.type}</p>
                         </div>
-                        <ExternalLink size={11} className="text-gray-300 group-hover:text-indigo-400 transition-colors flex-shrink-0" />
+                        <ExternalLink size={11} className="text-gray-300 group-hover:text-brand-400 transition-colors flex-shrink-0" />
                       </a>
                     );
                   })}
@@ -408,30 +408,30 @@ function LessonRow({ video, index, onClick }: { video: Video; index: number; onC
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-indigo-50/50 group transition-colors relative"
+      className="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-brand-50/50 dark:hover:bg-brand-900/10 group transition-colors relative"
     >
       {/* Active left accent */}
-      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 scale-y-0 group-hover:scale-y-100 transition-transform origin-center rounded-r" />
+      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-brand-500 scale-y-0 group-hover:scale-y-100 transition-transform origin-center rounded-r" />
 
       {/* Lesson number */}
       <div className="flex-shrink-0 w-9 text-center">
-        <span className="text-sm font-bold text-gray-300 group-hover:text-indigo-400 transition-colors tabular-nums">
+        <span className="text-sm font-bold text-gray-300 group-hover:text-brand-400 transition-colors tabular-nums">
           {String(index + 1).padStart(2, '0')}
         </span>
       </div>
 
       {/* Play circle */}
-      <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center transition-colors">
-        <Play size={13} className="text-gray-400 group-hover:text-indigo-600 transition-colors ml-0.5" fill="currentColor" />
+      <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-100 group-hover:bg-brand-100 flex items-center justify-center transition-colors">
+        <Play size={13} className="text-gray-400 group-hover:text-brand-600 transition-colors ml-0.5" fill="currentColor" />
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-800 group-hover:text-indigo-800 truncate transition-colors leading-snug">
+        <p className="text-sm font-semibold text-gray-800 dark:text-slate-200 group-hover:text-brand-800 dark:group-hover:text-brand-300 truncate transition-colors leading-snug">
           {video.title}
         </p>
         {video.description && (
-          <p className="text-xs text-gray-400 line-clamp-1 mt-0.5 leading-snug">
+          <p className="text-xs text-gray-400 dark:text-slate-500 line-clamp-1 mt-0.5 leading-snug">
             {video.description}
           </p>
         )}
@@ -445,10 +445,10 @@ function LessonRow({ video, index, onClick }: { video: Video; index: number; onC
             {video.question_count}
           </span>
         )}
-        <span className="text-xs text-gray-400 font-medium tabular-nums w-10 text-right">
+        <span className="text-xs text-gray-400 dark:text-slate-500 font-medium tabular-nums w-10 text-right">
           {fmt(video.duration_seconds)}
         </span>
-        <ChevronRight size={13} className="text-gray-300 group-hover:text-indigo-400 transition-colors" />
+        <ChevronRight size={13} className="text-gray-300 group-hover:text-brand-400 transition-colors" />
       </div>
     </button>
   );
@@ -459,8 +459,8 @@ function StatRow({ icon, label, sub }: { icon: ReactNode; label: string; sub: st
     <div className="flex items-center gap-3">
       <div className="w-6 flex-shrink-0 flex justify-center">{icon}</div>
       <div className="flex-1 min-w-0">
-        <span className="text-sm font-semibold text-gray-800">{label}</span>
-        <span className="text-xs text-gray-400 ml-1.5">{sub}</span>
+        <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{label}</span>
+        <span className="text-xs text-gray-400 dark:text-slate-500 ml-1.5">{sub}</span>
       </div>
     </div>
   );

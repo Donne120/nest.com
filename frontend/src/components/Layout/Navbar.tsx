@@ -1,22 +1,25 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, BookOpen, LayoutDashboard, Video, UserCircle } from 'lucide-react';
-import { useAuthStore } from '../../store';
+import { Bell, LogOut, BookOpen, LayoutDashboard, Video, UserCircle, Search } from 'lucide-react';
+import { useAuthStore, useNotifStore } from '../../store';
 import { useBrandColor } from '../../hooks/useBrandColor';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
 import type { Notification } from '../../types';
 import Avatar from '../UI/Avatar';
 import NestLogo from '../UI/NestLogo';
+import SearchModal from '../Search/SearchModal';
 import { useState, useRef, useEffect } from 'react';
 import clsx from 'clsx';
 
 export default function Navbar() {
   const { user, organization, clearAuth } = useAuthStore();
+  const { lastKnownUnread, setLastKnownUnread } = useNotifStore();
   useBrandColor();
   const navigate = useNavigate();
   const location = useLocation();
   const [notifOpen, setNotifOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -38,6 +41,25 @@ export default function Navbar() {
 
   const unread = notifications.filter(n => !n.is_read).length;
 
+  // Persist unread count so the badge shows instantly on page load
+  useEffect(() => {
+    if (notifications.length > 0) setLastKnownUnread(unread);
+  }, [unread, notifications.length, setLastKnownUnread]);
+
+  const displayUnread = notifications.length > 0 ? unread : lastKnownUnread;
+
+  // Cmd+K / Ctrl+K to open search
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(o => !o);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   const markAllRead = useMutation({
     mutationFn: () => api.put('/analytics/notifications/read-all'),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
@@ -52,6 +74,7 @@ export default function Navbar() {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
+    <>
     <header className="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 flex items-center px-3 sm:px-6 gap-2 sm:gap-4 z-40 relative">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 mr-2 sm:mr-4 flex-shrink-0">
@@ -68,7 +91,7 @@ export default function Navbar() {
           />
         )}
         <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm hidden sm:block">
-          {organization?.name ?? 'Nest Onboarding'}
+          {organization?.name ?? 'Nest Fledge'}
         </span>
       </Link>
 
@@ -117,17 +140,37 @@ export default function Navbar() {
       </nav>
 
       <div className="ml-auto flex items-center gap-2">
+        {/* Search */}
+        <button
+          onClick={() => setSearchOpen(true)}
+          aria-label="Search (Ctrl+K)"
+          className="hidden sm:flex items-center gap-2 text-sm text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 transition-colors"
+        >
+          <Search size={13} />
+          <span className="text-xs">Search</span>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded px-1">⌘K</kbd>
+        </button>
+        <button
+          onClick={() => setSearchOpen(true)}
+          aria-label="Search"
+          className="sm:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+        >
+          <Search size={18} />
+        </button>
+
         {/* Notifications */}
         <div className="relative">
           <button
             onClick={() => { setNotifOpen(!notifOpen); if (unread > 0) markAllRead.mutate(); }}
-            className="relative p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-            aria-label="Notifications"
+            onKeyDown={(e) => { if (e.key === 'Escape') setNotifOpen(false); }}
+            className="relative p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+            aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ''}`}
+            aria-expanded={notifOpen}
           >
             <Bell size={18} />
-            {unread > 0 && (
+            {displayUnread > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                {unread > 9 ? '9+' : unread}
+                {displayUnread > 9 ? '9+' : displayUnread}
               </span>
             )}
           </button>
@@ -171,7 +214,10 @@ export default function Navbar() {
         <div className="relative pl-2 border-l border-gray-200 dark:border-slate-700" ref={userMenuRef}>
           <button
             onClick={() => setUserMenuOpen(o => !o)}
-            className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg px-2 py-1.5 transition-colors"
+            onKeyDown={(e) => { if (e.key === 'Escape') setUserMenuOpen(false); if (e.key === 'ArrowDown') setUserMenuOpen(true); }}
+            aria-label="User menu"
+            aria-expanded={userMenuOpen}
+            className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
           >
             <Avatar name={user?.full_name ?? 'U'} url={user?.avatar_url} size="sm" />
             <span className="text-sm font-medium text-gray-700 dark:text-slate-200 hidden sm:block">{user?.full_name}</span>
@@ -205,5 +251,8 @@ export default function Navbar() {
         </div>
       </div>
     </header>
+
+    <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+  </>
   );
 }

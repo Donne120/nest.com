@@ -2,6 +2,23 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, Organization } from '../types';
 
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+interface NotifState {
+  lastKnownUnread: number;
+  setLastKnownUnread: (n: number) => void;
+}
+
+export const useNotifStore = create<NotifState>()(
+  persist(
+    (set) => ({
+      lastKnownUnread: 0,
+      setLastKnownUnread: (n) => set({ lastKnownUnread: n }),
+    }),
+    { name: 'nest_notif' }
+  )
+);
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 interface AuthState {

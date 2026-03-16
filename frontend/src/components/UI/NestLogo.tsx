@@ -27,7 +27,7 @@ export default function NestLogo({ size = 28, showText = true, textClassName = '
       </svg>
       {showText && (
         <span className={textClassName || 'font-semibold text-gray-900 dark:text-slate-100 text-sm'}>
-          Nest Onboarding
+          Nest Fledge
         </span>
       )}
     </span>
