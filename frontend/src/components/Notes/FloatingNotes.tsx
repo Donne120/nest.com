@@ -25,9 +25,10 @@ function fmt(secs: number) {
 interface Props {
   videoId: string;
   onSeek: (t: number) => void;
+  inline?: boolean;
 }
 
-export default function FloatingNotes({ videoId, onSeek }: Props) {
+export default function FloatingNotes({ videoId, onSeek, inline }: Props) {
   const qc = useQueryClient();
   const { currentTime } = usePlayerStore();
   const [open, setOpen] = useState(false);
@@ -103,7 +104,7 @@ export default function FloatingNotes({ videoId, onSeek }: Props) {
   };
 
   return (
-    <div ref={panelRef} className="absolute top-3 left-3 z-30">
+    <div ref={panelRef} className={inline ? 'relative' : 'absolute top-3 left-3 z-30'}>
       {/* Trigger button */}
       <button
         onClick={() => setOpen(v => !v)}

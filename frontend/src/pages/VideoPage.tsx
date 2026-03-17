@@ -176,7 +176,7 @@ export default function VideoPage() {
           </nav>
 
           {/* Video player */}
-          <div className="max-w-4xl mx-auto relative">
+          <div className="max-w-4xl mx-auto">
             <VideoPlayer
               videoUrl={video.video_url}
               markers={markers}
@@ -184,7 +184,6 @@ export default function VideoPage() {
               onTimeUpdate={handleTimeUpdate}
               onVideoEnd={handleVideoEnd}
             />
-            <FloatingNotes videoId={video.id} onSeek={seekTo} />
           </div>
 
           {/* Video info */}
@@ -196,6 +195,7 @@ export default function VideoPage() {
               )}
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
+              <FloatingNotes videoId={video.id} onSeek={seekTo} inline />
               {quizQuestions.length > 0 && (
                 <button
                   onClick={() => setShowQuiz(true)}

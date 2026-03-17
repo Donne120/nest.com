@@ -41,14 +41,12 @@ export default function Navbar() {
 
   const unread = notifications.filter(n => !n.is_read).length;
 
-  // Persist unread count so the badge shows instantly on page load
   useEffect(() => {
     if (notifications.length > 0) setLastKnownUnread(unread);
   }, [unread, notifications.length, setLastKnownUnread]);
 
   const displayUnread = notifications.length > 0 ? unread : lastKnownUnread;
 
-  // Cmd+K / Ctrl+K to open search
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -75,9 +73,14 @@ export default function Navbar() {
 
   return (
     <>
-    <header className="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 flex items-center px-3 sm:px-6 gap-2 sm:gap-4 z-40 relative">
+    <header className={clsx(
+      'h-14 flex items-center px-3 sm:px-5 gap-2 sm:gap-4 z-40 relative',
+      'bg-[#FFFCF8] dark:bg-slate-900',
+      'border-b border-[#E8DDD0] dark:border-slate-700/60',
+      'shadow-[0_1px_0_rgba(80,40,10,0.06)]'
+    )}>
       {/* Logo */}
-      <Link to="/" className="flex items-center gap-2 mr-2 sm:mr-4 flex-shrink-0">
+      <Link to="/" className="flex items-center gap-2 mr-1 sm:mr-3 flex-shrink-0 group">
         {organization?.logo_url ? (
           <img
             src={organization.logo_url}
@@ -85,77 +88,64 @@ export default function Navbar() {
             className="h-7 w-auto object-contain max-w-[120px]"
           />
         ) : (
-          <NestLogo
-            size={28}
-            showText={false}
-          />
+          <NestLogo size={28} showText={false} />
         )}
-        <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm hidden sm:block">
+        <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm hidden sm:block tracking-tight">
           {organization?.name ?? 'Nest Fledge'}
         </span>
       </Link>
 
       {/* Nav links */}
-      <nav className="flex items-center gap-0.5 sm:gap-1">
-        <Link
+      <nav className="flex items-center gap-0.5">
+        <NavLink
           to="/modules"
-          className={clsx(
-            'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-            isActive('/modules') || isActive('/video')
-              ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
-              : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
-          )}
-        >
-          <BookOpen size={15} />
-          <span className="hidden xs:inline sm:inline">Modules</span>
-        </Link>
+          active={isActive('/modules') || isActive('/video')}
+          icon={<BookOpen size={14} />}
+          label="Modules"
+        />
         {!isManager && (
-          <Link
+          <NavLink
             to="/meetings"
-            className={clsx(
-              'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-              isActive('/meetings')
-                ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
-                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
-            )}
-          >
-            <Video size={15} />
-            <span className="hidden sm:inline">Meetings</span>
-          </Link>
+            active={isActive('/meetings')}
+            icon={<Video size={14} />}
+            label="Meetings"
+          />
         )}
         {isManager && (
-          <Link
+          <NavLink
             to="/admin"
-            className={clsx(
-              'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-              isActive('/admin')
-                ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
-                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
-            )}
-          >
-            <LayoutDashboard size={15} />
-            <span className="hidden sm:inline">Admin</span>
-          </Link>
+            active={isActive('/admin')}
+            icon={<LayoutDashboard size={14} />}
+            label="Admin"
+          />
         )}
       </nav>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-1.5">
         {/* Search */}
         <button
           onClick={() => setSearchOpen(true)}
           aria-label="Search (Ctrl+K)"
-          className="hidden sm:flex items-center gap-2 text-sm text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 transition-colors"
+          className={clsx(
+            'hidden sm:flex items-center gap-2 text-sm',
+            'text-[#9C8B7A] dark:text-slate-500',
+            'bg-[#F5EFE7] dark:bg-slate-800/80',
+            'hover:bg-[#EDE4D9] dark:hover:bg-slate-700',
+            'border border-[#DDD4C8] dark:border-slate-700',
+            'rounded-xl px-3 py-1.5 transition-all duration-150',
+            'hover:border-[#C8B9AA] dark:hover:border-slate-600'
+          )}
         >
-          <Search size={13} />
-          <span className="text-xs">Search</span>
-          <kbd className="text-[10px] font-mono bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded px-1">⌘K</kbd>
+          <Search size={13} className="text-gray-400" />
+          <span className="text-xs text-gray-400">Search</span>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-md px-1.5 py-0.5 text-gray-400">⌘K</kbd>
         </button>
         <button
           onClick={() => setSearchOpen(true)}
           aria-label="Search"
-          className="sm:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          className="sm:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
         >
-          <Search size={18} />
+          <Search size={17} />
         </button>
 
         {/* Notifications */}
@@ -163,33 +153,46 @@ export default function Navbar() {
           <button
             onClick={() => { setNotifOpen(!notifOpen); if (unread > 0) markAllRead.mutate(); }}
             onKeyDown={(e) => { if (e.key === 'Escape') setNotifOpen(false); }}
-            className="relative p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+            className={clsx(
+              'relative p-2 rounded-xl transition-all duration-150',
+              'text-gray-500 dark:text-slate-400',
+              'hover:text-gray-700 dark:hover:text-slate-200',
+              'hover:bg-gray-100 dark:hover:bg-slate-800',
+              'focus:outline-none focus:ring-2 focus:ring-brand-500/50'
+            )}
             aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ''}`}
             aria-expanded={notifOpen}
           >
-            <Bell size={18} />
+            <Bell size={17} />
             {displayUnread > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute top-1.5 right-1.5 w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
                 {displayUnread > 9 ? '9+' : displayUnread}
               </span>
             )}
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-10 w-[calc(100vw-1rem)] max-w-xs sm:w-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-modal z-50 overflow-hidden animate-fade-in">
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
-                <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm">Notifications</h3>
+            <div className={clsx(
+              'absolute right-0 top-11 z-50 overflow-hidden animate-scale-in',
+              'w-[calc(100vw-1rem)] max-w-xs sm:w-80',
+              'bg-white/95 dark:bg-slate-800/95 backdrop-blur-md',
+              'border border-gray-200/80 dark:border-slate-700/60',
+              'rounded-2xl shadow-modal'
+            )}>
+              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700/60">
+                <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm tracking-tight">Notifications</h3>
               </div>
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-slate-400 p-4 text-center">No notifications</p>
+                  <p className="text-sm text-gray-400 dark:text-slate-500 p-6 text-center">No notifications yet</p>
                 ) : (
                   notifications.slice(0, 10).map((n) => (
                     <div
                       key={n.id}
                       className={clsx(
-                        'px-4 py-3 border-b border-gray-50 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer transition-colors',
-                        !n.is_read && 'bg-blue-50/40 dark:bg-blue-900/20'
+                        'px-4 py-3 border-b border-gray-50 dark:border-slate-700/40 last:border-0',
+                        'hover:bg-gray-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors',
+                        !n.is_read && 'bg-brand-50/60 dark:bg-brand-900/15'
                       )}
                       onClick={() => {
                         setNotifOpen(false);
@@ -200,8 +203,11 @@ export default function Navbar() {
                         }
                       }}
                     >
-                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{n.title}</p>
-                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</p>
+                      {!n.is_read && (
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-500 mb-1" />
+                      )}
+                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100 leading-snug">{n.title}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
                     </div>
                   ))
                 )}
@@ -211,36 +217,51 @@ export default function Navbar() {
         </div>
 
         {/* User menu */}
-        <div className="relative pl-2 border-l border-gray-200 dark:border-slate-700" ref={userMenuRef}>
+        <div className="relative pl-1.5 border-l border-gray-200/80 dark:border-slate-700/60 ml-0.5" ref={userMenuRef}>
           <button
             onClick={() => setUserMenuOpen(o => !o)}
             onKeyDown={(e) => { if (e.key === 'Escape') setUserMenuOpen(false); if (e.key === 'ArrowDown') setUserMenuOpen(true); }}
             aria-label="User menu"
             aria-expanded={userMenuOpen}
-            className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+            className={clsx(
+              'flex items-center gap-2 rounded-xl px-2 py-1.5 transition-all duration-150',
+              'hover:bg-gray-100 dark:hover:bg-slate-800',
+              'focus:outline-none focus:ring-2 focus:ring-brand-500/50'
+            )}
           >
             <Avatar name={user?.full_name ?? 'U'} url={user?.avatar_url} size="sm" />
             <span className="text-sm font-medium text-gray-700 dark:text-slate-200 hidden sm:block">{user?.full_name}</span>
           </button>
 
           {userMenuOpen && (
-            <div className="absolute right-0 top-10 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-50 overflow-hidden animate-fade-in">
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
-                <p className="text-sm font-semibold text-gray-900 dark:text-slate-100 truncate">{user?.full_name}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{user?.email}</p>
+            <div className={clsx(
+              'absolute right-0 top-11 w-52 z-50 overflow-hidden animate-scale-in',
+              'bg-white/95 dark:bg-slate-800/95 backdrop-blur-md',
+              'border border-gray-200/80 dark:border-slate-700/60',
+              'rounded-2xl shadow-modal'
+            )}>
+              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700/60">
+                <p className="text-sm font-semibold text-gray-900 dark:text-slate-100 truncate tracking-tight">{user?.full_name}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 truncate mt-0.5">{user?.email}</p>
               </div>
-              <div className="py-1">
+              <div className="py-1.5 px-1.5">
                 <Link
                   to="/profile"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                  className={clsx(
+                    'flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-slate-300',
+                    'hover:bg-gray-50 dark:hover:bg-slate-700/60 rounded-xl transition-colors'
+                  )}
                 >
                   <UserCircle size={15} className="text-gray-400 dark:text-slate-500" />
                   Profile & Appearance
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className={clsx(
+                    'w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400',
+                    'hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors'
+                  )}
                 >
                   <LogOut size={15} />
                   Sign out
@@ -254,5 +275,22 @@ export default function Navbar() {
 
     <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
   </>
+  );
+}
+
+function NavLink({ to, active, icon, label }: { to: string; active: boolean; icon: React.ReactNode; label: string }) {
+  return (
+    <Link
+      to={to}
+      className={clsx(
+        'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-150',
+        active
+          ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]'
+          : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800'
+      )}
+    >
+      {icon}
+      <span className="hidden xs:inline sm:inline">{label}</span>
+    </Link>
   );
 }

@@ -100,16 +100,17 @@ export default function AdminLayout() {
 
       {/* ─── Sidebar ─────────────────────────────────── */}
       <aside className={clsx(
-        'w-[220px] flex-shrink-0 bg-slate-900 flex flex-col',
+        'w-[220px] flex-shrink-0 flex flex-col',
+        'bg-[#0f1117] border-r border-white/[0.04]',
         'fixed inset-y-0 left-0 z-50 transition-transform duration-200',
         'lg:static lg:translate-x-0',
         mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       )}>
 
         {/* Brand */}
-        <div className="h-16 flex items-center px-5 border-b border-white/5 flex-shrink-0">
+        <div className="h-16 flex items-center px-5 border-b border-white/[0.05] flex-shrink-0">
           <Link to="/admin" className="flex items-center gap-3 flex-1" onClick={() => setMobileSidebarOpen(false)}>
-            <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center shadow-lg">
+            <div className="w-8 h-8 bg-brand-gradient rounded-xl flex items-center justify-center shadow-brand">
               <span className="text-white font-bold text-sm tracking-tight">N</span>
             </div>
             <div>
@@ -141,8 +142,8 @@ export default function AdminLayout() {
                     clsx(
                       'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150',
                       isActive
-                        ? 'bg-brand-600 text-white shadow-sm shadow-brand-900/30'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.06]'
+                        ? 'bg-brand-gradient text-white shadow-[0_2px_8px_rgb(var(--brand-600)/0.4)]'
+                        : 'text-slate-500 hover:text-slate-100 hover:bg-white/[0.05]'
                     )
                   }
                 >
@@ -206,7 +207,7 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Topbar */}
-        <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-200/80 dark:border-slate-700 flex items-center px-4 sm:px-6 gap-3 flex-shrink-0 z-10">
+        <header className="h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/70 dark:border-slate-700/60 shadow-[0_1px_0_rgba(0,0,0,0.04)] flex items-center px-4 sm:px-6 gap-3 flex-shrink-0 z-10">
           {/* Hamburger (mobile only) */}
           <button
             onClick={() => setMobileSidebarOpen(true)}

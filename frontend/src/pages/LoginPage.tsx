@@ -1,11 +1,12 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import api from '../api/client';
 import { useAuthStore } from '../store';
 import type { Token } from '../types';
 import toast from 'react-hot-toast';
 import Button from '../components/UI/Button';
+import clsx from 'clsx';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -36,18 +37,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-mesh flex items-center justify-center p-4">
+      {/* Decorative blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-200/30 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-violet-200/20 rounded-full blur-3xl" />
+      </div>
+
+      <div className="w-full max-w-md relative">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elevated">
-            <span className="text-white font-bold text-2xl">N</span>
+          <div className={clsx(
+            'w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5',
+            'bg-brand-gradient shadow-brand',
+          )}>
+            <span className="text-white font-bold text-xl tracking-tight">N</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome to Nest Fledge</h1>
-          <p className="text-gray-500 mt-1 text-sm">Where careers take flight</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome back</h1>
+          <p className="text-gray-500 mt-1.5 text-sm">Sign in to continue your flight path</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-elevated border border-gray-100 p-8">
+        <div className={clsx(
+          'bg-white/90 backdrop-blur-sm rounded-2xl p-7',
+          'border border-gray-200/80',
+          'shadow-float'
+        )}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -60,7 +74,12 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="you@company.com"
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
+                className={clsx(
+                  'w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm',
+                  'bg-gray-50/50 placeholder:text-gray-400',
+                  'focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-400 focus:bg-white',
+                  'transition-all duration-150'
+                )}
               />
             </div>
 
@@ -76,36 +95,45 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all pr-11"
+                  className={clsx(
+                    'w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm pr-11',
+                    'bg-gray-50/50 placeholder:text-gray-400',
+                    'focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-400 focus:bg-white',
+                    'transition-all duration-150'
+                  )}
                 />
                 <button
                   type="button"
                   aria-label={showPw ? 'Hide password' : 'Show password'}
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
                 >
-                  {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
             <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-xs text-brand-600 hover:underline">
+              <Link to="/forgot-password" className="text-xs text-brand-600 hover:text-brand-700 font-medium hover:underline underline-offset-2 transition-colors">
                 Forgot password?
               </Link>
             </div>
 
-            <Button type="submit" loading={loading} className="w-full" size="lg">
-              Sign In
+            <Button
+              type="submit"
+              loading={loading}
+              className="w-full !py-2.5"
+              size="lg"
+              icon={!loading ? <ArrowRight size={15} /> : undefined}
+            >
+              {loading ? 'Signing in…' : 'Sign In'}
             </Button>
           </form>
-
         </div>
 
-        {/* Signup CTA */}
         <p className="text-center text-sm text-gray-500 mt-5">
           New to Nest?{' '}
-          <Link to="/signup" className="text-brand-600 hover:text-brand-700 font-medium">
+          <Link to="/signup" className="text-brand-600 hover:text-brand-700 font-semibold transition-colors">
             Register your company
           </Link>
         </p>
