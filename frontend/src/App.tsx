@@ -6,31 +6,33 @@ import { useBrandColor } from './hooks/useBrandColor';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
-import LoginPage from './pages/LoginPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import ModulesPage from './pages/ModulesPage';
-import ModuleDetailPage from './pages/ModuleDetailPage';
-import VideoPage from './pages/VideoPage';
-import AdminLayout from './pages/admin/AdminLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminQuestionsPage from './pages/admin/AdminQuestionsPage';
-import AdminQuestionDetail from './pages/admin/AdminQuestionDetail';
-import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
-import AdminCoursesPage from './pages/admin/AdminCoursesPage';
-import AdminModuleEditor from './pages/admin/AdminModuleEditor';
-import OnboardingWizard from './pages/admin/OnboardingWizard';
-import SignupPage from './pages/SignupPage';
-import InvitePage from './pages/InvitePage';
-import OrgSettingsPage from './pages/admin/OrgSettingsPage';
-import LandingPage from './pages/LandingPage';
-import MeetingsPage from './pages/MeetingsPage';
-import AdminMeetingsPage from './pages/admin/AdminMeetingsPage';
-import AdminUsersPage from './pages/admin/AdminUsersPage';
-import AdminPeoplePage from './pages/admin/AdminPeoplePage';
-import ProfilePage from './pages/ProfilePage';
-import CertificatePage from './pages/CertificatePage';
+import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
+
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const ModulesPage = lazy(() => import('./pages/ModulesPage'));
+const ModuleDetailPage = lazy(() => import('./pages/ModuleDetailPage'));
+const VideoPage = lazy(() => import('./pages/VideoPage'));
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminQuestionsPage = lazy(() => import('./pages/admin/AdminQuestionsPage'));
+const AdminQuestionDetail = lazy(() => import('./pages/admin/AdminQuestionDetail'));
+const AdminAnalyticsPage = lazy(() => import('./pages/admin/AdminAnalyticsPage'));
+const AdminCoursesPage = lazy(() => import('./pages/admin/AdminCoursesPage'));
+const AdminModuleEditor = lazy(() => import('./pages/admin/AdminModuleEditor'));
+const OnboardingWizard = lazy(() => import('./pages/admin/OnboardingWizard'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const InvitePage = lazy(() => import('./pages/InvitePage'));
+const OrgSettingsPage = lazy(() => import('./pages/admin/OrgSettingsPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const MeetingsPage = lazy(() => import('./pages/MeetingsPage'));
+const AdminMeetingsPage = lazy(() => import('./pages/admin/AdminMeetingsPage'));
+const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminPeoplePage = lazy(() => import('./pages/admin/AdminPeoplePage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const CertificatePage = lazy(() => import('./pages/CertificatePage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,6 +83,7 @@ export default function App() {
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <BrandColorApplier />
         <ErrorBoundary>
+        <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-slate-950" />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -183,6 +186,7 @@ export default function App() {
 
           <Route path="*" element={<HomeRoute />} />
         </Routes>
+        </Suspense>
         </ErrorBoundary>
       </BrowserRouter>
 

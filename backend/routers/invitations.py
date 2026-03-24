@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
@@ -15,6 +15,7 @@ router = APIRouter(prefix="/api/invitations", tags=["invitations"])
 @router.post("", response_model=schemas.InvitationOut, status_code=201)
 def create_invitation(
     payload: schemas.InvitationCreate,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(auth_utils.require_manager),
     db: Session = Depends(get_db),
 ):
@@ -57,7 +58,7 @@ def create_invitation(
 
     # Send email (no-op if SMTP not configured)
     org = db.query(models.Organization).filter_by(id=current_user.organization_id).first()
-    email_utils.send_invitation(
+    background_tasks.add_task(email_utils.send_invitation,
         to=invite.email,
         org_name=org.name if org else "your organization",
         invite_url=invite_url,

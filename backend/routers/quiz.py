@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
@@ -171,6 +171,7 @@ def get_my_submission(
 @router.post("/submit", response_model=schemas.QuizSubmissionResult, status_code=201)
 def submit_quiz(
     payload: schemas.QuizSubmitRequest,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -231,7 +232,7 @@ def submit_quiz(
     # Send quiz result email
     video = db.query(models.Video).filter(models.Video.id == payload.video_id).first()
     if video:
-        email_utils.send_quiz_result(
+        background_tasks.add_task(email_utils.send_quiz_result,
             to=current_user.email,
             employee_name=current_user.full_name,
             video_title=video.title,

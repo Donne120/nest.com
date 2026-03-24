@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from database import get_db
@@ -31,6 +31,7 @@ def _to_out(m: models.MeetingBooking) -> schemas.MeetingOut:
 @router.post("", response_model=schemas.MeetingOut, status_code=201)
 async def request_meeting(
     payload: schemas.MeetingCreate,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -71,7 +72,7 @@ async def request_meeting(
     from config import settings as _settings
     meetings_url = f"{_settings.FRONTEND_URL}/admin/meetings"
     for mgr in managers:
-        email_utils.send_meeting_request_to_manager(
+        background_tasks.add_task(email_utils.send_meeting_request_to_manager,
             to=mgr.email,
             manager_name=mgr.full_name,
             employee_name=current_user.full_name,
@@ -104,6 +105,7 @@ def list_meetings(
 async def confirm_meeting(
     meeting_id: str,
     payload: schemas.MeetingConfirm,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(auth_utils.require_manager),
     db: Session = Depends(get_db),
 ):
@@ -129,7 +131,7 @@ async def confirm_meeting(
     # Send confirmation email
     employee = db.query(models.User).filter_by(id=meeting.employee_id).first()
     if employee:
-        email_utils.send_meeting_confirmed(
+        background_tasks.add_task(email_utils.send_meeting_confirmed,
             to=employee.email,
             employee_name=employee.full_name,
             confirmed_at=payload.confirmed_at.strftime("%A, %d %B %Y at %H:%M UTC"),
@@ -148,6 +150,7 @@ async def confirm_meeting(
 async def decline_meeting(
     meeting_id: str,
     payload: schemas.MeetingDecline,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(auth_utils.require_manager),
     db: Session = Depends(get_db),
 ):
@@ -179,7 +182,7 @@ async def decline_meeting(
     employee = db.query(models.User).filter_by(id=meeting.employee_id).first()
     if employee:
         from config import settings as _settings
-        email_utils.send_meeting_declined(
+        background_tasks.add_task(email_utils.send_meeting_declined,
             to=employee.email,
             employee_name=employee.full_name,
             reason=payload.decline_reason,

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
 from datetime import datetime, timedelta, timezone
@@ -65,7 +65,7 @@ def delete_connection(
 
 
 @router.post("/webhook/{org_slug}")
-async def ats_webhook(org_slug: str, payload: dict, db: Session = Depends(get_db)):
+async def ats_webhook(org_slug: str, payload: dict, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
     Public webhook. ATS providers POST here when a candidate is hired.
 
@@ -153,6 +153,6 @@ async def ats_webhook(org_slug: str, payload: dict, db: Session = Depends(get_db
     db.refresh(invite)
 
     invite_url = f"{settings.FRONTEND_URL}/invite/{invite.token}"
-    email_utils.send_invitation(to=email, org_name=org.name, invite_url=invite_url, role=conn.default_role)
+    background_tasks.add_task(email_utils.send_invitation, to=email, org_name=org.name, invite_url=invite_url, role=conn.default_role)
 
     return {"status": "invited", "email": email, "invite_id": invite.id}

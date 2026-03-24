@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from slowapi import Limiter
@@ -70,7 +70,7 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
 
 @router.post("/register-org", response_model=schemas.Token, status_code=201)
 @limiter.limit("5/hour")
-def register_org(request: Request, payload: schemas.RegisterOrgRequest, db: Session = Depends(get_db)):
+def register_org(request: Request, background_tasks: BackgroundTasks, payload: schemas.RegisterOrgRequest, db: Session = Depends(get_db)):
     """
     Self-service company signup. Creates an Organization + first Admin user
     in a single transaction, then returns a login token (auto-login).
@@ -105,7 +105,7 @@ def register_org(request: Request, payload: schemas.RegisterOrgRequest, db: Sess
     db.refresh(org)
 
     dashboard_url = f"{settings.FRONTEND_URL}/admin"
-    email_utils.send_welcome(
+    background_tasks.add_task(email_utils.send_welcome,
         to=user.email,
         admin_name=user.full_name,
         org_name=org.name,
@@ -168,7 +168,7 @@ def accept_invite(request: Request, payload: schemas.AcceptInviteRequest, db: Se
 
 @router.post("/forgot-password", status_code=200)
 @limiter.limit("5/minute")
-def forgot_password(request: Request, payload: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
+def forgot_password(request: Request, background_tasks: BackgroundTasks, payload: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
     """Always returns 200 so we don't leak whether an email exists."""
     user = db.query(models.User).filter(models.User.email == payload.email).first()
     if user and user.is_active:
@@ -187,7 +187,7 @@ def forgot_password(request: Request, payload: schemas.ForgotPasswordRequest, db
         db.refresh(reset_token)
 
         reset_url = f"{settings.FRONTEND_URL}/reset-password/{reset_token.token}"
-        email_utils.send_password_reset(to=user.email, reset_url=reset_url)
+        background_tasks.add_task(email_utils.send_password_reset, to=user.email, reset_url=reset_url)
 
     return {"message": "If that email exists, a reset link has been sent."}
 
