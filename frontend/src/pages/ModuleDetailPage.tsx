@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Play, Clock, MessageSquare, ArrowLeft, ExternalLink,
   FileText, Film, Globe, File, Video as VideoIcon,
-  CheckCircle2, Trophy, BookOpen, ChevronRight, Zap
+  CheckCircle2, Trophy, BookOpen, Zap, Calendar,
 } from 'lucide-react';
 import api from '../api/client';
 import type { Module, Video, ModuleResource } from '../types';
@@ -19,59 +19,40 @@ function fmt(s: number) {
   return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
-function ProgressRing({ pct }: { pct: number }) {
+// Gold donut ring (dark card)
+function DonutRing({ pct }: { pct: number }) {
   const R = 38, C = 2 * Math.PI * R;
+  const filled = (pct / 100) * C;
   return (
-    <svg width="96" height="96" className="-rotate-90">
-      <circle cx="48" cy="48" r={R} fill="none" stroke="#e2e8f0" strokeWidth="7" />
-      <circle
-        cx="48" cy="48" r={R} fill="none"
-        stroke="url(#ringGrad)" strokeWidth="7"
-        strokeLinecap="round"
-        strokeDasharray={C}
-        strokeDashoffset={C - (pct / 100) * C}
-        style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)' }}
-      />
-      <defs>
-        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#818cf8" />
-          <stop offset="100%" stopColor="#6366f1" />
-        </linearGradient>
-      </defs>
-    </svg>
+    <div style={{ position: 'relative', width: 92, height: 92 }}>
+      <svg width="92" height="92" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx="46" cy="46" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+        <circle
+          cx="46" cy="46" r={R} fill="none"
+          stroke="#e8c97e" strokeWidth="6" strokeLinecap="round"
+          strokeDasharray={`${filled} ${C}`}
+          style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1)' }}
+        />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 600, color: '#f0ebe3', letterSpacing: '-0.02em', lineHeight: 1 }}>{pct}%</span>
+        <span style={{ fontFamily: 'monospace', fontSize: 8.5, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 3 }}>done</span>
+      </div>
+    </div>
   );
 }
 
 const RESOURCE_ICON: Record<ModuleResource['type'], typeof Globe> = {
   link: Globe, doc: FileText, pdf: File, video: Film,
 };
-const RESOURCE_COLOR: Record<ModuleResource['type'], string> = {
-  link:  'bg-blue-50 text-blue-600 border-blue-100',
-  doc:   'bg-violet-50 text-violet-600 border-violet-100',
-  pdf:   'bg-red-50   text-red-600   border-red-100',
-  video: 'bg-amber-50 text-amber-600 border-amber-100',
-};
-
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
 
 function LoadingSkeleton() {
   return (
-    <div className="animate-pulse">
-      <div className="h-72 bg-slate-800" />
-      <div className="max-w-5xl mx-auto px-6 py-8 flex gap-8">
-        <div className="flex-1 space-y-5">
-          <Skeleton className="h-6 w-48" />
-          <div className="grid grid-cols-2 gap-3">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 rounded-xl" />)}
-          </div>
-          <Skeleton className="h-40 rounded-xl" />
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
-          </div>
-        </div>
-        <div className="w-72 flex-shrink-0">
-          <Skeleton className="h-64 rounded-2xl" />
-        </div>
+    <div style={{ background: '#f2ede8', minHeight: '100vh' }}>
+      <div style={{ background: '#0f0d0b', height: 280 }} className="animate-pulse" />
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 40px' }} className="grid gap-7 animate-pulse" >
+        <Skeleton className="h-48 rounded-md" />
+        <Skeleton className="h-64 rounded-md" />
       </div>
     </div>
   );
@@ -96,7 +77,6 @@ export default function ModuleDetailPage() {
     enabled: !!moduleId,
   });
 
-  // Extract bullet points from HTML description for "What You'll Learn"
   const learnItems = useMemo(() => {
     if (!module?.description) return [];
     const parser = new DOMParser();
@@ -105,363 +85,359 @@ export default function ModuleDetailPage() {
   }, [module?.description]);
 
   if (modLoading || vidLoading) return <LoadingSkeleton />;
-  if (!module) return <div className="p-8 text-gray-500">Module not found.</div>;
+  if (!module) return <div style={{ padding: 32, color: '#6b6460' }}>Module not found.</div>;
 
   const pct = module.duration_seconds > 0
     ? Math.min(100, Math.round(((module.progress_seconds ?? 0) / module.duration_seconds) * 100))
     : 0;
 
   const status = module.status ?? 'not_started';
-  const ctaLabel  = pct === 0 ? 'Start Course' : pct === 100 ? 'Review Course' : 'Continue Learning';
+  const ctaLabel = pct === 0 ? 'Start Course' : pct === 100 ? 'Review Course' : 'Continue Learning';
   const firstVideo = videos[0]?.id;
   const hasResources = module.resources && module.resources.length > 0;
+  const totalQuizzes = 31;
 
-  const totalQuizzes = 31; // enriched from seed; fallback for display
+  // CSS vars as inline style shortcuts
+  const INK  = '#1a1714';
+  const INK2 = '#6b6460';
+  const INK3 = '#a09990';
+  const RULE = '#d4cdc6';
+  const SURFACE = '#fffcf8';
+  const BG = '#f2ede8';
+  const ACCENT = '#c94f2c';
+  const BLUE = '#2c5fc9';
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div style={{ background: BG, minHeight: '100vh', fontFamily: "'DM Sans', 'Inter', sans-serif" }}>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          HERO
-      ═══════════════════════════════════════════════════════════════ */}
-      <div className="relative w-full overflow-hidden bg-slate-950" style={{ minHeight: 340 }}>
+      {/* ══ HERO (dark) ══════════════════════════════════════════════════ */}
+      <section style={{ background: '#0f0d0b', position: 'relative', padding: '56px 0 72px', overflow: 'hidden' }}>
+        {/* Ambient glow */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: 'radial-gradient(ellipse at 70% 50%, rgba(201,79,44,0.08) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(44,95,201,0.06) 0%, transparent 55%)',
+        }} />
+        {/* Grid lines */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          backgroundImage: 'repeating-linear-gradient(90deg,rgba(255,255,255,0.015) 0,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 80px),repeating-linear-gradient(0deg,rgba(255,255,255,0.015) 0,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 80px)',
+        }} />
 
-        {/* Thumbnail background */}
         {module.thumbnail_url && (
-          <img
-            src={module.thumbnail_url}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 w-full h-full object-cover object-center opacity-40 scale-105"
-            style={{ filter: 'blur(1px)' }}
+          <img src={module.thumbnail_url} alt="" aria-hidden
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.15, filter: 'blur(2px)', transform: 'scale(1.05)' }}
           />
         )}
 
-        {/* Gradient overlays — strong left, transparent right */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-
-        {/* Decorative orbs */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-indigo-600/10 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
-
-        {/* Content */}
-        <div className="relative max-w-5xl mx-auto px-6 pt-8 pb-12">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 56px', position: 'relative', zIndex: 1 }}>
 
           {/* Back */}
           <button
             onClick={() => navigate('/modules')}
-            className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white transition-colors mb-6"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'monospace', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 28, padding: 0, transition: 'color 0.2s' }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.65)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.35)')}
           >
-            <ArrowLeft size={14} />
-            Back to Modules
+            <ArrowLeft size={12} /> Back to Modules
           </button>
 
-          {/* Status pill */}
-          <div className="mb-3">
-            {status === 'not_started' && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-slate-400 border border-white/10 rounded-full px-3 py-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-                Not Started
-              </span>
-            )}
-            {status === 'in_progress' && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-amber-300 border border-amber-400/30 rounded-full px-3 py-1 bg-amber-400/10">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                In Progress
-              </span>
-            )}
-            {status === 'completed' && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-300 border border-emerald-400/30 rounded-full px-3 py-1 bg-emerald-400/10">
-                <CheckCircle2 size={11} />
-                Completed
-              </span>
-            )}
+          {/* Status chip */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: status === 'completed' ? '#34d399' : status === 'in_progress' ? '#e8c97e' : 'rgba(255,255,255,0.25)', display: 'inline-block' }} />
+            {status === 'not_started' ? 'Not Started' : status === 'in_progress' ? 'In Progress' : 'Completed'}
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight max-w-2xl tracking-tight">
+          <h1 style={{
+            fontFamily: "'Lora', Georgia, serif",
+            fontSize: 'clamp(34px, 4vw, 58px)',
+            fontWeight: 700,
+            lineHeight: 1.1,
+            letterSpacing: '-0.025em',
+            color: '#f0ebe3',
+            maxWidth: 780,
+            marginBottom: 28,
+          }}>
             {module.title}
           </h1>
 
-          {/* Stats row */}
-          <div className="flex items-center flex-wrap gap-x-5 gap-y-2 mt-5 text-sm text-slate-300">
-            <span className="flex items-center gap-1.5">
-              <Clock size={13} className="text-indigo-400" />
-              {fmt(module.duration_seconds)}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Play size={13} className="text-indigo-400" />
-              {module.video_count} lessons
-            </span>
-            {module.question_count > 0 && (
-              <span className="flex items-center gap-1.5">
-                <MessageSquare size={13} className="text-indigo-400" />
-                {module.question_count} Q&A
-              </span>
-            )}
-            <span className="flex items-center gap-1.5">
-              <Zap size={13} className="text-indigo-400" />
-              {totalQuizzes} quiz questions
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Trophy size={13} className="text-amber-400" />
-              Certificate included
-            </span>
+          {/* Meta row */}
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginBottom: 28 }}>
+            {[
+              { icon: '▷', val: fmt(module.duration_seconds) },
+              { icon: '▷', val: `${module.video_count} lessons` },
+              { icon: '⚡', val: `${totalQuizzes} quiz questions` },
+              { icon: '◎', val: 'Certificate included' },
+            ].map((m, i, arr) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontFamily: 'monospace', fontSize: 12, color: 'rgba(255,255,255,0.45)',
+                paddingRight: i < arr.length - 1 ? 18 : 0,
+                marginRight: i < arr.length - 1 ? 18 : 0,
+                borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                letterSpacing: '0.04em',
+              }}>
+                <span style={{ opacity: 0.7 }}>{m.icon}</span>
+                {m.val}
+              </div>
+            ))}
           </div>
 
           {/* CTAs */}
-          <div className="flex items-center flex-wrap gap-3 mt-7">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <button
               onClick={() => firstVideo && navigate(`/video/${firstVideo}`)}
               disabled={!firstVideo}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-brand-900/40 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: ACCENT, color: '#fff', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, padding: '11px 26px', borderRadius: 4, border: 'none', cursor: firstVideo ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '0.01em', opacity: firstVideo ? 1 : 0.5, transition: 'opacity 0.2s, transform 0.15s' }}
+              onMouseEnter={e => { if (firstVideo) (e.currentTarget as HTMLElement).style.opacity = '0.88'; }}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = firstVideo ? '1' : '0.5')}
             >
-              <Play size={15} fill="currentColor" />
-              {ctaLabel}
+              <Play size={12} fill="currentColor" /> {ctaLabel}
             </button>
             <button
               onClick={() => setShowMeetingModal(true)}
-              className="inline-flex items-center gap-2 px-5 py-3 bg-white/8 hover:bg-white/14 border border-white/15 text-white/80 hover:text-white font-medium rounded-xl text-sm backdrop-blur transition-all"
+              style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 500, padding: '10px 22px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.2s, border-color 0.2s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.3)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; }}
             >
-              <VideoIcon size={14} />
-              Book a 1-on-1
+              <Calendar size={13} /> Book a 1-on-1
             </button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          BODY — two columns
-      ═══════════════════════════════════════════════════════════════ */}
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+      {/* ══ BODY ═══════════════════════════════════════════════════════ */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 56px 100px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
 
-          {/* ─── LEFT: main content ───────────────────────────────────── */}
-          <div className="flex-1 min-w-0 space-y-6">
+        {/* ── LEFT ── */}
+        <div style={{ minWidth: 0 }}>
 
-            {/* What You'll Learn */}
-            {learnItems.length > 0 && (
-              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 p-6 shadow-sm">
-                <h2 className="text-base font-bold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                  <BookOpen size={16} className="text-brand-500" />
-                  What You'll Learn
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {learnItems.map((item, i) => (
-                    <div key={i} className="flex items-start gap-2.5">
-                      <CheckCircle2 size={15} className="text-brand-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-gray-700 dark:text-slate-300 leading-snug">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+          {/* About */}
+          {module.description && (
+            <SectionCard title="About This Course" style={{ marginBottom: 18 }}>
+              <div
+                style={{ fontSize: 15.5, lineHeight: 1.8, color: INK2 }}
+                className="about-prose"
+                dangerouslySetInnerHTML={{ __html: module.description }}
+              />
+            </SectionCard>
+          )}
 
-            {/* About */}
-            {module.description && (
-              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 p-6 shadow-sm">
-                <h2 className="text-base font-bold text-gray-900 dark:text-slate-100 mb-4">About This Course</h2>
-                <div
-                  className="prose prose-sm prose-gray max-w-none
-                    prose-h2:text-base prose-h2:font-bold prose-h2:text-gray-800 prose-h2:mt-5 prose-h2:mb-2
-                    prose-h3:text-sm prose-h3:font-semibold prose-h3:text-gray-700
-                    prose-p:text-gray-600 prose-p:leading-relaxed
-                    prose-ul:space-y-1 prose-li:text-gray-600 prose-li:text-sm"
-                  dangerouslySetInnerHTML={{ __html: module.description }}
-                />
-              </section>
-            )}
-
-            {/* Curriculum */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
-                <h2 className="text-base font-bold text-gray-900 dark:text-slate-100">
-                  Course Curriculum
-                </h2>
-                <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">
-                  {videos.length} lessons · {fmt(module.duration_seconds)} total
-                </span>
-              </div>
-
-              <div className="divide-y divide-gray-50 dark:divide-slate-700/50">
-                {videos.map((video, idx) => (
-                  <LessonRow
-                    key={video.id}
-                    video={video}
-                    index={idx}
-                    onClick={() => navigate(`/video/${video.id}`)}
-                  />
+          {/* What You'll Learn */}
+          {learnItems.length > 0 && (
+            <SectionCard title="What You'll Learn" style={{ marginBottom: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {learnItems.map((item, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                    <CheckCircle2 size={14} style={{ color: ACCENT, flexShrink: 0, marginTop: 2 }} />
+                    <p style={{ fontSize: 13.5, color: INK2, lineHeight: 1.5 }}>{item}</p>
+                  </div>
                 ))}
               </div>
-            </section>
-          </div>
+            </SectionCard>
+          )}
 
-          {/* ─── RIGHT: sticky sidebar ────────────────────────────────── */}
-          <div className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-6 space-y-4">
+          {/* Curriculum */}
+          <SectionCard
+            title="Course Curriculum"
+            meta={`${videos.length} LESSON${videos.length !== 1 ? 'S' : ''} · ${fmt(module.duration_seconds)} TOTAL`}
+            noPadding
+            style={{ marginBottom: 18 }}
+          >
+            {videos.length === 0 ? (
+              <div style={{ padding: '24px', color: INK3, fontSize: 13, fontStyle: 'italic' }}>No lessons yet.</div>
+            ) : (
+              videos.map((video, idx) => (
+                <CurriculumItem
+                  key={video.id}
+                  video={video}
+                  index={idx}
+                  isLast={idx === videos.length - 1}
+                  onClick={() => navigate(`/video/${video.id}`)}
+                  INK={INK} INK3={INK3} RULE={RULE} BG={BG}
+                />
+              ))
+            )}
+          </SectionCard>
 
-            {/* Progress card */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
-
-              {/* Progress ring area */}
-              <div className="bg-gradient-to-br from-slate-900 to-indigo-950 px-6 pt-7 pb-6 flex flex-col items-center text-center">
-                <div className="relative">
-                  <ProgressRing pct={pct} />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-extrabold text-white leading-none">{pct}%</span>
-                    <span className="text-[10px] text-slate-400 mt-0.5 font-medium uppercase tracking-wide">done</span>
-                  </div>
+          {/* Quiz Overview */}
+          <SectionCard title="Quiz Overview" meta={`${totalQuizzes} QUESTIONS`} style={{ marginBottom: 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 4, overflow: 'hidden' }}>
+              {[
+                { label: 'Questions', val: String(totalQuizzes) },
+                { label: 'Your Best', val: pct > 0 ? `${pct}%` : '—' },
+                { label: 'Pass Mark', val: '—' },
+              ].map(({ label, val }) => (
+                <div key={label} style={{ background: BG, padding: '14px 16px', textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'monospace', fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: INK3, marginBottom: 6 }}>{label}</div>
+                  <div style={{ fontFamily: 'monospace', fontSize: 26, fontWeight: 600, color: val === '—' ? INK3 : INK }}>{val}</div>
                 </div>
-                <p className="text-slate-300 text-xs mt-3 font-medium">
-                  {pct === 0 ? 'Ready to start' : pct === 100 ? 'Course completed!' : `${fmt(module.progress_seconds ?? 0)} watched`}
-                </p>
-              </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
 
-              {/* CTA */}
-              <div className="px-5 py-4">
-                <button
-                  onClick={() => firstVideo && navigate(`/video/${firstVideo}`)}
-                  disabled={!firstVideo}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl text-sm shadow shadow-brand-200 transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Play size={14} fill="currentColor" />
-                  {ctaLabel}
-                </button>
-              </div>
+        {/* ── RIGHT ── */}
+        <div style={{ position: 'sticky', top: 64, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-              {/* Stats */}
-              <div className="px-5 pb-4 space-y-2.5">
-                <StatRow icon={<Clock size={14} className="text-indigo-400" />} label={fmt(module.duration_seconds)} sub="total watch time" />
-                <StatRow icon={<Play size={14} className="text-indigo-400" />} label={`${module.video_count} lessons`} sub="video content" />
-                <StatRow icon={<Zap size={14} className="text-amber-400" />} label={`${totalQuizzes} quiz questions`} sub="test your knowledge" />
-                {module.question_count > 0 && (
-                  <StatRow icon={<MessageSquare size={14} className="text-emerald-500" />} label={`${module.question_count} Q&A threads`} sub="community discussion" />
-                )}
-                <StatRow icon={<Trophy size={14} className="text-amber-400" />} label="Certificate" sub="on completion" />
-              </div>
+          {/* Progress card — dark */}
+          <div style={{ background: INK, borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
 
-              {/* Divider */}
-              <div className="mx-5 border-t border-gray-100 dark:border-slate-700 mb-4" />
-
-              {/* Book 1-on-1 */}
-              <div className="px-5 pb-5 dark:bg-slate-800">
-                <button
-                  onClick={() => setShowMeetingModal(true)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 border border-brand-200 text-brand-600 bg-brand-50 hover:bg-brand-100 font-medium rounded-xl text-sm transition-colors"
-                >
-                  <VideoIcon size={13} />
-                  Book a 1-on-1 with trainer
-                </button>
-              </div>
+            {/* Donut top */}
+            <div style={{ padding: '28px 24px 22px', display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <DonutRing pct={pct} />
+              <p style={{ fontFamily: 'monospace', fontSize: 10.5, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 12 }}>
+                {pct === 0 ? 'Ready to start' : pct === 100 ? 'Course completed!' : `${fmt(module.progress_seconds ?? 0)} watched`}
+              </p>
             </div>
 
-            {/* Resources */}
-            {hasResources && (
-              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-sm p-5">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 mb-3">Resources</h3>
-                <div className="space-y-2">
-                  {module.resources!.map((r) => {
-                    const Icon = RESOURCE_ICON[r.type] ?? Globe;
-                    const colorCls = RESOURCE_COLOR[r.type] ?? RESOURCE_COLOR.link;
-                    return (
-                      <a
-                        key={r.id}
-                        href={r.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all group"
-                      >
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border ${colorCls}`}>
-                          <Icon size={12} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-700 truncate group-hover:text-brand-700 transition-colors">
-                            {r.title || r.url}
-                          </p>
-                          <p className="text-[10px] text-gray-400 capitalize">{r.type}</p>
-                        </div>
-                        <ExternalLink size={11} className="text-gray-300 group-hover:text-brand-400 transition-colors flex-shrink-0" />
-                      </a>
-                    );
-                  })}
-                </div>
+            {/* CTA + details */}
+            <div style={{ padding: '18px 20px' }}>
+              <button
+                onClick={() => firstVideo && navigate(`/video/${firstVideo}`)}
+                disabled={!firstVideo}
+                style={{ width: '100%', background: ACCENT, color: '#fff', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, padding: 11, borderRadius: 4, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 16, opacity: firstVideo ? 1 : 0.5 }}
+              >
+                <Play size={12} fill="currentColor" /> {ctaLabel}
+              </button>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {[
+                  { icon: '▷', name: fmt(module.duration_seconds), desc: 'total watch time' },
+                  { icon: '▶', name: `${module.video_count} lessons`, desc: 'video content' },
+                  { icon: '⚡', name: `${totalQuizzes} quiz questions`, desc: 'test your knowledge' },
+                  { icon: '◎', name: 'Certificate', desc: 'on completion' },
+                ].map(({ icon, name, desc }, i, arr) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                    <span style={{ fontSize: 13, width: 18, textAlign: 'center', flexShrink: 0, opacity: 0.65, color: '#e8c97e' }}>{icon}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{name}</span>
+                    <span style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{desc}</span>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
           </div>
+
+          {/* Book 1-on-1 card */}
+          <div style={{ background: SURFACE, border: `1px solid ${RULE}`, borderRadius: 6, padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <div>
+              <p style={{ fontSize: 12.5, fontWeight: 600, color: INK, marginBottom: 2 }}>Book a 1-on-1</p>
+              <p style={{ fontSize: 11, color: INK3 }}>with a trainer</p>
+            </div>
+            <button
+              onClick={() => setShowMeetingModal(true)}
+              style={{ background: 'transparent', border: `1px solid ${RULE}`, color: BLUE, fontFamily: 'inherit', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', transition: 'background 0.2s, border-color 0.2s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = BG; (e.currentTarget as HTMLElement).style.borderColor = BLUE; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = RULE; }}
+            >
+              <Calendar size={11} /> Book
+            </button>
+          </div>
+
+          {/* Resources */}
+          {hasResources && (
+            <div style={{ background: SURFACE, border: `1px solid ${RULE}`, borderRadius: 6, padding: '16px 20px' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: INK, marginBottom: 12 }}>Resources</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {module.resources!.map((r) => {
+                  const Icon = RESOURCE_ICON[r.type] ?? Globe;
+                  return (
+                    <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 4, border: `1px solid transparent`, textDecoration: 'none', transition: 'background 0.15s, border-color 0.15s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = BG; (e.currentTarget as HTMLElement).style.borderColor = RULE; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'transparent'; }}
+                    >
+                      <div style={{ width: 28, height: 28, borderRadius: 4, background: BG, border: `1px solid ${RULE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon size={12} style={{ color: INK3 }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 12, fontWeight: 500, color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title || r.url}</p>
+                        <p style={{ fontSize: 10, color: INK3, textTransform: 'capitalize' }}>{r.type}</p>
+                      </div>
+                      <ExternalLink size={11} style={{ color: INK3, flexShrink: 0 }} />
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {showMeetingModal && (
-        <BookMeetingModal
-          moduleId={moduleId}
-          moduleTitle={module.title}
-          onClose={() => setShowMeetingModal(false)}
-        />
+        <BookMeetingModal moduleId={moduleId} moduleTitle={module.title} onClose={() => setShowMeetingModal(false)} />
       )}
+
+      <style>{`
+        .about-prose p { margin-bottom: 12px; }
+        .about-prose p:last-child { margin-bottom: 0; }
+        .about-prose strong { color: #1a1714; font-weight: 600; }
+        .about-prose ul { padding-left: 20px; margin-bottom: 12px; }
+        .about-prose li { margin-bottom: 4px; font-size: 14px; color: #6b6460; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+      `}</style>
     </div>
   );
 }
 
-// ─── Subcomponents ────────────────────────────────────────────────────────────
+// ─── Section card wrapper ──────────────────────────────────────────────────────
 
-function LessonRow({ video, index, onClick }: { video: Video; index: number; onClick: () => void }) {
+function SectionCard({
+  title, meta, children, noPadding, style
+}: {
+  title: string; meta?: string; children: ReactNode; noPadding?: boolean; style?: React.CSSProperties;
+}) {
+  return (
+    <div style={{ background: '#fffcf8', border: '1px solid #d4cdc6', borderRadius: 8, overflow: 'hidden', animation: 'fadeUp 0.5s ease both', ...style }}>
+      <div style={{ padding: '20px 28px', borderBottom: '1px solid #d4cdc6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.01em', color: '#1a1714' }}>{title}</span>
+        {meta && <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#a09990', letterSpacing: '0.08em' }}>{meta}</span>}
+      </div>
+      <div style={noPadding ? {} : { padding: '24px 28px' }}>{children}</div>
+    </div>
+  );
+}
+
+// ─── Curriculum row ───────────────────────────────────────────────────────────
+
+function CurriculumItem({ video, index, isLast, onClick, INK, INK3, RULE, BG }: {
+  video: Video; index: number; isLast: boolean; onClick: () => void;
+  INK: string; INK3: string; RULE: string; BG: string;
+}) {
+  const [hovered, setHovered] = useState(false);
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-brand-50/50 dark:hover:bg-brand-900/10 group transition-colors relative"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 16,
+        padding: '16px 28px',
+        borderBottom: isLast ? 'none' : `1px solid ${RULE}`,
+        background: hovered ? BG : 'transparent',
+        cursor: 'pointer', textAlign: 'left', border: 'none',
+        borderBottomColor: isLast ? 'transparent' : RULE,
+        borderBottomStyle: 'solid', borderBottomWidth: isLast ? 0 : 1,
+        transition: 'background 0.15s',
+      }}
     >
-      {/* Active left accent */}
-      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-brand-500 scale-y-0 group-hover:scale-y-100 transition-transform origin-center rounded-r" />
-
-      {/* Lesson number */}
-      <div className="flex-shrink-0 w-9 text-center">
-        <span className="text-sm font-bold text-gray-300 group-hover:text-brand-400 transition-colors tabular-nums">
-          {String(index + 1).padStart(2, '0')}
+      <span style={{ fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.1em', width: 26, flexShrink: 0, textAlign: 'right' }}>
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <div style={{ width: 34, height: 34, borderRadius: 5, background: BG, border: `1px solid ${RULE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Play size={13} fill={INK3} style={{ color: INK3, marginLeft: 1 }} />
+      </div>
+      <span style={{ flex: 1, fontSize: 15, fontWeight: 500, color: INK, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {video.title}
+      </span>
+      {video.question_count > 0 && (
+        <span style={{ fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.04em', flexShrink: 0 }}>
+          {video.question_count}Q
         </span>
-      </div>
-
-      {/* Play circle */}
-      <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-100 group-hover:bg-brand-100 flex items-center justify-center transition-colors">
-        <Play size={13} className="text-gray-400 group-hover:text-brand-600 transition-colors ml-0.5" fill="currentColor" />
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-800 dark:text-slate-200 group-hover:text-brand-800 dark:group-hover:text-brand-300 truncate transition-colors leading-snug">
-          {video.title}
-        </p>
-        {video.description && (
-          <p className="text-xs text-gray-400 dark:text-slate-500 line-clamp-1 mt-0.5 leading-snug">
-            {video.description}
-          </p>
-        )}
-      </div>
-
-      {/* Meta */}
-      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-        {video.question_count > 0 && (
-          <span className="flex items-center gap-1 text-[11px] text-indigo-500 font-medium bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
-            <MessageSquare size={10} />
-            {video.question_count}
-          </span>
-        )}
-        <span className="text-xs text-gray-400 dark:text-slate-500 font-medium tabular-nums w-10 text-right">
-          {fmt(video.duration_seconds)}
-        </span>
-        <ChevronRight size={13} className="text-gray-300 group-hover:text-brand-400 transition-colors" />
-      </div>
+      )}
+      <span style={{ fontFamily: 'monospace', fontSize: 12, color: INK3, letterSpacing: '0.06em', flexShrink: 0 }}>
+        {fmt(video.duration_seconds)}
+      </span>
     </button>
-  );
-}
-
-function StatRow({ icon, label, sub }: { icon: ReactNode; label: string; sub: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="w-6 flex-shrink-0 flex justify-center">{icon}</div>
-      <div className="flex-1 min-w-0">
-        <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{label}</span>
-        <span className="text-xs text-gray-400 dark:text-slate-500 ml-1.5">{sub}</span>
-      </div>
-    </div>
   );
 }

@@ -44,10 +44,11 @@ def update_progress(
             module_id=video.module_id,
             video_id=payload.video_id,
             status=models.ModuleStatus.in_progress,
+            progress_seconds=0.0,
         )
         db.add(progress)
 
-    if payload.progress_seconds > progress.progress_seconds:
+    if payload.progress_seconds > (progress.progress_seconds or 0):
         progress.progress_seconds = payload.progress_seconds
 
     if payload.status:

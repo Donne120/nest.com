@@ -1,8 +1,17 @@
 import { useNavigate } from 'react-router-dom';
 import { Play, Clock, MessageSquare, CheckCircle2, BookOpen } from 'lucide-react';
 import type { Module } from '../../types';
-import Badge from '../UI/Badge';
-import clsx from 'clsx';
+
+// ── Design tokens ──────────────────────────────────────────────────────────
+const GOLD   = '#e8c97e';
+const TERRA  = '#c45c3c';
+const GREEN  = '#34d399';
+const DARK2  = '#13141a';
+const DARK3  = '#1c1e27';
+const INK    = '#e8e4dc';
+const INK2   = '#9ca3af';
+const INK3   = '#6b6b78';
+const BORDER = 'rgba(255,255,255,0.07)';
 
 function formatDuration(seconds: number) {
   if (seconds < 60) return `${seconds}s`;
@@ -10,128 +19,207 @@ function formatDuration(seconds: number) {
   return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
-interface Props {
-  module: Module;
-}
+const STATUS_CONFIG = {
+  not_started: { dot: 'rgba(255,255,255,0.2)', label: 'Not Started',  labelColor: INK3 },
+  in_progress:  { dot: GOLD,                   label: 'In Progress',   labelColor: GOLD  },
+  completed:    { dot: GREEN,                   label: 'Completed',     labelColor: GREEN },
+};
+
+interface Props { module: Module; }
 
 export default function ModuleCard({ module }: Props) {
-  const navigate = useNavigate();
-  const progress = module.duration_seconds > 0
+  const navigate  = useNavigate();
+  const status    = module.status ?? 'not_started';
+  const cfg       = STATUS_CONFIG[status];
+  const progress  = module.duration_seconds > 0
     ? Math.round(((module.progress_seconds ?? 0) / module.duration_seconds) * 100)
     : 0;
 
-  const statusRing = {
-    not_started: '',
-    in_progress:  'ring-2 ring-brand-400/40 ring-offset-1',
-    completed:    'ring-2 ring-emerald-400/40 ring-offset-1',
-  };
-
-  const ring = statusRing[module.status ?? 'not_started'];
+  // Strip HTML tags from description for clean preview
+  const plainDesc = module.description
+    ? module.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    : '';
 
   return (
-    <div
+    <article
       onClick={() => navigate(`/modules/${module.id}`)}
-      className={clsx(
-        'group relative bg-white dark:bg-slate-800/80 rounded-2xl overflow-hidden cursor-pointer',
-        'border border-gray-100 dark:border-slate-700/60',
-        'shadow-card hover:shadow-elevated',
-        'transition-all duration-250 ease-out hover:-translate-y-1',
-        ring
-      )}
+      style={{
+        background: DARK2,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 14,
+        overflow: 'hidden',
+        cursor: 'pointer',
+        transition: 'transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+      onMouseEnter={e => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.transform = 'translateY(-3px)';
+        el.style.boxShadow = '0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,201,126,0.12)';
+        el.style.borderColor = 'rgba(232,201,126,0.18)';
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.transform = 'translateY(0)';
+        el.style.boxShadow = 'none';
+        el.style.borderColor = BORDER;
+      }}
     >
       {/* Thumbnail */}
-      <div className="relative aspect-video bg-gray-100 dark:bg-slate-700 overflow-hidden">
+      <div style={{ position: 'relative', aspectRatio: '16/9', background: DARK3, overflow: 'hidden', flexShrink: 0 }}>
         {module.thumbnail_url ? (
           <img
             src={module.thumbnail_url}
             alt={module.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
+            onMouseEnter={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1.05)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1)')}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-50 dark:from-slate-700 dark:to-slate-800">
-            <BookOpen size={28} className="text-gray-300 dark:text-slate-500" />
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1c1e27 0%, #13141a 100%)' }}>
+            <BookOpen size={28} style={{ color: 'rgba(255,255,255,0.12)' }} />
           </div>
         )}
 
-        {/* Dark gradient overlay (always subtle, stronger on hover) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-200" />
+        {/* Gradient overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
+        }} />
 
-        {/* Play button */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className={clsx(
-            'w-11 h-11 rounded-full flex items-center justify-center',
-            'bg-white/90 dark:bg-white/95 shadow-float',
-            'opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100',
-            'transition-all duration-200 ease-out'
-          )}>
-            <Play size={18} className="text-brand-700 ml-0.5" fill="currentColor" />
+        {/* Centered play button (hover) */}
+        <div
+          className="card-play-btn"
+          style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <div style={{
+            width: 44, height: 44, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.92)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            opacity: 0, transform: 'scale(0.75)',
+            transition: 'opacity 0.2s ease, transform 0.2s ease',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+          }}
+            className="card-play-icon"
+          >
+            <Play size={18} fill="#0b0c0f" color="#0b0c0f" style={{ marginLeft: 2 }} />
           </div>
         </div>
 
-        {/* Status badge */}
-        <div className="absolute top-2.5 left-2.5">
-          <Badge variant={module.status ?? 'not_started'} />
+        {/* Status chip — top left */}
+        <div style={{
+          position: 'absolute', top: 12, left: 12,
+          display: 'flex', alignItems: 'center', gap: 5,
+          background: 'rgba(11,12,15,0.75)', backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 100, padding: '3px 10px 3px 8px',
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', background: cfg.dot, display: 'inline-block', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: cfg.labelColor, fontWeight: 500 }}>
+            {cfg.label}
+          </span>
         </div>
 
-        {/* Duration chip */}
-        <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-1 rounded-lg">
-          <Clock size={10} />
+        {/* Duration — bottom right */}
+        <div style={{
+          position: 'absolute', bottom: 12, right: 12,
+          display: 'flex', alignItems: 'center', gap: 5,
+          background: 'rgba(11,12,15,0.75)', backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 6, padding: '3px 9px',
+          fontFamily: 'monospace', fontSize: 11, color: INK2,
+        }}>
+          <Clock size={10} style={{ color: INK3 }} />
           {formatDuration(module.duration_seconds)}
         </div>
+
+        {/* Completed checkmark */}
+        {status === 'completed' && (
+          <div style={{
+            position: 'absolute', bottom: 12, left: 12,
+            width: 26, height: 26, borderRadius: '50%',
+            background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <CheckCircle2 size={14} style={{ color: GREEN }} />
+          </div>
+        )}
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm leading-snug line-clamp-2 flex-1 tracking-tight">
-            {module.title}
-          </h3>
-          {module.status === 'completed' && (
-            <CheckCircle2 size={15} className="text-emerald-500 flex-shrink-0 mt-0.5" />
-          )}
-        </div>
+      <div style={{ padding: '18px 20px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
 
-        {module.description && (
-          <p className="text-xs text-gray-400 dark:text-slate-500 line-clamp-2 mb-3 leading-relaxed">{module.description}</p>
+        {/* Title */}
+        <h3 style={{
+          fontFamily: "'Lora', Georgia, serif",
+          fontSize: 16, fontWeight: 600, lineHeight: 1.35,
+          letterSpacing: '-0.01em', color: INK,
+          marginBottom: 8,
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
+          {module.title}
+        </h3>
+
+        {/* Description */}
+        {plainDesc && (
+          <p style={{
+            fontSize: 12.5, color: INK3, lineHeight: 1.6,
+            marginBottom: 14, flex: 1,
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
+            {plainDesc}
+          </p>
         )}
 
-        {/* Stats */}
-        <div className="flex items-center gap-3 text-[11px] text-gray-400 dark:text-slate-500 font-medium">
-          <span className="flex items-center gap-1">
-            <Play size={10} />
-            {module.video_count} video{module.video_count !== 1 ? 's' : ''}
+        {/* Meta row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 'auto', paddingTop: plainDesc ? 0 : 6 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'monospace', fontSize: 10.5, color: INK3, letterSpacing: '0.04em' }}>
+            <Play size={9} style={{ color: INK3 }} />
+            {module.video_count} LESSON{module.video_count !== 1 ? 'S' : ''}
           </span>
           {module.question_count > 0 && (
-            <span className="flex items-center gap-1">
-              <MessageSquare size={10} />
-              {module.question_count} Q&A
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'monospace', fontSize: 10.5, color: INK3, letterSpacing: '0.04em' }}>
+              <MessageSquare size={9} style={{ color: INK3 }} />
+              {module.question_count} Q&amp;A
             </span>
           )}
         </div>
 
         {/* Progress bar */}
-        {(module.status === 'in_progress' || module.status === 'completed') && (
-          <div className="mt-3">
-            <div className="flex justify-between text-[11px] font-medium mb-1.5">
-              <span className="text-gray-400 dark:text-slate-500">Progress</span>
-              <span className={module.status === 'completed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-brand-600 dark:text-brand-400'}>
+        {(status === 'in_progress' || status === 'completed') && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: INK3 }}>Progress</span>
+              <span style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 600, color: status === 'completed' ? GREEN : GOLD }}>
                 {progress}%
               </span>
             </div>
-            <div className="h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
-              <div
-                className={clsx(
-                  'h-full rounded-full transition-all duration-700 ease-out',
-                  module.status === 'completed'
-                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
-                    : 'bg-gradient-to-r from-brand-400 to-brand-600'
-                )}
-                style={{ width: `${progress}%` }}
-              />
+            <div style={{ height: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 100, overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 100,
+                background: status === 'completed' ? GREEN : GOLD,
+                width: `${progress}%`,
+                transition: 'width 0.8s ease',
+                boxShadow: status === 'completed'
+                  ? '0 0 8px rgba(52,211,153,0.5)'
+                  : '0 0 8px rgba(232,201,126,0.5)',
+              }} />
             </div>
           </div>
         )}
       </div>
-    </div>
+
+      {/* Hover play overlay via style injection */}
+      <style>{`
+        article:hover .card-play-icon {
+          opacity: 1 !important;
+          transform: scale(1) !important;
+        }
+      `}</style>
+    </article>
   );
 }

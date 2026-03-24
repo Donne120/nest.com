@@ -13,11 +13,11 @@ export function useWebSocket(onMessage?: Handler) {
   const { user } = useAuthStore();
   const wsRef = useRef<WebSocket | null>(null);
   const pingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const unmountedRef = useRef(false);
 
   const connect = useCallback(() => {
-    if (!user) return;
-    // In production set VITE_WS_URL e.g. wss://nest-api.onrender.com
-    // In development, derive from current host (proxied by Vite/nginx)
+    if (!user || unmountedRef.current) return;
+
     const wsBase = import.meta.env.VITE_WS_URL
       ?? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
     const ws = new WebSocket(`${wsBase}/ws/${user.id}`);
@@ -50,18 +50,30 @@ export function useWebSocket(onMessage?: Handler) {
 
     ws.onclose = () => {
       if (pingRef.current) clearInterval(pingRef.current);
-      // Reconnect after 3s
-      setTimeout(connect, 3000);
+      // Only reconnect if component is still mounted
+      if (!unmountedRef.current) {
+        setTimeout(connect, 3000);
+      }
     };
 
     wsRef.current = ws;
   }, [user, onMessage]);
 
   useEffect(() => {
+    unmountedRef.current = false;
     connect();
     return () => {
+      unmountedRef.current = true;
       if (pingRef.current) clearInterval(pingRef.current);
-      wsRef.current?.close();
+      const ws = wsRef.current;
+      if (!ws) return;
+      if (ws.readyState === WebSocket.CONNECTING) {
+        // Can't close while connecting — mark as done and let onopen close it
+        ws.onopen = () => ws.close();
+      } else {
+        ws.close();
+      }
+      wsRef.current = null;
     };
   }, [connect]);
 }

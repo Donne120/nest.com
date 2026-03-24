@@ -6,7 +6,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
 import type { Notification } from '../../types';
 import Avatar from '../UI/Avatar';
-import NestLogo from '../UI/NestLogo';
 import SearchModal from '../Search/SearchModal';
 import { useState, useRef, useEffect } from 'react';
 import clsx from 'clsx';
@@ -71,226 +70,241 @@ export default function Navbar() {
   const isManager = user?.role === 'manager' || user?.role === 'admin';
   const isActive = (path: string) => location.pathname.startsWith(path);
 
+  const orgName = organization?.name ?? 'Nest';
+
   return (
     <>
-    <header className={clsx(
-      'h-14 flex items-center px-3 sm:px-5 gap-2 sm:gap-4 z-40 relative',
-      'bg-[#FFFCF8] dark:bg-slate-900',
-      'border-b border-[#E8DDD0] dark:border-slate-700/60',
-      'shadow-[0_1px_0_rgba(80,40,10,0.06)]'
-    )}>
-      {/* Logo */}
-      <Link to="/" className="flex items-center gap-2 mr-1 sm:mr-3 flex-shrink-0 group">
-        {organization?.logo_url ? (
-          <img
-            src={organization.logo_url}
-            alt={organization.name}
-            className="h-7 w-auto object-contain max-w-[120px]"
-          />
-        ) : (
-          <NestLogo size={28} showText={false} />
-        )}
-        <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm hidden sm:block tracking-tight">
-          {organization?.name ?? 'Nest Fledge'}
-        </span>
-      </Link>
-
-      {/* Nav links */}
-      <nav className="flex items-center gap-0.5">
-        <NavLink
-          to="/modules"
-          active={isActive('/modules') || isActive('/video')}
-          icon={<BookOpen size={14} />}
-          label="Modules"
-        />
-        {!isManager && (
-          <NavLink
-            to="/meetings"
-            active={isActive('/meetings')}
-            icon={<Video size={14} />}
-            label="Meetings"
-          />
-        )}
-        {isManager && (
-          <NavLink
-            to="/admin"
-            active={isActive('/admin')}
-            icon={<LayoutDashboard size={14} />}
-            label="Admin"
-          />
-        )}
-      </nav>
-
-      <div className="ml-auto flex items-center gap-1.5">
-        {/* Search */}
-        <button
-          onClick={() => setSearchOpen(true)}
-          aria-label="Search (Ctrl+K)"
-          className={clsx(
-            'hidden sm:flex items-center gap-2 text-sm',
-            'text-[#9C8B7A] dark:text-slate-500',
-            'bg-[#F5EFE7] dark:bg-slate-800/80',
-            'hover:bg-[#EDE4D9] dark:hover:bg-slate-700',
-            'border border-[#DDD4C8] dark:border-slate-700',
-            'rounded-xl px-3 py-1.5 transition-all duration-150',
-            'hover:border-[#C8B9AA] dark:hover:border-slate-600'
+      <header
+        className="h-14 flex items-center px-5 gap-4 z-40 relative"
+        style={{
+          background: 'rgba(11,12,15,0.92)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          boxShadow: '0 1px 0 rgba(0,0,0,0.3)',
+        }}
+      >
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2.5 mr-2 flex-shrink-0 group" style={{ textDecoration: 'none' }}>
+          {organization?.logo_url ? (
+            <img src={organization.logo_url} alt={orgName} className="h-7 w-auto object-contain max-w-[100px]" />
+          ) : (
+            <span
+              style={{
+                fontFamily: "'Lora', Georgia, serif",
+                fontWeight: 900,
+                fontSize: 20,
+                color: '#e8c97e',
+                letterSpacing: '-0.5px',
+              }}
+            >
+              {orgName.toLowerCase()}
+            </span>
           )}
-        >
-          <Search size={13} className="text-gray-400" />
-          <span className="text-xs text-gray-400">Search</span>
-          <kbd className="text-[10px] font-mono bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-md px-1.5 py-0.5 text-gray-400">⌘K</kbd>
-        </button>
-        <button
-          onClick={() => setSearchOpen(true)}
-          aria-label="Search"
-          className="sm:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
-        >
-          <Search size={17} />
-        </button>
+        </Link>
 
-        {/* Notifications */}
-        <div className="relative">
+        {/* Nav links */}
+        <nav className="flex items-center gap-1">
+          <DarkNavLink
+            to="/modules"
+            active={isActive('/modules') || isActive('/video')}
+            label="Modules"
+          />
+          {!isManager && (
+            <DarkNavLink to="/meetings" active={isActive('/meetings')} label="Meetings" />
+          )}
+          {isManager && (
+            <DarkNavLink to="/admin" active={isActive('/admin')} label="Admin" />
+          )}
+        </nav>
+
+        <div className="ml-auto flex items-center gap-1.5">
+
+          {/* Search pill */}
           <button
-            onClick={() => { setNotifOpen(!notifOpen); if (unread > 0) markAllRead.mutate(); }}
-            onKeyDown={(e) => { if (e.key === 'Escape') setNotifOpen(false); }}
-            className={clsx(
-              'relative p-2 rounded-xl transition-all duration-150',
-              'text-gray-500 dark:text-slate-400',
-              'hover:text-gray-700 dark:hover:text-slate-200',
-              'hover:bg-gray-100 dark:hover:bg-slate-800',
-              'focus:outline-none focus:ring-2 focus:ring-brand-500/50'
-            )}
-            aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ''}`}
-            aria-expanded={notifOpen}
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search (Ctrl+K)"
+            className="hidden sm:flex items-center gap-2 transition-all duration-150"
+            style={{
+              background: '#1c1e27',
+              border: '1px solid rgba(255,255,255,0.07)',
+              padding: '7px 14px',
+              borderRadius: 100,
+              fontSize: 12.5,
+              color: '#6b6b78',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)')}
           >
-            <Bell size={17} />
-            {displayUnread > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
-                {displayUnread > 9 ? '9+' : displayUnread}
-              </span>
-            )}
+            <Search size={13} />
+            <span>Search</span>
+            <kbd style={{
+              fontFamily: 'monospace',
+              background: '#0b0c0f',
+              border: '1px solid rgba(255,255,255,0.07)',
+              padding: '1px 5px',
+              borderRadius: 3,
+              fontSize: 11,
+              color: '#6b6b78',
+            }}>⌘K</kbd>
+          </button>
+          <button
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search"
+            className="sm:hidden p-2 rounded-xl transition-colors"
+            style={{ color: '#6b6b78' }}
+          >
+            <Search size={17} />
           </button>
 
-          {notifOpen && (
-            <div className={clsx(
-              'absolute right-0 top-11 z-50 overflow-hidden animate-scale-in',
-              'w-[calc(100vw-1rem)] max-w-xs sm:w-80',
-              'bg-white/95 dark:bg-slate-800/95 backdrop-blur-md',
-              'border border-gray-200/80 dark:border-slate-700/60',
-              'rounded-2xl shadow-modal'
-            )}>
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700/60">
-                <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm tracking-tight">Notifications</h3>
-              </div>
-              <div className="max-h-80 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <p className="text-sm text-gray-400 dark:text-slate-500 p-6 text-center">No notifications yet</p>
-                ) : (
-                  notifications.slice(0, 10).map((n) => (
-                    <div
-                      key={n.id}
-                      className={clsx(
-                        'px-4 py-3 border-b border-gray-50 dark:border-slate-700/40 last:border-0',
-                        'hover:bg-gray-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors',
-                        !n.is_read && 'bg-brand-50/60 dark:bg-brand-900/15'
-                      )}
-                      onClick={() => {
-                        setNotifOpen(false);
-                        if (n.type === 'meeting_confirmed' || n.type === 'meeting_declined' || n.type === 'meeting_request') {
-                          navigate(isManager ? '/admin/meetings' : '/meetings');
-                        } else if (n.reference_id) {
-                          navigate(isManager ? `/admin/questions/${n.reference_id}` : '/modules');
-                        }
-                      }}
-                    >
-                      {!n.is_read && (
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-500 mb-1" />
-                      )}
-                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100 leading-snug">{n.title}</p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+          {/* Notifications */}
+          <div className="relative">
+            <button
+              onClick={() => { setNotifOpen(!notifOpen); if (unread > 0) markAllRead.mutate(); }}
+              className="relative p-2 rounded-full transition-all"
+              style={{
+                background: '#1c1e27',
+                border: '1px solid rgba(255,255,255,0.07)',
+                color: '#9ca3af',
+                width: 32,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              aria-label={`Notifications${displayUnread > 0 ? `, ${displayUnread} unread` : ''}`}
+            >
+              🔔
+              {displayUnread > 0 && (
+                <span
+                  className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full"
+                  style={{ background: '#c45c3c', border: '2px solid #0b0c0f' }}
+                />
+              )}
+            </button>
 
-        {/* User menu */}
-        <div className="relative pl-1.5 border-l border-gray-200/80 dark:border-slate-700/60 ml-0.5" ref={userMenuRef}>
-          <button
-            onClick={() => setUserMenuOpen(o => !o)}
-            onKeyDown={(e) => { if (e.key === 'Escape') setUserMenuOpen(false); if (e.key === 'ArrowDown') setUserMenuOpen(true); }}
-            aria-label="User menu"
-            aria-expanded={userMenuOpen}
-            className={clsx(
-              'flex items-center gap-2 rounded-xl px-2 py-1.5 transition-all duration-150',
-              'hover:bg-gray-100 dark:hover:bg-slate-800',
-              'focus:outline-none focus:ring-2 focus:ring-brand-500/50'
+            {notifOpen && (
+              <div
+                className="absolute right-0 top-11 z-50 overflow-hidden animate-scale-in w-80"
+                style={{
+                  background: 'rgba(19,20,26,0.97)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 12,
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                }}
+              >
+                <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 700, color: '#e8e4dc', fontSize: 14 }}>Notifications</h3>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <p className="p-6 text-center" style={{ fontSize: 13, color: '#6b6b78' }}>No notifications yet</p>
+                  ) : (
+                    notifications.slice(0, 10).map((n) => (
+                      <div
+                        key={n.id}
+                        className="px-4 py-3 cursor-pointer transition-colors"
+                        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)')}
+                        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                        onClick={() => {
+                          setNotifOpen(false);
+                          if (n.type === 'meeting_confirmed' || n.type === 'meeting_declined' || n.type === 'meeting_request') {
+                            navigate(isManager ? '/admin/meetings' : '/meetings');
+                          } else if (n.reference_id) {
+                            navigate(isManager ? `/admin/questions/${n.reference_id}` : '/modules');
+                          }
+                        }}
+                      >
+                        {!n.is_read && <span className="inline-block w-1.5 h-1.5 rounded-full mb-1" style={{ background: '#e8c97e' }} />}
+                        <p style={{ fontSize: 13, fontWeight: 500, color: '#e8e4dc', lineHeight: 1.4 }}>{n.title}</p>
+                        <p style={{ fontSize: 11.5, color: '#6b6b78', marginTop: 2, lineHeight: 1.5 }} className="line-clamp-2">{n.message}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             )}
-          >
-            <Avatar name={user?.full_name ?? 'U'} url={user?.avatar_url} size="sm" />
-            <span className="text-sm font-medium text-gray-700 dark:text-slate-200 hidden sm:block">{user?.full_name}</span>
-          </button>
+          </div>
 
-          {userMenuOpen && (
-            <div className={clsx(
-              'absolute right-0 top-11 w-52 z-50 overflow-hidden animate-scale-in',
-              'bg-white/95 dark:bg-slate-800/95 backdrop-blur-md',
-              'border border-gray-200/80 dark:border-slate-700/60',
-              'rounded-2xl shadow-modal'
-            )}>
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700/60">
-                <p className="text-sm font-semibold text-gray-900 dark:text-slate-100 truncate tracking-tight">{user?.full_name}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 truncate mt-0.5">{user?.email}</p>
+          {/* User menu */}
+          <div className="relative pl-2 ml-1" style={{ borderLeft: '1px solid rgba(255,255,255,0.07)' }} ref={userMenuRef}>
+            <button
+              onClick={() => setUserMenuOpen(o => !o)}
+              aria-label="User menu"
+              className="flex items-center gap-2 rounded-xl px-2 py-1.5 transition-all"
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)')}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+            >
+              <Avatar name={user?.full_name ?? 'U'} url={user?.avatar_url} size="sm" />
+              <span className="text-sm font-medium hidden sm:block" style={{ color: '#e8e4dc' }}>{user?.full_name}</span>
+            </button>
+
+            {userMenuOpen && (
+              <div
+                className="absolute right-0 top-11 w-52 z-50 overflow-hidden animate-scale-in"
+                style={{
+                  background: 'rgba(19,20,26,0.97)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 12,
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                }}
+              >
+                <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#e8e4dc', letterSpacing: '-0.01em' }} className="truncate">{user?.full_name}</p>
+                  <p style={{ fontSize: 11.5, color: '#6b6b78', marginTop: 2 }} className="truncate">{user?.email}</p>
+                </div>
+                <div className="py-1.5 px-1.5">
+                  <Link
+                    to="/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors"
+                    style={{ fontSize: 13, color: '#9ca3af', textDecoration: 'none' }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                  >
+                    <UserCircle size={14} style={{ color: '#6b6b78' }} />
+                    Profile &amp; Appearance
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors"
+                    style={{ fontSize: 13, color: '#c45c3c', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(196,92,60,0.1)')}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                  >
+                    <LogOut size={14} />
+                    Sign out
+                  </button>
+                </div>
               </div>
-              <div className="py-1.5 px-1.5">
-                <Link
-                  to="/profile"
-                  onClick={() => setUserMenuOpen(false)}
-                  className={clsx(
-                    'flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-slate-300',
-                    'hover:bg-gray-50 dark:hover:bg-slate-700/60 rounded-xl transition-colors'
-                  )}
-                >
-                  <UserCircle size={15} className="text-gray-400 dark:text-slate-500" />
-                  Profile & Appearance
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className={clsx(
-                    'w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400',
-                    'hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors'
-                  )}
-                >
-                  <LogOut size={15} />
-                  Sign out
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
-    <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
-  </>
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }
 
-function NavLink({ to, active, icon, label }: { to: string; active: boolean; icon: React.ReactNode; label: string }) {
+function DarkNavLink({ to, active, label }: { to: string; active: boolean; label: string }) {
   return (
     <Link
       to={to}
-      className={clsx(
-        'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-150',
-        active
-          ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]'
-          : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800'
-      )}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150"
+      style={{
+        color: active ? '#e8e4dc' : '#6b6b78',
+        background: active ? '#1c1e27' : 'transparent',
+        textDecoration: 'none',
+        letterSpacing: '0.02em',
+      }}
+      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.color = '#e8e4dc'; (e.currentTarget as HTMLElement).style.background = '#1c1e27'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = active ? '#e8e4dc' : '#6b6b78'; (e.currentTarget as HTMLElement).style.background = active ? '#1c1e27' : 'transparent'; }}
     >
-      {icon}
-      <span className="hidden xs:inline sm:inline">{label}</span>
+      {label}
     </Link>
   );
 }

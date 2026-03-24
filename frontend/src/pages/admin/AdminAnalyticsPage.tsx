@@ -1,199 +1,240 @@
-import type { ReactNode, ElementType } from 'react';
+import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  LineChart, Line, CartesianGrid, Legend,
+  LineChart, Line, CartesianGrid,
 } from 'recharts';
 import api from '../../api/client';
 import type { ModuleAnalytics, DashboardStats, BenchmarkData } from '../../types';
 import { Skeleton } from '../../components/UI/Skeleton';
-import {
-  TrendingUp, Clock, Users, MessageSquare, Zap,
-  CheckCircle2, AlertCircle, BarChart2, Download, Circle,
-} from 'lucide-react';
+import { Download, Zap } from 'lucide-react';
 
-// ─── Completion report types ───────────────────────────────────────────────────
+// ── Design tokens (matches AdminLayout / AdminDashboard) ────────────────────
+const INK    = '#1a1714';
+const INK2   = '#6b6460';
+const INK3   = '#a09990';
+const RULE   = '#d4cdc6';
+const SURF   = '#fffcf8';
+const BG     = '#f2ede8';
+const BG2    = '#e8e2db';
+const ACC    = '#c94f2c';   // terracotta
+const ACC2   = '#2c6bc9';   // blue
+const GO     = '#2a7a4b';   // green
+const WARN   = '#c97a2c';   // amber
+const UI     = "'Syne', 'Inter', sans-serif";
+const MONO   = "'Inconsolata', monospace";
+const DISP   = "'Fraunces', Georgia, serif";
 
-interface EmployeeCompletion {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  department: string | null;
-  joined: string;
-  completed_modules: number;
-  total_modules: number;
-  completion_pct: number;
-}
-
-interface CompletionReport {
-  modules: { id: string; title: string }[];
-  employees: EmployeeCompletion[];
-  summary: { total: number; completed: number; in_progress: number; not_started: number };
-}
-
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(s: number) {
   const m = Math.floor(s / 60);
   return `${m}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
 }
 
-// ─── KPI card ─────────────────────────────────────────────────────────────────
-function KpiCard({
-  label, value, sub, icon: Icon, accent,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  icon: ElementType;
-  accent: string; // tailwind bg class for icon area
-}) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-        <div className={`w-9 h-9 ${accent} rounded-xl flex items-center justify-center`}>
-          <Icon size={16} className="text-white" />
-        </div>
-      </div>
-      <div>
-        <p className="text-3xl font-extrabold text-gray-900 leading-none tabular-nums">{value}</p>
-        {sub && <p className="text-xs text-gray-400 mt-1.5">{sub}</p>}
-      </div>
-    </div>
-  );
-}
+const ttStyle = {
+  borderRadius: 4, border: `1px solid ${RULE}`,
+  boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+  fontSize: 11, fontFamily: MONO,
+  background: SURF, color: INK,
+};
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
-function Section({
-  title, description, badge, children,
-}: {
-  title: string;
-  description: string;
-  badge?: ReactNode;
+// ── Panel wrapper ─────────────────────────────────────────────────────────────
+function Panel({ title, sub, action, noPad, children }: {
+  title: string; sub?: string;
+  action?: ReactNode;
+  noPad?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-gray-900">{title}</h2>
-          {badge}
+    <div style={{ background: SURF, border: `1px solid ${RULE}`, borderRadius: 6, overflow: 'hidden' }}>
+      <div style={{ padding: '16px 22px', borderBottom: `1px solid ${RULE}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.01em', color: INK, fontFamily: UI }}>{title}</div>
+          {sub && <div style={{ fontFamily: MONO, fontSize: 10, color: INK3, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>{sub}</div>}
         </div>
-        <p className="text-xs text-gray-400 mt-0.5">{description}</p>
+        {action}
       </div>
-      <div className="px-6 py-6">{children}</div>
+      <div style={noPad ? {} : { padding: 22 }}>{children}</div>
     </div>
   );
 }
 
-// ─── Tooltip styles ───────────────────────────────────────────────────────────
-const tooltipStyle = {
-  borderRadius: 10,
-  border: '1px solid #e5e7eb',
-  boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-  fontSize: 12,
-  fontFamily: 'inherit',
-};
+// ── KPI grid ──────────────────────────────────────────────────────────────────
+function KpiGrid({ stats }: { stats: DashboardStats }) {
+  const resolutionRate = stats.total_questions > 0
+    ? Math.round((stats.answered_questions / stats.total_questions) * 100) : 0;
 
-// ─── Benchmarks ───────────────────────────────────────────────────────────────
+  const kpis = [
+    {
+      label: 'Total Questions',
+      value: <>{stats.total_questions}</>,
+      sub: 'Across all modules',
+      variant: 'blue' as const,
+      trend: '— no change',
+      icon: (
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M8 2a6 6 0 110 12A6 6 0 018 2zM8 7v2M8 11h.01"/>
+        </svg>
+      ),
+    },
+    {
+      label: 'Avg Response Time',
+      value: <>{stats.avg_response_time_hours}<span style={{ fontSize: 20, letterSpacing: 0 }}>h</span></>,
+      sub: 'From question to answer',
+      variant: 'amber' as const,
+      trend: stats.avg_response_time_hours === 0 ? '— idle' : `↑ ${stats.avg_response_time_hours}h avg`,
+      icon: (
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M8 3v5l3 3"/><circle cx="8" cy="8" r="6"/>
+        </svg>
+      ),
+    },
+    {
+      label: 'Resolution Rate',
+      value: <>{resolutionRate}<span style={{ fontSize: 20, letterSpacing: 0 }}>%</span></>,
+      sub: `${stats.answered_questions} of ${stats.total_questions} answered`,
+      variant: 'green' as const,
+      trend: resolutionRate > 0 ? `↑ ${resolutionRate}% rate` : '— no data',
+      icon: (
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M3 8l3.5 3.5L13 5"/>
+        </svg>
+      ),
+    },
+    {
+      label: 'Active Learners',
+      value: <>{stats.total_employees ?? 0}</>,
+      sub: 'Enrolled employees',
+      variant: 'red' as const,
+      trend: '— enrolled',
+      icon: (
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <circle cx="8" cy="5" r="3"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5"/>
+        </svg>
+      ),
+    },
+  ];
 
-function BenchmarksSection() {
+  const VARIANTS = {
+    blue:  { bg: `rgba(44,107,201,0.1)`,  color: ACC2 },
+    amber: { bg: `rgba(201,122,44,0.1)`,  color: WARN },
+    green: { bg: `rgba(42,122,75,0.1)`,   color: GO },
+    red:   { bg: `rgba(201,79,44,0.1)`,   color: ACC },
+  };
+
+  return (
+    <div style={{
+      display: 'grid', gridTemplateColumns: 'repeat(4,1fr)',
+      gap: '1px', background: RULE,
+      border: `1px solid ${RULE}`, borderRadius: 6,
+      overflow: 'hidden', marginBottom: 24,
+    }}>
+      {kpis.map(k => {
+        const ic = VARIANTS[k.variant];
+        return (
+          <div key={k.label}
+            style={{ background: SURF, padding: '22px 24px 20px', position: 'relative', transition: 'background 0.2s', cursor: 'default' }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#fffef9')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = SURF)}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.18em', textTransform: 'uppercase', color: INK3 }}>{k.label}</span>
+              <div style={{ width: 18, height: 18, borderRadius: 3, background: ic.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ic.color, flexShrink: 0 }}>{k.icon}</div>
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 42, fontWeight: 600, lineHeight: 1, color: INK, letterSpacing: '-0.03em' }}>{k.value}</div>
+            {k.sub && <div style={{ fontSize: 11.5, color: INK3, marginTop: 8, fontWeight: 400, fontFamily: UI }}>{k.sub}</div>}
+            <div style={{ position: 'absolute', bottom: 14, right: 16, fontFamily: MONO, fontSize: 10, letterSpacing: '0.06em', color: INK3 }}>{k.trend}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Benchmarks ────────────────────────────────────────────────────────────────
+function BenchmarksPanel() {
   const { data } = useQuery<BenchmarkData>({
     queryKey: ['benchmarks'],
     queryFn: () => api.get('/analytics/benchmarks').then(r => r.data),
     staleTime: 300_000,
   });
-
   if (!data) return null;
 
   const pct = (val: number, max: number) => Math.min(Math.round((val / max) * 100), 100);
   const maxRate = Math.max(data.org_completion_rate, data.platform_avg_completion_rate, 1);
   const maxDays = Math.max(data.org_avg_days_to_complete ?? 0, data.platform_avg_days_to_complete ?? 0, 1);
 
-  const rankColor =
-    data.org_rank_percentile >= 75 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' :
-    data.org_rank_percentile >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' :
-    'text-red-600 bg-red-50 border-red-200';
+  const rankPct  = 100 - data.org_rank_percentile;
+  const rankColor = rankPct <= 25 ? GO : rankPct <= 50 ? WARN : ACC;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-gray-900">Platform Benchmarks</h2>
-            <span className={`text-[10px] font-bold uppercase tracking-wider border rounded-full px-2 py-0.5 ${rankColor}`}>
-              Top {100 - data.org_rank_percentile}%
-            </span>
-          </div>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Your org vs. {data.total_orgs_compared} companies on Nest
-          </p>
+    <Panel
+      title="Platform Benchmarks"
+      sub={`Your org vs. ${data.total_orgs_compared} companies on Nest`}
+      action={
+        <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: rankColor, background: `${rankColor}14`, border: `1px solid ${rankColor}30`, borderRadius: 100, padding: '3px 10px' }}>
+          Top {rankPct}%
         </div>
-      </div>
-      <div className="px-6 py-5 space-y-5">
+      }
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Completion rate */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-600">Completion Rate</span>
-            <div className="flex items-center gap-3 text-xs">
-              <span className="font-bold text-brand-700">You: {data.org_completion_rate}%</span>
-              <span className="text-gray-400">Avg: {data.platform_avg_completion_rate}%</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: INK2 }}>Completion Rate</span>
+            <div style={{ display: 'flex', gap: 14, fontFamily: MONO, fontSize: 11 }}>
+              <span style={{ fontWeight: 600, color: ACC2 }}>You: {data.org_completion_rate}%</span>
+              <span style={{ color: INK3 }}>Avg: {data.platform_avg_completion_rate}%</span>
             </div>
           </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-brand-600 font-semibold w-7">You</span>
-              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-brand-500 rounded-full transition-all" style={{ width: `${pct(data.org_completion_rate, maxRate)}%` }} />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-gray-400 font-semibold w-7">Avg</span>
-              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-gray-300 rounded-full transition-all" style={{ width: `${pct(data.platform_avg_completion_rate, maxRate)}%` }} />
-              </div>
-            </div>
-          </div>
+          <BenchBar label="You" pct={pct(data.org_completion_rate, maxRate)} color={ACC2} />
+          <BenchBar label="Avg" pct={pct(data.platform_avg_completion_rate, maxRate)} color={RULE} />
         </div>
 
-        {/* Time to complete */}
+        {/* Days to complete */}
         {(data.org_avg_days_to_complete !== null || data.platform_avg_days_to_complete !== null) && (
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-gray-600">Avg Days to Complete</span>
-              <div className="flex items-center gap-3 text-xs">
-                <span className="font-bold text-brand-700">
-                  You: {data.org_avg_days_to_complete !== null ? `${data.org_avg_days_to_complete}d` : '—'}
-                </span>
-                <span className="text-gray-400">Avg: {data.platform_avg_days_to_complete}d</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: INK2 }}>Avg Days to Complete</span>
+              <div style={{ display: 'flex', gap: 14, fontFamily: MONO, fontSize: 11 }}>
+                <span style={{ fontWeight: 600, color: ACC2 }}>You: {data.org_avg_days_to_complete !== null ? `${data.org_avg_days_to_complete}d` : '—'}</span>
+                <span style={{ color: INK3 }}>Avg: {data.platform_avg_days_to_complete}d</span>
               </div>
             </div>
-            <div className="space-y-1.5">
-              {data.org_avg_days_to_complete !== null && (
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-brand-600 font-semibold w-7">You</span>
-                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-brand-500 rounded-full" style={{ width: `${pct(data.org_avg_days_to_complete, maxDays)}%` }} />
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-400 font-semibold w-7">Avg</span>
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gray-300 rounded-full" style={{ width: `${pct(data.platform_avg_days_to_complete ?? 0, maxDays)}%` }} />
-                </div>
-              </div>
-            </div>
+            {data.org_avg_days_to_complete !== null && <BenchBar label="You" pct={pct(data.org_avg_days_to_complete, maxDays)} color={ACC2} />}
+            <BenchBar label="Avg" pct={pct(data.platform_avg_days_to_complete ?? 0, maxDays)} color={RULE} />
           </div>
         )}
+      </div>
+    </Panel>
+  );
+}
+
+function BenchBar({ label, pct, color }: { label: string; pct: number; color: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+      <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', color: color === RULE ? INK3 : ACC2, width: 28, flexShrink: 0 }}>{label}</span>
+      <div style={{ flex: 1, height: 4, background: BG2, borderRadius: 100, overflow: 'hidden' }}>
+        <div style={{ height: '100%', borderRadius: 100, background: color === RULE ? INK3 : color, width: `${pct}%`, opacity: color === RULE ? 0.35 : 1, transition: 'width 0.8s ease' }} />
       </div>
     </div>
   );
 }
 
-// ─── Completion Report ────────────────────────────────────────────────────────
+// ── Completion types ──────────────────────────────────────────────────────────
+interface EmployeeCompletion {
+  id: string; name: string; email: string; role: string;
+  department: string | null; joined: string;
+  completed_modules: number; total_modules: number; completion_pct: number;
+}
+interface CompletionReport {
+  modules: { id: string; title: string }[];
+  employees: EmployeeCompletion[];
+  summary: { total: number; completed: number; in_progress: number; not_started: number };
+}
 
-function CompletionReportSection() {
+// ── Completion Report ─────────────────────────────────────────────────────────
+function CompletionReportPanel() {
   const { data, isLoading } = useQuery<CompletionReport>({
     queryKey: ['completion-report'],
     queryFn: () => api.get('/analytics/completion-report').then(r => r.data),
@@ -201,107 +242,106 @@ function CompletionReportSection() {
 
   const downloadCsv = async () => {
     try {
-      const response = await api.get('/analytics/export.csv', { responseType: 'blob' });
-      const url = URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'nest-onboarding-report.csv';
-      a.click();
+      const res = await api.get('/analytics/export.csv', { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }));
+      const a = document.createElement('a'); a.href = url; a.download = 'nest-report.csv'; a.click();
       URL.revokeObjectURL(url);
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
   };
 
-  const pctColor = (pct: number) =>
-    pct === 100 ? '#16a34a' : pct >= 50 ? '#d97706' : pct > 0 ? '#2563eb' : '#94a3b8';
-
-  if (isLoading) return <Skeleton className="h-64 rounded-2xl" />;
+  if (isLoading) return <Skeleton className="h-64 rounded" style={{ borderRadius: 6 }} />;
   if (!data) return null;
 
   const { summary, employees } = data;
 
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">Completion Report</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Who's finished, who's stuck, who hasn't started</p>
-        </div>
-        <button
-          onClick={downloadCsv}
-          className="flex items-center gap-1.5 text-xs font-semibold text-brand-600 border border-brand-200 hover:bg-brand-50 px-3 py-1.5 rounded-lg transition-colors"
-        >
-          <Download size={12} />
-          Export CSV
-        </button>
-      </div>
+  const pctColor = (p: number) => p === 100 ? GO : p >= 50 ? WARN : p > 0 ? ACC2 : INK3;
 
-      {/* Summary pills */}
-      <div className="flex gap-3 flex-wrap px-6 py-4 border-b border-gray-50 bg-gray-50/50">
-        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1.5">
-          <CheckCircle2 size={13} className="text-emerald-500" />
-          <span className="text-xs font-semibold text-emerald-700">{summary.completed} completed</span>
-        </div>
-        <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-full px-3 py-1.5">
-          <AlertCircle size={13} className="text-amber-500" />
-          <span className="text-xs font-semibold text-amber-700">{summary.in_progress} in progress</span>
-        </div>
-        <div className="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5">
-          <Circle size={13} className="text-gray-400" />
-          <span className="text-xs font-semibold text-gray-500">{summary.not_started} not started</span>
-        </div>
+  const summaryItems = [
+    { label: 'Completed',   val: summary.completed,   color: GO },
+    { label: 'In Progress', val: summary.in_progress,  color: WARN },
+    { label: 'Not Started', val: summary.not_started,  color: INK3 },
+  ];
+
+  return (
+    <Panel
+      title="Completion Report"
+      sub="Who's finished, who's stuck, who hasn't started"
+      noPad
+      action={
+        <button onClick={downloadCsv} style={{
+          fontFamily: MONO, fontSize: 11, letterSpacing: '0.06em',
+          color: ACC2, background: 'none',
+          border: `1px solid rgba(44,107,201,0.25)`,
+          borderRadius: 4, padding: '5px 12px', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 6,
+          transition: 'opacity 0.2s',
+        }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.7')}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+        >
+          <Download size={11} /> Export CSV
+        </button>
+      }
+    >
+      {/* Summary strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: RULE, borderBottom: `1px solid ${RULE}` }}>
+        {summaryItems.map(s => (
+          <div key={s.label} style={{ background: BG, padding: '14px 20px', textAlign: 'center' }}>
+            <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: INK3, marginBottom: 6 }}>{s.label}</div>
+            <div style={{ fontFamily: MONO, fontSize: 28, fontWeight: 600, color: s.color, lineHeight: 1 }}>{s.val}</div>
+          </div>
+        ))}
       </div>
 
       {/* Table */}
       {employees.length === 0 ? (
-        <div className="py-16 text-center">
-          <Users size={24} className="text-gray-200 mx-auto mb-3" />
-          <p className="text-sm text-gray-500">No employees yet. Invite your team to get started.</p>
+        <div style={{ padding: '60px 22px', textAlign: 'center' }}>
+          <div style={{ width: 40, height: 40, border: `1.5px solid ${RULE}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: INK3, fontSize: 16 }}>👤</div>
+          <p style={{ fontFamily: UI, fontSize: 13.5, fontWeight: 700, color: INK, marginBottom: 4 }}>No employees yet</p>
+          <p style={{ fontFamily: UI, fontSize: 12.5, color: INK3 }}>Invite your team to get started.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Employee</th>
-                <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Role</th>
-                <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-4 py-3 hidden md:table-cell">Joined</th>
-                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-3">Progress</th>
+              <tr style={{ borderBottom: `1px solid ${RULE}` }}>
+                {['Employee', 'Role', 'Joined', 'Progress'].map((h, i) => (
+                  <th key={h} style={{
+                    textAlign: i === 3 ? 'right' : 'left',
+                    fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: INK3,
+                    padding: '10px 22px', fontWeight: 500,
+                  }}>{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
-              {employees.map((emp) => (
-                <tr key={emp.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-3.5">
-                    <p className="text-[13px] font-semibold text-gray-900">{emp.name}</p>
-                    <p className="text-[11px] text-gray-400">{emp.email}</p>
+            <tbody>
+              {employees.map((emp, idx) => (
+                <tr key={emp.id}
+                  style={{ borderBottom: idx < employees.length - 1 ? `1px solid rgba(212,205,198,0.4)` : 'none', transition: 'background 0.15s' }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = BG2)}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                >
+                  <td style={{ padding: '14px 22px' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: INK, fontFamily: UI, marginBottom: 2 }}>{emp.name}</p>
+                    <p style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.02em' }}>{emp.email}</p>
                   </td>
-                  <td className="px-4 py-3.5 hidden sm:table-cell">
-                    <span className="text-[11px] font-medium capitalize text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                  <td style={{ padding: '14px 22px' }}>
+                    <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: INK3, background: BG2, border: `1px solid ${RULE}`, borderRadius: 100, padding: '3px 9px' }}>
                       {emp.role}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5 hidden md:table-cell">
-                    <span className="text-[12px] text-gray-400">
-                      {new Date(emp.joined).toLocaleDateString()}
+                  <td style={{ padding: '14px 22px' }}>
+                    <span style={{ fontFamily: MONO, fontSize: 11.5, color: INK3 }}>
+                      {new Date(emp.joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   </td>
-                  <td className="px-6 py-3.5">
-                    <div className="flex items-center justify-end gap-3">
-                      <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden hidden sm:block">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: `${emp.completion_pct}%`, backgroundColor: pctColor(emp.completion_pct) }}
-                        />
+                  <td style={{ padding: '14px 22px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+                      <div style={{ width: 80, height: 3, background: BG2, borderRadius: 100, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', borderRadius: 100, background: pctColor(emp.completion_pct), width: `${emp.completion_pct}%`, transition: 'width 0.7s ease' }} />
                       </div>
-                      <span className="text-[12px] font-bold tabular-nums" style={{ color: pctColor(emp.completion_pct) }}>
-                        {emp.completion_pct}%
-                      </span>
-                      <span className="text-[11px] text-gray-400 hidden sm:inline">
-                        {emp.completed_modules}/{emp.total_modules}
-                      </span>
+                      <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 600, color: pctColor(emp.completion_pct), minWidth: 36, textAlign: 'right' }}>{emp.completion_pct}%</span>
+                      <span style={{ fontFamily: MONO, fontSize: 11, color: INK3 }}>{emp.completed_modules}/{emp.total_modules}</span>
                     </div>
                   </td>
                 </tr>
@@ -310,21 +350,23 @@ function CompletionReportSection() {
           </table>
         </div>
       )}
-    </div>
+    </Panel>
   );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function AdminAnalyticsPage() {
   const { data: moduleAnalytics = [], isLoading } = useQuery<ModuleAnalytics[]>({
     queryKey: ['module-analytics'],
     queryFn: () => api.get('/analytics/modules').then(r => r.data),
   });
-
   const { data: stats } = useQuery<DashboardStats>({
     queryKey: ['admin-stats'],
     queryFn: () => api.get('/analytics/dashboard').then(r => r.data),
   });
+
+  const resolutionRate = stats && stats.total_questions > 0
+    ? Math.round((stats.answered_questions / stats.total_questions) * 100) : 0;
 
   const barData = moduleAnalytics.map(m => ({
     name: m.module_title.split(':')[0].trim().substring(0, 20),
@@ -332,228 +374,163 @@ export default function AdminAnalyticsPage() {
     Pending: m.pending_questions,
   }));
 
-  const resolutionData = moduleAnalytics.map(m => ({
+  const lineData = moduleAnalytics.map(m => ({
     name: m.module_title.split(':')[0].trim().substring(0, 20),
-    rate: m.total_questions > 0
-      ? Math.round((m.answered_questions / m.total_questions) * 100)
-      : 0,
+    rate: m.total_questions > 0 ? Math.round((m.answered_questions / m.total_questions) * 100) : 0,
   }));
-
-  const resolutionRate = stats && stats.total_questions > 0
-    ? Math.round((stats.answered_questions / stats.total_questions) * 100)
-    : 0;
 
   const confusionModules = moduleAnalytics.filter(m => m.top_confusion_timestamps.length > 0);
 
   return (
-    <div className="p-6 lg:p-10 max-w-6xl">
+    <div style={{ padding: 32, fontFamily: UI }}>
 
       {/* ── Header ── */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <BarChart2 size={16} className="text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Analytics</h1>
+      <div style={{ marginBottom: 32, animation: 'dash-slideUp 0.5s ease both' }}>
+        <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: ACC, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 18, height: 1, background: ACC, display: 'inline-block', opacity: 0.6 }} />
+          Admin
         </div>
-        <p className="text-sm text-gray-500 ml-10">
+        <h1 style={{ fontFamily: DISP, fontSize: 'clamp(28px,3vw,42px)', fontWeight: 300, fontStyle: 'italic', letterSpacing: '-0.02em', lineHeight: 1.1, color: INK, marginBottom: 6 }}>
+          Analytics
+        </h1>
+        <p style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           Knowledge gaps, response metrics, and learner engagement
         </p>
       </div>
 
-      {/* ── KPI strip ── */}
+      {/* ── KPI grid ── */}
       {stats ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <KpiCard
-            label="Total Questions"
-            value={stats.total_questions}
-            sub="across all modules"
-            icon={MessageSquare}
-            accent="bg-blue-500"
-          />
-          <KpiCard
-            label="Avg Response Time"
-            value={`${stats.avg_response_time_hours}h`}
-            sub="from question to answer"
-            icon={Clock}
-            accent="bg-amber-500"
-          />
-          <KpiCard
-            label="Resolution Rate"
-            value={`${resolutionRate}%`}
-            sub={`${stats.answered_questions} of ${stats.total_questions} answered`}
-            icon={TrendingUp}
-            accent="bg-emerald-500"
-          />
-          <KpiCard
-            label="Active Learners"
-            value={stats.total_employees ?? '—'}
-            sub="enrolled employees"
-            icon={Users}
-            accent="bg-violet-500"
-          />
-        </div>
+        <KpiGrid stats={stats} />
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[108px] rounded-2xl" />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 4, marginBottom: 24 }}>
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28" style={{ borderRadius: 6 }} />)}
         </div>
       )}
 
-      {/* ── Resolution bar (inline summary) ── */}
+      {/* ── Resolution summary bar ── */}
       {stats && stats.total_questions > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 mb-6 flex items-center gap-6">
-          <div className="flex items-center gap-2 text-sm text-emerald-700 font-semibold">
-            <CheckCircle2 size={16} className="text-emerald-500" />
+        <div style={{
+          background: SURF, border: `1px solid ${RULE}`, borderRadius: 6,
+          padding: '14px 22px', marginBottom: 24,
+          display: 'flex', alignItems: 'center', gap: 16,
+        }}>
+          <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, color: GO, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
             {stats.answered_questions} answered
+          </span>
+          <div style={{ flex: 1, height: 3, background: BG2, borderRadius: 100, overflow: 'hidden' }}>
+            <div style={{ height: '100%', background: GO, borderRadius: 100, width: `${resolutionRate}%`, transition: 'width 0.8s ease', boxShadow: `0 0 8px ${GO}55` }} />
           </div>
-          <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all"
-              style={{ width: `${resolutionRate}%` }}
-            />
-          </div>
-          <div className="flex items-center gap-2 text-sm text-amber-600 font-semibold">
-            <AlertCircle size={16} className="text-amber-400" />
+          <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, color: WARN, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
             {stats.total_questions - stats.answered_questions} pending
-          </div>
+          </span>
         </div>
       )}
 
-      {/* ── Benchmarks ── */}
-      <BenchmarksSection />
-
-      {/* ── Completion Report ── */}
-      <div className="mb-6">
-        <CompletionReportSection />
+      {/* ── Lower grid: Benchmarks + Completion side-by-side ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 20, marginBottom: 24 }}>
+        <BenchmarksPanel />
+        <CompletionReportPanel />
       </div>
 
       {/* ── Charts ── */}
       {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-72 rounded-2xl" />
-          <Skeleton className="h-64 rounded-2xl" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Skeleton className="h-64" style={{ borderRadius: 6 }} />
+          <Skeleton className="h-56" style={{ borderRadius: 6 }} />
         </div>
       ) : moduleAnalytics.length === 0 ? (
-        <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl py-24 text-center">
-          <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <BarChart2 size={24} className="text-gray-300" />
+        <div style={{ background: SURF, border: `1px solid ${RULE}`, borderRadius: 6, padding: '80px 20px', textAlign: 'center' }}>
+          <div style={{ width: 40, height: 40, border: `1.5px solid ${RULE}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 18, color: INK3 }}>
+            ▦
           </div>
-          <p className="text-gray-900 font-semibold">No data yet</p>
-          <p className="text-sm text-gray-400 mt-1.5">
-            Analytics will appear once learners start asking questions.
-          </p>
+          <p style={{ fontSize: 13.5, fontWeight: 700, color: INK, marginBottom: 4, fontFamily: UI }}>No chart data yet</p>
+          <p style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.04em' }}>Analytics will appear once learners start asking questions.</p>
         </div>
       ) : (
-        <div className="space-y-5">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* Questions per Module */}
-          <Section
-            title="Questions per Module"
-            description="Answered vs pending questions stacked by module"
-          >
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={barData} margin={{ left: -16, right: 8, top: 4, bottom: 0 }} barSize={28}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 11, fill: '#94a3b8', fontFamily: 'inherit' }}
-                  axisLine={false} tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: '#94a3b8', fontFamily: 'inherit' }}
-                  axisLine={false} tickLine={false}
-                />
-                <Tooltip
-                  contentStyle={tooltipStyle}
-                  cursor={{ fill: '#f8fafc' }}
-                />
-                <Legend
-                  iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{ paddingTop: 16 }}
-                  formatter={v => (
-                    <span style={{ fontSize: 12, color: '#64748b', fontFamily: 'inherit' }}>{v}</span>
-                  )}
-                />
-                <Bar dataKey="Answered" fill="#10b981" radius={[0, 0, 0, 0]} stackId="a" />
-                <Bar dataKey="Pending"  fill="#f59e0b" radius={[4, 4, 0, 0]} stackId="a" />
+          <Panel title="Questions per Module" sub="Answered vs pending — stacked by module">
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={barData} margin={{ left: -16, right: 8, top: 4, bottom: 0 }} barSize={24}>
+                <CartesianGrid strokeDasharray="2 4" stroke={RULE} vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: INK3, fontFamily: "'Inconsolata',monospace", letterSpacing: '0.04em' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: INK3, fontFamily: "'Inconsolata',monospace" }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={ttStyle} cursor={{ fill: BG2 }} />
+                <Bar dataKey="Answered" fill={GO}  radius={[0,0,0,0]} stackId="a" name="Answered" />
+                <Bar dataKey="Pending"  fill={WARN} radius={[2,2,0,0]} stackId="a" name="Pending" />
               </BarChart>
             </ResponsiveContainer>
-          </Section>
+            <div style={{ display: 'flex', gap: 20, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${RULE}` }}>
+              <LegendDot color={GO}   label="Answered" />
+              <LegendDot color={WARN} label="Pending" />
+            </div>
+          </Panel>
 
           {/* Resolution Rate */}
-          <Section
-            title="Resolution Rate by Module"
-            description="Percentage of questions answered per module"
-          >
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={resolutionData} margin={{ left: -16, right: 8, top: 4, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 11, fill: '#94a3b8', fontFamily: 'inherit' }}
-                  axisLine={false} tickLine={false}
-                />
-                <YAxis
-                  domain={[0, 100]}
-                  tick={{ fontSize: 11, fill: '#94a3b8', fontFamily: 'inherit' }}
-                  axisLine={false} tickLine={false}
-                  tickFormatter={v => `${v}%`}
-                />
-                <Tooltip
-                  contentStyle={tooltipStyle}
-                  cursor={false}
-                  formatter={(v: number) => [`${v}%`, 'Resolution']}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="rate"
-                  stroke="#6366f1"
-                  strokeWidth={2.5}
-                  dot={{ fill: '#6366f1', r: 5, strokeWidth: 0 }}
-                  activeDot={{ r: 6, fill: '#4f46e5', strokeWidth: 0 }}
-                  name="Resolution %"
-                />
+          <Panel title="Resolution Rate by Module" sub="Percentage of questions answered per module">
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={lineData} margin={{ left: -16, right: 8, top: 4, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="2 4" stroke={RULE} vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: INK3, fontFamily: "'Inconsolata',monospace" }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: INK3, fontFamily: "'Inconsolata',monospace" }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
+                <Tooltip contentStyle={ttStyle} cursor={false} formatter={(v: number) => [`${v}%`, 'Resolution']} />
+                <Line type="monotone" dataKey="rate" stroke={ACC2} strokeWidth={2} dot={{ fill: ACC2, r: 4, strokeWidth: 0 }} activeDot={{ r: 5, fill: ACC2, strokeWidth: 2, stroke: SURF }} name="Resolution %" />
               </LineChart>
             </ResponsiveContainer>
-          </Section>
+          </Panel>
 
           {/* Confusion Points */}
           {confusionModules.length > 0 && (
-            <Section
+            <Panel
               title="Top Confusion Points"
-              description="Moments in videos where learners ask the most questions — review these timestamps"
-              badge={
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+              sub="Video moments where learners ask the most — review these timestamps"
+              action={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: WARN, background: `${WARN}14`, border: `1px solid ${WARN}30`, borderRadius: 100, padding: '3px 10px' }}>
                   <Zap size={10} /> Insight
-                </span>
+                </div>
               }
             >
-              <div className="space-y-6">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {confusionModules.map(m => (
                   <div key={m.module_id}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
-                      <p className="text-sm font-semibold text-gray-800 truncate">{m.module_title}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: ACC2, display: 'inline-block', flexShrink: 0 }} />
+                      <p style={{ fontSize: 13, fontWeight: 600, color: INK, fontFamily: UI, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.module_title}</p>
                     </div>
-                    <div className="flex gap-2 flex-wrap pl-3.5">
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingLeft: 13 }}>
                       {m.top_confusion_timestamps.map((ts, i) => (
-                        <span
-                          key={i}
-                          className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg px-3 py-1.5 text-xs font-mono font-bold shadow-sm"
-                        >
-                          <Zap size={10} className="text-amber-400" />
-                          {fmt(ts)}
+                        <span key={i} style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 5,
+                          background: `${WARN}10`, color: WARN,
+                          border: `1px solid ${WARN}30`,
+                          borderRadius: 4, padding: '4px 10px',
+                          fontFamily: MONO, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em',
+                        }}>
+                          <Zap size={9} style={{ opacity: 0.7 }} /> {fmt(ts)}
                         </span>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
-            </Section>
+            </Panel>
           )}
         </div>
       )}
+
+      <style>{`
+        @keyframes dash-slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+      `}</style>
+    </div>
+  );
+}
+
+function LegendDot({ color, label }: { color: string; label: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span style={{ width: 8, height: 8, borderRadius: 2, background: color, display: 'inline-block' }} />
+      <span style={{ fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.06em' }}>{label}</span>
     </div>
   );
 }

@@ -21,7 +21,6 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
   const barRef = useRef<HTMLDivElement>(null);
   const [hoveredTs, setHoveredTs] = useState<number | null>(null);
   const [tooltipMarker, setTooltipMarker] = useState<TimelineMarker | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -32,56 +31,62 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
     return ratio * duration;
   };
 
-  const handleBarClick = (e: React.MouseEvent) => {
-    const t = getTimeFromEvent(e);
-    onSeek(t);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setHoveredTs(getTimeFromEvent(e));
-  };
+  const handleBarClick = (e: React.MouseEvent) => onSeek(getTimeFromEvent(e));
+  const handleMouseMove = (e: React.MouseEvent) => setHoveredTs(getTimeFromEvent(e));
 
   return (
     <div className="relative mb-2">
       {/* Timestamp labels */}
-      <div className="flex justify-between text-xs text-white/70 mb-1 px-0.5">
+      <div className="flex justify-between mb-1 px-0.5" style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 11, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.05em' }}>
         <span>{formatTime(currentTime)}</span>
         <span>{formatTime(duration)}</span>
       </div>
 
-      {/* Timeline bar */}
+      {/* Bar */}
       <div
         ref={barRef}
-        className="relative h-1.5 bg-white/30 rounded-full cursor-pointer group/bar hover:h-2.5 transition-all duration-150"
+        className="relative cursor-pointer group/bar rounded-full transition-all duration-150"
+        style={{ height: 3, background: 'rgba(255,255,255,0.12)' }}
         onClick={handleBarClick}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => { setHoveredTs(null); setTooltipMarker(null); }}
+        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.height = '5px'; }}
       >
-        {/* Progress fill */}
+        {/* Gold fill */}
         <div
-          className="absolute left-0 top-0 h-full bg-brand-500 rounded-full transition-[width] duration-100"
-          style={{ width: `${progress}%` }}
+          className="absolute left-0 top-0 h-full rounded-full transition-[width] duration-100"
+          style={{ width: `${progress}%`, background: '#e8c97e' }}
         />
 
-        {/* Scrubber thumb */}
+        {/* Glowing gold scrubber dot */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover/bar:opacity-100 transition-opacity"
-          style={{ left: `calc(${progress}% - 6px)` }}
+          className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full opacity-0 group-hover/bar:opacity-100 transition-opacity"
+          style={{
+            left: `calc(${progress}% - 5px)`,
+            background: '#e8c97e',
+            boxShadow: '0 0 0 3px rgba(232,201,126,0.2), 0 0 10px rgba(232,201,126,0.55)',
+          }}
         />
 
-        {/* Hover position indicator + ask button */}
+        {/* Hover indicator + ask-at button */}
         {hoveredTs !== null && duration > 0 && (
           <>
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-0.5 h-4 bg-white/50 rounded"
-              style={{ left: `${(hoveredTs / duration) * 100}%` }}
+              className="absolute top-1/2 -translate-y-1/2 w-px h-4 rounded"
+              style={{ left: `${(hoveredTs / duration) * 100}%`, background: 'rgba(255,255,255,0.35)' }}
             />
             {onAskAt && (
               <button
-                className="absolute bottom-full mb-1.5 -translate-x-1/2 flex items-center gap-1 bg-brand-600 hover:bg-brand-700 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow-lg transition-colors z-30 whitespace-nowrap"
-                style={{ left: `${(hoveredTs / duration) * 100}%` }}
+                className="absolute bottom-full mb-2 -translate-x-1/2 flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded transition-colors z-30 whitespace-nowrap"
+                style={{
+                  left: `${(hoveredTs / duration) * 100}%`,
+                  background: 'rgba(232,201,126,0.12)',
+                  border: '1px solid rgba(232,201,126,0.28)',
+                  color: '#e8c97e',
+                  fontFamily: 'monospace',
+                  letterSpacing: '0.06em',
+                }}
                 onClick={(e) => { e.stopPropagation(); onAskAt(hoveredTs); }}
-                title={`Ask question at ${formatTime(hoveredTs)}`}
               >
                 + Ask at {formatTime(hoveredTs)}
               </button>
@@ -96,12 +101,12 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
           return (
             <button
               key={m.question_id}
-              className={clsx(
-                'absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-white',
-                'transition-transform hover:scale-150 z-10 focus:outline-none',
-                isAnswered ? 'w-2.5 h-2.5 bg-emerald-400' : 'w-3 h-3 bg-amber-400',
-              )}
-              style={{ left: `${pct}%` }}
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-2 transition-transform hover:scale-150 z-10 focus:outline-none"
+              style={{
+                left: `${pct}%`,
+                background: isAnswered ? '#34d399' : '#e8c97e',
+                borderColor: '#0b0c0f',
+              }}
               onClick={(e) => { e.stopPropagation(); onMarkerClick(m); }}
               onMouseEnter={() => setTooltipMarker(m)}
               onMouseLeave={() => setTooltipMarker(null)}
@@ -113,22 +118,29 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
         {/* Marker tooltip */}
         {tooltipMarker && (
           <div
-            className="absolute bottom-full mb-3 -translate-x-1/2 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 w-56 shadow-modal pointer-events-none z-20 animate-fade-in"
+            className="absolute bottom-full mb-3 -translate-x-1/2 text-xs rounded-lg px-3 py-2 w-56 shadow-xl pointer-events-none z-20 animate-fade-in"
             style={{
               left: `${(tooltipMarker.timestamp_seconds / duration) * 100}%`,
+              background: '#1c1e27',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: '#e8e4dc',
             }}
           >
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="font-mono text-brand-300">{formatTime(tooltipMarker.timestamp_seconds)}</span>
+              <span style={{ fontFamily: 'monospace', color: '#e8c97e', fontSize: 11 }}>
+                {formatTime(tooltipMarker.timestamp_seconds)}
+              </span>
               <span className={clsx(
-                'text-[10px] px-1 py-0.5 rounded',
-                tooltipMarker.status === 'answered' ? 'bg-emerald-600' : 'bg-amber-600'
+                'text-[10px] px-1.5 py-0.5 rounded font-medium',
+                tooltipMarker.status === 'answered'
+                  ? 'bg-emerald-900/60 text-emerald-300'
+                  : 'bg-amber-900/60 text-amber-300'
               )}>
                 {tooltipMarker.status}
               </span>
             </div>
-            <p className="text-gray-200 line-clamp-2">{tooltipMarker.question_preview}</p>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-gray-900" />
+            <p style={{ color: '#9ca3af', fontSize: 11 }} className="line-clamp-2">{tooltipMarker.question_preview}</p>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent" style={{ borderTopColor: '#1c1e27' }} />
           </div>
         )}
       </div>

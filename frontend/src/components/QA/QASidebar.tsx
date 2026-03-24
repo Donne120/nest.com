@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageCirclePlus, Search, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { useUIStore, useAuthStore, usePlayerStore } from '../../store';
 import api from '../../api/client';
-import type { Question, QuestionStatus } from '../../types';
+import type { Question } from '../../types';
 import QuestionCard from './QuestionCard';
 import { QuestionCardSkeleton } from '../UI/Skeleton';
 import Button from '../UI/Button';
@@ -16,6 +16,12 @@ interface Props {
   videoId: string;
   activeQuestionId: string | null;
   onClose?: () => void;
+}
+
+function formatTime(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
 }
 
 export default function QASidebar({ videoId, activeQuestionId, onClose }: Props) {
@@ -64,34 +70,40 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
   const pendingCount = questions.filter(q => q.status === 'pending').length;
 
   return (
-    <aside className="flex flex-col h-full bg-white border-l border-gray-200 w-full md:w-[360px] md:flex-shrink-0">
+    <aside
+      className="flex flex-col h-full w-full md:w-[360px] md:flex-shrink-0"
+      style={{ background: '#13141a', borderLeft: '1px solid rgba(255,255,255,0.07)' }}
+    >
       {/* Header */}
-      <div className="px-5 pt-5 pb-3 border-b border-gray-100">
-        <div className="flex items-center justify-between mb-3">
+      <div className="px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="font-semibold text-gray-900 text-sm">Timeline Notes & Q&A</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {questions.length} question{questions.length !== 1 ? 's' : ''}
+            <h2 className="font-bold text-base" style={{ fontFamily: "'Lora', Georgia, serif", color: '#e8e4dc', letterSpacing: '-0.01em' }}>
+              Timeline Q&amp;A
+            </h2>
+            <p className="mt-0.5 flex items-center gap-1.5" style={{ fontFamily: 'monospace', fontSize: 11, color: '#6b6b78', letterSpacing: '0.06em' }}>
+              {questions.length} QUESTION{questions.length !== 1 ? 'S' : ''}
               {pendingCount > 0 && (
-                <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 bg-amber-500 text-white text-[10px] font-bold rounded-full">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold" style={{ background: '#c45c3c', color: '#fff' }}>
                   {pendingCount}
                 </span>
               )}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="primary"
-              icon={<MessageCirclePlus size={14} />}
+            <button
               onClick={() => openQuestionForm(currentTime)}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded transition-opacity hover:opacity-80"
+              style={{ background: '#e8c97e', color: '#0b0c0f', fontFamily: 'inherit' }}
             >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
               Ask
-            </Button>
+            </button>
             {onClose && (
               <button
                 onClick={onClose}
-                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+                className="p-1.5 rounded-lg transition-colors md:hidden"
+                style={{ color: '#6b6b78' }}
                 aria-label="Close Q&A"
               >
                 <X size={16} />
@@ -100,34 +112,61 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
           </div>
         </div>
 
+        {/* Timestamp chip */}
+        <div
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-4"
+          style={{
+            background: 'rgba(232,201,126,0.08)',
+            border: '1px solid rgba(232,201,126,0.2)',
+            fontFamily: 'monospace',
+            fontSize: 10.5,
+            color: '#e8c97e',
+            letterSpacing: '0.1em',
+          }}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: '#e8c97e', animation: 'pulse 2s infinite' }}
+          />
+          AT {formatTime(currentTime)}
+        </div>
+
         {/* Search */}
         <div className="relative mb-3">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6b6b78' }} />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search questions..."
-            className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="Search questions…"
+            className="w-full pl-8 pr-3 py-2 text-sm outline-none transition-colors"
+            style={{
+              background: '#0b0c0f',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 4,
+              color: '#e8e4dc',
+              fontFamily: 'inherit',
+            }}
+            onFocus={e => (e.target.style.borderColor = 'rgba(232,201,126,0.35)')}
+            onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.07)')}
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2">
-              <X size={13} className="text-gray-400" />
+              <X size={13} style={{ color: '#6b6b78' }} />
             </button>
           )}
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-1">
+        <div className="flex gap-0.5 p-0.5 rounded-md" style={{ background: '#0b0c0f' }}>
           {FILTERS.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
-              className={clsx(
-                'flex-1 text-xs font-medium py-1.5 rounded-md transition-colors',
-                filter === key
-                  ? 'bg-brand-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
-              )}
+              className="flex-1 text-center text-xs font-medium py-1.5 rounded transition-all"
+              style={filter === key
+                ? { background: '#1c1e27', color: '#e8e4dc', border: '1px solid rgba(255,255,255,0.07)' }
+                : { color: '#6b6b78', border: '1px solid transparent' }
+              }
             >
               {label}
             </button>
@@ -140,13 +179,18 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => <QuestionCardSkeleton key={i} />)
         ) : filtered.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <MessageCirclePlus size={20} className="text-gray-400" />
+          <div className="flex flex-col items-center justify-center py-16 gap-2.5">
+            <div
+              className="w-11 h-11 rounded-full flex items-center justify-center text-lg mb-1"
+              style={{ background: '#1c1e27', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              💬
             </div>
-            <p className="text-sm font-medium text-gray-600">No questions yet</p>
-            <p className="text-xs text-gray-400 mt-1">
-              {filter === 'all' ? 'Be the first to ask!' : `No ${filter} questions`}
+            <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 16, fontWeight: 700, color: '#e8e4dc', letterSpacing: '-0.01em' }}>
+              No questions yet
+            </p>
+            <p style={{ fontSize: 12.5, color: '#6b6b78', textAlign: 'center', lineHeight: 1.5 }}>
+              {filter === 'all' ? 'Be the first to ask something\nabout this lesson.' : `No ${filter} questions`}
             </p>
           </div>
         ) : (
@@ -160,23 +204,26 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
 
               {/* Inline reply box */}
               {replyingTo === q.id && (
-                <div className="mt-2 bg-gray-50 rounded-xl border border-gray-200 p-3 animate-fade-in">
+                <div
+                  className="mt-2 rounded-xl p-3 animate-fade-in"
+                  style={{ background: '#1c1e27', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
                   <textarea
                     autoFocus
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder="Write your reply..."
                     rows={2}
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full text-sm px-3 py-2 resize-none outline-none rounded-lg"
+                    style={{
+                      background: '#0b0c0f',
+                      border: '1px solid rgba(255,255,255,0.07)',
+                      color: '#e8e4dc',
+                      fontFamily: 'inherit',
+                    }}
                   />
                   <div className="flex gap-2 mt-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setReplyingTo(null)}
-                    >
-                      Cancel
-                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setReplyingTo(null)}>Cancel</Button>
                     <Button
                       size="sm"
                       loading={submitReply.isPending}
@@ -191,6 +238,11 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
             </div>
           ))
         )}
+      </div>
+
+      {/* Footer note */}
+      <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 12, color: '#6b6b78', lineHeight: 1.6 }}>
+        Questions are pinned to the timestamp where you ask them — great for following along with the content.
       </div>
     </aside>
   );
