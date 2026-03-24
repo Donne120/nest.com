@@ -29,7 +29,7 @@ def send(to: str, subject: str, body_html: str) -> bool:
             resend.api_key = settings.RESEND_API_KEY
             resend.Emails.send({
                 "from": settings.RESEND_FROM,
-                "to": to,
+                "to": [to],
                 "subject": subject,
                 "html": body_html,
             })
@@ -120,7 +120,6 @@ def _btn(url: str, label: str, color: str = "#2563eb") -> str:
 # ─── Invitation ────────────────────────────────────────────────────────────────
 
 def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
-    print(f"[EMAIL] send_invitation called: to={to} host={settings.SMTP_HOST!r} user={settings.SMTP_USER!r} configured={_smtp_configured()}", flush=True)
     org_name = html.escape(org_name)
     role = html.escape(role)
     subject = f"You're invited to join {org_name} on Nest"
