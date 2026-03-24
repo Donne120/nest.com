@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     # Groq AI
     GROQ_API_KEY: str = ""
 
+    # Resend (preferred) — falls back to SMTP if not set
+    RESEND_API_KEY: str = ""
+    RESEND_FROM: str = "onboarding@resend.dev"
+
     # SMTP (optional — invitations fall back to URL-only if not set)
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587

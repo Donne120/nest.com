@@ -1,6 +1,6 @@
 """
 Transactional email utility.
-If SMTP_HOST is not configured in .env, send() is a no-op and returns False.
+Uses Resend if RESEND_API_KEY is set, otherwise falls back to SMTP.
 """
 
 import smtplib
@@ -13,32 +13,52 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 
+def _resend_configured() -> bool:
+    return bool(settings.RESEND_API_KEY)
+
+
 def _smtp_configured() -> bool:
     return bool(settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD)
 
 
-def send(to: str, subject: str, html: str) -> bool:
-    """Send an HTML email. Returns True on success, False if SMTP not configured or failed."""
-    if not _smtp_configured():
-        print(f"[EMAIL] SMTP not configured — skipping email to {to} ({subject})", flush=True)
-        return False
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = settings.SMTP_FROM
-        msg["To"] = to
-        msg.attach(MIMEText(html, "html"))
+def send(to: str, subject: str, body_html: str) -> bool:
+    """Send an HTML email via Resend or SMTP. Returns True on success."""
+    if _resend_configured():
+        try:
+            import resend
+            resend.api_key = settings.RESEND_API_KEY
+            resend.Emails.send({
+                "from": settings.RESEND_FROM,
+                "to": to,
+                "subject": subject,
+                "html": body_html,
+            })
+            print(f"[EMAIL] Resend: sent to {to}: {subject}", flush=True)
+            return True
+        except Exception as e:
+            print(f"[EMAIL] Resend failed for {to}: {e}", flush=True)
+            return False
 
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.sendmail(settings.SMTP_FROM, to, msg.as_string())
-        print(f"[EMAIL] Sent to {to}: {subject}", flush=True)
-        return True
-    except Exception as e:
-        print(f"[EMAIL] Failed to send to {to}: {e}", flush=True)
-        return False
+    if _smtp_configured():
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = settings.SMTP_FROM
+            msg["To"] = to
+            msg.attach(MIMEText(body_html, "html"))
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                server.ehlo()
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.sendmail(settings.SMTP_FROM, to, msg.as_string())
+            print(f"[EMAIL] SMTP: sent to {to}: {subject}", flush=True)
+            return True
+        except Exception as e:
+            print(f"[EMAIL] SMTP failed for {to}: {e}", flush=True)
+            return False
+
+    print(f"[EMAIL] No email provider configured — skipping {to}", flush=True)
+    return False
 
 
 # ─── Shared layout helper ──────────────────────────────────────────────────────
@@ -100,6 +120,7 @@ def _btn(url: str, label: str, color: str = "#2563eb") -> str:
 # ─── Invitation ────────────────────────────────────────────────────────────────
 
 def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
+    print(f"[EMAIL] send_invitation called: to={to} host={settings.SMTP_HOST!r} user={settings.SMTP_USER!r} configured={_smtp_configured()}", flush=True)
     org_name = html.escape(org_name)
     role = html.escape(role)
     subject = f"You're invited to join {org_name} on Nest"
