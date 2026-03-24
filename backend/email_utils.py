@@ -20,7 +20,7 @@ def _smtp_configured() -> bool:
 def send(to: str, subject: str, html: str) -> bool:
     """Send an HTML email. Returns True on success, False if SMTP not configured or failed."""
     if not _smtp_configured():
-        logger.info(f"SMTP not configured — skipping email to {to} ({subject})")
+        print(f"[EMAIL] SMTP not configured — skipping email to {to} ({subject})", flush=True)
         return False
     try:
         msg = MIMEMultipart("alternative")
@@ -34,10 +34,10 @@ def send(to: str, subject: str, html: str) -> bool:
             server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.sendmail(settings.SMTP_FROM, to, msg.as_string())
-        logger.info(f"Email sent to {to}: {subject}")
+        print(f"[EMAIL] Sent to {to}: {subject}", flush=True)
         return True
     except Exception as e:
-        logger.error(f"Failed to send email to {to}: {e}")
+        print(f"[EMAIL] Failed to send to {to}: {e}", flush=True)
         return False
 
 

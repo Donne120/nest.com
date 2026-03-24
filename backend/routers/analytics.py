@@ -194,7 +194,7 @@ def get_people_analytics(
 
     result = []
     for emp in employees:
-        days_since_joined = (now - emp.created_at.replace(tzinfo=None)).days
+        days_since_joined = (now.replace(tzinfo=None) - emp.created_at.replace(tzinfo=None)).days
 
         # Last activity: most recent progress update
         last_progress = (
