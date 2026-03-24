@@ -249,7 +249,7 @@ function CompletionReportPanel() {
     } catch { /* silent */ }
   };
 
-  if (isLoading) return <Skeleton className="h-64 rounded" style={{ borderRadius: 6 }} />;
+  if (isLoading) return <Skeleton className="h-64 rounded" />;
   if (!data) return null;
 
   const { summary, employees } = data;
@@ -403,7 +403,7 @@ export default function AdminAnalyticsPage() {
         <KpiGrid stats={stats} />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 4, marginBottom: 24 }}>
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28" style={{ borderRadius: 6 }} />)}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded" />)}
         </div>
       )}
 
@@ -435,8 +435,8 @@ export default function AdminAnalyticsPage() {
       {/* ── Charts ── */}
       {isLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <Skeleton className="h-64" style={{ borderRadius: 6 }} />
-          <Skeleton className="h-56" style={{ borderRadius: 6 }} />
+          <Skeleton className="h-64 rounded" />
+          <Skeleton className="h-56 rounded" />
         </div>
       ) : moduleAnalytics.length === 0 ? (
         <div style={{ background: SURF, border: `1px solid ${RULE}`, borderRadius: 6, padding: '80px 20px', textAlign: 'center' }}>
