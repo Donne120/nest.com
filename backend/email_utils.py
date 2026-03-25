@@ -13,6 +13,10 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 
+def _sendgrid_configured() -> bool:
+    return bool(settings.SENDGRID_API_KEY and settings.SENDGRID_FROM)
+
+
 def _resend_configured() -> bool:
     return bool(settings.RESEND_API_KEY)
 
@@ -22,7 +26,25 @@ def _smtp_configured() -> bool:
 
 
 def send(to: str, subject: str, body_html: str) -> bool:
-    """Send an HTML email via Resend or SMTP. Returns True on success."""
+    """Send an HTML email via SendGrid, Resend, or SMTP. Returns True on success."""
+    if _sendgrid_configured():
+        try:
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail
+            msg = Mail(
+                from_email=settings.SENDGRID_FROM,
+                to_emails=to,
+                subject=subject,
+                html_content=body_html,
+            )
+            sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+            sg.send(msg)
+            print(f"[EMAIL] SendGrid: sent to {to}", flush=True)
+            return True
+        except Exception as e:
+            print(f"[EMAIL] SendGrid failed for {to}: {e}", flush=True)
+            return False
+
     if _resend_configured():
         try:
             import resend
@@ -33,7 +55,7 @@ def send(to: str, subject: str, body_html: str) -> bool:
                 "subject": subject,
                 "html": body_html,
             })
-            print(f"[EMAIL] Resend: sent to {to}: {subject}", flush=True)
+            print(f"[EMAIL] Resend: sent to {to}", flush=True)
             return True
         except Exception as e:
             print(f"[EMAIL] Resend failed for {to}: {e}", flush=True)
@@ -51,7 +73,7 @@ def send(to: str, subject: str, body_html: str) -> bool:
                 server.starttls()
                 server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
                 server.sendmail(settings.SMTP_FROM, to, msg.as_string())
-            print(f"[EMAIL] SMTP: sent to {to}: {subject}", flush=True)
+            print(f"[EMAIL] SMTP: sent to {to}", flush=True)
             return True
         except Exception as e:
             print(f"[EMAIL] SMTP failed for {to}: {e}", flush=True)

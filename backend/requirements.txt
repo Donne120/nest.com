@@ -15,3 +15,4 @@ psycopg2-binary==2.9.10
 supabase==2.28.0
 slowapi==0.1.9
 resend>=2.0.0
+sendgrid==6.11.0

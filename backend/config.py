@@ -21,7 +21,11 @@ class Settings(BaseSettings):
     # Groq AI
     GROQ_API_KEY: str = ""
 
-    # Resend (preferred) — falls back to SMTP if not set
+    # SendGrid (preferred) — falls back to Resend, then SMTP
+    SENDGRID_API_KEY: str = ""
+    SENDGRID_FROM: str = ""
+
+    # Resend (fallback)
     RESEND_API_KEY: str = ""
     RESEND_FROM: str = "onboarding@resend.dev"
 
