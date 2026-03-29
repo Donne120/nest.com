@@ -67,7 +67,7 @@ export default function ModulesPage() {
     <div style={{ background: DARK, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
 
       {/* ══ HERO ═══════════════════════════════════════════════════════════ */}
-      <div style={{ position: 'relative', overflow: 'hidden', padding: '48px 0 40px' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(28px,5vw,48px) 0 clamp(24px,4vw,40px)' }}>
         {/* Canvas particle field */}
         <ParticleCanvas />
 
@@ -114,10 +114,10 @@ export default function ModulesPage() {
           {/* Progress summary bar */}
           {modules.length > 0 && (
             <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 12,
+              display: 'flex', alignItems: 'center', gap: 12,
               background: DARK2, border: `1px solid ${BORDER}`,
               borderRadius: 8, padding: '14px 18px',
-              marginBottom: 0,
+              marginBottom: 0, overflowX: 'auto', maxWidth: '100%',
             }}>
               {/* Donut */}
               <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
@@ -155,10 +155,10 @@ export default function ModulesPage() {
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
       <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(11,12,15,0.8)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 1024, margin: '0 auto', padding: '0 24px', height: 52, display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ maxWidth: 1024, margin: '0 auto', padding: '0 16px', minHeight: 52, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
 
-          {/* Filter tabs */}
-          <div style={{ display: 'flex', gap: 2 }}>
+          {/* Filter tabs — horizontally scrollable on mobile */}
+          <div style={{ display: 'flex', gap: 2, overflowX: 'auto', WebkitOverflowScrolling: 'touch', flexShrink: 0, scrollbarWidth: 'none' }}>
             {FILTERS.map(f => (
               <button
                 key={f.key}
@@ -167,12 +167,13 @@ export default function ModulesPage() {
                   fontFamily: 'monospace',
                   fontSize: 11, fontWeight: 500,
                   letterSpacing: '0.06em', textTransform: 'uppercase',
-                  padding: '5px 14px', borderRadius: 6,
+                  padding: '5px 12px', borderRadius: 6,
                   border: 'none', cursor: 'pointer',
-                  transition: 'all 0.15s',
+                  transition: 'all 0.15s', flexShrink: 0,
                   background: filter === f.key ? DARK3 : 'transparent',
                   color: filter === f.key ? f.color : INK3,
                   outline: filter === f.key ? `1px solid ${BORDER}` : 'none',
+                  whiteSpace: 'nowrap',
                 }}
                 onMouseEnter={e => { if (filter !== f.key) (e.currentTarget as HTMLElement).style.color = INK2; }}
                 onMouseLeave={e => { if (filter !== f.key) (e.currentTarget as HTMLElement).style.color = INK3; }}
@@ -182,16 +183,16 @@ export default function ModulesPage() {
             ))}
           </div>
 
-          {/* Search */}
-          <div style={{ marginLeft: 'auto', position: 'relative' }}>
-            <Search size={13} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: INK3, pointerEvents: 'none' }} />
+          {/* Search — grows to fill remaining space */}
+          <div style={{ marginLeft: 'auto', position: 'relative', minWidth: 0 }}>
+            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: INK3, pointerEvents: 'none' }} />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search courses…"
+              placeholder="Search…"
               style={{
-                paddingLeft: 34, paddingRight: 14, paddingTop: 8, paddingBottom: 8,
-                width: 220, fontSize: 13,
+                paddingLeft: 30, paddingRight: 12, paddingTop: 7, paddingBottom: 7,
+                width: 'clamp(100px, 30vw, 220px)', fontSize: 13,
                 background: DARK2, border: `1px solid ${BORDER}`,
                 borderRadius: 8, color: INK, outline: 'none',
                 fontFamily: 'inherit', transition: 'border-color 0.15s',

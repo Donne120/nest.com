@@ -102,8 +102,8 @@ export default function Navbar() {
           )}
         </Link>
 
-        {/* Nav links */}
-        <nav className="flex items-center gap-1">
+        {/* Nav links — hidden on mobile (BottomNav handles it) */}
+        <nav className="hidden md:flex items-center gap-1">
           <DarkNavLink
             to="/modules"
             active={isActive('/modules') || isActive('/video')}
@@ -188,7 +188,8 @@ export default function Navbar() {
 
             {notifOpen && (
               <div
-                className="absolute right-0 top-11 z-50 overflow-hidden animate-scale-in w-80"
+                className="absolute right-0 top-11 z-50 overflow-hidden animate-scale-in"
+                style={{ width: 'min(320px, calc(100vw - 24px))' }}
                 style={{
                   background: 'rgba(19,20,26,0.97)',
                   backdropFilter: 'blur(12px)',

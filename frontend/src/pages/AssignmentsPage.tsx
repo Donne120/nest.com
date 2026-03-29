@@ -161,9 +161,9 @@ function AssignmentCard({ a }: { a: Assignment }) {
         </div>
 
         {/* Right: deadline + CTA */}
-        <div className="flex flex-col items-end justify-between gap-2 flex-shrink-0 ml-4">
+        <div className="flex flex-col items-end justify-between gap-2 flex-shrink-0 ml-2 sm:ml-4">
           {deadline && (
-            <span className={`flex items-center gap-1 text-xs font-medium ${
+            <span className={`hidden sm:flex items-center gap-1 text-xs font-medium ${
               overdue ? 'text-red-500 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
             }`}>
               {overdue ? <AlertCircle size={11} /> : <Clock size={11} />}
@@ -226,7 +226,7 @@ export default function AssignmentsPage() {
         </div>
 
         {assignments.length > 0 && (
-          <div className="flex items-center gap-6 mt-5 pt-5 border-t border-brand-100 dark:border-slate-700">
+          <div className="flex items-center gap-4 sm:gap-6 mt-5 pt-5 border-t border-brand-100 dark:border-slate-700 overflow-x-auto">
             <div className="text-center">
               <p className="font-mono text-2xl font-bold text-gray-900 dark:text-white">{assignments.length}</p>
               <p className="text-xs text-gray-400 mt-0.5">Total</p>

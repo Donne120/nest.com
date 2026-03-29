@@ -129,16 +129,16 @@ export default function MeetingsPage() {
   const past      = meetings.filter(m => m.status === 'declined' || m.status === 'completed');
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900">My 1-on-1 Meetings</h1>
           <p className="text-sm text-gray-500 mt-0.5">Book time with your trainer for personalised help</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors sm:w-auto w-full"
         >
           <Plus size={15} />
           Book a 1-on-1

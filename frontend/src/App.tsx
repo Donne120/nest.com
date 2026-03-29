@@ -73,7 +73,7 @@ function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 font-sans">
       <Navbar />
-      <main className="pb-16 md:pb-0">{children}</main>
+      <main className="pb-20 md:pb-0">{children}</main>
       <BottomNav />
     </div>
   );

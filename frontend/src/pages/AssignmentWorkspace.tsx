@@ -5,7 +5,7 @@ import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import {
   Clock, Users, CheckCircle, Send, AlertCircle, ChevronLeft,
   Calendar, User, Hourglass, ArrowRight, FileText, Star,
-  MessageSquare,
+  MessageSquare, PanelLeftOpen, X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -428,6 +428,7 @@ export default function AssignmentWorkspace() {
 
   // Fix: use auth user ID (not submission learner_id which is null before first save)
   const myMember = group?.members.find(m => m.learner_id === user?.id);
+  const [briefOpen, setBriefOpen] = useState(false);
 
   if (loadingAssignment) {
     return (
@@ -452,14 +453,23 @@ export default function AssignmentWorkspace() {
       {/* ─── Top bar ─────────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700">
         <div className="flex items-center justify-between px-4 py-2">
-          <button
-            onClick={() => navigate('/assignments')}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white transition"
-          >
-            <ChevronLeft size={16} /> Assignments
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/assignments')}
+              className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white transition"
+            >
+              <ChevronLeft size={16} /> <span className="hidden sm:inline">Assignments</span>
+            </button>
+            {/* Brief toggle — mobile only */}
+            <button
+              onClick={() => setBriefOpen(o => !o)}
+              className="md:hidden flex items-center gap-1 text-xs text-gray-500 hover:text-brand-600 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1 transition"
+            >
+              <PanelLeftOpen size={13} /> Brief
+            </button>
+          </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {saveMutation.isPending && (
               <span className="text-xs text-gray-400">Saving…</span>
             )}
@@ -474,21 +484,22 @@ export default function AssignmentWorkspace() {
                 <button
                   onClick={autoSave}
                   disabled={saveMutation.isPending}
-                  className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white border border-gray-200 dark:border-slate-700 rounded-lg transition disabled:opacity-50"
+                  className="hidden sm:block px-3 py-1.5 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white border border-gray-200 dark:border-slate-700 rounded-lg transition disabled:opacity-50"
                 >
                   Save Draft
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={saveMutation.isPending || !editorContent}
-                  className="flex items-center gap-2 px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-lg transition disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-lg transition disabled:opacity-50"
                 >
                   <Send size={14} />
-                  {isSubmitted
+                  <span className="hidden sm:inline">{isSubmitted
                     ? 'Update Submission'
                     : assignment.type === 'group'
                       ? 'Submit Portion'
-                      : 'Submit'}
+                      : 'Submit'}</span>
+                  <span className="sm:hidden">{isSubmitted ? 'Update' : 'Submit'}</span>
                 </button>
               </>
             )}
@@ -506,8 +517,31 @@ export default function AssignmentWorkspace() {
       {/* ─── Main content ────────────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
 
+        {/* Mobile overlay backdrop */}
+        {briefOpen && (
+          <div
+            className="md:hidden fixed inset-0 bg-black/40 z-30"
+            onClick={() => setBriefOpen(false)}
+          />
+        )}
+
         {/* Left panel — brief */}
-        <div className="w-72 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-y-auto">
+        {/* Desktop: always visible sidebar. Mobile: slide-in overlay toggled by briefOpen */}
+        <div className={`
+          flex-col border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-y-auto
+          md:flex md:w-72 md:flex-shrink-0 md:relative md:z-auto md:translate-x-0
+          ${briefOpen
+            ? 'flex fixed left-0 top-0 bottom-0 w-80 z-40 shadow-2xl transition-transform'
+            : 'hidden'
+          }
+        `}>
+          {/* Mobile close button */}
+          <div className="md:hidden flex items-center justify-between px-4 pt-4 pb-2 border-b border-gray-100 dark:border-slate-700">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Brief</span>
+            <button onClick={() => setBriefOpen(false)} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition">
+              <X size={16} className="text-gray-400" />
+            </button>
+          </div>
           <div className="p-4 space-y-4">
 
             {/* Title & type */}

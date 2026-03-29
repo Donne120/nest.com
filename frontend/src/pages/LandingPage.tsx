@@ -42,13 +42,14 @@ function LandingNav() {
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 500,
       height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 48px',
+      padding: '0 clamp(16px, 4vw, 48px)',
       borderBottom: `1px solid ${RULE}`,
       background: 'rgba(10,9,7,0.88)',
       backdropFilter: 'blur(16px)',
       fontFamily: UI,
+      gap: 12,
     }}>
-      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
         <div style={{
           width: 32, height: 32,
           border: `1.5px solid rgba(200,169,110,0.4)`,
@@ -59,30 +60,35 @@ function LandingNav() {
         <span style={{ fontFamily: DISP, fontSize: 24, fontWeight: 600, color: GOLD2, letterSpacing: '0.01em' }}>Nest</span>
       </Link>
 
-      <nav style={{ display: 'flex', gap: 0, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+      {/* Center nav — hidden on mobile */}
+      <nav className="lp-nav-links" style={{ display: 'flex', gap: 0 }}>
         {[['#features','Features'],['#how','How it works'],['#pricing','Pricing']].map(([href, label]) => (
-          <a key={href} href={href} style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 16px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI }}
+          <a key={href} href={href} style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 14px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI, whiteSpace: 'nowrap' }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK)}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
           >{label}</a>
         ))}
-        <Link to="/login" style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 16px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI }}
+        <Link to="/login" style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 14px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI }}
           onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK)}
           onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
         >Sign in</Link>
       </nav>
 
-      <Link to="/signup" style={{
-        fontFamily: UI, fontSize: 12.5, fontWeight: 700,
-        letterSpacing: '0.04em', textTransform: 'uppercase',
-        color: BG, background: GOLD,
-        padding: '9px 20px', borderRadius: 4, border: 'none',
-        textDecoration: 'none', display: 'inline-block',
-        transition: 'background 0.2s, transform 0.15s',
-      }}
-        onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-1px)'; }}
-        onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; }}
-      >Start free trial</Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        {/* Sign in — shown on mobile since center nav is hidden */}
+        <Link to="/login" className="lp-signin-mobile" style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '7px 12px', display: 'none' }}>Sign in</Link>
+        <Link to="/signup" style={{
+          fontFamily: UI, fontSize: 12.5, fontWeight: 700,
+          letterSpacing: '0.04em', textTransform: 'uppercase',
+          color: BG, background: GOLD,
+          padding: '9px 16px', borderRadius: 4, border: 'none',
+          textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap',
+          transition: 'background 0.2s, transform 0.15s',
+        }}
+          onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; }}
+        >Start free trial</Link>
+      </div>
     </header>
   );
 }
@@ -93,7 +99,8 @@ function Hero() {
     <section style={{
       minHeight: '100vh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      padding: '100px 48px 80px', position: 'relative', overflow: 'hidden',
+      padding: 'clamp(80px,10vw,100px) clamp(16px,5vw,48px) clamp(48px,6vw,80px)',
+      position: 'relative', overflow: 'hidden',
     }}>
       {/* Ambient glow */}
       <div style={{
@@ -196,25 +203,25 @@ function Hero() {
 
         {/* Stats strip */}
         <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))',
           borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`,
-          animation: 'lpRise 0.9s ease 0.45s both',
+          width: '100%', animation: 'lpRise 0.9s ease 0.45s both',
         }}>
           {[
             { val: '14', unit: 'd', label: 'Free trial' },
             { val: '∞', unit: '', label: 'Videos per module' },
             { val: '31+', unit: '', label: 'Quiz question types' },
             { val: '1', unit: 'click', label: 'Team onboarding' },
-          ].map((s, i, arr) => (
-            <div key={s.label} style={{ display: 'contents' }}>
-              <div style={{ flex: '1 1 0', maxWidth: 200, textAlign: 'center', padding: '24px 20px' }}>
-                <div style={{ fontFamily: DISP, fontSize: 34, fontWeight: 300, color: GOLD2, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 4 }}>
-                  {s.val}
-                  {s.unit && <em style={{ fontFamily: DISP, fontStyle: 'italic', color: GOLD, fontSize: 22 }}>{s.unit}</em>}
-                </div>
-                <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3 }}>{s.label}</div>
+          ].map((s, i) => (
+            <div key={s.label} style={{
+              textAlign: 'center', padding: '20px 16px',
+              borderRight: i < 3 ? `1px solid ${RULE}` : 'none',
+            }}>
+              <div style={{ fontFamily: DISP, fontSize: 34, fontWeight: 300, color: GOLD2, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 4 }}>
+                {s.val}
+                {s.unit && <em style={{ fontFamily: DISP, fontStyle: 'italic', color: GOLD, fontSize: 22 }}>{s.unit}</em>}
               </div>
-              {i < arr.length - 1 && <div style={{ width: 1, height: 48, background: RULE, flexShrink: 0 }} />}
+              <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -261,15 +268,15 @@ function HowItWorks() {
   ];
 
   return (
-    <section id="how" style={{ padding: '120px 0', borderTop: `1px solid ${RULE}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 48px' }}>
-        <div className="lp-reveal" style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, alignItems: 'end',
-          marginBottom: 80, opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease',
+    <section id="how" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
+        <div className="lp-reveal lp-two-col" style={{
+          marginBottom: 'clamp(40px,6vw,80px)',
+          opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease',
         }}>
           <div>
             <SLabel>How it works</SLabel>
-            <h2 style={{ fontFamily: DISP, fontSize: 'clamp(42px,5vw,64px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK }}>
+            <h2 style={{ fontFamily: DISP, fontSize: 'clamp(36px,5vw,64px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK }}>
               From upload to<br /><em style={{ fontStyle: 'italic', color: GOLD }}>fledged</em> — in minutes.
             </h2>
           </div>
@@ -278,8 +285,7 @@ function HowItWorks() {
           </p>
         </div>
 
-        <div className="lp-reveal" style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+        <div className="lp-reveal lp-three-col" style={{
           gap: 1, background: RULE,
           border: `1px solid ${RULE}`, borderRadius: 8, overflow: 'hidden',
           opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
@@ -344,9 +350,9 @@ const FEATURES = [
 
 function Features() {
   return (
-    <section id="features" style={{ padding: '120px 0', borderTop: `1px solid ${RULE}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 48px' }}>
-        <div className="lp-reveal" style={{ marginBottom: 70, opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+    <section id="features" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
+        <div className="lp-reveal" style={{ marginBottom: 'clamp(40px,5vw,70px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
           <SLabel>Features</SLabel>
           <h2 style={{ fontFamily: DISP, fontSize: 'clamp(42px,5vw,64px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK, marginBottom: 16 }}>
             Everything your team<br /><strong style={{ fontWeight: 600 }}>needs to grow.</strong>
@@ -356,8 +362,7 @@ function Features() {
           </p>
         </div>
 
-        <div className="lp-reveal" style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3,1fr)',
+        <div className="lp-reveal lp-three-col" style={{
           gap: 1, background: RULE,
           border: `1px solid ${RULE}`, borderRadius: 8, overflow: 'hidden',
           opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
@@ -423,9 +428,9 @@ const PLANS = [
 
 function Pricing() {
   return (
-    <section id="pricing" style={{ padding: '120px 0', borderTop: `1px solid ${RULE}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 48px' }}>
-        <div className="lp-reveal" style={{ textAlign: 'center', marginBottom: 70, opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+    <section id="pricing" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
+        <div className="lp-reveal" style={{ textAlign: 'center', marginBottom: 'clamp(40px,5vw,70px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><SLabel>Pricing</SLabel></div>
           <h2 style={{ fontFamily: DISP, fontSize: 'clamp(42px,5vw,64px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK, marginBottom: 16 }}>
             <em style={{ fontStyle: 'italic', color: GOLD }}>Simple,</em> predictable pricing.
@@ -433,8 +438,7 @@ function Pricing() {
           <p style={{ fontSize: 16, color: INK2, fontFamily: UI }}>Start free for 14 days. No credit card needed. Upgrade when you're ready.</p>
         </div>
 
-        <div className="lp-reveal" style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+        <div className="lp-reveal lp-three-col" style={{
           gap: 1, background: RULE,
           border: `1px solid ${RULE}`, borderRadius: 8, overflow: 'hidden',
           opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
@@ -495,11 +499,11 @@ function Pricing() {
 // ── CTA band ───────────────────────────────────────────────────────────────
 function CtaBand() {
   return (
-    <section style={{ padding: '140px 0', borderTop: `1px solid ${RULE}`, position: 'relative', overflow: 'hidden' }}>
+    <section style={{ padding: 'clamp(64px,10vw,140px) 0', borderTop: `1px solid ${RULE}`, position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 60%, rgba(200,169,110,0.05) 0%, transparent 65%)` }} />
       <div className="lp-reveal" style={{
         maxWidth: 700, margin: '0 auto', textAlign: 'center',
-        position: 'relative', zIndex: 1, padding: '0 48px',
+        position: 'relative', zIndex: 1, padding: '0 clamp(16px,4vw,48px)',
         opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease',
       }}>
         <h2 style={{ fontFamily: DISP, fontSize: 'clamp(48px,6vw,80px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.025em', color: INK, marginBottom: 24 }}>
@@ -539,7 +543,7 @@ function CtaBand() {
 // ── Footer ─────────────────────────────────────────────────────────────────
 function LandingFooter() {
   return (
-    <footer style={{ borderTop: `1px solid ${RULE}`, padding: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, fontFamily: UI }}>
+    <footer style={{ borderTop: `1px solid ${RULE}`, padding: 'clamp(24px,4vw,48px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, fontFamily: UI }}>
       <span style={{ fontFamily: DISP, fontSize: 20, fontWeight: 400, color: GOLD2 }}>Nest Fledge</span>
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
         {[['#features','Features'],['#pricing','Pricing']].map(([h,l]) => (
@@ -585,6 +589,24 @@ export default function LandingPage() {
         ::-webkit-scrollbar{width:5px}
         ::-webkit-scrollbar-track{background:${BG}}
         ::-webkit-scrollbar-thumb{background:${INK3};border-radius:3px}
+
+        /* ── Responsive grids ── */
+        .lp-three-col { display: grid; grid-template-columns: repeat(3,1fr); }
+        .lp-two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: end; }
+
+        @media (max-width: 768px) {
+          .lp-three-col { grid-template-columns: 1fr; }
+          .lp-two-col   { grid-template-columns: 1fr; gap: 28px; }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .lp-three-col { grid-template-columns: repeat(2,1fr); }
+        }
+
+        /* ── Nav: hide center links on mobile, show mobile sign-in ── */
+        @media (max-width: 680px) {
+          .lp-nav-links    { display: none !important; }
+          .lp-signin-mobile { display: inline-block !important; }
+        }
       `}</style>
     </div>
   );
