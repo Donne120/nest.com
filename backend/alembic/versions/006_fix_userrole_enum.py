@@ -1,7 +1,7 @@
 """Fix userrole enum to support new role names
 
-Revision ID: 006_fix_userrole_enum
-Revises: 005_assignments
+Revision ID: 006
+Revises: 005
 Create Date: 2026-03-29 00:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '006_fix_userrole_enum'
-down_revision = '005_assignments'
+revision = '006'
+down_revision = '005'
 branch_labels = None
 depends_on = None
 
