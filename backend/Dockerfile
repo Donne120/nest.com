@@ -17,7 +17,7 @@ COPY . .
 # Create data dirs
 RUN mkdir -p /app/data /app/uploads
 
-# Start server (migrations are run via alembic upgrade head — see deployment docs)
+# Start server (migrations run via app startup in main.py _run_db_setup())
 CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
 
 EXPOSE 8000

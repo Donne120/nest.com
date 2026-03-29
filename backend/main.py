@@ -45,6 +45,22 @@ def _run_db_setup():
         models.Base.metadata.create_all(bind=engine)
         with engine.connect() as conn:
             conn.execute(text("SET statement_timeout = 0"))
+
+            # ─── Stamp migrations if alembic_version is empty (first run) ───────────
+            try:
+                result = conn.execute(text("SELECT COUNT(*) FROM alembic_version"))
+                count = result.scalar()
+                if count == 0:
+                    # Stamp migrations 001-004 as already applied
+                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('001')"))
+                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('002')"))
+                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('003')"))
+                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('004')"))
+                    conn.commit()
+                    logger.info("Stamped existing migrations 001-004 in alembic_version")
+            except Exception as e:
+                logger.warning(f"Alembic stamping skipped (may not be needed): {e}")
+
             conn.execute(text(
                 "ALTER TABLE answers ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL"
             ))
@@ -55,6 +71,17 @@ def _run_db_setup():
                 "ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS locked BOOLEAN DEFAULT FALSE NOT NULL"
             ))
             conn.commit()
+
+        # ─── Run any pending migrations (outside connection block) ─────────────────
+        try:
+            from alembic.config import Config
+            from alembic import command
+            alembic_cfg = Config("alembic.ini")
+            command.upgrade(alembic_cfg, "head")
+            logger.info("Alembic migrations completed")
+        except Exception as e:
+            logger.warning(f"Alembic upgrade skipped or failed (may not be needed): {e}")
+
         logger.info("DB setup complete")
     except Exception as e:
         logger.warning(f"DB setup warning (non-fatal): {e}")
