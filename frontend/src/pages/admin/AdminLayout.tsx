@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, MessageSquare, TrendingUp, BookOpen, Settings,
-  LogOut, Bell, Video, Users, Menu, X, HeartPulse, ArrowUpRight,
+  LogOut, Bell, Video, Users, Menu, X, HeartPulse, ArrowUpRight, ClipboardList,
 } from 'lucide-react';
 import { useAuthStore } from '../../store';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 const navLinks = [
   { to: '/admin', end: true, icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/admin/courses', end: false, icon: BookOpen, label: 'Courses' },
+  { to: '/admin/assignments', end: false, icon: ClipboardList, label: 'Assignments' },
   { to: '/admin/questions', end: false, icon: MessageSquare, label: 'Questions' },
   { to: '/admin/analytics', end: false, icon: TrendingUp, label: 'Analytics' },
   { to: '/admin/people', end: false, icon: HeartPulse, label: 'People' },
@@ -25,6 +26,9 @@ const PAGE_TITLES: [string, string][] = [
   ['/admin/courses/new', 'New Module'],
   ['/admin/courses/', 'Edit Module'],
   ['/admin/courses', 'Course Manager'],
+  ['/admin/assignments/new', 'New Assignment'],
+  ['/admin/assignments/', 'Assignment'],
+  ['/admin/assignments', 'Assignments'],
   ['/admin/questions/', 'Question Detail'],
   ['/admin/questions', 'Questions'],
   ['/admin/analytics', 'Analytics'],
@@ -167,7 +171,7 @@ export default function AdminLayout() {
           <div style={{ height: 1, background: 'rgba(255,255,255,0.07)', margin: '10px 20px' }} />
 
           <NavSection label="Workspace">
-            <NavItem to="/modules" end={false} icon={ArrowUpRight} label="Employee View" onClick={() => setMobileSidebarOpen(false)} />
+            <NavItem to="/modules" end={false} icon={ArrowUpRight} label="Learner View" onClick={() => setMobileSidebarOpen(false)} />
           </NavSection>
         </nav>
 

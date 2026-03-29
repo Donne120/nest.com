@@ -56,17 +56,17 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
-def require_manager(current_user: models.User = Depends(get_current_user)) -> models.User:
-    allowed = {models.UserRole.manager, models.UserRole.admin, models.UserRole.super_admin}
+def require_educator(current_user: models.User = Depends(get_current_user)) -> models.User:
+    allowed = {models.UserRole.educator, models.UserRole.owner, models.UserRole.super_admin}
     if current_user.role not in allowed:
-        raise HTTPException(status_code=403, detail="Manager access required")
+        raise HTTPException(status_code=403, detail="Educator access required")
     return current_user
 
 
-def require_admin(current_user: models.User = Depends(get_current_user)) -> models.User:
-    allowed = {models.UserRole.admin, models.UserRole.super_admin}
+def require_owner(current_user: models.User = Depends(get_current_user)) -> models.User:
+    allowed = {models.UserRole.owner, models.UserRole.super_admin}
     if current_user.role not in allowed:
-        raise HTTPException(status_code=403, detail="Admin access required")
+        raise HTTPException(status_code=403, detail="Owner access required")
     return current_user
 
 

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-type Variant = 'pending' | 'answered' | 'archived' | 'not_started' | 'in_progress' | 'completed' | 'manager' | 'admin' | 'employee';
+type Variant = 'pending' | 'answered' | 'archived' | 'not_started' | 'in_progress' | 'completed' | 'educator' | 'owner' | 'learner';
 
 const variants: Record<Variant, string> = {
   pending:     'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/50',
@@ -9,9 +9,9 @@ const variants: Record<Variant, string> = {
   not_started: 'bg-gray-50 text-gray-500 border-gray-200/80 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
   in_progress: 'bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50',
   completed:   'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50',
-  manager:     'bg-violet-50 text-violet-700 border-violet-200/80 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800/50',
-  admin:       'bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800/50',
-  employee:    'bg-gray-50 text-gray-600 border-gray-200/80 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+  educator:    'bg-violet-50 text-violet-700 border-violet-200/80 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800/50',
+  owner:       'bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800/50',
+  learner:     'bg-gray-50 text-gray-600 border-gray-200/80 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
 };
 
 const dots: Record<Variant, string> = {
@@ -21,9 +21,9 @@ const dots: Record<Variant, string> = {
   not_started: 'bg-gray-300',
   in_progress: 'bg-blue-400 animate-pulse',
   completed:   'bg-emerald-400',
-  manager:     'bg-violet-400',
-  admin:       'bg-rose-400',
-  employee:    'bg-gray-400',
+  educator:    'bg-violet-400',
+  owner:       'bg-rose-400',
+  learner:     'bg-gray-400',
 };
 
 const labels: Record<Variant, string> = {
@@ -33,9 +33,9 @@ const labels: Record<Variant, string> = {
   not_started: 'Not Started',
   in_progress: 'In Progress',
   completed:   'Completed',
-  manager:     'Manager',
-  admin:       'Admin',
-  employee:    'Employee',
+  educator:    'Educator',
+  owner:       'Owner',
+  learner:     'Learner',
 };
 
 interface Props {

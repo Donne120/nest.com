@@ -153,7 +153,7 @@ def get_transcript(
 def trigger_transcription(
     video_id: str,
     background_tasks: BackgroundTasks,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     """Trigger automatic transcription via Groq Whisper (runs in background)."""
@@ -183,7 +183,7 @@ def trigger_transcription(
 def set_manual_transcript(
     video_id: str,
     payload: schemas.TranscriptManualSet,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     """Manually set or update a video transcript."""
@@ -203,7 +203,7 @@ def set_manual_transcript(
 @router.delete("/{video_id}/transcript", status_code=204)
 def delete_transcript(
     video_id: str,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     """Delete the transcript for a video."""

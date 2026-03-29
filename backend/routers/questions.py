@@ -65,7 +65,7 @@ def list_questions(
         q = q.filter(models.Question.status == status)
     if my_questions:
         q = q.filter(models.Question.asked_by == current_user.id)
-    elif current_user.role == models.UserRole.employee:
+    elif current_user.role == models.UserRole.learner:
         q = q.filter(
             (models.Question.is_public == True) |
             (models.Question.asked_by == current_user.id)
@@ -93,7 +93,7 @@ async def create_question(
     # Notify org managers/admins only
     managers = db.query(models.User).filter(
         models.User.organization_id == current_user.organization_id,
-        models.User.role.in_([models.UserRole.manager, models.UserRole.admin]),
+        models.User.role.in_([models.UserRole.educator, models.UserRole.owner]),
         models.User.is_active == True,
     ).all()
     for mgr in managers:
@@ -122,7 +122,7 @@ async def create_question(
 def get_pending_questions(
     skip: int = 0,
     limit: int = 50,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     return (
@@ -159,7 +159,7 @@ def update_question(
     db: Session = Depends(get_db),
 ):
     question = _org_question(question_id, current_user.organization_id, db)
-    if question.asked_by != current_user.id and current_user.role == models.UserRole.employee:
+    if question.asked_by != current_user.id and current_user.role == models.UserRole.learner:
         raise HTTPException(status_code=403, detail="Not authorized")
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(question, field, value)
@@ -175,7 +175,7 @@ def delete_question(
     db: Session = Depends(get_db),
 ):
     question = _org_question(question_id, current_user.organization_id, db)
-    if question.asked_by != current_user.id and current_user.role == models.UserRole.employee:
+    if question.asked_by != current_user.id and current_user.role == models.UserRole.learner:
         raise HTTPException(status_code=403, detail="Not authorized")
     db.delete(question)
     db.commit()
@@ -194,11 +194,11 @@ async def add_answer(
         question_id=question_id,
         answered_by=current_user.id,
         answer_text=payload.answer_text,
-        is_official=payload.is_official and current_user.role in [models.UserRole.manager, models.UserRole.admin],
+        is_official=payload.is_official and current_user.role in [models.UserRole.educator, models.UserRole.owner],
     )
     db.add(answer)
 
-    if current_user.role in [models.UserRole.manager, models.UserRole.admin]:
+    if current_user.role in [models.UserRole.educator, models.UserRole.owner]:
         question.status = models.QuestionStatus.answered
 
     db.add(models.Notification(
@@ -234,7 +234,7 @@ def edit_answer(
     ).first()
     if not answer:
         raise HTTPException(status_code=404, detail="Answer not found")
-    if answer.answered_by != current_user.id and current_user.role == models.UserRole.employee:
+    if answer.answered_by != current_user.id and current_user.role == models.UserRole.learner:
         raise HTTPException(status_code=403, detail="Not authorized")
     answer.answer_text = payload.answer_text
     db.commit()
@@ -256,7 +256,7 @@ def delete_answer(
     ).first()
     if not answer:
         raise HTTPException(status_code=404, detail="Answer not found")
-    if answer.answered_by != current_user.id and current_user.role == models.UserRole.employee:
+    if answer.answered_by != current_user.id and current_user.role == models.UserRole.learner:
         raise HTTPException(status_code=403, detail="Not authorized")
     db.delete(answer)
     db.commit()

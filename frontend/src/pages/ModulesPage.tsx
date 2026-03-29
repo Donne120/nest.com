@@ -67,7 +67,7 @@ export default function ModulesPage() {
     <div style={{ background: DARK, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
 
       {/* ══ HERO ═══════════════════════════════════════════════════════════ */}
-      <div style={{ position: 'relative', overflow: 'hidden', padding: '52px 0 48px' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', padding: '48px 0 40px' }}>
         {/* Canvas particle field */}
         <ParticleCanvas />
 
@@ -82,12 +82,12 @@ export default function ModulesPage() {
         {/* Animated grid lines */}
         <div className="hero-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
 
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px', position: 'relative', zIndex: 2 }}>
+        <div style={{ maxWidth: 1024, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 2 }}>
 
           {/* Eyebrow */}
           <div style={{
-            fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.22em',
-            textTransform: 'uppercase', color: GOLD, marginBottom: 18,
+            fontFamily: 'monospace', fontSize: 11, letterSpacing: '0.22em',
+            textTransform: 'uppercase', color: GOLD, marginBottom: 12,
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
             <span style={{ width: 18, height: 1, background: GOLD, display: 'inline-block', opacity: 0.6 }} />
@@ -97,26 +97,26 @@ export default function ModulesPage() {
           {/* Greeting headline */}
           <h1 style={{
             fontFamily: "'Lora', Georgia, serif",
-            fontSize: 'clamp(32px, 4vw, 54px)',
+            fontSize: 'clamp(36px, 6vw, 56px)',
             fontWeight: 700, lineHeight: 1.1,
             letterSpacing: '-0.025em', color: INK,
-            marginBottom: 14, maxWidth: 640,
+            marginBottom: 12, maxWidth: 640,
           }}>
             {greeting}{firstName && (
               <>, <span style={{ color: GOLD }}>{firstName}</span></>
             )}
           </h1>
 
-          <p style={{ fontSize: 15, color: INK3, lineHeight: 1.6, marginBottom: 36, maxWidth: 420 }}>
+          <p style={{ fontSize: 15, color: INK3, lineHeight: 1.5, marginBottom: 20, maxWidth: 420 }}>
             Your courses are ready. Pick up where you left off or start something new.
           </p>
 
           {/* Progress summary bar */}
           {modules.length > 0 && (
             <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 20,
+              display: 'inline-flex', alignItems: 'center', gap: 12,
               background: DARK2, border: `1px solid ${BORDER}`,
-              borderRadius: 12, padding: '14px 22px',
+              borderRadius: 8, padding: '14px 18px',
               marginBottom: 0,
             }}>
               {/* Donut */}
@@ -155,7 +155,7 @@ export default function ModulesPage() {
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
       <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(11,12,15,0.8)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px', height: 52, display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ maxWidth: 1024, margin: '0 auto', padding: '0 24px', height: 52, display: 'flex', alignItems: 'center', gap: 16 }}>
 
           {/* Filter tabs */}
           <div style={{ display: 'flex', gap: 2 }}>
@@ -204,7 +204,7 @@ export default function ModulesPage() {
       </div>
 
       {/* ══ MODULE GRID ═══════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '36px 40px 80px' }}>
+      <div style={{ maxWidth: 1024, margin: '0 auto', padding: '24px 24px 60px' }}>
         {isLoading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -235,7 +235,7 @@ export default function ModulesPage() {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
             {filtered.map(m => (
               <div key={m.id} style={{ position: 'relative' }}>
                 <ModuleCard module={m} />

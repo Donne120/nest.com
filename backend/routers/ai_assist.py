@@ -200,7 +200,7 @@ Your role is to answer the student's question as a great teacher would:
             # Notify managers/admins to review
             managers = db.query(models.User).filter(
                 models.User.organization_id == org_id,
-                models.User.role.in_([models.UserRole.manager, models.UserRole.admin]),
+                models.User.role.in_([models.UserRole.educator, models.UserRole.owner]),
                 models.User.is_active == True,
             ).all()
             for mgr in managers:

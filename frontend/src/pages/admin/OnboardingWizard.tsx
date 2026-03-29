@@ -316,10 +316,10 @@ const nextId = () => ++_rowId;
 function InviteStep({ onNext, onBack, onSkip }: {
   onNext: (rows: InviteRow[]) => Promise<void>; onBack: () => void; onSkip: () => void;
 }) {
-  const [rows, setRows] = useState<InviteRow[]>([{ id: nextId(), email: '', role: 'employee' }]);
+  const [rows, setRows] = useState<InviteRow[]>([{ id: nextId(), email: '', role: 'learner' }]);
   const [sending, setSending] = useState(false);
 
-  const addRow = () => setRows(r => [...r, { id: nextId(), email: '', role: 'employee' }]);
+  const addRow = () => setRows(r => [...r, { id: nextId(), email: '', role: 'learner' }]);
   const removeRow = (id: number) => setRows(r => r.filter(x => x.id !== id));
   const updateRow = (id: number, field: keyof InviteRow, value: string) =>
     setRows(r => r.map(x => x.id === id ? { ...x, [field]: value } : x));
@@ -344,9 +344,9 @@ function InviteStep({ onNext, onBack, onSkip }: {
             <InviteEmailInput value={row.email} onChange={v => updateRow(row.id, 'email', v)} />
             <select value={row.role} onChange={e => updateRow(row.id, 'role', e.target.value as UserRole)}
               style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: INK, background: SURF, border: `1.5px solid ${RULE}`, borderRadius: 5, padding: '10px 10px', flexShrink: 0, outline: 'none', cursor: 'pointer' }}>
-              <option value="employee">Employee</option>
-              <option value="manager">Manager</option>
-              <option value="admin">Admin</option>
+              <option value="learner">Learner</option>
+              <option value="educator">Educator</option>
+              <option value="owner">Owner</option>
             </select>
             {rows.length > 1 && (
               <button onClick={() => removeRow(row.id)}

@@ -16,9 +16,9 @@ def gen_uuid():
 # ─── Enums ────────────────────────────────────────────────────────────────────
 
 class UserRole(str, enum.Enum):
-    employee = "employee"
-    manager = "manager"
-    admin = "admin"
+    learner = "learner"
+    educator = "educator"
+    owner = "owner"
     super_admin = "super_admin"
 
 
@@ -66,6 +66,28 @@ class MeetingStatus(str, enum.Enum):
     completed = "completed"
 
 
+class AssignmentType(str, enum.Enum):
+    individual = "individual"
+    group = "group"
+
+
+class AssignmentStatus(str, enum.Enum):
+    draft = "draft"
+    active = "active"
+    closed = "closed"
+
+
+class MergeStatus(str, enum.Enum):
+    pending = "pending"
+    partial = "partial"
+    complete = "complete"
+
+
+class SubmissionStatus(str, enum.Enum):
+    draft = "draft"
+    submitted = "submitted"
+
+
 class TranscriptStatus(str, enum.Enum):
     pending = "pending"
     processing = "processing"
@@ -105,7 +127,7 @@ class Invitation(Base):
     organization_id = Column(String, ForeignKey("organizations.id"), nullable=False)
     email = Column(String, nullable=False, index=True)
     token = Column(String, unique=True, nullable=False, index=True, default=gen_uuid)
-    role = Column(SAEnum(UserRole), default=UserRole.employee, nullable=False)
+    role = Column(SAEnum(UserRole), default=UserRole.learner, nullable=False)
     invited_by = Column(String, ForeignKey("users.id"), nullable=False)
     is_accepted = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -125,7 +147,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     full_name = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
-    role = Column(SAEnum(UserRole), default=UserRole.employee, nullable=False)
+    role = Column(SAEnum(UserRole), default=UserRole.learner, nullable=False)
     avatar_url = Column(String, nullable=True)
     department = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
@@ -376,24 +398,28 @@ class MeetingBooking(Base):
 
     id = Column(String, primary_key=True, default=gen_uuid)
     organization_id = Column(String, ForeignKey("organizations.id"), nullable=False)
-    employee_id = Column(String, ForeignKey("users.id"), nullable=False)
+    learner_id = Column(String, ForeignKey("users.id"), nullable=False)
     module_id = Column(String, ForeignKey("modules.id", ondelete="SET NULL"), nullable=True)
-    admin_id = Column(String, ForeignKey("users.id"), nullable=True)  # assigned on confirm
+    owner_id = Column(String, ForeignKey("users.id"), nullable=True)  # assigned on confirm
 
-    requested_at = Column(DateTime(timezone=True), nullable=True)   # preferred time from employee
-    confirmed_at = Column(DateTime(timezone=True), nullable=True)   # confirmed time by admin
-    note = Column(Text, nullable=True)                               # employee context note
+    requested_at = Column(DateTime(timezone=True), nullable=True)   # preferred time from learner
+    confirmed_at = Column(DateTime(timezone=True), nullable=True)   # confirmed time by owner
+    note = Column(Text, nullable=True)                               # learner context note
     meeting_link = Column(String, nullable=True)                     # Zoom/Meet/Teams URL
     decline_reason = Column(Text, nullable=True)
 
     status = Column(SAEnum(MeetingStatus), default=MeetingStatus.pending, nullable=False)
+    # Assignment integration
+    assignment_id = Column(String, ForeignKey("assignments.id", ondelete="SET NULL"), nullable=True)
+    locked = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     organization = relationship("Organization")
-    employee = relationship("User", foreign_keys=[employee_id])
-    admin = relationship("User", foreign_keys=[admin_id])
+    learner = relationship("User", foreign_keys=[learner_id])
+    owner = relationship("User", foreign_keys=[owner_id])
     module = relationship("Module")
+    assignment = relationship("Assignment", foreign_keys=[assignment_id])
 
 
 # ─── Completion Certificates ──────────────────────────────────────────────────
@@ -415,6 +441,97 @@ class Certificate(Base):
 
 # ─── ATS Integration ──────────────────────────────────────────────────────────
 
+# ─── Assignments ──────────────────────────────────────────────────────────────
+
+class Assignment(Base):
+    __tablename__ = "assignments"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    organization_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    module_id = Column(String, ForeignKey("modules.id", ondelete="SET NULL"), nullable=True)
+    created_by = Column(String, ForeignKey("users.id"), nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    type = Column(SAEnum(AssignmentType), nullable=False, default=AssignmentType.individual)
+    max_group_size = Column(Integer, nullable=True)
+    portions = Column(JSON, nullable=True)  # list of strings e.g. ["Introduction", "Analysis"]
+    deadline = Column(DateTime(timezone=True), nullable=True)
+    meeting_1_locked = Column(Boolean, default=False, nullable=False)
+    meeting_2_locked = Column(Boolean, default=False, nullable=False)
+    status = Column(SAEnum(AssignmentStatus), default=AssignmentStatus.draft, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    organization = relationship("Organization")
+    creator = relationship("User", foreign_keys=[created_by])
+    module = relationship("Module")
+    groups = relationship("AssignmentGroup", back_populates="assignment", cascade="all, delete-orphan")
+    submissions = relationship("AssignmentSubmission", back_populates="assignment", cascade="all, delete-orphan")
+
+
+class AssignmentGroup(Base):
+    __tablename__ = "assignment_groups"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    assignment_id = Column(String, ForeignKey("assignments.id", ondelete="CASCADE"), nullable=False)
+    kickoff_meeting_id = Column(String, ForeignKey("meeting_bookings.id", ondelete="SET NULL"), nullable=True)
+    review_meeting_id = Column(String, ForeignKey("meeting_bookings.id", ondelete="SET NULL"), nullable=True)
+    merged_document = Column(JSON, nullable=True)
+    merge_status = Column(SAEnum(MergeStatus), default=MergeStatus.pending, nullable=False)
+    final_submitted_at = Column(DateTime(timezone=True), nullable=True)
+    instructor_feedback = Column(Text, nullable=True)
+    grade = Column(String, nullable=True)
+    reviewed_merged_content = Column(JSON, nullable=True)
+    reviewed_merged_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    assignment = relationship("Assignment", back_populates="groups")
+    members = relationship("GroupMember", back_populates="group", cascade="all, delete-orphan", order_by="GroupMember.portion_index")
+    kickoff_meeting = relationship("MeetingBooking", foreign_keys=[kickoff_meeting_id])
+    review_meeting = relationship("MeetingBooking", foreign_keys=[review_meeting_id])
+
+
+class GroupMember(Base):
+    __tablename__ = "group_members"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    group_id = Column(String, ForeignKey("assignment_groups.id", ondelete="CASCADE"), nullable=False)
+    learner_id = Column(String, ForeignKey("users.id"), nullable=False)
+    portion_label = Column(String, nullable=True)
+    portion_index = Column(Integer, default=0, nullable=False)
+    submitted_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    group = relationship("AssignmentGroup", back_populates="members")
+    learner = relationship("User", foreign_keys=[learner_id])
+    submission = relationship("AssignmentSubmission", back_populates="group_member", uselist=False)
+
+
+class AssignmentSubmission(Base):
+    __tablename__ = "assignment_submissions"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    group_member_id = Column(String, ForeignKey("group_members.id", ondelete="CASCADE"), nullable=True)
+    assignment_id = Column(String, ForeignKey("assignments.id", ondelete="CASCADE"), nullable=False)
+    learner_id = Column(String, ForeignKey("users.id"), nullable=False)
+    content = Column(JSON, nullable=True)  # TipTap JSON document
+    word_count = Column(Integer, default=0, nullable=False)
+    status = Column(SAEnum(SubmissionStatus), default=SubmissionStatus.draft, nullable=False)
+    submitted_at = Column(DateTime(timezone=True), nullable=True)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    grade = Column(String, nullable=True)                        # e.g. "A", "85/100", "Pass"
+    reviewed_content = Column(JSON, nullable=True)               # TipTap doc with comment marks
+    instructor_feedback = Column(Text, nullable=True)            # overall written feedback
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+
+    group_member = relationship("GroupMember", back_populates="submission")
+    assignment = relationship("Assignment", back_populates="submissions")
+    learner = relationship("User", foreign_keys=[learner_id])
+
+
+# ─── ATS Integration ──────────────────────────────────────────────────────────
+
 class ATSConnection(Base):
     __tablename__ = "ats_connections"
 
@@ -423,7 +540,7 @@ class ATSConnection(Base):
     provider = Column(SAEnum(ATSProvider), nullable=False)
     api_key = Column(String, nullable=False)
     webhook_secret = Column(String, nullable=True, default=gen_uuid)
-    default_role = Column(SAEnum(UserRole), default=UserRole.employee, nullable=False)
+    default_role = Column(SAEnum(UserRole), default=UserRole.learner, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -81,7 +81,7 @@ def list_modules(
 @router.post("", response_model=schemas.ModuleOut, status_code=201)
 def create_module(
     payload: schemas.ModuleCreate,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     m = models.Module(
@@ -133,7 +133,7 @@ def get_module(
 def update_module(
     module_id: str,
     payload: schemas.ModuleUpdate,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     m = _org_module(module_id, current_user.organization_id, db)
@@ -147,7 +147,7 @@ def update_module(
 @router.delete("/{module_id}", status_code=204)
 def delete_module(
     module_id: str,
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     m = _org_module(module_id, current_user.organization_id, db)

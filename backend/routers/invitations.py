@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/invitations", tags=["invitations"])
 def create_invitation(
     payload: schemas.InvitationCreate,
     background_tasks: BackgroundTasks,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     # Don't allow creating super_admin invites
@@ -78,7 +78,7 @@ def create_invitation(
 
 @router.get("", response_model=List[schemas.InvitationOut])
 def list_invitations(
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     invites = (
@@ -105,7 +105,7 @@ def list_invitations(
 @router.delete("/{invitation_id}", status_code=204)
 def revoke_invitation(
     invitation_id: str,
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     invite = db.query(models.Invitation).filter(

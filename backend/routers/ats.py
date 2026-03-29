@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/ats", tags=["ats"])
 
 @router.get("/connection", response_model=Optional[schemas.ATSConnectionOut])
 def get_connection(
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     return db.query(models.ATSConnection).filter(
@@ -25,7 +25,7 @@ def get_connection(
 @router.put("/connection", response_model=schemas.ATSConnectionOut)
 def upsert_connection(
     payload: schemas.ATSConnectionCreate,
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     existing = db.query(models.ATSConnection).filter(
@@ -55,7 +55,7 @@ def upsert_connection(
 
 @router.delete("/connection", status_code=204)
 def delete_connection(
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     db.query(models.ATSConnection).filter(
@@ -135,11 +135,11 @@ async def ats_webhook(org_slug: str, payload: dict, background_tasks: Background
     # ── Create invite ──────────────────────────────────────────────────────
     admin = db.query(models.User).filter(
         models.User.organization_id == org.id,
-        models.User.role.in_([models.UserRole.admin, models.UserRole.manager]),
+        models.User.role.in_([models.UserRole.owner, models.UserRole.educator]),
         models.User.is_active == True,
     ).first()
     if not admin:
-        return {"status": "error", "reason": "no admin found in org"}
+        return {"status": "error", "reason": "no owner found in org"}
 
     invite = models.Invitation(
         organization_id=org.id,

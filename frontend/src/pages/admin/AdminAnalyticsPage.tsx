@@ -103,8 +103,8 @@ function KpiGrid({ stats }: { stats: DashboardStats }) {
     },
     {
       label: 'Active Learners',
-      value: <>{stats.total_employees ?? 0}</>,
-      sub: 'Enrolled employees',
+      value: <>{stats.total_learners ?? 0}</>,
+      sub: 'Enrolled learners',
       variant: 'red' as const,
       trend: '— enrolled',
       icon: (
@@ -222,14 +222,14 @@ function BenchBar({ label, pct, color }: { label: string; pct: number; color: st
 }
 
 // ── Completion types ──────────────────────────────────────────────────────────
-interface EmployeeCompletion {
+interface LearnerCompletion {
   id: string; name: string; email: string; role: string;
   department: string | null; joined: string;
   completed_modules: number; total_modules: number; completion_pct: number;
 }
 interface CompletionReport {
   modules: { id: string; title: string }[];
-  employees: EmployeeCompletion[];
+  learners: LearnerCompletion[];
   summary: { total: number; completed: number; in_progress: number; not_started: number };
 }
 
@@ -252,7 +252,7 @@ function CompletionReportPanel() {
   if (isLoading) return <Skeleton className="h-64 rounded" />;
   if (!data) return null;
 
-  const { summary, employees } = data;
+  const { summary, learners } = data;
 
   const pctColor = (p: number) => p === 100 ? GO : p >= 50 ? WARN : p > 0 ? ACC2 : INK3;
 
@@ -294,10 +294,10 @@ function CompletionReportPanel() {
       </div>
 
       {/* Table */}
-      {employees.length === 0 ? (
+      {learners.length === 0 ? (
         <div style={{ padding: '60px 22px', textAlign: 'center' }}>
           <div style={{ width: 40, height: 40, border: `1.5px solid ${RULE}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: INK3, fontSize: 16 }}>👤</div>
-          <p style={{ fontFamily: UI, fontSize: 13.5, fontWeight: 700, color: INK, marginBottom: 4 }}>No employees yet</p>
+          <p style={{ fontFamily: UI, fontSize: 13.5, fontWeight: 700, color: INK, marginBottom: 4 }}>No learners yet</p>
           <p style={{ fontFamily: UI, fontSize: 12.5, color: INK3 }}>Invite your team to get started.</p>
         </div>
       ) : (
@@ -305,7 +305,7 @@ function CompletionReportPanel() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${RULE}` }}>
-                {['Employee', 'Role', 'Joined', 'Progress'].map((h, i) => (
+                {['Learner', 'Role', 'Joined', 'Progress'].map((h, i) => (
                   <th key={h} style={{
                     textAlign: i === 3 ? 'right' : 'left',
                     fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: INK3,
@@ -315,9 +315,9 @@ function CompletionReportPanel() {
               </tr>
             </thead>
             <tbody>
-              {employees.map((emp, idx) => (
+              {learners.map((emp, idx) => (
                 <tr key={emp.id}
-                  style={{ borderBottom: idx < employees.length - 1 ? `1px solid rgba(212,205,198,0.4)` : 'none', transition: 'background 0.15s' }}
+                  style={{ borderBottom: idx < learners.length - 1 ? `1px solid rgba(212,205,198,0.4)` : 'none', transition: 'background 0.15s' }}
                   onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = BG2)}
                   onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
                 >

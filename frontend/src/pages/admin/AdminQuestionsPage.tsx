@@ -97,19 +97,20 @@ export default function AdminQuestionsPage() {
   ];
 
   return (
-    <div className="p-6 lg:p-10">
-      <div className="max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+      <div className="mx-auto max-w-5xl px-6 py-10 lg:px-8 lg:py-12">
+        <div className="">
 
         {/* ── Header ── */}
-        <div className="flex items-start justify-between mb-7">
+        <div className="flex items-start justify-between mb-8">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <Inbox size={15} className="text-white" />
+              <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <Inbox size={17} className="text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Question Queue</h1>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Question Queue</h1>
             </div>
-            <p className="text-sm text-gray-500 ml-10">
+            <p className="text-base text-gray-500 ml-11">
               {questions.length} question{questions.length !== 1 ? 's' : ''}
               {pendingCount > 0 && (
                 <>
@@ -123,7 +124,7 @@ export default function AdminQuestionsPage() {
           </div>
 
           {/* Live indicator */}
-          <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-sm">
+          <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-white border border-gray-200 rounded-full px-3 py-2 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Live
           </div>
@@ -131,7 +132,7 @@ export default function AdminQuestionsPage() {
 
         {/* ── Stat pills ── */}
         {!isLoading && questions.length > 0 && (
-          <div className="flex items-center gap-3 mb-6 flex-wrap">
+          <div className="flex items-center gap-3 mb-7 flex-wrap">
             <StatPill
               icon={<AlertCircle size={13} className="text-amber-500" />}
               label={`${pendingCount} pending`}
@@ -151,24 +152,24 @@ export default function AdminQuestionsPage() {
         )}
 
         {/* ── Search ── */}
-        <div className="relative mb-4">
+        <div className="relative mb-6">
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search questions or employees…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-gray-300 transition"
+            placeholder="Search questions or learners…"
+            className="w-full pl-9 pr-4 py-3 text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-gray-300 transition"
           />
         </div>
 
         {/* ── Tabs ── */}
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-5 w-fit">
+        <div className="flex gap-1.5 bg-gray-100 p-1.5 rounded-xl mb-6 w-fit">
           {TABS.map(({ key, label, count }) => (
             <button
               key={key}
               onClick={() => setStatusFilter(key)}
               className={clsx(
-                'flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap',
+                'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap',
                 statusFilter === key
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
@@ -309,6 +310,7 @@ export default function AdminQuestionsPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

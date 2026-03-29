@@ -1,12 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Video, UserCircle, LayoutDashboard, MessageSquare } from 'lucide-react';
+import { BookOpen, Video, UserCircle, LayoutDashboard, MessageSquare, ClipboardList } from 'lucide-react';
 import { useAuthStore } from '../../store';
 import clsx from 'clsx';
 
-const employeeTabs = [
-  { to: '/modules',  icon: BookOpen,        label: 'Learn'     },
-  { to: '/meetings', icon: Video,           label: 'Meetings'  },
-  { to: '/profile',  icon: UserCircle,      label: 'Profile'   },
+const learnerTabs = [
+  { to: '/modules',      icon: BookOpen,       label: 'Learn'       },
+  { to: '/meetings',     icon: Video,          label: 'Meetings'    },
+  { to: '/assignments',  icon: ClipboardList,  label: 'Assignments' },
+  { to: '/profile',      icon: UserCircle,     label: 'Profile'     },
 ];
 
 const managerTabs = [
@@ -20,8 +21,8 @@ export default function BottomNav() {
   const { user } = useAuthStore();
   const location = useLocation();
 
-  const isManager = user?.role === 'manager' || user?.role === 'admin';
-  const tabs = isManager ? managerTabs : employeeTabs;
+  const isManager = user?.role === 'educator' || user?.role === 'owner';
+  const tabs = isManager ? managerTabs : learnerTabs;
 
   const isActive = (to: string) => {
     if (to === '/admin') return location.pathname === '/admin';

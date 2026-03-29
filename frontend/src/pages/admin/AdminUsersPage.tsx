@@ -9,12 +9,12 @@ import type { User } from '../../types';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
-type Role = 'employee' | 'manager' | 'admin';
+type Role = 'learner' | 'educator' | 'owner';
 
 const ROLE_STYLES: Record<Role, string> = {
-  employee: 'bg-slate-100 text-slate-700',
-  manager: 'bg-blue-100 text-blue-700',
-  admin: 'bg-indigo-100 text-indigo-700',
+  learner: 'bg-slate-100 text-slate-700',
+  educator: 'bg-blue-100 text-blue-700',
+  owner: 'bg-indigo-100 text-indigo-700',
 };
 
 function timeAgo(dateStr: string) {
@@ -57,7 +57,7 @@ export default function AdminUsersPage() {
     onError: (e: any) => toast.error(e?.response?.data?.detail || 'Failed to update user'),
   });
 
-  const isAdmin = me?.role === 'admin';
+  const isAdmin = me?.role === 'owner';
 
   const filtered = members.filter(m => {
     const matchSearch =
@@ -71,8 +71,8 @@ export default function AdminUsersPage() {
   const stats = {
     total: members.length,
     active: members.filter(m => m.is_active).length,
-    admins: members.filter(m => m.role === 'admin').length,
-    managers: members.filter(m => m.role === 'manager').length,
+    admins: members.filter(m => m.role === 'owner').length,
+    managers: members.filter(m => m.role === 'educator').length,
   };
 
   return (
@@ -98,8 +98,8 @@ export default function AdminUsersPage() {
         {[
           { label: 'Total members', value: stats.total, icon: Users, color: 'text-slate-600 bg-slate-100' },
           { label: 'Active', value: stats.active, icon: UserCheck, color: 'text-emerald-600 bg-emerald-50' },
-          { label: 'Admins', value: stats.admins, icon: ShieldCheck, color: 'text-indigo-600 bg-indigo-50' },
-          { label: 'Managers', value: stats.managers, icon: UserX, color: 'text-blue-600 bg-blue-50' },
+          { label: 'Owners', value: stats.admins, icon: ShieldCheck, color: 'text-indigo-600 bg-indigo-50' },
+          { label: 'Educators', value: stats.managers, icon: UserX, color: 'text-blue-600 bg-blue-50' },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">
             <div className={clsx('w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0', color)}>
@@ -127,7 +127,7 @@ export default function AdminUsersPage() {
             />
           </div>
           <div className="flex gap-1">
-            {(['all', 'employee', 'manager', 'admin'] as const).map(r => (
+            {(['all', 'learner', 'educator', 'owner'] as const).map(r => (
               <button
                 key={r}
                 onClick={() => setRoleFilter(r)}
@@ -194,9 +194,9 @@ export default function AdminUsersPage() {
                             ROLE_STYLES[member.role as Role] ?? 'bg-gray-100 text-gray-700'
                           )}
                         >
-                          <option value="employee">Employee</option>
-                          <option value="manager">Manager</option>
-                          <option value="admin">Admin</option>
+                          <option value="learner">Learner</option>
+                          <option value="educator">Educator</option>
+                          <option value="owner">Owner</option>
                         </select>
                       ) : (
                         <span className={clsx(

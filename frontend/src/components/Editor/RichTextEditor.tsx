@@ -78,6 +78,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write a
         heading: { levels: [1, 2, 3] },
         bulletList: { keepMarks: true },
         orderedList: { keepMarks: true },
+        link: false,
       }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       TextStyle,

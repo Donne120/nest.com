@@ -1,8 +1,9 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, ClipboardList, Clock, Users, BookOpen, CheckCircle, ArrowRight } from 'lucide-react';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 import api from '../api/client';
-import type { Video, Module, TimelineMarker, QuizQuestion, QuizSubmissionResult } from '../types';
+import type { Video, Module, TimelineMarker, QuizQuestion, QuizSubmissionResult, Assignment } from '../types';
 import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
 import QASidebar from '../components/QA/QASidebar';
 import QuestionForm from '../components/QA/QuestionForm';
@@ -67,6 +68,12 @@ export default function VideoPage() {
     queryKey: ['quiz-submission', videoId],
     queryFn: () => api.get(`/quiz/video/${videoId}/my-submission`).then(r => r.data),
     enabled: !!videoId,
+  });
+
+  const { data: moduleAssignments = [] } = useQuery<Assignment[]>({
+    queryKey: ['assignments', 'module', video?.module_id],
+    queryFn: () => api.get(`/assignments/my?module_id=${video!.module_id}`).then(r => r.data),
+    enabled: !!video?.module_id,
   });
 
   const invalidateProgress = useCallback(() => {
@@ -322,6 +329,89 @@ export default function VideoPage() {
               Click to start writing notes for this lesson…
             </div>
           </div>
+
+          {/* ── Module Assignments ── */}
+          {moduleAssignments.length > 0 && (
+            <div className="mt-12" style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.25s' }}>
+              <div className="flex items-center gap-4 mb-4">
+                <h2 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', color: '#e8e4dc', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ClipboardList size={18} style={{ color: '#e8c97e' }} />
+                  Assignments
+                </h2>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+              </div>
+              <div className="space-y-3">
+                {moduleAssignments.map(a => (
+                  <div
+                    key={a.id}
+                    style={{
+                      background: '#13141a',
+                      border: '1px solid rgba(255,255,255,0.07)',
+                      borderRadius: 8,
+                      padding: '16px 20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 16,
+                      transition: 'border-color 0.2s',
+                    }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,201,126,0.25)')}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)')}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{
+                          fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
+                          padding: '2px 8px', borderRadius: 100,
+                          background: a.type === 'group' ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)',
+                          color: a.type === 'group' ? '#a78bfa' : '#60a5fa',
+                          display: 'flex', alignItems: 'center', gap: 4,
+                        }}>
+                          {a.type === 'group' ? <Users size={10} /> : <BookOpen size={10} />}
+                          {a.type === 'group' ? 'Group' : 'Individual'}
+                        </span>
+                        {a.submission_count > 0 && (
+                          <span style={{ fontSize: 10, color: '#4ade80', display: 'flex', alignItems: 'center', gap: 3 }}>
+                            <CheckCircle size={10} /> Submitted
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: '#e8e4dc', marginBottom: 2 }}>
+                        {a.title}
+                      </p>
+                      {a.deadline && (
+                        <p style={{ fontSize: 11, color: '#6b6b78', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Clock size={10} />
+                          Due {formatDistanceToNow(parseISO(a.deadline), { addSuffix: true })}
+                        </p>
+                      )}
+                    </div>
+                    <Link
+                      to={`/assignments/${a.id}/work`}
+                      style={{
+                        flexShrink: 0,
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        background: '#e8c97e',
+                        color: '#0b0c0f',
+                        fontSize: 12, fontWeight: 700,
+                        padding: '8px 16px',
+                        borderRadius: 4,
+                        textDecoration: 'none',
+                        letterSpacing: '0.02em',
+                        transition: 'opacity 0.2s',
+                        whiteSpace: 'nowrap',
+                      }}
+                      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.85')}
+                      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+                    >
+                      {a.submission_count > 0 ? 'View work' : 'Start'}
+                      <ArrowRight size={13} />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Prev / Next navigation */}
           {moduleVideos.length > 1 && (

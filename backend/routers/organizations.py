@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/organizations", tags=["organizations"])
 
 @router.get("/mine", response_model=schemas.OrganizationOut)
 def get_my_org(
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     org = db.query(models.Organization).filter(
@@ -27,7 +27,7 @@ def get_my_org(
 @router.put("/mine", response_model=schemas.OrganizationOut)
 def update_my_org(
     payload: schemas.OrganizationUpdate,
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     org = db.query(models.Organization).filter(
@@ -46,7 +46,7 @@ def update_my_org(
 
 @router.get("/mine/members", response_model=List[schemas.UserOut])
 def list_members(
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     return (
@@ -61,7 +61,7 @@ def list_members(
 def update_member_role(
     user_id: str,
     payload: schemas.UserRoleUpdate,
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     if payload.role == models.UserRole.super_admin:
@@ -83,7 +83,7 @@ def update_member_role(
 @router.put("/mine/members/{user_id}/deactivate", response_model=schemas.UserOut)
 def deactivate_member(
     user_id: str,
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     user = db.query(models.User).filter(
@@ -103,7 +103,7 @@ def deactivate_member(
 @router.put("/mine/members/{user_id}/reactivate", response_model=schemas.UserOut)
 def reactivate_member(
     user_id: str,
-    current_user: models.User = Depends(auth_utils.require_admin),
+    current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
     user = db.query(models.User).filter(

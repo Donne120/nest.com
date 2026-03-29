@@ -330,7 +330,7 @@ function QuestionForm({ form, setForm, onTypeChange, onSetCorrect, onSave, onCan
       {/* Short answer hint */}
       {form.question_type === 'short_answer' && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-700">
-          Employees type a free-text response. Answers will be visible to managers for manual review.
+          Learners type a free-text response. Answers will be visible to educators for manual review.
         </div>
       )}
 

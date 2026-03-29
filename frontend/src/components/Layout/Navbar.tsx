@@ -67,7 +67,7 @@ export default function Navbar() {
     navigate('/login');
   };
 
-  const isManager = user?.role === 'manager' || user?.role === 'admin';
+  const isManager = user?.role === 'educator' || user?.role === 'owner';
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   const orgName = organization?.name ?? 'Nest';
@@ -111,6 +111,9 @@ export default function Navbar() {
           />
           {!isManager && (
             <DarkNavLink to="/meetings" active={isActive('/meetings')} label="Meetings" />
+          )}
+          {!isManager && (
+            <DarkNavLink to="/assignments" active={isActive('/assignments')} label="Assignments" />
           )}
           {isManager && (
             <DarkNavLink to="/admin" active={isActive('/admin')} label="Admin" />

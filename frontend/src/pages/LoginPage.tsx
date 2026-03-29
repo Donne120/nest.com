@@ -76,7 +76,7 @@ export default function LoginPage() {
       });
       setAuth(data.user, data.access_token, data.organization);
       toast.success(`Welcome back, ${data.user.full_name.split(' ')[0]}!`);
-      navigate(data.user.role === 'employee' ? '/modules' : '/admin');
+      navigate(data.user.role === 'learner' ? '/modules' : '/admin');
     } catch {
       toast.error('Invalid email or password');
     } finally {

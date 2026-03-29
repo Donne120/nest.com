@@ -33,6 +33,13 @@ const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminPeoplePage = lazy(() => import('./pages/admin/AdminPeoplePage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CertificatePage = lazy(() => import('./pages/CertificatePage'));
+const AssignmentsPage = lazy(() => import('./pages/AssignmentsPage'));
+const AssignmentWorkspace = lazy(() => import('./pages/AssignmentWorkspace'));
+const GroupMergedView = lazy(() => import('./pages/GroupMergedView'));
+const AdminAssignmentsPage = lazy(() => import('./pages/admin/AdminAssignmentsPage'));
+const AdminAssignmentEditor = lazy(() => import('./pages/admin/AdminAssignmentEditor'));
+const AdminAssignmentDetail = lazy(() => import('./pages/admin/AdminAssignmentDetail'));
+const AdminSubmissionReview = lazy(() => import('./pages/admin/AdminSubmissionReview'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,12 +60,12 @@ function RequireAuth({ children }: { children: ReactNode }) {
 function HomeRoute() {
   const { token, user } = useAuthStore();
   if (!token) return <LandingPage />;
-  return <Navigate to={user?.role === 'employee' ? '/modules' : '/admin'} replace />;
+  return <Navigate to={user?.role === 'learner' ? '/modules' : '/admin'} replace />;
 }
 
 function RequireManager({ children }: { children: ReactNode }) {
   const { user } = useAuthStore();
-  if (!user || user.role === 'employee') return <Navigate to="/modules" replace />;
+  if (!user || user.role === 'learner') return <Navigate to="/modules" replace />;
   return <>{children}</>;
 }
 
@@ -139,6 +146,40 @@ export default function App() {
           />
 
           <Route
+            path="/assignments"
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <AssignmentsPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/assignments/:assignmentId/work"
+            element={
+              <RequireAuth>
+                <div className="min-h-screen bg-gray-50 dark:bg-slate-950 font-sans flex flex-col">
+                  <Navbar />
+                  <AssignmentWorkspace />
+                </div>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/assignments/:assignmentId/merged"
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <GroupMergedView />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+
+          <Route
             path="/video/:videoId"
             element={
               <RequireAuth>
@@ -182,6 +223,11 @@ export default function App() {
             <Route path="meetings" element={<AdminMeetingsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="settings" element={<OrgSettingsPage />} />
+            <Route path="assignments" element={<AdminAssignmentsPage />} />
+            <Route path="assignments/new" element={<AdminAssignmentEditor />} />
+            <Route path="assignments/:assignmentId" element={<AdminAssignmentDetail />} />
+            <Route path="assignments/:assignmentId/edit" element={<AdminAssignmentEditor />} />
+            <Route path="assignments/:assignmentId/submissions/:submissionId/review" element={<AdminSubmissionReview />} />
           </Route>
 
           <Route path="*" element={<HomeRoute />} />

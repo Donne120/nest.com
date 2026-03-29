@@ -3,14 +3,14 @@ Multi-tenant seed script.
 Creates 2 demo organizations with full content.
 
 Org 1 — Acme Corp
-  admin@acme.com / admin123
-  manager@acme.com / manager123
-  alice@acme.com / employee123
-  bob@acme.com / employee123
+  admin@acme.com / admin123  (owner)
+  manager@acme.com / manager123  (educator)
+  alice@acme.com / employee123  (learner)
+  bob@acme.com / employee123  (learner)
 
 Org 2 — TechStart Inc
-  admin@techstart.com / admin123
-  dev@techstart.com / employee123
+  admin@techstart.com / admin123  (owner)
+  dev@techstart.com / employee123  (learner)
 
 Platform super-admin (no org)
   superadmin@nestapp.com / superadmin123
@@ -63,7 +63,7 @@ acme_admin = models.User(
     email="admin@acme.com",
     full_name="Alex Admin",
     hashed_password=hash_password("admin123"),
-    role=models.UserRole.admin,
+    role=models.UserRole.owner,
     department="Leadership",
 )
 acme_manager = models.User(
@@ -71,7 +71,7 @@ acme_manager = models.User(
     email="manager@acme.com",
     full_name="Maria Manager",
     hashed_password=hash_password("manager123"),
-    role=models.UserRole.manager,
+    role=models.UserRole.educator,
     department="People & Ops",
 )
 acme_alice = models.User(
@@ -79,7 +79,7 @@ acme_alice = models.User(
     email="alice@acme.com",
     full_name="Alice Chen",
     hashed_password=hash_password("employee123"),
-    role=models.UserRole.employee,
+    role=models.UserRole.learner,
     department="Engineering",
 )
 acme_bob = models.User(
@@ -87,7 +87,7 @@ acme_bob = models.User(
     email="bob@acme.com",
     full_name="Bob Okafor",
     hashed_password=hash_password("employee123"),
-    role=models.UserRole.employee,
+    role=models.UserRole.learner,
     department="Marketing",
 )
 db.add_all([acme_admin, acme_manager, acme_alice, acme_bob])
@@ -170,7 +170,7 @@ ts_admin = models.User(
     email="admin@techstart.com",
     full_name="Sam Singh",
     hashed_password=hash_password("admin123"),
-    role=models.UserRole.admin,
+    role=models.UserRole.owner,
     department="Founder",
 )
 ts_dev = models.User(
@@ -178,7 +178,7 @@ ts_dev = models.User(
     email="dev@techstart.com",
     full_name="Priya Dev",
     hashed_password=hash_password("employee123"),
-    role=models.UserRole.employee,
+    role=models.UserRole.learner,
     department="Engineering",
 )
 db.add_all([ts_admin, ts_dev])
@@ -215,13 +215,13 @@ db.add(super_admin)
 db.commit()
 print("Multi-tenant seed complete.\n")
 print("  Acme Corp (professional plan)")
-print("    admin@acme.com / admin123")
-print("    manager@acme.com / manager123")
-print("    alice@acme.com / employee123")
-print("    bob@acme.com / employee123\n")
+print("    admin@acme.com / admin123  (owner)")
+print("    manager@acme.com / manager123  (educator)")
+print("    alice@acme.com / employee123  (learner)")
+print("    bob@acme.com / employee123  (learner)\n")
 print("  TechStart Inc (trial — 9 days remaining)")
-print("    admin@techstart.com / admin123")
-print("    dev@techstart.com / employee123\n")
+print("    admin@techstart.com / admin123  (owner)")
+print("    dev@techstart.com / employee123  (learner)\n")
 print("  Platform super-admin")
 print("    superadmin@nestapp.com / superadmin123")
 db.close()

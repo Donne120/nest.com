@@ -58,7 +58,7 @@ def list_videos(
 @router.post("", response_model=schemas.VideoOut, status_code=201)
 def create_video(
     payload: schemas.VideoCreate,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     # Ensure the target module belongs to this org
@@ -120,7 +120,7 @@ def get_timeline_markers(
 def update_video(
     video_id: str,
     payload: schemas.VideoUpdate,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     v = _org_video(video_id, current_user.organization_id, db)
@@ -152,7 +152,7 @@ def _check_upload(data: bytes, filename: str, allowed_mime: set, allowed_ext: se
 @router.post("/upload/video", status_code=201)
 async def upload_video_file(
     file: UploadFile = File(...),
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
 ):
     """Upload a video file to Supabase Storage. Returns the signed URL."""
     if file.content_type not in _ALLOWED_VIDEO_MIME:
@@ -166,7 +166,7 @@ async def upload_video_file(
 @router.post("/upload/thumbnail", status_code=201)
 async def upload_thumbnail_file(
     file: UploadFile = File(...),
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
 ):
     """Upload a thumbnail image to Supabase Storage. Returns the public URL."""
     if file.content_type not in _ALLOWED_IMAGE_MIME:
@@ -180,7 +180,7 @@ async def upload_thumbnail_file(
 @router.delete("/{video_id}", status_code=204)
 def delete_video(
     video_id: str,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     v = _org_video(video_id, current_user.organization_id, db)

@@ -42,7 +42,7 @@ def _org_quiz_question(question_id: str, org_id: str, db: Session) -> models.Qui
 @router.get("/admin/video/{video_id}", response_model=List[schemas.QuizQuestionOut])
 def get_quiz_admin(
     video_id: str,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     _org_video(video_id, current_user.organization_id, db)
@@ -58,7 +58,7 @@ def get_quiz_admin(
 def create_quiz_question(
     video_id: str,
     payload: schemas.QuizQuestionCreate,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     _org_video(video_id, current_user.organization_id, db)
@@ -91,7 +91,7 @@ def create_quiz_question(
 def update_quiz_question(
     question_id: str,
     payload: schemas.QuizQuestionUpdate,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     q = _org_quiz_question(question_id, current_user.organization_id, db)
@@ -122,7 +122,7 @@ def update_quiz_question(
 @router.delete("/admin/question/{question_id}", status_code=204)
 def delete_quiz_question(
     question_id: str,
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     q = _org_quiz_question(question_id, current_user.organization_id, db)

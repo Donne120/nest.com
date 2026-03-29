@@ -90,7 +90,7 @@ admin = models.User(
     email="admin@aiethics.academy",
     full_name="Dr. Aisha Kamara",
     hashed_password=hash_password("aiethics123"),
-    role=models.UserRole.admin,
+    role=models.UserRole.owner,
     department="AI Ethics Research",
 )
 instructor = models.User(
@@ -98,7 +98,7 @@ instructor = models.User(
     email="instructor@aiethics.academy",
     full_name="Prof. James Osei",
     hashed_password=hash_password("instructor123"),
-    role=models.UserRole.manager,
+    role=models.UserRole.educator,
     department="Curriculum",
 )
 student1 = models.User(
@@ -106,7 +106,7 @@ student1 = models.User(
     email="student1@aiethics.academy",
     full_name="Maria Santos",
     hashed_password=hash_password("student123"),
-    role=models.UserRole.employee,
+    role=models.UserRole.learner,
     department="Data Science",
 )
 student2 = models.User(
@@ -114,7 +114,7 @@ student2 = models.User(
     email="student2@aiethics.academy",
     full_name="Kwame Mensah",
     hashed_password=hash_password("student123"),
-    role=models.UserRole.employee,
+    role=models.UserRole.learner,
     department="Product Management",
 )
 db.add_all([admin, instructor, student1, student2])

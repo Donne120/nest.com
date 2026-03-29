@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 @router.get("/dashboard", response_model=schemas.DashboardStats)
 def get_dashboard_stats(
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     org_id = current_user.organization_id
@@ -49,7 +49,7 @@ def get_dashboard_stats(
     )
     total_emp = db.query(func.count(models.User.id)).filter(
         models.User.organization_id == org_id,
-        models.User.role == models.UserRole.employee,
+        models.User.role == models.UserRole.learner,
         models.User.is_active == True,
     ).scalar()
 
@@ -89,7 +89,7 @@ def get_dashboard_stats(
         total_questions=total_q or 0,
         pending_questions=pending_q or 0,
         answered_questions=answered_q or 0,
-        total_employees=total_emp or 0,
+        total_learners=total_emp or 0,
         avg_response_time_hours=round(avg_hours, 1),
         modules_with_questions=modules_with_q,
     )
@@ -97,7 +97,7 @@ def get_dashboard_stats(
 
 @router.get("/modules", response_model=List[schemas.ModuleAnalytics])
 def get_module_analytics(
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     modules = (
@@ -164,10 +164,10 @@ def mark_read(
 
 @router.get("/people")
 def get_people_analytics(
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
-    """Per-employee engagement and completion scorecards."""
+    """Per-learner engagement and completion scorecards."""
     org_id = current_user.organization_id
     now = datetime.now(timezone.utc)
 
@@ -266,12 +266,12 @@ def get_people_analytics(
         "avg_completion": round(sum(e["completion_pct"] for e in result) / len(result)) if result else 0,
     }
 
-    return {"employees": result, "summary": summary}
+    return {"learners": result, "summary": summary}
 
 
 @router.get("/benchmarks")
 def get_benchmarks(
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     """Compare this org's onboarding metrics against the platform average."""
@@ -281,7 +281,7 @@ def get_benchmarks(
     def _org_completion_rate(oid: str) -> float:
         employees = db.query(models.User).filter(
             models.User.organization_id == oid,
-            models.User.role == models.UserRole.employee,
+            models.User.role == models.UserRole.learner,
             models.User.is_active == True,
         ).all()
         modules = db.query(models.Module).filter(
@@ -347,10 +347,10 @@ def get_benchmarks(
 
 @router.get("/completion-report")
 def get_completion_report(
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
-    """Per-employee completion status for all published modules."""
+    """Per-learner completion status for all published modules."""
     org_id = current_user.organization_id
 
     employees = (
@@ -401,7 +401,7 @@ def get_completion_report(
 
     return {
         "modules": [{"id": m.id, "title": m.title} for m in modules],
-        "employees": report,
+        "learners": report,
         "summary": {
             "total": len(report),
             "completed": sum(1 for e in report if e["completion_pct"] == 100),
@@ -413,7 +413,7 @@ def get_completion_report(
 
 @router.get("/export.csv")
 def export_completion_csv(
-    current_user: models.User = Depends(auth_utils.require_manager),
+    current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     """Download completion report as CSV (Excel-compatible)."""

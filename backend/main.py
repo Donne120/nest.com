@@ -17,7 +17,7 @@ from config import settings
 from database import engine
 from sqlalchemy import text
 import models
-from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats, search
+from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats, search, assignments
 from sqlalchemy import text
 import storage as storage_helper
 
@@ -47,6 +47,12 @@ def _run_db_setup():
             conn.execute(text("SET statement_timeout = 0"))
             conn.execute(text(
                 "ALTER TABLE answers ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL"
+            ))
+            conn.execute(text(
+                "ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS assignment_id TEXT"
+            ))
+            conn.execute(text(
+                "ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS locked BOOLEAN DEFAULT FALSE NOT NULL"
             ))
             conn.commit()
         logger.info("DB setup complete")
@@ -109,6 +115,7 @@ app.include_router(transcription.router)
 app.include_router(certificates.router)
 app.include_router(ats.router)
 app.include_router(search.router)
+app.include_router(assignments.router)
 
 
 @app.get("/api/health")

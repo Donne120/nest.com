@@ -32,7 +32,7 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
   const queryClient = useQueryClient();
 
   const isMine = question.asked_by_user.id === user?.id;
-  const isManagerOrAdmin = user?.role === 'manager' || user?.role === 'admin';
+  const isManagerOrAdmin = user?.role === 'educator' || user?.role === 'owner';
   const canEdit = isMine;
   const canDelete = isMine || isManagerOrAdmin;
 
@@ -210,7 +210,7 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
   const [editText, setEditText] = useState(answer.answer_text);
 
   const isMine = answer.answered_by_user.id === user?.id;
-  const isManagerOrAdmin = user?.role === 'manager' || user?.role === 'admin';
+  const isManagerOrAdmin = user?.role === 'educator' || user?.role === 'owner';
   const canEdit = isMine;
   const canDelete = isMine || isManagerOrAdmin;
 

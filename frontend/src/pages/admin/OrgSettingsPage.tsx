@@ -12,13 +12,13 @@ import Badge from '../../components/UI/Badge';
 type Tab = 'organization' | 'team' | 'invitations' | 'integrations';
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
-  { value: 'employee', label: 'Employee' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'admin', label: 'Admin' },
+  { value: 'learner', label: 'Learner' },
+  { value: 'educator', label: 'Educator' },
+  { value: 'owner', label: 'Owner' },
 ];
 
-function roleBadgeVariant(role: UserRole): 'employee' | 'manager' | 'admin' {
-  return role as 'employee' | 'manager' | 'admin';
+function roleBadgeVariant(role: UserRole): 'learner' | 'educator' | 'owner' {
+  return role as 'learner' | 'educator' | 'owner';
 }
 
 // ─── Field wrapper ─────────────────────────────────────────────────────────────
@@ -226,7 +226,7 @@ function TeamTab() {
               </div>
 
               {/* Role */}
-              {currentUser?.role === 'admin' && m.id !== currentUser?.id ? (
+              {currentUser?.role === 'owner' && m.id !== currentUser?.id ? (
                 <select
                   value={m.role}
                   onChange={(e) => updateRole.mutate({ userId: m.id, role: e.target.value as UserRole })}
@@ -241,7 +241,7 @@ function TeamTab() {
               )}
 
               {/* Activate/Deactivate */}
-              {currentUser?.role === 'admin' && m.id !== currentUser?.id && (
+              {currentUser?.role === 'owner' && m.id !== currentUser?.id && (
                 m.is_active ? (
                   <button
                     onClick={() => deactivate.mutate(m.id)}
@@ -272,7 +272,7 @@ function TeamTab() {
 function InvitationsTab() {
   const qc = useQueryClient();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<UserRole>('employee');
+  const [role, setRole] = useState<UserRole>('learner');
   const [creating, setCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -431,7 +431,7 @@ function IntegrationsTab() {
   const qc = useQueryClient();
   const [selectedProvider, setSelectedProvider] = useState<ATSProvider>('greenhouse');
   const [apiKey, setApiKey] = useState('');
-  const [defaultRole, setDefaultRole] = useState<UserRole>('employee');
+  const [defaultRole, setDefaultRole] = useState<UserRole>('learner');
   const [saving, setSaving] = useState(false);
 
   const { data: connection } = useQuery<ATSConnection | null>({
@@ -573,8 +573,8 @@ function IntegrationsTab() {
             onChange={e => setDefaultRole(e.target.value as UserRole)}
             className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
-            <option value="employee">Employee</option>
-            <option value="manager">Manager</option>
+            <option value="learner">Learner</option>
+            <option value="educator">Educator</option>
           </select>
         </div>
 
@@ -599,35 +599,42 @@ export default function OrgSettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('organization');
 
   return (
-    <div className="p-6 lg:p-8 max-w-3xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Manage your workspace, team members, and invitations
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+      <div className="mx-auto max-w-5xl px-6 py-12 lg:px-8 lg:py-16">
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+          <p className="text-base text-gray-500 mt-2">
+            Manage your workspace, team members, and integrations
+          </p>
+        </div>
 
-      {/* Tab bar */}
-      <div className="flex gap-0 border-b border-gray-200 mb-7">
-        {TABS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all ${
-              activeTab === id
-                ? 'border-brand-600 text-brand-700'
-                : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
-            }`}
-          >
-            <Icon size={14} />
-            {label}
-          </button>
-        ))}
-      </div>
+        {/* Tab bar */}
+        <div className="flex gap-0 border-b border-gray-200 mb-8">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+                activeTab === id
+                  ? 'border-brand-600 text-brand-700'
+                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+              }`}
+            >
+              <Icon size={16} />
+              {label}
+            </button>
+          ))}
+        </div>
 
-      {activeTab === 'organization' && <OrgTab />}
-      {activeTab === 'team' && <TeamTab />}
-      {activeTab === 'invitations' && <InvitationsTab />}
+        {/* Content */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 lg:p-10 shadow-sm">
+          {activeTab === 'organization' && <OrgTab />}
+          {activeTab === 'team' && <TeamTab />}
+          {activeTab === 'invitations' && <InvitationsTab />}
+          {activeTab === 'integrations' && <IntegrationsTab />}
+        </div>
+      </div>
     </div>
   );
 }

@@ -97,7 +97,7 @@ def register_org(request: Request, background_tasks: BackgroundTasks, payload: s
         email=payload.email,
         full_name=payload.full_name,
         hashed_password=auth_utils.hash_password(payload.password),
-        role=models.UserRole.admin,
+        role=models.UserRole.owner,
     )
     db.add(user)
     db.commit()

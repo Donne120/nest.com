@@ -1,4 +1,4 @@
-export type UserRole = 'employee' | 'manager' | 'admin' | 'super_admin';
+export type UserRole = 'learner' | 'educator' | 'owner' | 'super_admin';
 export type QuestionStatus = 'pending' | 'answered' | 'archived';
 export type ModuleStatus = 'not_started' | 'in_progress' | 'completed';
 export type Plan = 'trial' | 'starter' | 'professional' | 'enterprise';
@@ -145,9 +145,9 @@ export type MeetingStatus = 'pending' | 'confirmed' | 'declined' | 'completed';
 export interface Meeting {
   id: string;
   organization_id: string;
-  employee_id: string;
+  learner_id: string;
   module_id: string | null;
-  admin_id: string | null;
+  owner_id: string | null;
   requested_at: string | null;
   confirmed_at: string | null;
   note: string | null;
@@ -156,8 +156,8 @@ export interface Meeting {
   status: MeetingStatus;
   created_at: string;
   updated_at: string | null;
-  employee: User;
-  admin: User | null;
+  learner: User;
+  owner: User | null;
   module_title: string | null;
 }
 
@@ -167,7 +167,7 @@ export interface DashboardStats {
   total_questions: number;
   pending_questions: number;
   answered_questions: number;
-  total_employees: number;
+  total_learners: number;
   avg_response_time_hours: number;
   modules_with_questions: number;
 }
@@ -245,7 +245,7 @@ export interface Certificate {
 
 // ─── People Analytics ─────────────────────────────────────────────────────────
 
-export interface EmployeePeopleStats {
+export interface LearnerPeopleStats {
   id: string;
   name: string;
   email: string;
@@ -264,7 +264,7 @@ export interface EmployeePeopleStats {
 }
 
 export interface PeopleReport {
-  employees: EmployeePeopleStats[];
+  learners: LearnerPeopleStats[];
   summary: { total: number; stars: number; at_risk: number; avg_completion: number };
 }
 
@@ -277,6 +277,84 @@ export interface BenchmarkData {
   platform_avg_days_to_complete: number | null;
   org_rank_percentile: number;
   total_orgs_compared: number;
+}
+
+// ─── Assignments ──────────────────────────────────────────────────────────────
+
+export type AssignmentType = 'individual' | 'group';
+export type AssignmentStatus = 'draft' | 'active' | 'closed';
+export type MergeStatus = 'pending' | 'partial' | 'complete';
+export type SubmissionStatus = 'draft' | 'submitted';
+
+export interface Assignment {
+  id: string;
+  organization_id: string;
+  module_id: string | null;
+  created_by: string;
+  title: string;
+  description: string | null;
+  type: AssignmentType;
+  max_group_size: number | null;
+  portions: string[] | null;
+  deadline: string | null;
+  meeting_1_locked: boolean;
+  meeting_2_locked: boolean;
+  status: AssignmentStatus;
+  created_at: string;
+  updated_at: string | null;
+  creator: User;
+  group_count: number;
+  submission_count: number;
+  // Populated only from /my endpoint
+  my_submission_status?: 'not_started' | 'draft' | 'submitted';
+  my_group_merge_status?: 'pending' | 'partial' | 'complete' | 'final_submitted';
+  my_portion_label?: string | null;
+}
+
+export interface GroupMember {
+  id: string;
+  group_id: string;
+  learner_id: string;
+  portion_label: string | null;
+  portion_index: number;
+  submitted_at: string | null;
+  learner: User;
+}
+
+export interface AssignmentGroup {
+  id: string;
+  assignment_id: string;
+  kickoff_meeting_id: string | null;
+  review_meeting_id: string | null;
+  merge_status: MergeStatus;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  merged_document: any | null;
+  final_submitted_at: string | null;
+  instructor_feedback: string | null;
+  grade?: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  reviewed_merged_content?: any | null;
+  reviewed_merged_at?: string | null;
+  members: GroupMember[];
+}
+
+export interface AssignmentSubmission {
+  id: string;
+  group_member_id: string | null;
+  assignment_id: string;
+  learner_id: string;
+  learner?: User;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  content: any | null;
+  word_count: number;
+  status: SubmissionStatus;
+  submitted_at: string | null;
+  updated_at: string | null;
+  grade?: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  reviewed_content?: any | null;
+  instructor_feedback?: string | null;
+  reviewed_at?: string | null;
 }
 
 // ─── ATS ──────────────────────────────────────────────────────────────────────

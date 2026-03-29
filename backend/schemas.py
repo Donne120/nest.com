@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
+from typing import Optional, List, Any
 from datetime import datetime
-from models import UserRole, QuestionStatus, ModuleStatus, QuestionType, Plan, SubscriptionStatus, MeetingStatus, ATSProvider
+from models import UserRole, QuestionStatus, ModuleStatus, QuestionType, Plan, SubscriptionStatus, MeetingStatus, ATSProvider, AssignmentType, AssignmentStatus, MergeStatus, SubmissionStatus
 
 
 # ─── Organization ─────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ class ResetPasswordRequest(BaseModel):
 
 class InvitationCreate(BaseModel):
     email: EmailStr
-    role: UserRole = UserRole.employee
+    role: UserRole = UserRole.learner
 
 
 class InvitationOut(BaseModel):
@@ -110,7 +110,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     full_name: str
     password: str
-    role: UserRole = UserRole.employee
+    role: UserRole = UserRole.learner
     department: Optional[str] = None
 
 
@@ -334,7 +334,7 @@ class DashboardStats(BaseModel):
     total_questions: int
     pending_questions: int
     answered_questions: int
-    total_employees: int
+    total_learners: int
     avg_response_time_hours: float
     modules_with_questions: int
 
@@ -483,9 +483,9 @@ class MeetingDecline(BaseModel):
 class MeetingOut(BaseModel):
     id: str
     organization_id: str
-    employee_id: str
+    learner_id: str
     module_id: Optional[str]
-    admin_id: Optional[str]
+    owner_id: Optional[str]
     requested_at: Optional[datetime]
     confirmed_at: Optional[datetime]
     note: Optional[str]
@@ -494,8 +494,8 @@ class MeetingOut(BaseModel):
     status: MeetingStatus
     created_at: datetime
     updated_at: Optional[datetime]
-    employee: UserOut
-    admin: Optional[UserOut]
+    learner: UserOut
+    owner: Optional[UserOut]
     module_title: Optional[str] = None
 
     class Config:
@@ -522,7 +522,7 @@ class CertificateOut(BaseModel):
 
 # ─── People Analytics ─────────────────────────────────────────────────────────
 
-class EmployeePeopleStats(BaseModel):
+class LearnerPeopleStats(BaseModel):
     id: str
     name: str
     email: str
@@ -541,7 +541,7 @@ class EmployeePeopleStats(BaseModel):
 
 
 class PeopleReport(BaseModel):
-    employees: List[EmployeePeopleStats]
+    learners: List[LearnerPeopleStats]
     summary: dict
 
 
@@ -561,7 +561,7 @@ class BenchmarkData(BaseModel):
 class ATSConnectionCreate(BaseModel):
     provider: ATSProvider
     api_key: str
-    default_role: UserRole = UserRole.employee
+    default_role: UserRole = UserRole.learner
 
 
 class ATSConnectionOut(BaseModel):
@@ -580,8 +580,10 @@ class NoteCreate(BaseModel):
     content: str = Field(..., min_length=1, max_length=5000)
     timestamp_seconds: Optional[float] = None
 
+
 class NoteUpdate(BaseModel):
     content: str = Field(..., min_length=1, max_length=5000)
+
 
 class NoteOut(BaseModel):
     id: str
@@ -592,3 +594,127 @@ class NoteOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ─── Assignments ──────────────────────────────────────────────────────────────
+
+class AssignmentCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = None
+    type: AssignmentType = AssignmentType.individual
+    module_id: Optional[str] = None
+    max_group_size: Optional[int] = Field(None, ge=2, le=50)
+    portions: Optional[List[str]] = None
+    deadline: Optional[datetime] = None
+
+
+class AssignmentUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = None
+    module_id: Optional[str] = None
+    max_group_size: Optional[int] = Field(None, ge=2, le=50)
+    portions: Optional[List[str]] = None
+    deadline: Optional[datetime] = None
+    meeting_1_locked: Optional[bool] = None
+    meeting_2_locked: Optional[bool] = None
+
+
+class AssignmentOut(BaseModel):
+    id: str
+    organization_id: str
+    module_id: Optional[str]
+    created_by: str
+    title: str
+    description: Optional[str]
+    type: AssignmentType
+    max_group_size: Optional[int]
+    portions: Optional[List[str]]
+    deadline: Optional[datetime]
+    meeting_1_locked: bool
+    meeting_2_locked: bool
+    status: AssignmentStatus
+    created_at: datetime
+    updated_at: Optional[datetime]
+    creator: "UserOut"
+    group_count: int = 0
+    submission_count: int = 0
+    # Learner-specific fields (populated only on /my endpoint)
+    my_submission_status: Optional[str] = None      # 'not_started' | 'draft' | 'submitted'
+    my_group_merge_status: Optional[str] = None     # 'pending' | 'partial' | 'complete' | 'final_submitted'
+    my_portion_label: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class GroupMemberOut(BaseModel):
+    id: str
+    group_id: str
+    learner_id: str
+    portion_label: Optional[str]
+    portion_index: int
+    submitted_at: Optional[datetime]
+    learner: "UserOut"
+
+    class Config:
+        from_attributes = True
+
+
+class AssignmentGroupOut(BaseModel):
+    id: str
+    assignment_id: str
+    kickoff_meeting_id: Optional[str]
+    review_meeting_id: Optional[str]
+    merge_status: MergeStatus
+    merged_document: Optional[Any] = None
+    final_submitted_at: Optional[datetime]
+    instructor_feedback: Optional[str]
+    grade: Optional[str] = None
+    reviewed_merged_content: Optional[Any] = None
+    reviewed_merged_at: Optional[datetime] = None
+    members: List[GroupMemberOut] = []
+
+    class Config:
+        from_attributes = True
+
+
+class GroupReview(BaseModel):
+    grade: Optional[str] = None
+    reviewed_merged_content: Optional[Any] = None
+    instructor_feedback: Optional[str] = None
+
+
+class AssignmentSubmissionOut(BaseModel):
+    id: str
+    group_member_id: Optional[str]
+    assignment_id: str
+    learner_id: str
+    learner: Optional["UserOut"] = None
+    content: Optional[Any] = None
+    word_count: int
+    status: SubmissionStatus
+    submitted_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    grade: Optional[str] = None
+    reviewed_content: Optional[Any] = None
+    instructor_feedback: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class SubmissionSave(BaseModel):
+    content: Optional[Any] = None
+    word_count: int = 0
+    submit: bool = False  # True = final submit, False = save draft
+
+
+class FeedbackCreate(BaseModel):
+    feedback: str = Field(..., min_length=1, max_length=5000)
+
+
+class SubmissionReview(BaseModel):
+    grade: Optional[str] = None
+    reviewed_content: Optional[Any] = None   # TipTap doc with comment marks embedded
+    instructor_feedback: Optional[str] = None

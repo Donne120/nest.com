@@ -4,7 +4,7 @@ import {
   Flame, CircleDot,
 } from 'lucide-react';
 import api from '../../api/client';
-import type { PeopleReport, EmployeePeopleStats } from '../../types';
+import type { PeopleReport, LearnerPeopleStats } from '../../types';
 import { Skeleton } from '../../components/UI/Skeleton';
 import Avatar from '../../components/UI/Avatar';
 
@@ -27,7 +27,7 @@ function lastActiveLabel(days: number | null, pct: number): string {
 
 // ─── Employee card ─────────────────────────────────────────────────────────────
 
-function EmployeeCard({ emp }: { emp: EmployeePeopleStats }) {
+function LearnerCard({ emp }: { emp: LearnerPeopleStats }) {
   return (
     <div className={`bg-white rounded-2xl border p-4 flex flex-col gap-3 shadow-sm transition-all hover:shadow-md ${
       emp.is_at_risk ? 'border-amber-200' : emp.is_star ? 'border-emerald-200' : 'border-gray-200'
@@ -114,10 +114,10 @@ export default function AdminPeoplePage() {
     staleTime: 60_000,
   });
 
-  const atRisk   = data?.employees.filter(e => e.is_at_risk) ?? [];
-  const stars    = data?.employees.filter(e => e.is_star) ?? [];
-  const active   = data?.employees.filter(e => !e.is_star && !e.is_at_risk && e.completion_pct > 0) ?? [];
-  const notStarted = data?.employees.filter(e => e.completion_pct === 0 && !e.is_at_risk) ?? [];
+  const atRisk   = data?.learners.filter(e => e.is_at_risk) ?? [];
+  const stars    = data?.learners.filter(e => e.is_star) ?? [];
+  const active   = data?.learners.filter(e => !e.is_star && !e.is_at_risk && e.completion_pct > 0) ?? [];
+  const notStarted = data?.learners.filter(e => e.completion_pct === 0 && !e.is_at_risk) ?? [];
 
   return (
     <div className="p-6 lg:p-10 max-w-6xl">
@@ -162,7 +162,7 @@ export default function AdminPeoplePage() {
                 <p className="text-xs text-gray-400 ml-1">No activity for 5+ days, not completed</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {atRisk.map(e => <EmployeeCard key={e.id} emp={e} />)}
+                {atRisk.map(e => <LearnerCard key={e.id} emp={e} />)}
               </div>
             </section>
           )}
@@ -181,7 +181,7 @@ export default function AdminPeoplePage() {
                 <p className="text-xs text-gray-400 ml-1">100% completed</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {stars.map(e => <EmployeeCard key={e.id} emp={e} />)}
+                {stars.map(e => <LearnerCard key={e.id} emp={e} />)}
               </div>
             </section>
           )}
@@ -199,7 +199,7 @@ export default function AdminPeoplePage() {
                 </h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {active.map(e => <EmployeeCard key={e.id} emp={e} />)}
+                {active.map(e => <LearnerCard key={e.id} emp={e} />)}
               </div>
             </section>
           )}
@@ -217,16 +217,16 @@ export default function AdminPeoplePage() {
                 </h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {notStarted.map(e => <EmployeeCard key={e.id} emp={e} />)}
+                {notStarted.map(e => <LearnerCard key={e.id} emp={e} />)}
               </div>
             </section>
           )}
 
-          {data.employees.length === 0 && (
+          {data.learners.length === 0 && (
             <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl py-24 text-center">
               <Users size={32} className="text-gray-200 mx-auto mb-4" />
               <p className="font-semibold text-gray-500">No team members yet</p>
-              <p className="text-sm text-gray-400 mt-1">Invite employees to see their progress here.</p>
+              <p className="text-sm text-gray-400 mt-1">Invite learners to see their progress here.</p>
             </div>
           )}
         </>

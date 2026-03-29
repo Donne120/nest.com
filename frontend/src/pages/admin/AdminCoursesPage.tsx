@@ -150,34 +150,22 @@ export default function AdminCoursesPage() {
   const totalVideos    = modules.reduce((s, m) => s + (m.video_count ?? 0), 0);
 
   return (
-    <div className="p-6 lg:p-10 max-w-6xl">
-
-      {/* ── Page header ── */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Course Manager</h1>
-          <p className="text-sm text-gray-500 mt-1">Build and manage your onboarding content library</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {selected.size > 0 && (
-            <button
-              onClick={handleBulkDelete}
-              disabled={bulkDeleting}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
-            >
-              <Trash2 size={14} />
-              {bulkDeleting ? 'Deleting…' : `Delete ${selected.size} selected`}
-            </button>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+      <div className="mx-auto max-w-5xl px-6 py-10 lg:px-8 lg:py-12">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Courses</h1>
+            <p className="text-base text-gray-500 mt-2">Build and manage your learning content library</p>
+          </div>
           <button
             onClick={() => navigate('/admin/courses/new')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
           >
             <Plus size={15} />
             New Module
           </button>
         </div>
-      </div>
 
       {/* ── Stat cards ── */}
       {!isLoading && (
@@ -211,14 +199,14 @@ export default function AdminCoursesPage() {
 
       ) : modules.length === 0 ? (
         <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl py-24 text-center">
-          <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <Layers size={24} className="text-indigo-400" />
+          <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Layers size={24} className="text-gray-300" />
           </div>
           <p className="text-gray-900 font-semibold text-lg">No modules yet</p>
-          <p className="text-sm text-gray-400 mt-1.5 mb-6">Create your first onboarding module to get started.</p>
+          <p className="text-sm text-gray-400 mt-1.5 mb-6">Create your first learning module to get started.</p>
           <button
             onClick={() => navigate('/admin/courses/new')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
           >
             <Plus size={15} /> Create module
           </button>
@@ -228,12 +216,12 @@ export default function AdminCoursesPage() {
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
 
           {/* Table head */}
-          <div className="grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50">
+          <div className="grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50/50">
             <input
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
-              className="w-4 h-4 rounded border-gray-300 text-indigo-600 cursor-pointer"
+              className="w-4 h-4 rounded border-gray-300 text-brand-600 cursor-pointer"
               title="Select all"
             />
             <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 w-7">#</span>
@@ -260,7 +248,7 @@ export default function AdminCoursesPage() {
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => toggleSelect(m.id)}
-                    className="w-4 h-4 rounded border-gray-300 text-indigo-600 cursor-pointer"
+                    className="w-4 h-4 rounded border-gray-300 text-brand-600 cursor-pointer"
                   />
 
                   {/* Index */}
@@ -317,7 +305,7 @@ export default function AdminCoursesPage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => navigate(`/admin/courses/${m.id}/edit`)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-brand-600 bg-brand-50 hover:bg-brand-100 border border-brand-100 rounded-lg transition-colors"
                     >
                       <Pencil size={12} />
                       Edit
@@ -354,7 +342,7 @@ export default function AdminCoursesPage() {
               )}
               <button
                 onClick={() => navigate('/admin/courses/new')}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors"
               >
                 <Plus size={13} />
                 Add module
@@ -363,6 +351,7 @@ export default function AdminCoursesPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
@@ -380,7 +369,7 @@ function StatCard({
   const palette = {
     emerald: { bg: 'bg-emerald-50', border: 'border-emerald-100', icon: 'text-emerald-500', value: 'text-emerald-700' },
     amber:   { bg: 'bg-amber-50',   border: 'border-amber-100',   icon: 'text-amber-500',   value: 'text-amber-700'   },
-    indigo:  { bg: 'bg-indigo-50',  border: 'border-indigo-100',  icon: 'text-indigo-500',  value: 'text-indigo-700'  },
+    indigo:  { bg: 'bg-brand-50',  border: 'border-brand-100',  icon: 'text-indigo-500',  value: 'text-indigo-700'  },
   }[color];
 
   return (
