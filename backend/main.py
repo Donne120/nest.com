@@ -101,10 +101,6 @@ def _run_db_setup():
                             ALTER TABLE users
                             ALTER COLUMN role TYPE userrole USING role::text::userrole
                         """))
-                        conn.execute(text("""
-                            ALTER TABLE organizations
-                            ALTER COLUMN default_role TYPE userrole USING default_role::text::userrole
-                        """))
                         try:
                             conn.execute(text("DROP TYPE userrole_old"))
                         except:
