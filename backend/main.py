@@ -43,50 +43,47 @@ def _run_db_setup():
     """Run table creation, migrations, and storage bucket setup in a background thread."""
     try:
         models.Base.metadata.create_all(bind=engine)
-        with engine.connect() as conn:
-            conn.execute(text("SET statement_timeout = 0"))
 
-            # ─── Stamp migrations if alembic_version is empty (first run) ───────────
+        # ─── Create alembic_version table if it doesn't exist ──────────────────
+        with engine.connect() as conn:
+            try:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS alembic_version (
+                        version_num VARCHAR(32) NOT NULL PRIMARY KEY
+                    )
+                """))
+                conn.commit()
+                logger.info("✓ alembic_version table ready")
+            except Exception as e:
+                logger.warning(f"alembic_version table: {e}")
+                conn.rollback()
+
+        # ─── Stamp existing migrations if needed ──────────────────────────────────
+        with engine.connect() as conn:
             try:
                 result = conn.execute(text("SELECT COUNT(*) FROM alembic_version"))
                 count = result.scalar()
                 if count == 0:
-                    # Stamp migrations 001-004 as already applied
                     conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('001')"))
                     conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('002')"))
                     conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('003')"))
                     conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('004')"))
                     conn.commit()
-                    logger.info("Stamped existing migrations 001-004 in alembic_version")
+                    logger.info("✓ Stamped migrations 001-004")
             except Exception as e:
-                logger.warning(f"Alembic stamping skipped (may not be needed): {e}")
+                logger.warning(f"Stamping: {e}")
+                conn.rollback()
 
-            conn.execute(text(
-                "ALTER TABLE answers ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL"
-            ))
-            conn.execute(text(
-                "ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS assignment_id TEXT"
-            ))
-            conn.execute(text(
-                "ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS locked BOOLEAN DEFAULT FALSE NOT NULL"
-            ))
-            conn.commit()
-
-        # ─── Run any pending migrations (outside connection block) ─────────────────
-        try:
-            # Manually run the enum migration (simpler than alembic)
-            with engine.connect() as conn:
-                # Check if migration 006 was already applied
+        # ─── Run enum migration ──────────────────────────────────────────────────
+        with engine.connect() as conn:
+            try:
                 result = conn.execute(text("SELECT COUNT(*) FROM alembic_version WHERE version_num = '006'"))
                 if result.scalar() == 0:
                     logger.info("Running enum migration (006)...")
-                    # Rename old enum
                     try:
                         conn.execute(text("ALTER TYPE userrole RENAME TO userrole_old"))
                     except:
-                        pass  # May not exist on first run
-
-                    # Create new enum with new values
+                        pass
                     conn.execute(text("""
                         CREATE TYPE userrole AS ENUM (
                             'learner',
@@ -95,8 +92,6 @@ def _run_db_setup():
                             'super_admin'
                         )
                     """))
-
-                    # Update columns
                     conn.execute(text("""
                         ALTER TABLE users
                         ALTER COLUMN role TYPE userrole USING role::text::userrole
@@ -105,24 +100,40 @@ def _run_db_setup():
                         ALTER TABLE organizations
                         ALTER COLUMN default_role TYPE userrole USING default_role::text::userrole
                     """))
-
-                    # Drop old enum
                     try:
                         conn.execute(text("DROP TYPE userrole_old"))
                     except:
                         pass
-
-                    # Mark migration as applied
                     conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('005')"))
                     conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('006')"))
                     conn.commit()
                     logger.info("✓ Enum migration (006) completed successfully")
                 else:
                     logger.info("✓ Enum migration (006) already applied")
-        except Exception as e:
-            logger.error(f"Enum migration failed: {e}", exc_info=True)
+            except Exception as e:
+                logger.error(f"Enum migration failed: {e}", exc_info=True)
+                conn.rollback()
 
-        logger.info("DB setup complete")
+        # ─── Add columns to existing tables ──────────────────────────────────────
+        with engine.connect() as conn:
+            try:
+                conn.execute(text("SET statement_timeout = 0"))
+                conn.execute(text(
+                    "ALTER TABLE answers ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL"
+                ))
+                conn.execute(text(
+                    "ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS assignment_id TEXT"
+                ))
+                conn.execute(text(
+                    "ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS locked BOOLEAN DEFAULT FALSE NOT NULL"
+                ))
+                conn.commit()
+                logger.info("✓ Column additions complete")
+            except Exception as e:
+                logger.warning(f"Columns: {e}")
+                conn.rollback()
+
+        logger.info("✓ DB setup complete")
     except Exception as e:
         logger.warning(f"DB setup warning (non-fatal): {e}")
 
