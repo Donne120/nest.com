@@ -80,40 +80,48 @@ def _run_db_setup():
         if not is_postgres:
             logger.info("✓ SQLite detected — skipping enum migration (PostgreSQL only)")
         else:
+            # Check if already applied (normal transactional connection)
             with engine.connect() as conn:
                 try:
                     result = conn.execute(text("SELECT COUNT(*) FROM alembic_version WHERE version_num = '006'"))
-                    if result.scalar() == 0:
-                        logger.info("Running enum migration (006)...")
-                        try:
-                            conn.execute(text("ALTER TYPE userrole RENAME TO userrole_old"))
-                        except:
-                            pass
-                        conn.execute(text("""
-                            CREATE TYPE userrole AS ENUM (
-                                'learner',
-                                'educator',
-                                'owner',
-                                'super_admin'
-                            )
-                        """))
-                        conn.execute(text("""
-                            ALTER TABLE users
-                            ALTER COLUMN role TYPE userrole USING role::text::userrole
-                        """))
-                        try:
-                            conn.execute(text("DROP TYPE userrole_old"))
-                        except:
-                            pass
-                        conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('005')"))
-                        conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('006')"))
-                        conn.commit()
+                    already_applied = result.scalar() > 0
+                except Exception:
+                    already_applied = False
+
+            if already_applied:
+                logger.info("✓ Enum migration (006) already applied")
+            else:
+                logger.info("Running enum migration (006)...")
+                # DDL like ALTER TYPE must run with autocommit=True in PostgreSQL
+                # (cannot be inside a failed transaction block)
+                with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as ddl_conn:
+                    try:
+                        # Add missing enum values safely (idempotent)
+                        for value in ('learner', 'educator', 'owner', 'super_admin'):
+                            ddl_conn.execute(text(f"""
+                                DO $$ BEGIN
+                                    IF NOT EXISTS (
+                                        SELECT 1 FROM pg_enum e
+                                        JOIN pg_type t ON e.enumtypid = t.oid
+                                        WHERE t.typname = 'userrole' AND e.enumlabel = '{value}'
+                                    ) THEN
+                                        ALTER TYPE userrole ADD VALUE '{value}';
+                                    END IF;
+                                END $$;
+                            """))
                         logger.info("✓ Enum migration (006) completed successfully")
-                    else:
-                        logger.info("✓ Enum migration (006) already applied")
-                except Exception as e:
-                    logger.error(f"Enum migration failed: {e}", exc_info=True)
-                    conn.rollback()
+                    except Exception as e:
+                        logger.error(f"Enum migration failed: {e}", exc_info=True)
+
+                # Record migration versions in a separate clean transaction
+                with engine.connect() as conn:
+                    try:
+                        conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('005') ON CONFLICT DO NOTHING"))
+                        conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('006') ON CONFLICT DO NOTHING"))
+                        conn.commit()
+                    except Exception as e:
+                        logger.warning(f"alembic_version update: {e}")
+                        conn.rollback()
 
         # ─── Add columns to existing tables ──────────────────────────────────────
         with engine.connect() as conn:
