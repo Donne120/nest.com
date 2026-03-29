@@ -131,7 +131,7 @@ export default function AdminSubmissionReview() {
     if (!editor || !sub) return;
     const doc = sub.reviewed_content ?? sub.content;
     if (doc) {
-      editor.commands.setContent(sanitizeTiptap(doc), false);
+      editor.commands.setContent(sanitizeTiptap(doc));
       setGrade(sub.grade ?? '');
       setOveralFeedback(sub.instructor_feedback ?? '');
     }

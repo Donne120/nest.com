@@ -146,11 +146,11 @@ function MeetingRow({ meeting }: { meeting: Meeting }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5">
       <div className="flex items-start gap-4">
-        <Avatar name={meeting.employee.full_name} size="sm" />
+        <Avatar name={meeting.learner.full_name} size="sm" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-gray-900">{meeting.employee.full_name}</p>
-            <span className="text-xs text-gray-400">{meeting.employee.email}</span>
+            <p className="text-sm font-semibold text-gray-900">{meeting.learner.full_name}</p>
+            <span className="text-xs text-gray-400">{meeting.learner.email}</span>
             <span className={`ml-auto text-xs border rounded-full px-2.5 py-0.5 font-medium ${STATUS_STYLES[meeting.status]}`}>
               {meeting.status.charAt(0).toUpperCase() + meeting.status.slice(1)}
             </span>

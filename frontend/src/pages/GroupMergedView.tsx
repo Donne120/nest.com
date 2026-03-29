@@ -156,7 +156,7 @@ export default function GroupMergedView() {
     // Prefer previously reviewed content over raw merged doc
     const doc = group.reviewed_merged_content ?? group.merged_document;
     if (doc) {
-      reviewEditor.commands.setContent(sanitizeTiptap(doc), false);
+      reviewEditor.commands.setContent(sanitizeTiptap(doc));
     }
     setGrade(group.grade ?? '');
     setOverallFeedback(group.instructor_feedback ?? '');

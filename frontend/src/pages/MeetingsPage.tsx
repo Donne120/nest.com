@@ -48,7 +48,7 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
             </span>
           </div>
           <p className="text-sm font-semibold text-gray-900 mt-2">
-            1-on-1 with {meeting.admin ? meeting.admin.full_name : 'your trainer'}
+            1-on-1 with {meeting.owner ? meeting.owner.full_name : 'your trainer'}
           </p>
         </div>
       </div>

@@ -135,7 +135,7 @@ export default function AssignmentEditor({
     // Always apply when editor is empty (first load) or content genuinely changed
     const editorIsEmpty = editor.isEmpty;
     if (editorIsEmpty || current !== incoming) {
-      editor.commands.setContent(sanitizeTiptap(value), false /* don't emit update */);
+      editor.commands.setContent(sanitizeTiptap(value));
       setWordCount(countWords(editor));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
