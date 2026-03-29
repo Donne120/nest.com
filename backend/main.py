@@ -76,11 +76,16 @@ def _run_db_setup():
         try:
             from alembic.config import Config
             from alembic import command
-            alembic_cfg = Config("alembic.ini")
+            import os
+            # Get absolute path to alembic.ini
+            alembic_ini_path = os.path.join(os.path.dirname(__file__), "alembic.ini")
+            alembic_cfg = Config(alembic_ini_path)
+            # Set working directory for alembic
+            alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
             command.upgrade(alembic_cfg, "head")
-            logger.info("Alembic migrations completed")
+            logger.info("✓ Alembic migrations completed successfully")
         except Exception as e:
-            logger.warning(f"Alembic upgrade skipped or failed (may not be needed): {e}")
+            logger.error(f"Alembic upgrade failed: {e}", exc_info=True)
 
         logger.info("DB setup complete")
     except Exception as e:
