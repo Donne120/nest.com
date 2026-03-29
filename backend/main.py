@@ -74,50 +74,57 @@ def _run_db_setup():
                 logger.warning(f"Stamping: {e}")
                 conn.rollback()
 
-        # ─── Run enum migration ──────────────────────────────────────────────────
-        with engine.connect() as conn:
-            try:
-                result = conn.execute(text("SELECT COUNT(*) FROM alembic_version WHERE version_num = '006'"))
-                if result.scalar() == 0:
-                    logger.info("Running enum migration (006)...")
-                    try:
-                        conn.execute(text("ALTER TYPE userrole RENAME TO userrole_old"))
-                    except:
-                        pass
-                    conn.execute(text("""
-                        CREATE TYPE userrole AS ENUM (
-                            'learner',
-                            'educator',
-                            'owner',
-                            'super_admin'
-                        )
-                    """))
-                    conn.execute(text("""
-                        ALTER TABLE users
-                        ALTER COLUMN role TYPE userrole USING role::text::userrole
-                    """))
-                    conn.execute(text("""
-                        ALTER TABLE organizations
-                        ALTER COLUMN default_role TYPE userrole USING default_role::text::userrole
-                    """))
-                    try:
-                        conn.execute(text("DROP TYPE userrole_old"))
-                    except:
-                        pass
-                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('005')"))
-                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('006')"))
-                    conn.commit()
-                    logger.info("✓ Enum migration (006) completed successfully")
-                else:
-                    logger.info("✓ Enum migration (006) already applied")
-            except Exception as e:
-                logger.error(f"Enum migration failed: {e}", exc_info=True)
-                conn.rollback()
+        # ─── Run enum migration (PostgreSQL only) ──────────────────────────────────
+        # Check if this is PostgreSQL
+        is_postgres = "postgresql" in str(engine.url)
+        if not is_postgres:
+            logger.info("✓ SQLite detected — skipping enum migration (PostgreSQL only)")
+        else:
+            with engine.connect() as conn:
+                try:
+                    result = conn.execute(text("SELECT COUNT(*) FROM alembic_version WHERE version_num = '006'"))
+                    if result.scalar() == 0:
+                        logger.info("Running enum migration (006)...")
+                        try:
+                            conn.execute(text("ALTER TYPE userrole RENAME TO userrole_old"))
+                        except:
+                            pass
+                        conn.execute(text("""
+                            CREATE TYPE userrole AS ENUM (
+                                'learner',
+                                'educator',
+                                'owner',
+                                'super_admin'
+                            )
+                        """))
+                        conn.execute(text("""
+                            ALTER TABLE users
+                            ALTER COLUMN role TYPE userrole USING role::text::userrole
+                        """))
+                        conn.execute(text("""
+                            ALTER TABLE organizations
+                            ALTER COLUMN default_role TYPE userrole USING default_role::text::userrole
+                        """))
+                        try:
+                            conn.execute(text("DROP TYPE userrole_old"))
+                        except:
+                            pass
+                        conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('005')"))
+                        conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('006')"))
+                        conn.commit()
+                        logger.info("✓ Enum migration (006) completed successfully")
+                    else:
+                        logger.info("✓ Enum migration (006) already applied")
+                except Exception as e:
+                    logger.error(f"Enum migration failed: {e}", exc_info=True)
+                    conn.rollback()
 
         # ─── Add columns to existing tables ──────────────────────────────────────
         with engine.connect() as conn:
             try:
-                conn.execute(text("SET statement_timeout = 0"))
+                # SET statement_timeout is PostgreSQL-only
+                if is_postgres:
+                    conn.execute(text("SET statement_timeout = 0"))
                 conn.execute(text(
                     "ALTER TABLE answers ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL"
                 ))
