@@ -74,18 +74,53 @@ def _run_db_setup():
 
         # ─── Run any pending migrations (outside connection block) ─────────────────
         try:
-            from alembic.config import Config
-            from alembic import command
-            import os
-            # Get absolute path to alembic.ini
-            alembic_ini_path = os.path.join(os.path.dirname(__file__), "alembic.ini")
-            alembic_cfg = Config(alembic_ini_path)
-            # Set working directory for alembic
-            alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
-            command.upgrade(alembic_cfg, "head")
-            logger.info("✓ Alembic migrations completed successfully")
+            # Manually run the enum migration (simpler than alembic)
+            with engine.connect() as conn:
+                # Check if migration 006 was already applied
+                result = conn.execute(text("SELECT COUNT(*) FROM alembic_version WHERE version_num = '006'"))
+                if result.scalar() == 0:
+                    logger.info("Running enum migration (006)...")
+                    # Rename old enum
+                    try:
+                        conn.execute(text("ALTER TYPE userrole RENAME TO userrole_old"))
+                    except:
+                        pass  # May not exist on first run
+
+                    # Create new enum with new values
+                    conn.execute(text("""
+                        CREATE TYPE userrole AS ENUM (
+                            'learner',
+                            'educator',
+                            'owner',
+                            'super_admin'
+                        )
+                    """))
+
+                    # Update columns
+                    conn.execute(text("""
+                        ALTER TABLE users
+                        ALTER COLUMN role TYPE userrole USING role::text::userrole
+                    """))
+                    conn.execute(text("""
+                        ALTER TABLE organizations
+                        ALTER COLUMN default_role TYPE userrole USING default_role::text::userrole
+                    """))
+
+                    # Drop old enum
+                    try:
+                        conn.execute(text("DROP TYPE userrole_old"))
+                    except:
+                        pass
+
+                    # Mark migration as applied
+                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('005')"))
+                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('006')"))
+                    conn.commit()
+                    logger.info("✓ Enum migration (006) completed successfully")
+                else:
+                    logger.info("✓ Enum migration (006) already applied")
         except Exception as e:
-            logger.error(f"Alembic upgrade failed: {e}", exc_info=True)
+            logger.error(f"Enum migration failed: {e}", exc_info=True)
 
         logger.info("DB setup complete")
     except Exception as e:
