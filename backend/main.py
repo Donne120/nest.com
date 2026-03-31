@@ -17,7 +17,7 @@ from config import settings
 from database import engine
 from sqlalchemy import text
 import models
-from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats, search, assignments
+from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats, search, assignments, payments, admin
 from sqlalchemy import text
 import storage as storage_helper
 
@@ -123,26 +123,31 @@ def _run_db_setup():
                         logger.warning(f"alembic_version update: {e}")
                         conn.rollback()
 
-        # ─── Add columns to existing tables ──────────────────────────────────────
-        with engine.connect() as conn:
-            try:
-                # SET statement_timeout is PostgreSQL-only
-                if is_postgres:
-                    conn.execute(text("SET statement_timeout = 0"))
-                conn.execute(text(
-                    "ALTER TABLE answers ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL"
-                ))
-                conn.execute(text(
-                    "ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS assignment_id TEXT"
-                ))
-                conn.execute(text(
-                    "ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS locked BOOLEAN DEFAULT FALSE NOT NULL"
-                ))
-                conn.commit()
-                logger.info("✓ Column additions complete")
-            except Exception as e:
-                logger.warning(f"Columns: {e}")
-                conn.rollback()
+        # ─── Add columns to existing tables (each in its own tx so one failure ──
+        # ─── doesn't block the rest) ─────────────────────────────────────────
+        _cols = [
+            "ALTER TABLE answers ADD COLUMN is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL",
+            "ALTER TABLE meeting_bookings ADD COLUMN assignment_id TEXT",
+            "ALTER TABLE meeting_bookings ADD COLUMN locked BOOLEAN DEFAULT FALSE NOT NULL",
+            "ALTER TABLE modules ADD COLUMN price FLOAT",
+            "ALTER TABLE modules ADD COLUMN is_for_sale BOOLEAN DEFAULT FALSE NOT NULL",
+            "ALTER TABLE modules ADD COLUMN currency VARCHAR DEFAULT 'RWF'",
+            "ALTER TABLE organizations ADD COLUMN momo_number VARCHAR",
+        ]
+        # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
+        for _stmt in _cols:
+            _pg_stmt = _stmt.replace("ADD COLUMN ", "ADD COLUMN IF NOT EXISTS ")
+            with engine.connect() as conn:
+                try:
+                    if is_postgres:
+                        conn.execute(text("SET statement_timeout = 0"))
+                        conn.execute(text(_pg_stmt))
+                    else:
+                        conn.execute(text(_stmt))
+                    conn.commit()
+                except Exception as e:
+                    logger.warning(f"Column migration skipped (already exists or error): {e}")
+                    conn.rollback()
 
         logger.info("✓ DB setup complete")
     except Exception as e:
@@ -205,6 +210,8 @@ app.include_router(certificates.router)
 app.include_router(ats.router)
 app.include_router(search.router)
 app.include_router(assignments.router)
+app.include_router(payments.router)
+app.include_router(admin.router)
 
 
 @app.get("/api/health")

@@ -59,6 +59,24 @@ class ATSProvider(str, enum.Enum):
     workable = "workable"
 
 
+class PaymentType(str, enum.Enum):
+    teacher_subscription = "teacher_subscription"
+    module_purchase = "module_purchase"
+
+
+class PaymentMethod(str, enum.Enum):
+    mtn_momo = "mtn_momo"
+    orange_money = "orange_money"
+    bank_transfer = "bank_transfer"
+    other = "other"
+
+
+class PaymentStatus(str, enum.Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
+
+
 class MeetingStatus(str, enum.Enum):
     pending = "pending"
     confirmed = "confirmed"
@@ -111,6 +129,7 @@ class Organization(Base):
     subscription_status = Column(SAEnum(SubscriptionStatus), default=SubscriptionStatus.active, nullable=False)
     trial_ends_at = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    momo_number = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     users = relationship("User", back_populates="organization", foreign_keys="User.organization_id")
@@ -189,6 +208,9 @@ class Module(Base):
     duration_seconds = Column(Integer, nullable=False, default=0)
     order_index = Column(Integer, default=0)
     is_published = Column(Boolean, default=True)
+    price = Column(Float, nullable=True)
+    is_for_sale = Column(Boolean, default=False, nullable=False)
+    currency = Column(String, nullable=True, default="RWF")
     created_by = Column(String, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -546,3 +568,51 @@ class ATSConnection(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     organization = relationship("Organization")
+
+
+# ─── Payment Submissions ──────────────────────────────────────────────────────
+
+class PaymentSubmission(Base):
+    __tablename__ = "payment_submissions"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    payer_id = Column(String, ForeignKey("users.id"), nullable=False)
+    payment_type = Column(SAEnum(PaymentType), nullable=False)
+    payment_method = Column(SAEnum(PaymentMethod), nullable=False)
+    amount = Column(Float, nullable=False)
+    currency = Column(String, nullable=False, default="RWF")
+    phone_number = Column(String, nullable=True)
+    transaction_reference = Column(String, nullable=True)
+    proof_image_url = Column(String, nullable=True)
+    status = Column(SAEnum(PaymentStatus), default=PaymentStatus.pending, nullable=False)
+    notes = Column(Text, nullable=True)
+    plan = Column(SAEnum(Plan), nullable=True)
+    module_id = Column(String, ForeignKey("modules.id", ondelete="SET NULL"), nullable=True)
+    payee_id = Column(String, ForeignKey("users.id"), nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    reviewed_by = Column(String, ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    payer = relationship("User", foreign_keys=[payer_id])
+    payee = relationship("User", foreign_keys=[payee_id])
+    reviewer = relationship("User", foreign_keys=[reviewed_by])
+    module = relationship("Module", foreign_keys=[module_id])
+
+
+# ─── Module Access (purchased by student) ────────────────────────────────────
+
+class ModuleAccess(Base):
+    __tablename__ = "module_access"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    student_id = Column(String, ForeignKey("users.id"), nullable=False)
+    module_id = Column(String, ForeignKey("modules.id", ondelete="CASCADE"), nullable=False)
+    payment_submission_id = Column(String, ForeignKey("payment_submissions.id", ondelete="SET NULL"), nullable=True)
+    granted_by = Column(String, ForeignKey("users.id"), nullable=True)
+    granted_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    student = relationship("User", foreign_keys=[student_id])
+    module = relationship("Module", foreign_keys=[module_id])
+    payment = relationship("PaymentSubmission", foreign_keys=[payment_submission_id])
+    grantor = relationship("User", foreign_keys=[granted_by])

@@ -15,6 +15,7 @@ class OrganizationUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=2, max_length=100)
     logo_url: Optional[str] = None
     brand_color: Optional[str] = None  # hex string e.g. "#6366f1"
+    momo_number: Optional[str] = None  # teacher's MoMo number for student payments
 
 
 class OrganizationOut(BaseModel):
@@ -23,6 +24,7 @@ class OrganizationOut(BaseModel):
     slug: str
     logo_url: Optional[str]
     brand_color: Optional[str]
+    momo_number: Optional[str]
     plan: Plan
     subscription_status: SubscriptionStatus
     trial_ends_at: Optional[datetime]

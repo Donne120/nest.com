@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store';
@@ -40,6 +40,10 @@ const AdminAssignmentsPage = lazy(() => import('./pages/admin/AdminAssignmentsPa
 const AdminAssignmentEditor = lazy(() => import('./pages/admin/AdminAssignmentEditor'));
 const AdminAssignmentDetail = lazy(() => import('./pages/admin/AdminAssignmentDetail'));
 const AdminSubmissionReview = lazy(() => import('./pages/admin/AdminSubmissionReview'));
+const PricingPage = lazy(() => import('./pages/PricingPage'));
+const PaySubmitPage = lazy(() => import('./pages/PaySubmitPage'));
+const PayStatusPage = lazy(() => import('./pages/PayStatusPage'));
+const AdminPaymentsPage = lazy(() => import('./pages/admin/AdminPaymentsPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,7 +57,11 @@ const queryClient = new QueryClient({
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { token } = useAuthStore();
-  if (!token) return <Navigate to="/" replace />;
+  const location = useLocation();
+  if (!token) {
+    const next = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?next=${next}`} replace />;
+  }
   return <>{children}</>;
 }
 
@@ -98,6 +106,9 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/invite/:token" element={<InvitePage />} />
           <Route path="/certificate/:certId" element={<CertificatePage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/pay/submit" element={<RequireAuth><PaySubmitPage /></RequireAuth>} />
+          <Route path="/pay/status" element={<RequireAuth><PayStatusPage /></RequireAuth>} />
 
           <Route path="/" element={<HomeRoute />} />
 
@@ -228,6 +239,7 @@ export default function App() {
             <Route path="assignments/:assignmentId" element={<AdminAssignmentDetail />} />
             <Route path="assignments/:assignmentId/edit" element={<AdminAssignmentEditor />} />
             <Route path="assignments/:assignmentId/submissions/:submissionId/review" element={<AdminSubmissionReview />} />
+            <Route path="payments" element={<AdminPaymentsPage />} />
           </Route>
 
           <Route path="*" element={<HomeRoute />} />

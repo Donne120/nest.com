@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str = ""
     RESEND_FROM: str = "onboarding@resend.dev"
 
+    # Admin notification email — receives alerts when payments are submitted
+    ADMIN_NOTIFICATION_EMAIL: str = "ngummdieudonne4@gmail.com"
+
+    # Secret key to protect the one-time seed endpoint (set in Render env vars)
+    SEED_SECRET: str = ""
+
     # SMTP (optional — invitations fall back to URL-only if not set)
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587

@@ -118,6 +118,7 @@ export default function Navbar() {
           {isManager && (
             <DarkNavLink to="/admin" active={isActive('/admin')} label="Admin" />
           )}
+          <DarkNavLink to="/pricing" active={isActive('/pricing')} label="Pricing" />
         </nav>
 
         <div className="ml-auto flex items-center gap-1.5">

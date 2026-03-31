@@ -55,6 +55,12 @@ def setup_buckets() -> None:
         else:
             logger.info("Storage: 'videos' bucket already exists")
 
+        if "payment-proofs" not in existing:
+            client.storage.create_bucket("payment-proofs", options={"public": False})
+            logger.info("Storage: created 'payment-proofs' bucket (private)")
+        else:
+            logger.info("Storage: 'payment-proofs' bucket already exists")
+
     except Exception as e:
         logger.warning(f"Storage bucket setup warning (non-fatal): {e}")
 

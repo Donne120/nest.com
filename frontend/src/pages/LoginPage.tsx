@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import api from '../api/client';
 import { useAuthStore } from '../store';
@@ -58,6 +58,7 @@ function Field({
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setAuth } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -76,7 +77,8 @@ export default function LoginPage() {
       });
       setAuth(data.user, data.access_token, data.organization);
       toast.success(`Welcome back, ${data.user.full_name.split(' ')[0]}!`);
-      navigate(data.user.role === 'learner' ? '/modules' : '/admin');
+      const next = searchParams.get('next');
+      navigate(next ? decodeURIComponent(next) : (data.user.role === 'learner' ? '/modules' : '/admin'));
     } catch {
       toast.error('Invalid email or password');
     } finally {

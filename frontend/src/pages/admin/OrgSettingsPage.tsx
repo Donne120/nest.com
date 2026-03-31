@@ -41,6 +41,7 @@ function OrgTab() {
   const [name, setName] = useState(organization?.name ?? '');
   const [logoUrl, setLogoUrl] = useState(organization?.logo_url ?? '');
   const [brandColor, setBrandColor] = useState(organization?.brand_color ?? '#6366f1');
+  const [momoNumber, setMomoNumber] = useState((organization as any)?.momo_number ?? '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -50,6 +51,7 @@ function OrgTab() {
         name: name.trim() || undefined,
         logo_url: logoUrl.trim() || undefined,
         brand_color: brandColor,
+        momo_number: momoNumber.trim() || undefined,
       });
       if (user) {
         const token = localStorage.getItem('nest_token') ?? '';
@@ -149,6 +151,26 @@ function OrgTab() {
             style={{ backgroundColor: brandColor }}
           />
         </div>
+      </Field>
+
+      {/* MoMo number — students will pay to this */}
+      <Field
+        label="Your MoMo / payment number"
+        hint="Students will see this number when buying your modules. Add your MTN MoMo or Orange Money number."
+      >
+        <input
+          type="tel"
+          value={momoNumber}
+          onChange={(e) => setMomoNumber(e.target.value)}
+          placeholder="e.g. 0781234567"
+          className={inputCls}
+        />
+        {momoNumber && (
+          <div className="mt-2 flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+            <span>✓</span>
+            <span>Students will pay to <strong>{momoNumber}</strong> when buying your modules</span>
+          </div>
+        )}
       </Field>
 
       <div className="pt-2">

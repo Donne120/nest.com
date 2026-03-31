@@ -337,6 +337,118 @@ def send_meeting_confirmed(to: str, employee_name: str, confirmed_at: str, meeti
     return send(to, subject, _wrap(body, f"Your 1-on-1 is confirmed for {confirmed_at}"))
 
 
+# ─── Payment submitted (to admin) ─────────────────────────────────────────────
+
+def send_payment_submitted(
+    to: str, payer_name: str, payer_email: str,
+    payment_type: str, amount: float, currency: str,
+    plan: str | None, module_title: str | None,
+    review_url: str,
+) -> bool:
+    """Sent to admin when a user submits a payment proof."""
+    payer_name = html.escape(payer_name)
+    payer_email = html.escape(payer_email)
+    payment_type = html.escape(payment_type.replace("_", " ").title())
+    currency = html.escape(currency)
+    detail_line = ""
+    if plan:
+        detail_line = f"<p style='font-size:13px;color:#475569;margin:4px 0 0;'>Plan: <strong style='color:#0f172a;'>{html.escape(plan.title())}</strong></p>"
+    elif module_title:
+        detail_line = f"<p style='font-size:13px;color:#475569;margin:4px 0 0;'>Module: <strong style='color:#0f172a;'>{html.escape(module_title)}</strong></p>"
+
+    subject = f"New payment proof submitted — {payer_name}"
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#f59e0b;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Action Required</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">New payment proof to review</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+        A user has submitted a payment proof and is waiting for access to be granted.
+      </p>
+      <div style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:20px;">
+        <p style="margin:0;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">From</p>
+        <p style="margin:4px 0 8px;font-size:14px;font-weight:600;color:#0f172a;">{payer_name} &mdash; <span style="font-weight:400;color:#64748b;">{payer_email}</span></p>
+        <p style="margin:0;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Type</p>
+        <p style="margin:4px 0 8px;font-size:14px;color:#0f172a;">{payment_type}</p>
+        {detail_line}
+        <p style="margin:8px 0 0;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Amount</p>
+        <p style="margin:4px 0 0;font-size:20px;font-weight:800;color:#2563eb;">{amount:,.0f} {currency}</p>
+      </div>
+      {_btn(review_url, "Review Payment", "#f59e0b")}
+    </div>"""
+    return send(to, subject, _wrap(body, f"New payment proof from {payer_name} — review required"))
+
+
+# ─── Payment approved (to user) ────────────────────────────────────────────────
+
+def send_payment_approved(
+    to: str, user_name: str,
+    payment_type: str, amount: float, currency: str,
+    plan: str | None, module_title: str | None,
+    dashboard_url: str,
+) -> bool:
+    """Sent to the user when their payment is approved."""
+    user_name = html.escape(user_name)
+    first = html.escape(user_name.split(" ")[0])
+    payment_type = html.escape(payment_type.replace("_", " ").title())
+    currency = html.escape(currency)
+    what_unlocked = ""
+    if plan:
+        what_unlocked = f"Your workspace has been upgraded to the <strong style='color:#0f172a;'>{html.escape(plan.title())}</strong> plan."
+    elif module_title:
+        what_unlocked = f"You now have full access to <strong style='color:#0f172a;'>{html.escape(module_title)}</strong>."
+
+    subject = "Payment approved — your access is ready"
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Payment Approved</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Great news, {first}!</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
+        Your payment of <strong style="color:#0f172a;">{amount:,.0f} {currency}</strong> has been verified and approved.
+      </p>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+        {what_unlocked}
+      </p>
+      {_btn(dashboard_url, "Go to Dashboard", "#16a34a")}
+    </div>"""
+    return send(to, subject, _wrap(body, "Your payment has been approved — access granted"))
+
+
+# ─── Payment rejected (to user) ────────────────────────────────────────────────
+
+def send_payment_rejected(
+    to: str, user_name: str,
+    amount: float, currency: str,
+    reason: str | None,
+    support_url: str,
+) -> bool:
+    """Sent to the user when their payment is rejected."""
+    user_name = html.escape(user_name)
+    first = html.escape(user_name.split(" ")[0])
+    currency = html.escape(currency)
+    reason_block = (
+        f"""<div style="margin:16px 0;padding:14px 16px;background:#fef2f2;border-left:3px solid #fca5a5;border-radius:0 10px 10px 0;">
+          <p style="font-size:13px;font-weight:600;color:#991b1b;margin:0 0 4px;">Reason:</p>
+          <p style="font-size:13px;color:#7f1d1d;margin:0;line-height:1.6;">{html.escape(reason)}</p>
+        </div>"""
+        if reason else ""
+    )
+    subject = "Payment not verified — action needed"
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Payment Update</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">We couldn't verify your payment, {first}</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+        Your payment proof of <strong style="color:#0f172a;">{amount:,.0f} {currency}</strong> could not be verified.
+      </p>
+      {reason_block}
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:16px 0 0;">
+        Please double-check your proof and resubmit, or contact us for help.
+      </p>
+      {_btn(support_url, "Resubmit Payment", "#dc2626")}
+    </div>"""
+    return send(to, subject, _wrap(body, "Your payment proof could not be verified"))
+
+
 # ─── Meeting declined ──────────────────────────────────────────────────────────
 
 def send_meeting_declined(to: str, employee_name: str, reason: str | None, meetings_url: str) -> bool:

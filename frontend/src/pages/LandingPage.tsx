@@ -62,12 +62,16 @@ function LandingNav() {
 
       {/* Center nav — hidden on mobile */}
       <nav className="lp-nav-links" style={{ display: 'flex', gap: 0 }}>
-        {[['#features','Features'],['#how','How it works'],['#pricing','Pricing']].map(([href, label]) => (
+        {[['#features','Features'],['#how','How it works']].map(([href, label]) => (
           <a key={href} href={href} style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 14px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI, whiteSpace: 'nowrap' }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK)}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
           >{label}</a>
         ))}
+        <Link to="/pricing" style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 14px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI, whiteSpace: 'nowrap' }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK)}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
+        >Pricing</Link>
         <Link to="/login" style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 14px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI }}
           onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK)}
           onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
