@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 // ── Tokens ─────────────────────────────────────────────────────────────────
 const BG      = '#0a0907';
@@ -879,8 +879,112 @@ function CtaBand() {
   );
 }
 
+// ── Code gate (footer variant — calls onSuccess instead of navigating) ────
+function CodeGateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 80);
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  const attempt = useCallback(() => {
+    if (code.trim() === CORRECT_CODE) {
+      setSuccess(true);
+      sessionStorage.setItem(ACCESS_KEY, '1');
+      setTimeout(onSuccess, 800);
+    } else {
+      setError(true); setShake(true); setCode('');
+      setTimeout(() => setShake(false), 600);
+      setTimeout(() => setError(false), 2500);
+    }
+  }, [code, onSuccess]);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 2000,
+      background: 'rgba(10,9,7,0.92)', backdropFilter: 'blur(20px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 24, animation: 'lpRise 0.25s ease',
+    }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{
+        background: CARD, border: `1px solid ${error ? RUST : success ? SAGE : GOLD}44`,
+        borderRadius: 16, padding: 'clamp(32px,5vw,52px)',
+        maxWidth: 400, width: '100%',
+        boxShadow: `0 40px 80px rgba(0,0,0,0.6)`,
+        animation: shake ? 'lpShake 0.55s ease' : 'none',
+        transition: 'border-color 0.3s',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Restricted access</span>
+        </div>
+        <div style={{ fontFamily: DISP, fontSize: 28, fontWeight: 400, color: INK, marginBottom: 8 }}>Documents</div>
+        <div style={{ fontFamily: UI, fontSize: 13, color: INK2, lineHeight: 1.6, marginBottom: 28 }}>
+          {success ? 'Access granted — opening documents…' : 'Enter your access code to view the document library.'}
+        </div>
+        {!success && (
+          <>
+            <input
+              ref={inputRef}
+              type="text"
+              value={code}
+              onChange={e => { setCode(e.target.value); setError(false); }}
+              onKeyDown={e => { if (e.key === 'Enter') attempt(); }}
+              placeholder="Access code"
+              autoComplete="off"
+              style={{
+                width: '100%', background: SURFACE, boxSizing: 'border-box',
+                border: `1px solid ${error ? RUST : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: 8, padding: '12px 16px',
+                fontFamily: MONO, fontSize: 15, letterSpacing: '0.18em',
+                color: INK, outline: 'none',
+              }}
+              onFocus={e => { if (!error) e.currentTarget.style.borderColor = `${GOLD}66`; }}
+              onBlur={e => { if (!error) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+            />
+            {error && <div style={{ fontFamily: MONO, fontSize: 10.5, color: RUST, letterSpacing: '0.08em', marginTop: 8 }}>Incorrect code. Try again.</div>}
+            <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+              <button onClick={attempt} style={{
+                flex: 1, fontFamily: UI, fontSize: 13, fontWeight: 700,
+                background: `linear-gradient(135deg, ${GOLD}, ${GOLD2})`,
+                color: BG, border: 'none', borderRadius: 8, padding: '13px 0', cursor: 'pointer',
+              }}>Unlock</button>
+              <button onClick={onClose} style={{
+                fontFamily: UI, fontSize: 13, color: INK3, background: 'none',
+                border: `1px solid ${RULE}`, borderRadius: 8, padding: '13px 20px', cursor: 'pointer',
+              }}>Cancel</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Footer ─────────────────────────────────────────────────────────────────
 function LandingFooter() {
+  const [showDocs, setShowDocs] = useState(false);
+  const [docsGate, setDocsGate] = useState<typeof DOCS[0] | null>(null);
+
+  const openDocs = () => {
+    if (sessionStorage.getItem(ACCESS_KEY) === '1') {
+      setShowDocs(true);
+    } else {
+      // use a sentinel doc to trigger the gate, then show all docs on success
+      setDocsGate({ id: '__all__', title: 'Documents', desc: '', pages: '', href: '', badge: '' } as any);
+    }
+  };
+
+  const handleGateClose = () => setDocsGate(null);
+  const handleGateSuccess = () => { setDocsGate(null); setShowDocs(true); };
+
   return (
     <footer style={{ borderTop: `1px solid ${RULE}`, padding: 'clamp(24px,4vw,48px)', fontFamily: UI }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 32, marginBottom: 40 }}>
@@ -920,6 +1024,10 @@ function LandingFooter() {
                 onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK3)}
               >Sign in</Link>
               <Link to="/signup" style={{ fontSize: 13, color: GOLD, textDecoration: 'none' }}>Get started free</Link>
+              <button onClick={openDocs} style={{ fontSize: 13, color: INK3, textDecoration: 'none', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: UI, textAlign: 'left', transition: 'color 0.2s' }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK3)}
+              >Docs</button>
             </div>
           </div>
         </div>
@@ -933,7 +1041,399 @@ function LandingFooter() {
           Knowledge that moves the world forward.
         </p>
       </div>
+
+      {/* Docs overlay */}
+      {showDocs && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(10,9,7,0.97)', overflowY: 'auto' }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(40px,6vw,80px) clamp(16px,4vw,48px)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 48 }}>
+              <div>
+                <SLabel>Official Documents</SLabel>
+                <h2 style={{ fontFamily: DISP, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 300, color: INK, margin: 0 }}>
+                  The full picture,<br /><strong style={{ fontWeight: 600 }}>beautifully documented.</strong>
+                </h2>
+              </div>
+              <button onClick={() => setShowDocs(false)} style={{ background: 'none', border: `1px solid ${RULE}`, color: INK2, cursor: 'pointer', borderRadius: 8, padding: '10px 20px', fontFamily: UI, fontSize: 13 }}>Close ✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 2 }}>
+              {DOCS.map(doc => {
+                const isLink = doc.href.startsWith('/');
+                const inner = (
+                  <div style={{ background: CARD, border: `1px solid ${RULE}`, borderRadius: 12, padding: '28px 28px 24px', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer', transition: 'border-color 0.2s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = GOLD; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = RULE; }}
+                  >
+                    <span style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.16em', textTransform: 'uppercase' }}>{doc.badge}</span>
+                    <div style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: INK, lineHeight: 1.2 }}>{doc.title}</div>
+                    <div style={{ fontSize: 13, color: INK2, lineHeight: 1.6 }}>{doc.desc}</div>
+                    <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: MONO, fontSize: 10, color: INK3 }}>{doc.pages}</span>
+                      <span style={{ color: GOLD, fontSize: 18 }}>→</span>
+                    </div>
+                  </div>
+                );
+                return isLink
+                  ? <Link key={doc.id} to={doc.href} style={{ textDecoration: 'none' }}>{inner}</Link>
+                  : <a key={doc.id} href={doc.href} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>{inner}</a>;
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Code gate for docs */}
+      {docsGate && (
+        <CodeGateModal onClose={handleGateClose} onSuccess={handleGateSuccess} />
+      )}
     </footer>
+  );
+}
+
+// ── Documents ──────────────────────────────────────────────────────────────
+
+const ACCESS_KEY = 'nest_docs_unlocked';
+const CORRECT_CODE = 'Evone';
+
+const DOCS = [
+  {
+    id: 'pitch',
+    type: 'Presentation',
+    typeColor: GOLD,
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+      </svg>
+    ),
+    title: 'Investor Pitch Deck',
+    desc: 'Pre-seed presentation covering market opportunity, traction, business model, team and the $10K ask. Built for investors and accelerators.',
+    pages: '12 slides',
+    href: '/pitch',
+    badge: 'Pre-Seed · 2026',
+  },
+  {
+    id: 'onepager',
+    type: 'Executive Summary',
+    typeColor: SAGE,
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+      </svg>
+    ),
+    title: 'One-Pager',
+    desc: 'A single-page overview of Nest — what it is, who it serves, how we make money, and why now. The first thing a partner reads.',
+    pages: '1 page',
+    href: '/one-pager',
+    badge: 'For Partners',
+  },
+  {
+    id: 'bizplan',
+    type: 'Strategy',
+    typeColor: GOLD2,
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/><polyline points="1 20 23 20"/>
+      </svg>
+    ),
+    title: 'Business Plan',
+    desc: 'Full strategic document — market analysis, competitive landscape, financial projections, go-to-market plan and 24-month roadmap.',
+    pages: 'Full document',
+    href: '/business-plan',
+    badge: 'Detailed · 2026',
+  },
+  {
+    id: 'terms',
+    type: 'Legal',
+    typeColor: RUST,
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    ),
+    title: 'Terms of Service',
+    desc: 'The legal agreement governing use of the Nest platform — covering user responsibilities, content policies, payments, and platform rules.',
+    pages: 'Legal document',
+    href: '/terms',
+    badge: 'Platform Legal',
+  },
+  {
+    id: 'privacy',
+    type: 'Legal',
+    typeColor: RUST,
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+      </svg>
+    ),
+    title: 'Privacy Policy',
+    desc: 'How Nest collects, uses, stores and protects user data. Covers GDPR-aligned practices, data retention, cookies and user rights.',
+    pages: 'Legal document',
+    href: '/privacy',
+    badge: 'Data & Privacy',
+  },
+  {
+    id: 'media',
+    type: 'Brand',
+    typeColor: INK2,
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/>
+      </svg>
+    ),
+    title: 'Media Kit',
+    desc: 'Brand assets, logo files, colour palette, typography guidelines and approved messaging for press and partner use.',
+    pages: 'Brand assets',
+    href: '/media-kit',
+    badge: 'Press & Partners',
+  },
+];
+
+// ── Code gate modal ─────────────────────────────────────────────────────────
+function CodeGate({ doc, onClose }: { doc: typeof DOCS[0]; onClose: () => void }) {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 80);
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  const attempt = useCallback(() => {
+    if (code.trim() === CORRECT_CODE) {
+      setSuccess(true);
+      sessionStorage.setItem(ACCESS_KEY, '1');
+      setTimeout(() => { onClose(); navigate(doc.href); }, 900);
+    } else {
+      setError(true);
+      setShake(true);
+      setCode('');
+      setTimeout(() => setShake(false), 600);
+      setTimeout(() => setError(false), 2500);
+    }
+  }, [code, doc.href, navigate, onClose]);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 2000,
+      background: 'rgba(10,9,7,0.92)', backdropFilter: 'blur(20px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 24,
+      animation: 'lpRise 0.25s ease',
+    }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{
+        background: CARD, border: `1px solid ${error ? RUST : success ? SAGE : GOLD}44`,
+        borderRadius: 16, padding: 'clamp(32px,5vw,52px)',
+        maxWidth: 440, width: '100%',
+        boxShadow: `0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px ${error ? RUST : success ? SAGE : GOLD}22`,
+        animation: shake ? 'lpShake 0.55s ease' : 'none',
+        transition: 'border-color 0.3s, box-shadow 0.3s',
+      }}>
+        {/* Doc icon */}
+        <div style={{
+          width: 56, height: 56,
+          border: `1px solid ${doc.typeColor}33`,
+          background: `${doc.typeColor}0f`,
+          borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: doc.typeColor, marginBottom: 24,
+        }}>{doc.icon}</div>
+
+        {/* Header */}
+        <div style={{ fontFamily: MONO, fontSize: 9, color: doc.typeColor, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 10 }}>{doc.type}</div>
+        <div style={{ fontFamily: DISP, fontSize: 'clamp(22px,3vw,30px)', fontWeight: 400, color: INK, lineHeight: 1.2, marginBottom: 10 }}>{doc.title}</div>
+        <div style={{ fontFamily: UI, fontSize: 13.5, color: INK2, lineHeight: 1.65, marginBottom: 32 }}>{doc.desc}</div>
+
+        {/* Lock line */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={INK3} strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span style={{ fontFamily: MONO, fontSize: 10, color: INK3, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            {success ? 'Access granted — opening…' : 'Enter access code to continue'}
+          </span>
+        </div>
+
+        {/* Input */}
+        {!success && (
+          <>
+            <input
+              ref={inputRef}
+              type="text"
+              value={code}
+              onChange={e => { setCode(e.target.value); setError(false); }}
+              onKeyDown={e => { if (e.key === 'Enter') attempt(); }}
+              placeholder="Access code"
+              autoComplete="off"
+              style={{
+                width: '100%', background: SURFACE,
+                border: `1px solid ${error ? RUST : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: 8, padding: '13px 16px',
+                fontFamily: MONO, fontSize: 15, letterSpacing: '0.18em',
+                color: INK, outline: 'none',
+                transition: 'border-color 0.2s',
+                boxSizing: 'border-box',
+              }}
+              onFocus={e => { if (!error) e.currentTarget.style.borderColor = `${GOLD}66`; }}
+              onBlur={e => { if (!error) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+            />
+            {error && (
+              <div style={{ fontFamily: MONO, fontSize: 10.5, color: RUST, letterSpacing: '0.1em', marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke={RUST} strokeWidth="2.5" strokeLinecap="round"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg>
+                Incorrect code. Try again.
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+              <button onClick={attempt} style={{
+                flex: 1, fontFamily: UI, fontSize: 13, fontWeight: 700,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                color: BG, background: GOLD, border: 'none',
+                padding: '13px 0', borderRadius: 7, cursor: 'pointer',
+                transition: 'background 0.2s, transform 0.15s',
+              }}
+                onMouseEnter={e => { const el = e.currentTarget; el.style.background = GOLD2; el.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { const el = e.currentTarget; el.style.background = GOLD; el.style.transform = 'translateY(0)'; }}
+              >Unlock</button>
+              <button onClick={onClose} style={{
+                fontFamily: UI, fontSize: 13, fontWeight: 500,
+                color: INK3, background: 'none',
+                border: `1px solid ${RULE}`, padding: '13px 20px',
+                borderRadius: 7, cursor: 'pointer',
+                transition: 'color 0.2s',
+              }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK3)}
+              >Cancel</button>
+            </div>
+          </>
+        )}
+
+        {success && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', background: `${SAGE}12`, border: `1px solid ${SAGE}33`, borderRadius: 8 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={SAGE} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span style={{ fontFamily: UI, fontSize: 14, color: SAGE }}>Access granted. Opening document…</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Documents section ───────────────────────────────────────────────────────
+function Documents() {
+  const [activeDoc, setActiveDoc] = useState<typeof DOCS[0] | null>(null);
+  const navigate = useNavigate();
+
+  const handleClick = (doc: typeof DOCS[0]) => {
+    if (sessionStorage.getItem(ACCESS_KEY) === '1') {
+      navigate(doc.href);
+    } else {
+      setActiveDoc(doc);
+    }
+  };
+
+  return (
+    <>
+      <section id="documents" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
+
+          {/* Header */}
+          <div className="lp-reveal" style={{ marginBottom: 'clamp(40px,5vw,64px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
+              <div>
+                <SLabel>Official Documents</SLabel>
+                <h2 style={{ fontFamily: DISP, fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK, marginBottom: 16 }}>
+                  Everything in writing.<br /><em style={{ fontStyle: 'italic', color: GOLD }}>Nothing left to chance.</em>
+                </h2>
+                <p style={{ fontFamily: UI, fontSize: 16, color: INK2, maxWidth: 480, lineHeight: 1.7 }}>
+                  Our full document library — from investor materials to legal agreements.
+                  All documents are access-controlled and updated regularly.
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', background: `${GOLD}0a`, border: `1px solid ${GOLD}22`, borderRadius: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <span style={{ fontFamily: MONO, fontSize: 10, color: GOLD, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Access-controlled</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid */}
+          <div className="lp-reveal" style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 10, overflow: 'hidden',
+            opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
+          }}>
+            {DOCS.map(doc => (
+              <button key={doc.id} onClick={() => handleClick(doc)} style={{
+                background: CARD, border: 'none', cursor: 'pointer', padding: '32px 32px 28px',
+                textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 0,
+                transition: 'background 0.2s',
+                position: 'relative', overflow: 'hidden',
+              }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget;
+                  el.style.background = '#1c1a14';
+                  const bar = el.querySelector<HTMLElement>('.doc-bar');
+                  if (bar) bar.style.transform = 'scaleX(1)';
+                  const arrow = el.querySelector<HTMLElement>('.doc-arrow');
+                  if (arrow) { arrow.style.opacity = '1'; arrow.style.transform = 'translateX(0)'; }
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget;
+                  el.style.background = CARD;
+                  const bar = el.querySelector<HTMLElement>('.doc-bar');
+                  if (bar) bar.style.transform = 'scaleX(0)';
+                  const arrow = el.querySelector<HTMLElement>('.doc-arrow');
+                  if (arrow) { arrow.style.opacity = '0'; arrow.style.transform = 'translateX(-6px)'; }
+                }}
+              >
+                {/* Gold bar on hover */}
+                <div className="doc-bar" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${doc.typeColor}, transparent)`, transform: 'scaleX(0)', transformOrigin: 'left', transition: 'transform 0.3s ease' }} />
+
+                {/* Top row */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+                  <div style={{ width: 50, height: 50, border: `1px solid ${doc.typeColor}30`, background: `${doc.typeColor}0c`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: doc.typeColor }}>
+                    {doc.icon}
+                  </div>
+                  <div style={{ display: 'flex', flex: 1, justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap', paddingLeft: 12 }}>
+                    <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: doc.typeColor, border: `1px solid ${doc.typeColor}30`, background: `${doc.typeColor}0c`, padding: '4px 10px', borderRadius: 100, whiteSpace: 'nowrap' }}>{doc.type}</span>
+                    <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.1em', color: INK3, border: `1px solid ${RULE}`, padding: '4px 10px', borderRadius: 100, whiteSpace: 'nowrap' }}>{doc.badge}</span>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div style={{ fontFamily: UI, fontSize: 17, fontWeight: 700, color: INK, marginBottom: 10, lineHeight: 1.3 }}>{doc.title}</div>
+
+                {/* Desc */}
+                <div style={{ fontFamily: UI, fontSize: 13, color: INK2, lineHeight: 1.65, marginBottom: 24, flex: 1 }}>{doc.desc}</div>
+
+                {/* Footer */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: `1px solid ${RULE}`, paddingTop: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={INK3} strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    <span style={{ fontFamily: MONO, fontSize: 10, color: INK3, letterSpacing: '0.1em' }}>{doc.pages}</span>
+                  </div>
+                  <div className="doc-arrow" style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0, transform: 'translateX(-6px)', transition: 'opacity 0.2s, transform 0.2s' }}>
+                    <span style={{ fontFamily: MONO, fontSize: 10, color: doc.typeColor, letterSpacing: '0.1em' }}>Open</span>
+                    <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke={doc.typeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Footer note */}
+          <p className="lp-reveal" style={{ marginTop: 28, fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.08em', textAlign: 'center', opacity: 0, transform: 'translateY(12px)', transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s' }}>
+            All documents are confidential and intended for authorised recipients only. &nbsp;·&nbsp; Code required for access.
+          </p>
+        </div>
+      </section>
+
+      {activeDoc && <CodeGate doc={activeDoc} onClose={() => setActiveDoc(null)} />}
+    </>
   );
 }
 
@@ -965,6 +1465,7 @@ export default function LandingPage() {
         @keyframes lpBlink   { 0%,100%{opacity:1} 50%{opacity:0.2} }
         @keyframes lpFloat   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
         @keyframes lpTicker  { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+        @keyframes lpShake   { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-8px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(6px)} 75%{transform:translateX(-3px)} 90%{transform:translateX(3px)} }
 
         ::-webkit-scrollbar{width:5px}
         ::-webkit-scrollbar-track{background:${BG}}

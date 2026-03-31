@@ -45,6 +45,11 @@ const PaySubmitPage = lazy(() => import('./pages/PaySubmitPage'));
 const PayStatusPage = lazy(() => import('./pages/PayStatusPage'));
 const AdminPaymentsPage = lazy(() => import('./pages/admin/AdminPaymentsPage'));
 const PitchDeck = lazy(() => import('./pages/PitchDeck'));
+const OnePagerPage = lazy(() => import('./pages/OnePagerPage'));
+const BusinessPlanPage = lazy(() => import('./pages/BusinessPlanPage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const MediaKitPage = lazy(() => import('./pages/MediaKitPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -109,6 +114,11 @@ export default function App() {
           <Route path="/certificate/:certId" element={<CertificatePage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/pitch" element={<PitchDeck />} />
+          <Route path="/one-pager" element={<OnePagerPage />} />
+          <Route path="/business-plan" element={<BusinessPlanPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/media-kit" element={<MediaKitPage />} />
           <Route path="/pay/submit" element={<RequireAuth><PaySubmitPage /></RequireAuth>} />
           <Route path="/pay/status" element={<RequireAuth><PayStatusPage /></RequireAuth>} />
 
