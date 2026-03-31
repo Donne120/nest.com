@@ -44,6 +44,7 @@ const PricingPage = lazy(() => import('./pages/PricingPage'));
 const PaySubmitPage = lazy(() => import('./pages/PaySubmitPage'));
 const PayStatusPage = lazy(() => import('./pages/PayStatusPage'));
 const AdminPaymentsPage = lazy(() => import('./pages/admin/AdminPaymentsPage'));
+const PitchDeck = lazy(() => import('./pages/PitchDeck'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -107,6 +108,7 @@ export default function App() {
           <Route path="/invite/:token" element={<InvitePage />} />
           <Route path="/certificate/:certId" element={<CertificatePage />} />
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/pitch" element={<PitchDeck />} />
           <Route path="/pay/submit" element={<RequireAuth><PaySubmitPage /></RequireAuth>} />
           <Route path="/pay/status" element={<RequireAuth><PayStatusPage /></RequireAuth>} />
 
