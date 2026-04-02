@@ -110,16 +110,16 @@ class AcceptInviteRequest(BaseModel):
 
 class UserCreate(BaseModel):
     email: EmailStr
-    full_name: str
-    password: str
+    full_name: str = Field(..., min_length=2, max_length=100)
+    password: str = Field(..., min_length=8, max_length=128)
     role: UserRole = UserRole.learner
-    department: Optional[str] = None
+    department: Optional[str] = Field(None, max_length=100)
 
 
 class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
-    department: Optional[str] = None
-    avatar_url: Optional[str] = None
+    full_name: Optional[str] = Field(None, min_length=2, max_length=100)
+    department: Optional[str] = Field(None, max_length=100)
+    avatar_url: Optional[str] = Field(None, max_length=500)
 
 
 class UserRoleUpdate(BaseModel):
@@ -135,6 +135,7 @@ class UserOut(BaseModel):
     avatar_url: Optional[str]
     department: Optional[str]
     is_active: bool
+    payment_verified: bool
     created_at: datetime
 
     class Config:
@@ -144,18 +145,18 @@ class UserOut(BaseModel):
 # ─── Module ───────────────────────────────────────────────────────────────────
 
 class ModuleCreate(BaseModel):
-    title: str
-    description: Optional[str] = None
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=2000)
     resources: Optional[list] = None
-    thumbnail_url: Optional[str] = None
+    thumbnail_url: Optional[str] = Field(None, max_length=500)
     order_index: int = 0
 
 
 class ModuleUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=2000)
     resources: Optional[list] = None
-    thumbnail_url: Optional[str] = None
+    thumbnail_url: Optional[str] = Field(None, max_length=500)
     order_index: Optional[int] = None
     is_published: Optional[bool] = None
 
@@ -187,22 +188,22 @@ class ModuleWithProgress(ModuleOut):
 
 class VideoCreate(BaseModel):
     module_id: str
-    title: str
-    description: Optional[str] = None
-    video_url: str
-    thumbnail_url: Optional[str] = None
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=2000)
+    video_url: str = Field(..., max_length=500)
+    thumbnail_url: Optional[str] = Field(None, max_length=500)
     duration_seconds: int = 0
     order_index: int = 0
-    captions_url: Optional[str] = None
+    captions_url: Optional[str] = Field(None, max_length=500)
 
 
 class VideoUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    video_url: Optional[str] = None
-    thumbnail_url: Optional[str] = None
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=2000)
+    video_url: Optional[str] = Field(None, max_length=500)
+    thumbnail_url: Optional[str] = Field(None, max_length=500)
     duration_seconds: Optional[int] = None
-    captions_url: Optional[str] = None
+    captions_url: Optional[str] = Field(None, max_length=500)
 
 
 class VideoOut(BaseModel):
@@ -225,7 +226,7 @@ class VideoOut(BaseModel):
 # ─── Answer ───────────────────────────────────────────────────────────────────
 
 class AnswerCreate(BaseModel):
-    answer_text: str
+    answer_text: str = Field(..., min_length=1, max_length=10000)
     is_official: bool = False
 
 
@@ -247,12 +248,12 @@ class AnswerOut(BaseModel):
 class QuestionCreate(BaseModel):
     video_id: str
     timestamp_seconds: float
-    question_text: str
+    question_text: str = Field(..., min_length=1, max_length=2000)
     is_public: bool = True
 
 
 class QuestionUpdate(BaseModel):
-    question_text: Optional[str] = None
+    question_text: Optional[str] = Field(None, min_length=1, max_length=2000)
     status: Optional[QuestionStatus] = None
     is_public: Optional[bool] = None
 

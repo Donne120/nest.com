@@ -5,6 +5,20 @@ import {
 import { useUIStore, usePlayerStore } from '../../store';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import DOMPurify from 'dompurify';
+
+const PURIFY_CONFIG: DOMPurify.Config = {
+  ALLOWED_TAGS: [
+    'p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li',
+    'code', 'div', 'span', 'math', 'semantics', 'mrow', 'mi', 'mo',
+    'mn', 'msup', 'msub', 'mfrac', 'mover', 'munder', 'mspace',
+    'annotation', 'svg', 'path', 'line', 'rect',
+  ],
+  ALLOWED_ATTR: ['style', 'class', 'xmlns', 'd', 'viewBox', 'fill',
+    'stroke', 'stroke-width', 'x1', 'y1', 'x2', 'y2',
+    'display', 'encoding', 'x', 'y', 'width', 'height'],
+  FORCE_BODY: true,
+};
 
 // ─── Pen colours ──────────────────────────────────────────────────────────────
 const FONT  = `font-family:'Caveat',cursive`;
@@ -350,9 +364,11 @@ export default function AskAIModal() {
             </div>
           )}
 
-          {/* Done — rendered notebook */}
+          {/* Done — rendered notebook (sanitized before injection) */}
           {phase === 'done' && rendered && (
-            <div dangerouslySetInnerHTML={{ __html: rendered }} />
+            <div dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(rendered, PURIFY_CONFIG) as string
+            }} />
           )}
 
           {/* Error */}

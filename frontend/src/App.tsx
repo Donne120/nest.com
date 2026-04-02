@@ -6,6 +6,8 @@ import { useBrandColor } from './hooks/useBrandColor';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
+import NestAssistant from './components/AI/NestAssistant';
+import OnboardingTour from './components/Onboarding/OnboardingTour';
 import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 
@@ -259,6 +261,9 @@ export default function App() {
         </Suspense>
         </ErrorBoundary>
       </BrowserRouter>
+
+      <NestAssistant />
+      <OnboardingTour />
 
       <Toaster
         position="top-right"

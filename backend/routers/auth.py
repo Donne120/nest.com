@@ -137,7 +137,7 @@ def invite_info(token: str, db: Session = Depends(get_db)):
 # ─── Accept invite ────────────────────────────────────────────────────────────
 
 @router.post("/accept-invite", response_model=schemas.Token, status_code=201)
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 def accept_invite(request: Request, payload: schemas.AcceptInviteRequest, db: Session = Depends(get_db)):
     invite = db.query(models.Invitation).filter(models.Invitation.token == payload.token).first()
     if not invite:
@@ -207,7 +207,11 @@ def reset_password(request: Request, payload: schemas.ResetPasswordRequest, db: 
         raise HTTPException(status_code=400, detail="User not found")
 
     user.hashed_password = auth_utils.hash_password(payload.new_password)
-    record.used = True
+    # Mark this token used AND delete all other outstanding reset tokens for
+    # this user so that old links cannot be replayed.
+    db.query(models.PasswordResetToken).filter(
+        models.PasswordResetToken.user_id == record.user_id,
+    ).delete()
     db.commit()
 
     return {"message": "Password updated successfully"}
@@ -216,7 +220,9 @@ def reset_password(request: Request, payload: schemas.ResetPasswordRequest, db: 
 # ─── Change password (authenticated) ─────────────────────────────────────────
 
 @router.post("/change-password", status_code=200)
+@limiter.limit("5/minute")
 def change_password(
+    request: Request,
     payload: schemas.ChangePasswordRequest,
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),

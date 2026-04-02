@@ -11,26 +11,33 @@ Flow:
   5. Admin rejects → rejection_reason stored, user notified
 """
 
-from fastapi import (
-    APIRouter, BackgroundTasks, Depends, HTTPException,
-    UploadFile, File, Form,
-)
-from sqlalchemy.orm import Session, joinedload
-from typing import Optional
-from datetime import datetime, timezone
+import re
 import uuid
 import logging
+from datetime import datetime, timezone, timedelta
+from typing import Optional
 
-from database import get_db
-from auth import get_current_user
-from models import (
-    PaymentSubmission, PaymentStatus, PaymentType, PaymentMethod,
-    Plan, User, UserRole, ModuleAccess, Organization, SubscriptionStatus, Module,
+from fastapi import (
+    APIRouter, BackgroundTasks, Depends, HTTPException,
+    Request, UploadFile, File, Form,
 )
-import storage as storage_helper
 from pydantic import BaseModel
-import email_utils
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from sqlalchemy.orm import Session, joinedload
+
+from auth import get_current_user
 from config import settings
+from database import get_db
+from models import (
+    ModuleAccess, Organization, PaymentMethod, PaymentStatus,
+    PaymentSubmission, PaymentType, Plan, SubscriptionStatus,
+    User, UserRole, Module,
+)
+import email_utils
+import storage as storage_helper
+
+limiter = Limiter(key_func=get_remote_address)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/payments", tags=["payments"])
@@ -38,9 +45,25 @@ router = APIRouter(prefix="/api/payments", tags=["payments"])
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 
+_ALLOWED_CURRENCIES = {"RWF", "USD", "EUR", "XAF"}
+_PHONE_RE = re.compile(r"^\+?[0-9\-\s]{7,20}$")
+
+
 def _require_admin(user: User):
-    if user.role not in (UserRole.super_admin, UserRole.owner, UserRole.educator):
+    """Read-only admin access: owner, educator, super_admin can view."""
+    if user.role not in (
+        UserRole.super_admin, UserRole.owner, UserRole.educator
+    ):
         raise HTTPException(status_code=403, detail="Not authorized")
+
+
+def _require_approver(user: User):
+    """Only owner / super_admin may approve or reject payments."""
+    if user.role not in (UserRole.super_admin, UserRole.owner):
+        raise HTTPException(
+            status_code=403,
+            detail="Only an owner or super-admin can approve payments.",
+        )
 
 
 def _serialize(sub: PaymentSubmission) -> dict:
@@ -79,7 +102,9 @@ def _serialize(sub: PaymentSubmission) -> dict:
 # ── submit proof ───────────────────────────────────────────────────────────────
 
 @router.post("/submit")
+@limiter.limit("10/minute")
 async def submit_payment(
+    request: Request,
     background_tasks: BackgroundTasks,
     payment_type: str = Form(...),
     payment_method: str = Form(...),
@@ -94,6 +119,30 @@ async def submit_payment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # ── Input validation ───────────────────────────────────────────────────
+    if amount <= 0 or amount > 10_000_000:
+        raise HTTPException(
+            status_code=400, detail="Invalid amount."
+        )
+    if currency not in _ALLOWED_CURRENCIES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid currency. Allowed: {_ALLOWED_CURRENCIES}",
+        )
+    if phone_number and not _PHONE_RE.match(phone_number):
+        raise HTTPException(
+            status_code=400, detail="Invalid phone number format."
+        )
+    if notes and len(notes) > 1000:
+        raise HTTPException(
+            status_code=400, detail="Notes must be under 1000 characters."
+        )
+    if transaction_reference and len(transaction_reference) > 200:
+        raise HTTPException(
+            status_code=400,
+            detail="Transaction reference too long.",
+        )
+
     # Upload proof screenshot to Supabase
     proof_url = None
     if proof_image and proof_image.filename:
@@ -113,12 +162,20 @@ async def submit_payment(
         except Exception as e:
             logger.warning(f"Proof image upload failed (non-fatal): {e}")
 
-    # Resolve payee for module purchases (the module creator)
+    # Resolve payee for module purchases — scoped to the user's own org
+    # so cross-tenant module IDs are rejected.
     payee_id = None
     if payment_type == PaymentType.module_purchase and module_id:
-        mod = db.query(Module).filter(Module.id == module_id).first()
-        if mod:
-            payee_id = mod.created_by
+        mod = db.query(Module).filter(
+            Module.id == module_id,
+            Module.organization_id == current_user.organization_id,
+        ).first()
+        if not mod:
+            raise HTTPException(
+                status_code=404,
+                detail="Module not found in your organisation.",
+            )
+        payee_id = mod.created_by
 
     submission = PaymentSubmission(
         payer_id=current_user.id,
@@ -216,7 +273,7 @@ def approve_payment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    _require_admin(current_user)
+    _require_approver(current_user)
 
     sub = db.query(PaymentSubmission).options(
         joinedload(PaymentSubmission.payer),
@@ -230,14 +287,21 @@ def approve_payment(
     sub.reviewed_by = current_user.id
     sub.reviewed_at = datetime.now(timezone.utc)
 
+    payer = db.query(User).filter(User.id == sub.payer_id).first()
+    if payer:
+        payer.payment_verified = True
+
     if sub.payment_type == PaymentType.teacher_subscription:
-        payer = db.query(User).filter(User.id == sub.payer_id).first()
         if payer and payer.organization_id:
-            org = db.query(Organization).filter(Organization.id == payer.organization_id).first()
+            org = db.query(Organization).filter(
+                Organization.id == payer.organization_id
+            ).first()
             if org:
                 org.subscription_status = SubscriptionStatus.active
                 if sub.plan:
                     org.plan = sub.plan
+                org.subscription_end = datetime.now(timezone.utc) + timedelta(days=30)
+                org.renewal_notified_at = None
 
     elif sub.payment_type == PaymentType.module_purchase and sub.module_id:
         existing = db.query(ModuleAccess).filter(
@@ -288,7 +352,7 @@ def reject_payment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    _require_admin(current_user)
+    _require_approver(current_user)
 
     sub = db.query(PaymentSubmission).options(
         joinedload(PaymentSubmission.payer),

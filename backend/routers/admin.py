@@ -13,16 +13,20 @@ Safe to call multiple times — skips anything that already exists.
 Also callable with admin JWT to patch thumbnails on existing modules.
 """
 
-import os
-import sys
+import hmac
 import logging
-from fastapi import APIRouter, Header, HTTPException, Depends
+from fastapi import APIRouter, Header, HTTPException, Depends, Request
 from sqlalchemy.orm import Session
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from pydantic import BaseModel
 
 from database import get_db
 from config import settings
-from auth import get_current_user, hash_password
+from auth import hash_password
 import models
+
+limiter = Limiter(key_func=get_remote_address)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -276,15 +280,15 @@ def _seed(db: Session, admin_password: str) -> dict:
 
 # ── Endpoint ───────────────────────────────────────────────────────────────────
 
-from pydantic import BaseModel
-
 
 class SeedRequest(BaseModel):
     admin_password: str = ""
 
 
 @router.post("/seed")
+@limiter.limit("3/hour")
 def seed(
+    request: Request,
     body: SeedRequest,
     x_seed_secret: str = Header(..., alias="X-Seed-Secret"),
     db: Session = Depends(get_db),
@@ -292,13 +296,21 @@ def seed(
     """
     One-time production setup. Requires the X-Seed-Secret header to match
     the SEED_SECRET environment variable set on Render.
+
+    IMPORTANT: Remove or disable this endpoint once your production database
+    is seeded. It is rate-limited to 3 calls/hour as an extra safeguard.
     """
-    if not settings.SEED_SECRET:
+    # Require a strong secret (minimum 20 chars) to be explicitly set
+    if not settings.SEED_SECRET or len(settings.SEED_SECRET) < 20:
         raise HTTPException(
             status_code=503,
-            detail="SEED_SECRET env var is not set on this server.",
+            detail=(
+                "SEED_SECRET env var is not set or is too short. "
+                "Set it to at least 20 random characters in your Render env vars."
+            ),
         )
-    if x_seed_secret != settings.SEED_SECRET:
+    # Constant-time comparison to prevent timing attacks
+    if not hmac.compare_digest(x_seed_secret, settings.SEED_SECRET):
         raise HTTPException(status_code=403, detail="Invalid seed secret.")
 
     results = _seed(db, body.admin_password)

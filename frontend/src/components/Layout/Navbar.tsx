@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, BookOpen, LayoutDashboard, Video, UserCircle, Search } from 'lucide-react';
-import { useAuthStore, useNotifStore } from '../../store';
+import { Bell, LogOut, BookOpen, LayoutDashboard, Video, UserCircle, Search, Sparkles } from 'lucide-react';
+import { useAuthStore, useNotifStore, useUIStore } from '../../store';
 import { useBrandColor } from '../../hooks/useBrandColor';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
@@ -13,6 +13,7 @@ import clsx from 'clsx';
 export default function Navbar() {
   const { user, organization, clearAuth } = useAuthStore();
   const { lastKnownUnread, setLastKnownUnread } = useNotifStore();
+  const { toggleNestAssistant, nestAssistantOpen } = useUIStore();
   useBrandColor();
   const navigate = useNavigate();
   const location = useLocation();
@@ -159,6 +160,42 @@ export default function Navbar() {
             style={{ color: '#6b6b78' }}
           >
             <Search size={17} />
+          </button>
+
+          {/* Nest Assistant */}
+          <button
+            onClick={toggleNestAssistant}
+            aria-label="Nest Assistant"
+            title="Ask Nest Assistant"
+            style={{
+              background: nestAssistantOpen ? 'rgba(232,201,126,0.15)' : '#1c1e27',
+              border: nestAssistantOpen ? '1px solid rgba(232,201,126,0.35)' : '1px solid rgba(255,255,255,0.07)',
+              color: nestAssistantOpen ? '#e8c97e' : '#9ca3af',
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => {
+              if (!nestAssistantOpen) {
+                (e.currentTarget as HTMLElement).style.background = 'rgba(232,201,126,0.1)';
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,201,126,0.25)';
+                (e.currentTarget as HTMLElement).style.color = '#e8c97e';
+              }
+            }}
+            onMouseLeave={e => {
+              if (!nestAssistantOpen) {
+                (e.currentTarget as HTMLElement).style.background = '#1c1e27';
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)';
+                (e.currentTarget as HTMLElement).style.color = '#9ca3af';
+              }
+            }}
+          >
+            <Sparkles size={14} />
           </button>
 
           {/* Notifications */}

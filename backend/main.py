@@ -14,7 +14,7 @@ import os
 import logging
 
 from config import settings
-from database import engine
+from database import engine, SessionLocal
 from sqlalchemy import text
 import models
 from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats, search, assignments, payments, admin
@@ -31,8 +31,19 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = (
+            "camera=(), microphone=(), geolocation=()"
+        )
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'none'; "
+            "script-src 'none'; "
+            "object-src 'none'; "
+            "frame-ancestors 'none';"
+        )
         if request.url.scheme == "https":
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=63072000; includeSubDomains; preload"
+            )
         return response
 
 logging.basicConfig(level=logging.INFO)
@@ -133,6 +144,9 @@ def _run_db_setup():
             "ALTER TABLE modules ADD COLUMN is_for_sale BOOLEAN DEFAULT FALSE NOT NULL",
             "ALTER TABLE modules ADD COLUMN currency VARCHAR DEFAULT 'RWF'",
             "ALTER TABLE organizations ADD COLUMN momo_number VARCHAR",
+            "ALTER TABLE users ADD COLUMN payment_verified BOOLEAN DEFAULT TRUE NOT NULL",
+            "ALTER TABLE organizations ADD COLUMN subscription_end DATETIME",
+            "ALTER TABLE organizations ADD COLUMN renewal_notified_at DATETIME",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:
@@ -157,25 +171,116 @@ def _run_db_setup():
     storage_helper.setup_buckets()
 
 
+def _check_subscriptions():
+    """
+    Run daily: mark expired subscriptions and send renewal emails.
+    - 7 days before expiry  → send renewal reminder (once per cycle)
+    - On/after expiry day   → set status=expired and send expired notice
+    """
+    from datetime import datetime, timezone, timedelta
+    import email_utils
+
+    db = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        orgs = db.query(models.Organization).filter(
+            models.Organization.subscription_end.isnot(None),
+            models.Organization.is_active.is_(True),
+        ).all()
+
+        for org in orgs:
+            end = org.subscription_end
+            if end.tzinfo is None:
+                end = end.replace(tzinfo=timezone.utc)
+
+            days_left = (end - now).days
+
+            # ── Expired ────────────────────────────────────────────────────
+            if now >= end:
+                if org.subscription_status != models.SubscriptionStatus.expired:
+                    org.subscription_status = models.SubscriptionStatus.expired
+                    db.commit()
+
+                    # Notify all owners/educators in the org
+                    admins = db.query(models.User).filter(
+                        models.User.organization_id == org.id,
+                        models.User.role.in_([
+                            models.UserRole.owner,
+                            models.UserRole.educator,
+                        ]),
+                        models.User.is_active.is_(True),
+                    ).all()
+                    renew_url = f"{settings.FRONTEND_URL}/pay/submit"
+                    for admin in admins:
+                        email_utils.send_subscription_expired(
+                            to=admin.email,
+                            user_name=admin.full_name,
+                            org_name=org.name,
+                            renew_url=renew_url,
+                        )
+
+            # ── 7-day reminder (send once) ─────────────────────────────────
+            elif 0 < days_left <= 7 and org.renewal_notified_at is None:
+                org.renewal_notified_at = now
+                db.commit()
+
+                admins = db.query(models.User).filter(
+                    models.User.organization_id == org.id,
+                    models.User.role.in_([
+                        models.UserRole.owner,
+                        models.UserRole.educator,
+                    ]),
+                    models.User.is_active.is_(True),
+                ).all()
+                renew_url = f"{settings.FRONTEND_URL}/pay/submit"
+                expiry_str = end.strftime("%B %d, %Y")
+                for admin in admins:
+                    email_utils.send_subscription_renewal_reminder(
+                        to=admin.email,
+                        user_name=admin.full_name,
+                        org_name=org.name,
+                        days_left=days_left,
+                        expiry_date=expiry_str,
+                        renew_url=renew_url,
+                    )
+    except Exception as e:
+        logger.warning(f"Subscription check error: {e}")
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Run DB setup in background so the server binds the port immediately
     import asyncio
-    asyncio.get_event_loop().run_in_executor(None, _run_db_setup)
 
+    asyncio.get_event_loop().run_in_executor(None, _run_db_setup)
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    logger.info(f"Nest Fledge API started — CORS origins: {settings.get_cors_origins()}")
+    logger.info(
+        f"Nest Fledge API started — CORS origins: {settings.get_cors_origins()}"
+    )
+
+    async def _subscription_loop():
+        while True:
+            await asyncio.sleep(86400)  # run every 24 hours
+            asyncio.get_event_loop().run_in_executor(None, _check_subscriptions)
+
+    task = asyncio.create_task(_subscription_loop())
     yield
+    task.cancel()
     logger.info("Shutting down...")
 
+
+_is_prod = settings.ENVIRONMENT not in ("development", "dev")
 
 app = FastAPI(
     title="Nest Fledge API",
     description="Production API for the Nest Fledge Platform",
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    # Disable interactive docs in production — they expose the full API surface
+    docs_url=None if _is_prod else "/api/docs",
+    redoc_url=None if _is_prod else "/api/redoc",
+    openapi_url=None if _is_prod else "/api/openapi.json",
 )
 
 app.state.limiter = limiter

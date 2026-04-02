@@ -100,6 +100,8 @@ interface UIState {
   aiAskOpen: boolean;
   aiAskVideoId: string | null;
   aiAskTimestamp: number;
+  // Global Nest Assistant
+  nestAssistantOpen: boolean;
   setSidebarOpen: (o: boolean) => void;
   setActiveQuestion: (id: string | null) => void;
   openQuestionForm: (ts: number) => void;
@@ -108,6 +110,9 @@ interface UIState {
   closeWhiteboard: () => void;
   openAIAsk: (videoId: string, timestamp?: number) => void;
   closeAIAsk: () => void;
+  openNestAssistant: () => void;
+  closeNestAssistant: () => void;
+  toggleNestAssistant: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -120,6 +125,7 @@ export const useUIStore = create<UIState>((set) => ({
   aiAskOpen: false,
   aiAskVideoId: null,
   aiAskTimestamp: 0,
+  nestAssistantOpen: false,
   setSidebarOpen: (o) => set({ sidebarOpen: o }),
   setActiveQuestion: (id) => set({ activeQuestionId: id }),
   openQuestionForm: (ts) => set({ showQuestionForm: true, questionFormTimestamp: ts }),
@@ -130,4 +136,26 @@ export const useUIStore = create<UIState>((set) => ({
   openAIAsk: (videoId, timestamp = 0) =>
     set({ aiAskOpen: true, aiAskVideoId: videoId, aiAskTimestamp: timestamp }),
   closeAIAsk: () => set({ aiAskOpen: false, aiAskVideoId: null, aiAskTimestamp: 0 }),
+  openNestAssistant: () => set({ nestAssistantOpen: true }),
+  closeNestAssistant: () => set({ nestAssistantOpen: false }),
+  toggleNestAssistant: () => set((s) => ({ nestAssistantOpen: !s.nestAssistantOpen })),
 }));
+
+// ─── Onboarding Tour ──────────────────────────────────────────────────────────
+
+interface OnboardingState {
+  tourDone: boolean;
+  completeTour: () => void;
+  resetTour: () => void;
+}
+
+export const useOnboardingStore = create<OnboardingState>()(
+  persist(
+    (set) => ({
+      tourDone: false,
+      completeTour: () => set({ tourDone: true }),
+      resetTour: () => set({ tourDone: false }),
+    }),
+    { name: 'nest_onboarding' }
+  )
+);
