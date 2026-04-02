@@ -7,18 +7,17 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import DOMPurify from 'dompurify';
 
-const PURIFY_CONFIG = {
-  ALLOWED_TAGS: [
-    'p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li',
-    'code', 'div', 'span', 'math', 'semantics', 'mrow', 'mi', 'mo',
-    'mn', 'msup', 'msub', 'mfrac', 'mover', 'munder', 'mspace',
-    'annotation', 'svg', 'path', 'line', 'rect',
-  ],
-  ALLOWED_ATTR: ['style', 'class', 'xmlns', 'd', 'viewBox', 'fill',
-    'stroke', 'stroke-width', 'x1', 'y1', 'x2', 'y2',
-    'display', 'encoding', 'x', 'y', 'width', 'height'],
-  FORCE_BODY: true,
-} as const;
+const PURIFY_TAGS = [
+  'p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li',
+  'code', 'div', 'span', 'math', 'semantics', 'mrow', 'mi', 'mo',
+  'mn', 'msup', 'msub', 'mfrac', 'mover', 'munder', 'mspace',
+  'annotation', 'svg', 'path', 'line', 'rect',
+];
+const PURIFY_ATTRS = [
+  'style', 'class', 'xmlns', 'd', 'viewBox', 'fill',
+  'stroke', 'stroke-width', 'x1', 'y1', 'x2', 'y2',
+  'display', 'encoding', 'x', 'y', 'width', 'height',
+];
 
 // ─── Pen colours ──────────────────────────────────────────────────────────────
 const FONT  = `font-family:'Caveat',cursive`;
@@ -367,7 +366,7 @@ export default function AskAIModal() {
           {/* Done — rendered notebook (sanitized before injection) */}
           {phase === 'done' && rendered && (
             <div dangerouslySetInnerHTML={{
-              __html: String(DOMPurify.sanitize(rendered, PURIFY_CONFIG))
+              __html: String(DOMPurify.sanitize(rendered, { ALLOWED_TAGS: PURIFY_TAGS, ALLOWED_ATTR: PURIFY_ATTRS, FORCE_BODY: true }))
             }} />
           )}
 
