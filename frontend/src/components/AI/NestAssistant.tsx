@@ -4,11 +4,11 @@ import DOMPurify from 'dompurify';
 import { useUIStore } from '../../store';
 import api from '../../api/client';
 
-const PURIFY_CONFIG: DOMPurify.Config = {
+const PURIFY_CONFIG = {
   ALLOWED_TAGS: ['strong', 'em', 'code', 'p', 'br', 'ul', 'ol', 'li', 'span'],
   ALLOWED_ATTR: ['style'],
   FORCE_BODY: true,
-};
+} as const;
 
 interface Message {
   role: 'user' | 'assistant';
@@ -319,10 +319,10 @@ export default function NestAssistant() {
                     }}
                   >
                     {msg.role === 'assistant' ? (
-                      <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(
+                      <span dangerouslySetInnerHTML={{ __html: String(DOMPurify.sanitize(
                         renderMarkdown(msg.content) || (streaming && i === messages.length - 1 ? '<span style="opacity:0.5">▍</span>' : ''),
                         PURIFY_CONFIG
-                      ) as string }} />
+                      )) }} />
                     ) : (
                       msg.content
                     )}
