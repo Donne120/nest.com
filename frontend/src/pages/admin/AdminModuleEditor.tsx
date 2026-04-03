@@ -4,14 +4,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, Trash2, Video,
   Save, GripVertical, Link as LinkIcon,
-  FileText, Film, Globe, File, UploadCloud, X
+  FileText, Film, Globe, File, UploadCloud, X, BookOpen,
 } from 'lucide-react';
 import api from '../../api/client';
-import type { Module, Video as VideoType, ModuleResource } from '../../types';
+import type { Module, Video as VideoType, Lesson, ModuleResource } from '../../types';
 import Button from '../../components/UI/Button';
 import QuizBuilder from '../../components/Admin/QuizBuilder';
 import TranscriptManager from '../../components/Admin/TranscriptManager';
 import RichTextEditor from '../../components/Editor/RichTextEditor';
+import LessonEditor from '../../components/Lesson/LessonEditor';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -86,6 +87,9 @@ export default function AdminModuleEditor() {
   const [quizVideoTitle, setQuizVideoTitle] = useState('');
   const [transcriptVideoId, setTranscriptVideoId] = useState<string | null>(null);
 
+  // Lesson management
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+
   // Fetch existing data
   const { data: module } = useQuery<Module>({
     queryKey: ['module', moduleId],
@@ -96,6 +100,12 @@ export default function AdminModuleEditor() {
   const { data: videos = [] } = useQuery<VideoType[]>({
     queryKey: ['module-videos', moduleId],
     queryFn: () => api.get(`/videos/module/${moduleId}`).then(r => r.data),
+    enabled: isEdit,
+  });
+
+  const { data: lessons = [] } = useQuery<Lesson[]>({
+    queryKey: ['module-lessons', moduleId],
+    queryFn: () => api.get(`/lessons/module/${moduleId}`).then(r => r.data),
     enabled: isEdit,
   });
 
@@ -159,6 +169,31 @@ export default function AdminModuleEditor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['module-videos', moduleId] });
       toast.success('Video deleted');
+    },
+  });
+
+  const createLesson = useMutation({
+    mutationFn: () =>
+      api.post('/lessons', {
+        module_id: moduleId,
+        title: 'Untitled Lesson',
+        order_index: lessons.length,
+        content: [],
+      }),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['module-lessons', moduleId] });
+      setEditingLessonId(res.data.id);
+      toast.success('Lesson created — add your content below');
+    },
+    onError: () => toast.error('Failed to create lesson'),
+  });
+
+  const deleteLesson = useMutation({
+    mutationFn: (id: string) => api.delete(`/lessons/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['module-lessons', moduleId] });
+      setEditingLessonId(null);
+      toast.success('Lesson deleted');
     },
   });
 
@@ -508,6 +543,97 @@ export default function AdminModuleEditor() {
                 </div>
                 <p className="text-sm font-medium text-gray-600">No videos yet</p>
                 <p className="text-xs text-gray-400 mt-1">Add videos to this module to get started</p>
+              </div>
+            )}
+          </div>
+        </Section>
+      )}
+
+      {/* ─── Lessons section ─── */}
+      {isEdit && (
+        <Section
+          title={`Note Lessons (${lessons.length})`}
+          action={
+            <Button
+              size="sm"
+              icon={<Plus size={13} />}
+              onClick={() => createLesson.mutate()}
+              loading={createLesson.isPending}
+            >
+              Add Lesson
+            </Button>
+          }
+        >
+          <div className="space-y-2">
+            {lessons.map((lesson, idx) => (
+              <div key={lesson.id} className="border border-gray-200 rounded-xl overflow-hidden">
+                {/* Lesson row */}
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <GripVertical size={15} className="text-gray-300 flex-shrink-0 cursor-grab" />
+                  <span className="w-6 h-6 rounded-full bg-amber-50 text-[11px] font-bold text-amber-600 flex items-center justify-center flex-shrink-0">
+                    {idx + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{lesson.title}</p>
+                    <p className="text-xs text-gray-400">
+                      {lesson.content?.length ?? 0} block{(lesson.content?.length ?? 0) !== 1 ? 's' : ''}
+                      {lesson.question_count > 0 && ` · ${lesson.question_count} question${lesson.question_count !== 1 ? 's' : ''}`}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() =>
+                        setEditingLessonId(editingLessonId === lesson.id ? null : lesson.id)
+                      }
+                      className={clsx(
+                        'text-xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all',
+                        editingLessonId === lesson.id
+                          ? 'bg-amber-500 text-white border-amber-500'
+                          : 'text-amber-600 border-amber-200 hover:bg-amber-50',
+                      )}
+                    >
+                      {editingLessonId === lesson.id ? 'Close' : 'Edit'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm('Delete this lesson and all its Q&A?'))
+                          deleteLesson.mutate(lesson.id);
+                      }}
+                      className="p-1.5 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Inline lesson editor */}
+                {editingLessonId === lesson.id && (
+                  <div className="border-t border-amber-100 px-4 pb-4 pt-3 bg-amber-50/10">
+                    <LessonEditor
+                      lesson={lesson}
+                      onSaved={() => setEditingLessonId(null)}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {lessons.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
+                  <BookOpen size={18} className="text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-600">No note lessons yet</p>
+                <p className="text-xs text-gray-400 mt-1 mb-3">
+                  Create lessons with text notes and screenshots — no video required
+                </p>
+                <button
+                  type="button"
+                  onClick={() => createLesson.mutate()}
+                  className="text-xs font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+                >
+                  + Add first lesson
+                </button>
               </div>
             )}
           </div>

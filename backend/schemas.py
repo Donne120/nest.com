@@ -721,3 +721,94 @@ class SubmissionReview(BaseModel):
     grade: Optional[str] = None
     reviewed_content: Optional[Any] = None   # TipTap doc with comment marks embedded
     instructor_feedback: Optional[str] = None
+
+
+# ─── Lessons ──────────────────────────────────────────────────────────────────
+
+class LessonBlock(BaseModel):
+    id: str
+    type: str  # 'text' | 'image'
+    content: Optional[str] = None   # text block body
+    url: Optional[str] = None       # image block URL
+    caption: Optional[str] = None   # image block caption
+
+
+class LessonCreate(BaseModel):
+    module_id: str
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=2000)
+    content: Optional[List[LessonBlock]] = None
+    order_index: int = 0
+
+
+class LessonUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=2000)
+    content: Optional[List[LessonBlock]] = None
+    order_index: Optional[int] = None
+    is_published: Optional[bool] = None
+
+
+class LessonOut(BaseModel):
+    id: str
+    module_id: str
+    title: str
+    description: Optional[str]
+    content: Optional[List[LessonBlock]] = None
+    order_index: int
+    is_published: bool
+    created_at: datetime
+    question_count: int = 0
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Lesson Q&A ───────────────────────────────────────────────────────────────
+
+class LessonAnswerCreate(BaseModel):
+    answer_text: str = Field(..., min_length=1, max_length=10000)
+    is_official: bool = False
+
+
+class LessonAnswerOut(BaseModel):
+    id: str
+    question_id: str
+    answer_text: str
+    is_official: bool
+    is_ai_generated: bool = False
+    created_at: datetime
+    answered_by_user: UserOut
+
+    class Config:
+        from_attributes = True
+
+
+class LessonQuestionCreate(BaseModel):
+    lesson_id: str
+    block_id: str
+    question_text: str = Field(..., min_length=1, max_length=2000)
+    is_public: bool = True
+
+
+class LessonQuestionUpdate(BaseModel):
+    question_text: Optional[str] = Field(None, min_length=1, max_length=2000)
+    status: Optional[QuestionStatus] = None
+    is_public: Optional[bool] = None
+
+
+class LessonQuestionOut(BaseModel):
+    id: str
+    lesson_id: str
+    block_id: str
+    question_text: str
+    status: QuestionStatus
+    is_public: bool
+    view_count: int
+    created_at: datetime
+    updated_at: Optional[datetime]
+    asked_by_user: UserOut
+    answers: List[LessonAnswerOut] = []
+
+    class Config:
+        from_attributes = True

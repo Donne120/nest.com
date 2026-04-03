@@ -10,6 +10,20 @@ import auth as auth_utils
 router = APIRouter(prefix="/api/modules", tags=["modules"])
 
 
+def _check_learner_access(user: models.User):
+    if (
+        user.role == models.UserRole.learner
+        and not user.payment_verified
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Access requires an approved payment. "
+                "Submit your proof and wait for admin approval."
+            ),
+        )
+
+
 def _org_module(module_id: str, org_id: str, db: Session) -> models.Module:
     """Fetch a module scoped to the org. Raises 404 if not found or cross-org."""
     m = db.query(models.Module).filter(
@@ -42,11 +56,12 @@ def list_modules(
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
+    _check_learner_access(current_user)
     modules = (
         db.query(models.Module)
         .filter(
             models.Module.organization_id == current_user.organization_id,
-            models.Module.is_published == True,
+            models.Module.is_published.is_(True),
         )
         .order_by(models.Module.order_index)
         .all()
@@ -106,6 +121,7 @@ def get_module(
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
+    _check_learner_access(current_user)
     m = _org_module(module_id, current_user.organization_id, db)
     video_ids = [v.id for v in m.videos]
     q_count = (

@@ -6,7 +6,7 @@ Headers: X-Seed-Secret: <your SEED_SECRET env var>
 
 Creates:
   - Nest Cameroon organisation
-  - super_admin account (ngummdieudonne4@gmail.com)
+  - super_admin account (ngumdieudonne4@gmail.com)
   - 13 educational modules with thumbnails
 
 Safe to call multiple times — skips anything that already exists.
@@ -35,7 +35,7 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 ORG_NAME = "Nest Cameroon"
 ORG_SLUG = "nest-cameroon"
-ADMIN_EMAIL = "ngummdieudonne4@gmail.com"
+ADMIN_EMAIL = "ngumdieudonne4@gmail.com"
 ADMIN_NAME = "Nest Cameroon Admin"
 
 
@@ -213,10 +213,11 @@ def _seed(db: Session, admin_password: str) -> dict:
     else:
         results["organisation"] = "already exists"
 
-    # Admin user
+    # Admin user — search by correct email OR the old typo email so we can fix it
+    OLD_ADMIN_EMAIL = "ngummdieudonne4@gmail.com"
     admin = (
         db.query(models.User)
-        .filter(models.User.email == ADMIN_EMAIL)
+        .filter(models.User.email.in_([ADMIN_EMAIL, OLD_ADMIN_EMAIL]))
         .first()
     )
     if not admin:
@@ -241,7 +242,19 @@ def _seed(db: Session, admin_password: str) -> dict:
         results["admin_user"] = "created"
         logger.info(f"[seed] Created super_admin: {ADMIN_EMAIL}")
     else:
-        results["admin_user"] = "already exists"
+        # Patch email and/or password if they need correcting
+        patched = []
+        if admin.email != ADMIN_EMAIL:
+            admin.email = ADMIN_EMAIL
+            patched.append("email")
+        if admin_password:
+            admin.hashed_password = hash_password(admin_password)
+            patched.append("password")
+        if patched:
+            results["admin_user"] = f"updated ({', '.join(patched)})"
+            logger.info(f"[seed] Patched super_admin: {', '.join(patched)}")
+        else:
+            results["admin_user"] = "already exists (no changes)"
 
     # Modules — create or patch thumbnail
     for data in MODULES:

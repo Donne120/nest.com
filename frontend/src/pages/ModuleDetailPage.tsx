@@ -3,12 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Play, Clock, MessageSquare, ArrowLeft, ExternalLink,
-  FileText, Film, Globe, File, Video as VideoIcon,
-  CheckCircle2, Trophy, BookOpen, Zap, Calendar,
+  Play, ArrowLeft, ExternalLink,
+  FileText, Film, Globe, File,
+  CheckCircle2, Calendar, BookOpen, Pin,
 } from 'lucide-react';
 import api from '../api/client';
-import type { Module, Video, ModuleResource } from '../types';
+import type { Module, Video, Lesson, ModuleResource } from '../types';
 import { Skeleton } from '../components/UI/Skeleton';
 import BookMeetingModal from '../components/Meetings/BookMeetingModal';
 
@@ -77,6 +77,12 @@ export default function ModuleDetailPage() {
     enabled: !!moduleId,
   });
 
+  const { data: lessons = [] } = useQuery<Lesson[]>({
+    queryKey: ['module-lessons', moduleId],
+    queryFn: () => api.get(`/lessons/module/${moduleId}`).then(r => r.data),
+    enabled: !!moduleId,
+  });
+
   const learnItems = useMemo(() => {
     if (!module?.description) return [];
     const parser = new DOMParser();
@@ -94,7 +100,22 @@ export default function ModuleDetailPage() {
   const status = module.status ?? 'not_started';
   const ctaLabel = pct === 0 ? 'Start Course' : pct === 100 ? 'Review Course' : 'Continue Learning';
   const firstVideo = videos[0]?.id;
+  const firstLesson = lessons[0]?.id;
+  const firstItem = firstVideo
+    ? { type: 'video' as const, id: firstVideo }
+    : firstLesson
+    ? { type: 'lesson' as const, id: firstLesson }
+    : null;
   const hasResources = module.resources && module.resources.length > 0;
+
+  // Build unified curriculum: videos + lessons sorted by order_index, then by type
+  type CurriculumItem =
+    | { kind: 'video'; item: Video }
+    | { kind: 'lesson'; item: Lesson };
+  const curriculum: CurriculumItem[] = [
+    ...videos.map((v) => ({ kind: 'video' as const, item: v })),
+    ...lessons.map((l) => ({ kind: 'lesson' as const, item: l })),
+  ].sort((a, b) => a.item.order_index - b.item.order_index);
   const totalQuizzes = 31;
 
   // CSS vars as inline style shortcuts
@@ -186,11 +207,14 @@ export default function ModuleDetailPage() {
           {/* CTAs */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <button
-              onClick={() => firstVideo && navigate(`/video/${firstVideo}`)}
-              disabled={!firstVideo}
-              style={{ background: ACCENT, color: '#fff', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, padding: '11px 26px', borderRadius: 4, border: 'none', cursor: firstVideo ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '0.01em', opacity: firstVideo ? 1 : 0.5, transition: 'opacity 0.2s, transform 0.15s' }}
-              onMouseEnter={e => { if (firstVideo) (e.currentTarget as HTMLElement).style.opacity = '0.88'; }}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = firstVideo ? '1' : '0.5')}
+              onClick={() => {
+                if (!firstItem) return;
+                navigate(firstItem.type === 'video' ? `/video/${firstItem.id}` : `/lesson/${firstItem.id}`);
+              }}
+              disabled={!firstItem}
+              style={{ background: ACCENT, color: '#fff', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, padding: '11px 26px', borderRadius: 4, border: 'none', cursor: firstItem ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '0.01em', opacity: firstItem ? 1 : 0.5, transition: 'opacity 0.2s, transform 0.15s' }}
+              onMouseEnter={e => { if (firstItem) (e.currentTarget as HTMLElement).style.opacity = '0.88'; }}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = firstItem ? '1' : '0.5')}
             >
               <Play size={12} fill="currentColor" /> {ctaLabel}
             </button>
@@ -240,22 +264,33 @@ export default function ModuleDetailPage() {
           {/* Curriculum */}
           <SectionCard
             title="Course Curriculum"
-            meta={`${videos.length} LESSON${videos.length !== 1 ? 'S' : ''} · ${fmt(module.duration_seconds)} TOTAL`}
+            meta={`${curriculum.length} ITEM${curriculum.length !== 1 ? 'S' : ''} · ${fmt(module.duration_seconds)} TOTAL`}
             noPadding
             style={{ marginBottom: 18 }}
           >
-            {videos.length === 0 ? (
-              <div style={{ padding: '24px', color: INK3, fontSize: 13, fontStyle: 'italic' }}>No lessons yet.</div>
+            {curriculum.length === 0 ? (
+              <div style={{ padding: '24px', color: INK3, fontSize: 13, fontStyle: 'italic' }}>No content yet.</div>
             ) : (
-              videos.map((video, idx) => (
-                <CurriculumItem
-                  key={video.id}
-                  video={video}
-                  index={idx}
-                  isLast={idx === videos.length - 1}
-                  onClick={() => navigate(`/video/${video.id}`)}
-                  INK={INK} INK3={INK3} RULE={RULE} BG={BG}
-                />
+              curriculum.map((entry, idx) => (
+                entry.kind === 'video' ? (
+                  <CurriculumItem
+                    key={entry.item.id}
+                    video={entry.item as Video}
+                    index={idx}
+                    isLast={idx === curriculum.length - 1}
+                    onClick={() => navigate(`/video/${entry.item.id}`)}
+                    INK={INK} INK3={INK3} RULE={RULE} BG={BG}
+                  />
+                ) : (
+                  <LessonCurriculumItem
+                    key={entry.item.id}
+                    lesson={entry.item as Lesson}
+                    index={idx}
+                    isLast={idx === curriculum.length - 1}
+                    onClick={() => navigate(`/lesson/${entry.item.id}`)}
+                    INK={INK} INK3={INK3} RULE={RULE} BG={BG}
+                  />
+                )
               ))
             )}
           </SectionCard>
@@ -294,9 +329,12 @@ export default function ModuleDetailPage() {
             {/* CTA + details */}
             <div style={{ padding: '18px 20px' }}>
               <button
-                onClick={() => firstVideo && navigate(`/video/${firstVideo}`)}
-                disabled={!firstVideo}
-                style={{ width: '100%', background: ACCENT, color: '#fff', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, padding: 11, borderRadius: 4, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 16, opacity: firstVideo ? 1 : 0.5 }}
+                onClick={() => {
+                  if (!firstItem) return;
+                  navigate(firstItem.type === 'video' ? `/video/${firstItem.id}` : `/lesson/${firstItem.id}`);
+                }}
+                disabled={!firstItem}
+                style={{ width: '100%', background: ACCENT, color: '#fff', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, padding: 11, borderRadius: 4, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 16, opacity: firstItem ? 1 : 0.5 }}
               >
                 <Play size={12} fill="currentColor" /> {ctaLabel}
               </button>
@@ -398,7 +436,53 @@ function SectionCard({
   );
 }
 
-// ─── Curriculum row ───────────────────────────────────────────────────────────
+// ─── Lesson curriculum row ────────────────────────────────────────────────────
+
+function LessonCurriculumItem({ lesson, index, isLast, onClick, INK, INK3, RULE, BG }: {
+  lesson: Lesson; index: number; isLast: boolean; onClick: () => void;
+  INK: string; INK3: string; RULE: string; BG: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const blockCount = lesson.content?.length ?? 0;
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 16,
+        padding: '16px 28px',
+        borderBottom: isLast ? 'none' : `1px solid ${RULE}`,
+        background: hovered ? BG : 'transparent',
+        cursor: 'pointer', textAlign: 'left', border: 'none',
+        borderBottomColor: isLast ? 'transparent' : RULE,
+        borderBottomStyle: 'solid', borderBottomWidth: isLast ? 0 : 1,
+        transition: 'background 0.15s',
+      }}
+    >
+      <span style={{ fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.1em', width: 26, flexShrink: 0, textAlign: 'right' }}>
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <div style={{ width: 34, height: 34, borderRadius: 5, background: BG, border: `1px solid ${RULE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <BookOpen size={13} style={{ color: INK3 }} />
+      </div>
+      <span style={{ flex: 1, fontSize: 15, fontWeight: 500, color: INK, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {lesson.title}
+      </span>
+      {lesson.question_count > 0 && (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.04em', flexShrink: 0 }}>
+          <Pin size={10} />
+          {lesson.question_count}Q
+        </span>
+      )}
+      <span style={{ fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.06em', flexShrink: 0 }}>
+        {blockCount} block{blockCount !== 1 ? 's' : ''}
+      </span>
+    </button>
+  );
+}
+
+// ─── Video curriculum row ─────────────────────────────────────────────────────
 
 function CurriculumItem({ video, index, isLast, onClick, INK, INK3, RULE, BG }: {
   video: Video; index: number; isLast: boolean; onClick: () => void;

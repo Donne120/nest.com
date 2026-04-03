@@ -130,6 +130,8 @@ class Organization(Base):
     trial_ends_at = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     momo_number = Column(String, nullable=True)
+    subscription_end = Column(DateTime(timezone=True), nullable=True)
+    renewal_notified_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     users = relationship("User", back_populates="organization", foreign_keys="User.organization_id")
@@ -170,6 +172,7 @@ class User(Base):
     avatar_url = Column(String, nullable=True)
     department = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    payment_verified = Column(Boolean, default=False, nullable=False, server_default='false')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -217,6 +220,7 @@ class Module(Base):
 
     organization = relationship("Organization", back_populates="modules")
     videos = relationship("Video", back_populates="module", order_by="Video.order_index")
+    lessons = relationship("Lesson", back_populates="module", order_by="Lesson.order_index")
     creator = relationship("User", foreign_keys=[created_by])
     progress = relationship("UserProgress", back_populates="module")
 
@@ -598,6 +602,80 @@ class PaymentSubmission(Base):
     payee = relationship("User", foreign_keys=[payee_id])
     reviewer = relationship("User", foreign_keys=[reviewed_by])
     module = relationship("Module", foreign_keys=[module_id])
+
+
+# ─── Lessons (notes/screenshot-based course content) ─────────────────────────
+
+class Lesson(Base):
+    __tablename__ = "lessons"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    module_id = Column(
+        String, ForeignKey("modules.id", ondelete="CASCADE"), nullable=False
+    )
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    content = Column(JSON, nullable=True)  # list of LessonBlock dicts
+    order_index = Column(Integer, default=0)
+    is_published = Column(Boolean, default=True)
+    created_by = Column(String, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    module = relationship("Module", back_populates="lessons")
+    creator = relationship("User", foreign_keys=[created_by])
+    questions = relationship(
+        "LessonQuestion",
+        back_populates="lesson",
+        order_by="LessonQuestion.created_at",
+        cascade="all, delete-orphan",
+    )
+
+
+class LessonQuestion(Base):
+    __tablename__ = "lesson_questions"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    lesson_id = Column(
+        String, ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False
+    )
+    block_id = Column(String, nullable=False)   # anchor to a specific block
+    asked_by = Column(String, ForeignKey("users.id"), nullable=False)
+    question_text = Column(Text, nullable=False)
+    status = Column(
+        SAEnum(QuestionStatus), default=QuestionStatus.pending, nullable=False
+    )
+    is_public = Column(Boolean, default=True)
+    view_count = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    lesson = relationship("Lesson", back_populates="questions")
+    asked_by_user = relationship("User", foreign_keys=[asked_by])
+    answers = relationship(
+        "LessonAnswer",
+        back_populates="question",
+        order_by="LessonAnswer.created_at",
+        cascade="all, delete-orphan",
+    )
+
+
+class LessonAnswer(Base):
+    __tablename__ = "lesson_answers"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    question_id = Column(
+        String, ForeignKey("lesson_questions.id", ondelete="CASCADE"), nullable=False
+    )
+    answered_by = Column(String, ForeignKey("users.id"), nullable=False)
+    answer_text = Column(Text, nullable=False)
+    is_official = Column(Boolean, default=False)
+    is_ai_generated = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    question = relationship("LessonQuestion", back_populates="answers")
+    answered_by_user = relationship("User", foreign_keys=[answered_by])
 
 
 # ─── Module Access (purchased by student) ────────────────────────────────────

@@ -17,6 +17,7 @@ const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const ModulesPage = lazy(() => import('./pages/ModulesPage'));
 const ModuleDetailPage = lazy(() => import('./pages/ModuleDetailPage'));
 const VideoPage = lazy(() => import('./pages/VideoPage'));
+const LessonPage = lazy(() => import('./pages/LessonPage'));
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminQuestionsPage = lazy(() => import('./pages/admin/AdminQuestionsPage'));
@@ -211,6 +212,18 @@ export default function App() {
                 <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
                   <Navbar />
                   <VideoPage />
+                </div>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/lesson/:lessonId"
+            element={
+              <RequireAuth>
+                <div className="min-h-screen font-sans flex flex-col" style={{ background: '#0b0c0f' }}>
+                  <Navbar />
+                  <LessonPage />
                 </div>
               </RequireAuth>
             }

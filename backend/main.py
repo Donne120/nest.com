@@ -18,6 +18,7 @@ from database import engine, SessionLocal
 from sqlalchemy import text
 import models
 from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats, search, assignments, payments, admin
+from routers import lessons as lessons_router
 from sqlalchemy import text
 import storage as storage_helper
 
@@ -317,6 +318,7 @@ app.include_router(search.router)
 app.include_router(assignments.router)
 app.include_router(payments.router)
 app.include_router(admin.router)
+app.include_router(lessons_router.router)
 
 
 @app.get("/api/health")

@@ -42,6 +42,7 @@ export interface User {
   avatar_url: string | null;
   department: string | null;
   is_active: boolean;
+  payment_verified: boolean;
   created_at: string;
 }
 
@@ -368,4 +369,54 @@ export interface ATSConnection {
   is_active: boolean;
   webhook_secret: string | null;
   created_at: string;
+}
+
+// ─── Lessons ──────────────────────────────────────────────────────────────────
+
+export type LessonBlockType = 'text' | 'image';
+
+export interface LessonBlock {
+  id: string;
+  type: LessonBlockType;
+  content?: string;   // text blocks
+  url?: string;       // image blocks
+  caption?: string;   // image blocks
+}
+
+export interface Lesson {
+  id: string;
+  module_id: string;
+  title: string;
+  description: string | null;
+  content: LessonBlock[] | null;
+  order_index: number;
+  is_published: boolean;
+  created_at: string;
+  question_count: number;
+}
+
+// ─── Lesson Q&A ───────────────────────────────────────────────────────────────
+
+export interface LessonAnswer {
+  id: string;
+  question_id: string;
+  answer_text: string;
+  is_official: boolean;
+  is_ai_generated: boolean;
+  created_at: string;
+  answered_by_user: User;
+}
+
+export interface LessonQuestion {
+  id: string;
+  lesson_id: string;
+  block_id: string;
+  question_text: string;
+  status: QuestionStatus;
+  is_public: boolean;
+  view_count: number;
+  created_at: string;
+  updated_at: string | null;
+  asked_by_user: User;
+  answers: LessonAnswer[];
 }
