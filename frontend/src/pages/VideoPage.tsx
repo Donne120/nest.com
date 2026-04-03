@@ -270,12 +270,14 @@ export default function VideoPage() {
               {/* Mobile Q&A toggle */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden flex items-center gap-1.5 text-sm px-3 py-1.5 rounded transition-colors"
+                className="lg:hidden flex items-center gap-1.5 rounded transition-colors"
                 style={{
                   background: '#1c1e27',
                   border: '1px solid rgba(255,255,255,0.07)',
                   color: '#9ca3af',
-                  fontSize: 12,
+                  fontSize: 13,
+                  padding: '10px 16px',
+                  minHeight: 44,
                 }}
               >
                 {sidebarOpen ? 'Hide' : 'Show'} Q&amp;A
@@ -474,10 +476,10 @@ export default function VideoPage() {
           )}
           {/* Sidebar */}
           <div className={`
-            fixed inset-y-14 right-0 z-40 w-full max-w-sm
+            fixed inset-y-14 right-0 z-40 w-full
             lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:max-w-none lg:flex
             ${sidebarOpen ? 'flex' : 'hidden'}
-          `}>
+          `} style={{ maxWidth: 'min(384px, 100vw)' }}>
             <QASidebar
               videoId={videoId}
               activeQuestionId={activeQuestionId}
@@ -516,7 +518,7 @@ export default function VideoPage() {
       {videoId && !aiAskOpen && !whiteboardQuestionId && (
         <button
           onClick={() => openAIAsk(videoId, currentTime)}
-          className="fixed bottom-7 right-7 z-40 flex items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95"
+          className="fixed bottom-20 right-4 lg:bottom-7 lg:right-7 z-40 flex items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95"
           style={{
             background: 'linear-gradient(135deg, #e8c97e, #c45c3c)',
             color: '#0b0c0f',

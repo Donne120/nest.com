@@ -285,7 +285,8 @@ export default function Navbar() {
 
             {userMenuOpen && (
               <div
-                className="absolute right-0 top-11 w-52 z-50 overflow-hidden animate-scale-in"
+                className="absolute right-0 top-11 z-50 overflow-hidden animate-scale-in"
+                style={{ width: 'min(208px, calc(100vw - 16px))' }}
                 style={{
                   background: 'rgba(19,20,26,0.97)',
                   backdropFilter: 'blur(12px)',

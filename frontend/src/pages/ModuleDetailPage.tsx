@@ -132,7 +132,7 @@ export default function ModuleDetailPage() {
     <div style={{ background: BG, minHeight: '100vh', fontFamily: "'DM Sans', 'Inter', sans-serif" }}>
 
       {/* ══ HERO (dark) ══════════════════════════════════════════════════ */}
-      <section style={{ background: '#0f0d0b', position: 'relative', padding: '56px 0 72px', overflow: 'hidden' }}>
+      <section style={{ background: '#0f0d0b', position: 'relative', padding: 'clamp(28px,5vw,56px) 0 clamp(40px,6vw,72px)', overflow: 'hidden' }}>
         {/* Ambient glow */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -150,7 +150,7 @@ export default function ModuleDetailPage() {
           />
         )}
 
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 56px', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,5vw,56px)', position: 'relative', zIndex: 1 }}>
 
           {/* Back */}
           <button
@@ -231,7 +231,7 @@ export default function ModuleDetailPage() {
       </section>
 
       {/* ══ BODY ═══════════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 56px 100px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
+      <div className="module-body-grid" style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(24px,4vw,48px) clamp(16px,5vw,56px) 100px', display: 'grid', gridTemplateColumns: '1fr', gap: 24, alignItems: 'start' }}>
 
         {/* ── LEFT ── */}
         <div style={{ minWidth: 0 }}>
@@ -250,7 +250,7 @@ export default function ModuleDetailPage() {
           {/* What You'll Learn */}
           {learnItems.length > 0 && (
             <SectionCard title="What You'll Learn" style={{ marginBottom: 18 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div className="learn-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {learnItems.map((item, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                     <CheckCircle2 size={14} style={{ color: ACCENT, flexShrink: 0, marginTop: 2 }} />
@@ -313,7 +313,7 @@ export default function ModuleDetailPage() {
         </div>
 
         {/* ── RIGHT ── */}
-        <div style={{ position: 'sticky', top: 64, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="module-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* Progress card — dark */}
           <div style={{ background: INK, borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -413,6 +413,13 @@ export default function ModuleDetailPage() {
         .about-prose ul { padding-left: 20px; margin-bottom: 12px; }
         .about-prose li { margin-bottom: 4px; font-size: 14px; color: #6b6460; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        @media (min-width: 900px) {
+          .module-body-grid { grid-template-columns: 1fr 340px !important; gap: 32px !important; }
+          .module-sidebar { position: sticky; top: 64px; }
+        }
+        @media (max-width: 599px) {
+          .learn-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
     </div>
   );

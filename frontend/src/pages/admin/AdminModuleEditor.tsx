@@ -269,7 +269,7 @@ export default function AdminModuleEditor() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <UploadField
                 label="Module Cover Image"
@@ -793,8 +793,8 @@ function VideoFormCard({ form, setForm, onSave, onCancel, saving }: VideoFormCar
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="col-span-1 sm:col-span-2">
           <label className="block text-xs font-semibold text-gray-600 mb-1">Title <span className="text-red-400">*</span></label>
           <input value={form.title} onChange={e => f('title', e.target.value)} placeholder="Video title" className={inputCls} />
         </div>

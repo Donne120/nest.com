@@ -208,13 +208,13 @@ export default function AdminLayout() {
       </aside>
 
       {/* ══ MAIN ══════════════════════════════════════════════════════════ */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden', marginLeft: 196 }}>
+      <div className="admin-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
 
         {/* Topbar */}
         <header style={{
           height: 52,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 32px',
+          padding: '0 16px',
           borderBottom: `1px solid ${RULE}`,
           background: SURF,
           position: 'sticky', top: 0, zIndex: 40,
@@ -239,8 +239,8 @@ export default function AdminLayout() {
 
           {/* Right */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginLeft: 'auto' }}>
-            {/* Live pill */}
-            <div style={{
+            {/* Live pill — hidden on small screens */}
+            <div className="live-pill" style={{
               display: 'flex', alignItems: 'center', gap: 7,
               background: BG2, border: `1px solid ${RULE}`,
               borderRadius: 100, padding: '5px 13px',
@@ -346,6 +346,12 @@ export default function AdminLayout() {
         .lg-sidebar { }
         @media (max-width: 1023px) {
           .lg-sidebar { transform: translateX(-100%); }
+          .admin-main { margin-left: 0 !important; }
+          .live-pill { display: none !important; }
+        }
+        @media (min-width: 1024px) {
+          .admin-main { margin-left: 196px; }
+          .admin-topbar { padding: 0 32px !important; }
         }
         .lg-hidden { display: none; }
         @media (max-width: 1023px) { .lg-hidden { display: block; } .lg-menu-btn { display: block; } }

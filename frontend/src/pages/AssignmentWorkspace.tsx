@@ -527,14 +527,17 @@ export default function AssignmentWorkspace() {
 
         {/* Left panel — brief */}
         {/* Desktop: always visible sidebar. Mobile: slide-in overlay toggled by briefOpen */}
-        <div className={`
-          flex-col border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-y-auto
-          md:flex md:w-72 md:flex-shrink-0 md:relative md:z-auto md:translate-x-0
-          ${briefOpen
-            ? 'flex fixed left-0 top-0 bottom-0 w-80 z-40 shadow-2xl transition-transform'
-            : 'hidden'
-          }
-        `}>
+        <div
+          className={`
+            flex-col border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-y-auto
+            md:flex md:w-72 md:flex-shrink-0 md:relative md:z-auto md:translate-x-0
+            ${briefOpen
+              ? 'flex fixed left-0 top-0 bottom-0 z-40 shadow-2xl transition-transform'
+              : 'hidden'
+            }
+          `}
+          style={briefOpen ? { width: 'min(320px, 85vw)' } : undefined}
+        >
           {/* Mobile close button */}
           <div className="md:hidden flex items-center justify-between px-4 pt-4 pb-2 border-b border-gray-100 dark:border-slate-700">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Brief</span>

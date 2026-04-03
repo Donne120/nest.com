@@ -63,7 +63,7 @@ function PinQuestionModal({
           border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: 12,
           width: '100%',
-          maxWidth: 460,
+          maxWidth: 'min(460px, calc(100vw - 32px))',
           boxShadow: '0 32px 64px rgba(0,0,0,0.6)',
         }}
       >
@@ -408,7 +408,7 @@ export default function LessonPage() {
           style={{
             maxWidth: 780,
             margin: '0 auto',
-            padding: '36px 32px 80px',
+            padding: 'clamp(20px,4vw,36px) clamp(16px,4vw,32px) 80px',
           }}
         >
           {/* Breadcrumb */}
@@ -531,12 +531,13 @@ export default function LessonPage() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
-                padding: '6px 14px',
+                padding: '10px 16px',
+                minHeight: 44,
                 borderRadius: 4,
                 border: '1px solid rgba(255,255,255,0.1)',
                 background: '#1c1e27',
                 color: '#9ca3af',
-                fontSize: 12,
+                fontSize: 13,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
               }}
@@ -668,10 +669,11 @@ export default function LessonPage() {
         )}
         <div
           className={`
-            fixed inset-y-14 right-0 z-40 w-full max-w-sm
+            fixed inset-y-14 right-0 z-40 w-full
             lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:max-w-none lg:flex
             ${sidebarOpen ? 'flex' : 'hidden'}
           `}
+          style={{ maxWidth: 'min(384px, 100vw)' }}
         >
           {lessonId && (
             <BlockQASidebar
