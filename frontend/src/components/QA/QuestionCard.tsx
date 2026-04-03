@@ -4,10 +4,8 @@ import { ChevronDown, ChevronUp, MessageSquare, Clock, CheckCircle2, Pencil, Tra
 import { usePlayerStore, useUIStore, useAuthStore } from '../../store';
 import type { Question, Answer } from '../../types';
 import Avatar from '../UI/Avatar';
-import Badge from '../UI/Badge';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
-import clsx from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
 
 function formatTime(s: number) {
@@ -60,95 +58,186 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
     setActiveQuestion(question.id);
   };
 
+  const isPending = question.status === 'pending';
+  const isAnswered = question.status === 'answered';
+
   return (
     <div
-      className={clsx(
-        'rounded-xl border transition-all duration-200 overflow-hidden animate-fade-in',
-        isActive
-          ? 'border-brand-300 bg-brand-50/40 shadow-md'
-          : isMine
-            ? 'border-gray-200 bg-amber-50/20'
-            : 'border-gray-100 bg-white hover:border-gray-200',
-        question.status === 'pending' && !isActive && 'border-l-4 border-l-amber-400'
-      )}
+      style={{
+        borderRadius: 10,
+        border: isActive
+          ? '1px solid rgba(232,201,126,0.45)'
+          : isPending
+          ? '1px solid rgba(196,92,60,0.35)'
+          : '1px solid rgba(255,255,255,0.08)',
+        borderLeft: isPending && !isActive ? '3px solid #c45c3c' : undefined,
+        background: isActive
+          ? 'rgba(232,201,126,0.06)'
+          : '#1c1e27',
+        overflow: 'hidden',
+        transition: 'border-color 0.2s',
+      }}
     >
       {/* Card Header */}
-      <div className="px-4 pt-4 pb-3">
-        <div className="flex items-start gap-2">
+      <div style={{ padding: '14px 16px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+
+          {/* Timestamp button */}
           <button
             onClick={handleTimestampClick}
-            className="flex-shrink-0 flex items-center gap-1 bg-gray-900 text-white text-xs font-mono font-medium px-2 py-1 rounded-md hover:bg-brand-700 transition-colors"
             title="Jump to this moment"
+            style={{
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              background: '#0b0c0f',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#e8c97e',
+              fontSize: 11,
+              fontFamily: 'monospace',
+              fontWeight: 600,
+              padding: '4px 8px',
+              borderRadius: 5,
+              cursor: 'pointer',
+              letterSpacing: '0.06em',
+              transition: 'border-color 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(232,201,126,0.5)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
           >
-            <Clock size={11} />
+            <Clock size={10} />
             {formatTime(question.timestamp_seconds)}
           </button>
 
-          <div className="flex-1 min-w-0">
+          {/* Question text */}
+          <div style={{ flex: 1, minWidth: 0 }}>
             {editingQuestion ? (
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <textarea
                   autoFocus
                   rows={2}
                   value={editText}
                   onChange={e => setEditText(e.target.value)}
-                  className="w-full border border-brand-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  style={{
+                    width: '100%',
+                    background: '#0b0c0f',
+                    border: '1px solid rgba(232,201,126,0.4)',
+                    borderRadius: 6,
+                    padding: '8px 10px',
+                    fontSize: 13,
+                    color: '#e8e4dc',
+                    fontFamily: 'inherit',
+                    resize: 'none',
+                    outline: 'none',
+                    lineHeight: 1.5,
+                    boxSizing: 'border-box',
+                  }}
                 />
-                <div className="flex gap-1.5">
+                <div style={{ display: 'flex', gap: 6 }}>
                   <button
                     onClick={() => editQuestion.mutate()}
                     disabled={editQuestion.isPending || !editText.trim()}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-brand-600 text-white text-xs rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      padding: '4px 10px', borderRadius: 5, border: 'none',
+                      background: '#e8c97e', color: '#0b0c0f',
+                      fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                    }}
                   >
-                    <Check size={12} /> Save
+                    <Check size={11} /> Save
                   </button>
                   <button
                     onClick={() => { setEditingQuestion(false); setEditText(question.question_text); }}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      padding: '4px 10px', borderRadius: 5,
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      background: 'transparent', color: '#9ca3af',
+                      fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
+                    }}
                   >
-                    <X size={12} /> Cancel
+                    <X size={11} /> Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-gray-900 leading-relaxed font-medium line-clamp-3">
+              <p style={{
+                fontSize: 13.5,
+                color: '#e8e4dc',
+                lineHeight: 1.55,
+                fontWeight: 500,
+                margin: 0,
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}>
                 {question.question_text}
               </p>
             )}
           </div>
 
-          <Badge variant={question.status} className="flex-shrink-0" />
+          {/* Status badge */}
+          <span style={{
+            flexShrink: 0,
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            padding: '3px 8px',
+            borderRadius: 100,
+            background: isAnswered
+              ? 'rgba(74,222,128,0.12)'
+              : 'rgba(232,201,126,0.12)',
+            color: isAnswered ? '#4ade80' : '#e8c97e',
+            border: isAnswered
+              ? '1px solid rgba(74,222,128,0.25)'
+              : '1px solid rgba(232,201,126,0.25)',
+          }}>
+            {isPending ? '● Pending' : '✓ Answered'}
+          </span>
         </div>
 
-        {/* Meta + actions */}
-        <div className="flex items-center gap-2 mt-3">
+        {/* Meta row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
           <Avatar name={question.asked_by_user.full_name} url={question.asked_by_user.avatar_url} size="sm" />
-          <span className="text-xs text-gray-500">
+          <span style={{ fontSize: 11.5, color: '#9ca3af' }}>
             {question.asked_by_user.full_name}
-            {isMine && <span className="ml-1 text-brand-600 font-medium">(you)</span>}
+            {isMine && (
+              <span style={{ marginLeft: 4, color: '#e8c97e', fontWeight: 600 }}>(you)</span>
+            )}
           </span>
-          <span className="text-xs text-gray-400 ml-auto">
+          <span style={{ fontSize: 11, color: '#6b6b78', marginLeft: 'auto' }}>
             {formatDistanceToNow(new Date(question.created_at), { addSuffix: true })}
           </span>
-          {/* Edit / Delete */}
           {!editingQuestion && (
-            <div className="flex gap-0.5 ml-1">
+            <div style={{ display: 'flex', gap: 2 }}>
               {canEdit && (
                 <button
                   onClick={() => setEditingQuestion(true)}
-                  className="p-1 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded transition-colors"
                   title="Edit question"
+                  style={{
+                    padding: '3px 5px', background: 'none', border: 'none',
+                    color: '#6b6b78', cursor: 'pointer', borderRadius: 4,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#e8c97e')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
                 >
-                  <Pencil size={12} />
+                  <Pencil size={11} />
                 </button>
               )}
               {canDelete && (
                 <button
                   onClick={() => { if (confirm('Delete this question?')) deleteQuestion.mutate(); }}
-                  className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                   title="Delete question"
+                  style={{
+                    padding: '3px 5px', background: 'none', border: 'none',
+                    color: '#6b6b78', cursor: 'pointer', borderRadius: 4,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#c45c3c')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
                 >
-                  <Trash2 size={12} />
+                  <Trash2 size={11} />
                 </button>
               )}
             </div>
@@ -156,28 +245,40 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
         </div>
       </div>
 
-      {/* Answers section */}
+      {/* Answers toggle */}
       {question.answers.length > 0 && (
         <>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="w-full flex items-center gap-2 px-4 py-2 bg-gray-50/80 border-t border-gray-100 text-xs text-gray-600 hover:bg-gray-100 transition-colors"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 16px',
+              background: 'rgba(74,222,128,0.05)',
+              borderTop: '1px solid rgba(74,222,128,0.12)',
+              borderBottom: expanded ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              color: '#4ade80',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              border: 'none',
+              borderTop: '1px solid rgba(74,222,128,0.12)',
+            }}
           >
-            <CheckCircle2 size={13} className="text-emerald-500" />
+            <CheckCircle2 size={13} />
             {question.answers.length} answer{question.answers.length > 1 ? 's' : ''}
-            <span className="ml-auto">
-              {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            <span style={{ marginLeft: 'auto' }}>
+              {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
             </span>
           </button>
 
           {expanded && (
-            <div className="border-t border-gray-100">
+            <div>
               {question.answers.map((answer) => (
-                <AnswerRow
-                  key={answer.id}
-                  answer={answer}
-                  questionId={question.id}
-                />
+                <AnswerRow key={answer.id} answer={answer} questionId={question.id} />
               ))}
             </div>
           )}
@@ -185,23 +286,39 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
       )}
 
       {/* Footer */}
-      <div className="px-4 py-2 border-t border-gray-50 flex items-center gap-2">
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '8px 16px',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+      }}>
         <button
           onClick={() => onReply?.(question.id)}
-          className="flex items-center gap-1 text-xs text-gray-500 hover:text-brand-600 transition-colors"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            background: 'none', border: 'none',
+            color: '#6b6b78', fontSize: 11.5,
+            cursor: 'pointer', fontFamily: 'inherit',
+            padding: 0,
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#e8c97e')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
         >
           <MessageSquare size={12} />
           Reply
         </button>
         {question.view_count > 0 && (
-          <span className="text-xs text-gray-400 ml-auto">{question.view_count} views</span>
+          <span style={{ fontSize: 11, color: '#6b6b78', marginLeft: 'auto' }}>
+            {question.view_count} views
+          </span>
         )}
       </div>
     </div>
   );
 }
 
-// ─── Answer row with edit/delete ──────────────────────────────────────────────
+// ─── Answer row ───────────────────────────────────────────────────────────────
 
 function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string }) {
   const { user } = useAuthStore();
@@ -234,76 +351,141 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
   });
 
   return (
-    <div className="px-4 py-3 border-b border-gray-50 last:border-0 group">
-      <div className="flex items-center gap-2 mb-2">
+    <div
+      style={{
+        padding: '12px 16px',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(255,255,255,0.015)',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.025)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.015)')}
+    >
+      {/* Answer meta */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
         {!answer.is_ai_generated && (
           <Avatar name={answer.answered_by_user.full_name} url={answer.answered_by_user.avatar_url} size="sm" />
         )}
-        <div className="flex-1">
+        <div style={{ flex: 1 }}>
           {answer.is_ai_generated ? (
-            <span className="inline-flex items-center gap-1 text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full font-semibold">
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontSize: 10, background: 'rgba(99,102,241,0.15)',
+              color: '#818cf8', padding: '2px 7px', borderRadius: 100,
+              fontWeight: 700, letterSpacing: '0.06em',
+            }}>
               <Sparkles size={9} /> AI Teacher
             </span>
           ) : (
-            <span className="text-xs font-medium text-gray-800">{answer.answered_by_user.full_name}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: answer.is_official ? '#e8c97e' : '#c4c0ba' }}>
+              {answer.answered_by_user.full_name}
+            </span>
           )}
           {answer.is_official && !answer.is_ai_generated && (
-            <span className="ml-1.5 text-[10px] bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded font-medium">Official</span>
+            <span style={{
+              marginLeft: 6, fontSize: 9, fontWeight: 700,
+              letterSpacing: '0.08em', padding: '2px 6px',
+              borderRadius: 100, background: 'rgba(232,201,126,0.15)',
+              color: '#e8c97e',
+            }}>
+              OFFICIAL
+            </span>
           )}
         </div>
-        <span className="text-xs text-gray-400">
+        <span style={{ fontSize: 10.5, color: '#6b6b78' }}>
           {formatDistanceToNow(new Date(answer.created_at), { addSuffix: true })}
         </span>
-        {/* Edit/Delete - visible on hover */}
-        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div style={{ display: 'flex', gap: 2 }}>
           {canEdit && !editing && (
             <button
               onClick={() => setEditing(true)}
-              className="p-1 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded transition-colors"
               title="Edit answer"
+              style={{
+                padding: '3px 4px', background: 'none', border: 'none',
+                color: '#6b6b78', cursor: 'pointer', borderRadius: 4,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#e8c97e')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
             >
-              <Pencil size={11} />
+              <Pencil size={10} />
             </button>
           )}
           {canDelete && (
             <button
               onClick={() => { if (confirm('Delete this answer?')) deleteAnswer.mutate(); }}
-              className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
               title="Delete answer"
+              style={{
+                padding: '3px 4px', background: 'none', border: 'none',
+                color: '#6b6b78', cursor: 'pointer', borderRadius: 4,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#c45c3c')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
             >
-              <Trash2 size={11} />
+              <Trash2 size={10} />
             </button>
           )}
         </div>
       </div>
 
+      {/* Answer body */}
       {editing ? (
-        <div className="pl-8 space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 28 }}>
           <textarea
             autoFocus
             rows={3}
             value={editText}
             onChange={e => setEditText(e.target.value)}
-            className="w-full border border-brand-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500"
+            style={{
+              width: '100%',
+              background: '#0b0c0f',
+              border: '1px solid rgba(232,201,126,0.4)',
+              borderRadius: 6,
+              padding: '8px 10px',
+              fontSize: 13,
+              color: '#e8e4dc',
+              fontFamily: 'inherit',
+              resize: 'none',
+              outline: 'none',
+              lineHeight: 1.5,
+              boxSizing: 'border-box',
+            }}
           />
-          <div className="flex gap-1.5">
+          <div style={{ display: 'flex', gap: 6 }}>
             <button
               onClick={() => editAnswer.mutate()}
               disabled={editAnswer.isPending || !editText.trim()}
-              className="flex items-center gap-1 px-2.5 py-1 bg-brand-600 text-white text-xs rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '4px 10px', borderRadius: 5, border: 'none',
+                background: '#e8c97e', color: '#0b0c0f',
+                fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              }}
             >
-              <Check size={12} /> Save
+              <Check size={11} /> Save
             </button>
             <button
               onClick={() => { setEditing(false); setEditText(answer.answer_text); }}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '4px 10px', borderRadius: 5,
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'transparent', color: '#9ca3af',
+                fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
+              }}
             >
-              <X size={12} /> Cancel
+              <X size={11} /> Cancel
             </button>
           </div>
         </div>
       ) : (
-        <p className="text-sm text-gray-700 leading-relaxed pl-8">{editText}</p>
+        <p style={{
+          fontSize: 13,
+          color: '#c4c0ba',
+          lineHeight: 1.65,
+          margin: 0,
+          paddingLeft: 28,
+        }}>
+          {editText}
+        </p>
       )}
     </div>
   );
