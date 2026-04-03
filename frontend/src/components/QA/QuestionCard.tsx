@@ -259,13 +259,13 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
               background: 'rgba(74,222,128,0.05)',
               borderTop: '1px solid rgba(74,222,128,0.12)',
               borderBottom: expanded ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              borderLeft: 'none',
+              borderRight: 'none',
               color: '#4ade80',
               fontSize: 12,
               fontWeight: 600,
               cursor: 'pointer',
               fontFamily: 'inherit',
-              border: 'none',
-              borderTop: '1px solid rgba(74,222,128,0.12)',
             }}
           >
             <CheckCircle2 size={13} />

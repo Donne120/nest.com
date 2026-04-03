@@ -201,15 +201,10 @@ export default function BlockQASidebar({
               key={key}
               onClick={() => setFilter(key)}
               className="flex-1 text-center text-xs font-medium rounded transition-all"
-              style={{ minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               style={
                 filter === key
-                  ? {
-                      background: '#1c1e27',
-                      color: '#e8e4dc',
-                      border: '1px solid rgba(255,255,255,0.07)',
-                    }
-                  : { color: '#6b6b78', border: '1px solid transparent' }
+                  ? { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1c1e27', color: '#e8e4dc', border: '1px solid rgba(255,255,255,0.07)' }
+                  : { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b6b78', border: '1px solid transparent' }
               }
             >
               {label}

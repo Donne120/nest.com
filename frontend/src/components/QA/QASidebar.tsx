@@ -139,8 +139,8 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search questions…"
             className="w-full pl-8 pr-3 outline-none transition-colors"
-            style={{ minHeight: 44 }}
             style={{
+              minHeight: 44,
               background: '#0b0c0f',
               border: '1px solid rgba(255,255,255,0.07)',
               borderRadius: 4,
@@ -164,10 +164,9 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
               key={key}
               onClick={() => setFilter(key)}
               className="flex-1 text-center text-xs font-medium rounded transition-all"
-              style={{ minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               style={filter === key
-                ? { background: '#1c1e27', color: '#e8e4dc', border: '1px solid rgba(255,255,255,0.07)' }
-                : { color: '#6b6b78', border: '1px solid transparent' }
+                ? { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1c1e27', color: '#e8e4dc', border: '1px solid rgba(255,255,255,0.07)' }
+                : { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b6b78', border: '1px solid transparent' }
               }
             >
               {label}
