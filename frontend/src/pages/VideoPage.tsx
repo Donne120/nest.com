@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Sparkles, ClipboardList, Clock, Users, BookOpen, CheckCircle, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Clock, Users, BookOpen, CheckCircle, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import api from '../api/client';
 import type { Video, Module, TimelineMarker, QuizQuestion, QuizSubmissionResult, Assignment } from '../types';
@@ -155,39 +155,48 @@ export default function VideoPage() {
     );
   }
 
+  const [activeTab, setActiveTab] = useState<'notes' | 'assignments' | 'about'>('notes');
+
+  const tabs: { key: typeof activeTab; label: string; show: boolean }[] = [
+    { key: 'notes', label: 'Notes', show: true },
+    { key: 'assignments', label: `Assignments${moduleAssignments.length > 0 ? ` (${moduleAssignments.length})` : ''}`, show: true },
+    { key: 'about', label: 'About', show: !!(video.description) },
+  ].filter(t => t.show);
+
   return (
     <div className="flex h-[calc(100vh-56px)] overflow-hidden" style={{ background: '#0b0c0f' }}>
 
       {/* ── Main content ── */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-5 py-6 lg:px-8 lg:py-8 max-w-5xl mx-auto w-full">
+        <div className="px-3 pt-3 pb-6 sm:px-5 sm:py-6 lg:px-8 lg:py-8 max-w-5xl mx-auto w-full">
 
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 mb-6 overflow-hidden" style={{ fontSize: 12, letterSpacing: '0.04em' }}>
-            <Link to="/modules" style={{ color: '#6b6b78', textDecoration: 'none', transition: 'color 0.2s' }}
+          {/* Breadcrumb — on mobile show only module link, hide current video title */}
+          <nav className="flex items-center gap-2 mb-3 sm:mb-6 overflow-hidden" style={{ fontSize: 12, letterSpacing: '0.04em' }}>
+            <Link to="/modules" style={{ color: '#6b6b78', textDecoration: 'none', transition: 'color 0.2s', flexShrink: 0 }}
               onMouseEnter={e => ((e.target as HTMLElement).style.color = '#e8e4dc')}
               onMouseLeave={e => ((e.target as HTMLElement).style.color = '#6b6b78')}
             >
               Modules
             </Link>
-            <span style={{ color: 'rgba(255,255,255,0.2)' }}>/</span>
             {module && (
               <>
+                <span style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>/</span>
                 <Link to={`/modules/${module.id}`} style={{ color: '#6b6b78', textDecoration: 'none', transition: 'color 0.2s' }}
                   onMouseEnter={e => ((e.target as HTMLElement).style.color = '#e8e4dc')}
                   onMouseLeave={e => ((e.target as HTMLElement).style.color = '#6b6b78')}
-                  className="truncate max-w-[180px] block"
+                  className="truncate max-w-[140px] sm:max-w-[200px]"
                 >
                   {module.title}
                 </Link>
-                <span style={{ color: 'rgba(255,255,255,0.2)' }}>/</span>
               </>
             )}
-            <span style={{ color: '#e8e4dc', fontWeight: 500 }} className="truncate">{video.title}</span>
+            {/* Current video title — hidden on mobile to save space */}
+            <span className="hidden sm:inline" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>/</span>
+            <span className="hidden sm:block truncate" style={{ color: '#e8e4dc', fontWeight: 500 }}>{video.title}</span>
           </nav>
 
-          {/* Chapter label */}
-          <div style={{
+          {/* Chapter label — hidden on mobile */}
+          <div className="hidden sm:block" style={{
             fontFamily: 'monospace',
             fontSize: 10.5,
             letterSpacing: '0.18em',
@@ -199,23 +208,24 @@ export default function VideoPage() {
             {module?.title ?? 'Module'}&nbsp;&nbsp;·&nbsp;&nbsp;Lesson {String(currentIndex + 1).padStart(2, '0')}
           </div>
 
-          {/* Lesson title */}
+          {/* Lesson title — smaller margin on mobile */}
           <h1 style={{
             fontFamily: "'Lora', Georgia, serif",
-            fontSize: 'clamp(22px, 2.5vw, 34px)',
+            fontSize: 'clamp(18px, 2.5vw, 34px)',
             fontWeight: 700,
             lineHeight: 1.2,
             letterSpacing: '-0.02em',
             color: '#e8e4dc',
-            marginBottom: 28,
+            marginBottom: 'clamp(10px, 2vw, 28px)',
             maxWidth: 640,
             animation: 'fadeUp 0.55s ease both',
             animationDelay: '0.05s',
           }}>
             {video.title}
+            {/* Description subtitle — hidden on mobile */}
             {video.description && (
-              <span style={{ display: 'block', fontStyle: 'italic', color: '#e8c97e', marginTop: 4 }}>
-                {video.description.length > 80 ? video.description.slice(0, 80) + '…' : ''}
+              <span className="hidden sm:block" style={{ fontStyle: 'italic', color: '#e8c97e', marginTop: 4, fontSize: 'clamp(13px, 1.5vw, 16px)' }}>
+                {video.description.length > 80 ? video.description.slice(0, 80) + '…' : video.description}
               </span>
             )}
           </h1>
@@ -238,182 +248,142 @@ export default function VideoPage() {
             </div>
           </div>
 
-          {/* Below video row */}
+          {/* ── Compact action bar (replaces the old crowded row) ── */}
           <div
-            className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-            style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.2s' }}
+            className="mt-3 flex items-center gap-2"
+            style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.18s' }}
           >
-            {/* Left: meta + notes toggle */}
-            <div className="flex items-center gap-4 flex-wrap">
-              {/* Duration pill */}
-              <span style={{
-                fontFamily: 'monospace',
-                fontSize: 11,
-                color: '#6b6b78',
-                background: '#1c1e27',
-                border: '1px solid rgba(255,255,255,0.07)',
-                padding: '4px 10px',
-                borderRadius: 100,
-                letterSpacing: '0.06em',
-              }}>
-                {fmtTime(displayDuration)} total
-              </span>
+            {/* Duration + progress — compact pill */}
+            <span style={{
+              fontFamily: 'monospace',
+              fontSize: 11,
+              color: '#6b6b78',
+              background: '#1c1e27',
+              border: '1px solid rgba(255,255,255,0.07)',
+              padding: '5px 10px',
+              borderRadius: 100,
+              letterSpacing: '0.05em',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+            }}>
+              {fmtTime(displayDuration)} · <span style={{ color: '#e8c97e' }}>{progressPct}%</span>
+            </span>
 
-              {/* Progress */}
-              <span style={{ fontSize: 12, color: '#6b6b78' }}>
-                <span style={{ color: '#e8c97e', fontWeight: 500 }}>{progressPct}%</span> complete
-              </span>
+            {/* Spacer */}
+            <div style={{ flex: 1 }} />
 
-              {/* Notes */}
-              <FloatingNotes videoId={video.id} onSeek={seekTo} inline />
+            {/* Notes icon button */}
+            <FloatingNotes videoId={video.id} onSeek={seekTo} inline />
 
-              {/* Mobile Q&A toggle */}
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden flex items-center gap-1.5 rounded transition-colors"
-                style={{
-                  background: '#1c1e27',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  color: '#9ca3af',
-                  fontSize: 13,
-                  padding: '10px 16px',
-                  minHeight: 44,
-                }}
-              >
-                {sidebarOpen ? 'Hide' : 'Show'} Q&amp;A
-              </button>
-            </div>
-
-            {/* Right: complete button */}
+            {/* Q&A toggle — mobile only */}
             <button
-              onClick={() => {
-                if (quizQuestions.length > 0) setShowQuiz(true);
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden flex items-center gap-1.5 rounded"
+              style={{
+                background: sidebarOpen ? 'rgba(232,201,126,0.12)' : '#1c1e27',
+                border: sidebarOpen ? '1px solid rgba(232,201,126,0.35)' : '1px solid rgba(255,255,255,0.07)',
+                color: sidebarOpen ? '#e8c97e' : '#9ca3af',
+                fontSize: 12,
+                padding: '8px 14px',
+                minHeight: 36,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s',
               }}
-              className="flex items-center gap-2 flex-shrink-0 font-semibold transition-all hover:opacity-85 active:scale-95"
+            >
+              💬 Q&amp;A
+            </button>
+
+            {/* Mark complete — full button on desktop, icon-only on mobile */}
+            <button
+              onClick={() => { if (quizQuestions.length > 0) setShowQuiz(true); }}
+              className="flex items-center gap-1.5 font-semibold transition-all hover:opacity-85 active:scale-95"
               style={{
                 background: '#e8c97e',
                 color: '#0b0c0f',
-                fontSize: 13,
-                padding: '9px 22px',
+                fontSize: 12,
+                padding: '8px 14px',
+                minHeight: 36,
                 borderRadius: 4,
                 border: 'none',
                 cursor: 'pointer',
                 letterSpacing: '0.02em',
                 fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
-              Mark complete {quizQuestions.length > 0 ? '& take quiz' : ''}
+              <span className="hidden sm:inline">Mark complete{quizQuestions.length > 0 ? ' & quiz' : ''}</span>
+              <span className="sm:hidden">Done</span>
             </button>
           </div>
 
-          {/* Notes section */}
-          <div className="mt-12">
-            <div className="flex items-center gap-4 mb-4">
-              <h2 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', color: '#e8e4dc' }}>
-                Notes
-              </h2>
-              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+          {/* ── Tab bar: Notes | Assignments | About ── */}
+          <div className="mt-6" style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.22s' }}>
+            {/* Tab strip */}
+            <div className="flex gap-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              {tabs.map(t => (
+                <button
+                  key={t.key}
+                  onClick={() => setActiveTab(t.key)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: activeTab === t.key ? '2px solid #e8c97e' : '2px solid transparent',
+                    color: activeTab === t.key ? '#e8e4dc' : '#6b6b78',
+                    fontFamily: 'inherit',
+                    fontSize: 13,
+                    fontWeight: activeTab === t.key ? 600 : 400,
+                    padding: '10px 16px',
+                    cursor: 'pointer',
+                    transition: 'color 0.15s, border-color 0.15s',
+                    marginBottom: -1,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
-            <div style={{
-              background: '#13141a',
-              border: '1px solid rgba(255,255,255,0.07)',
-              borderRadius: 6,
-              padding: '18px 22px',
-              minHeight: 72,
-              color: '#6b6b78',
-              fontSize: 14,
-              lineHeight: 1.7,
-              fontStyle: 'italic',
-            }}>
-              Click to start writing notes for this lesson…
+
+            {/* Tab content */}
+            <div className="pt-5">
+              {activeTab === 'notes' && (
+                <div style={{
+                  background: '#13141a',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 6,
+                  padding: '18px 20px',
+                  minHeight: 72,
+                  color: '#6b6b78',
+                  fontSize: 14,
+                  lineHeight: 1.7,
+                  fontStyle: 'italic',
+                }}>
+                  Click to start writing notes for this lesson…
+                </div>
+              )}
+
+              {activeTab === 'assignments' && (
+                moduleAssignments.length === 0 ? (
+                  <p style={{ color: '#6b6b78', fontSize: 13, fontStyle: 'italic' }}>No assignments for this module yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {moduleAssignments.map(a => (
+                      <AssignmentCard key={a.id} a={a} />
+                    ))}
+                  </div>
+                )
+              )}
+
+              {activeTab === 'about' && video.description && (
+                <p style={{ fontSize: 14, color: '#9ca3af', lineHeight: 1.75 }}>{video.description}</p>
+              )}
             </div>
           </div>
-
-          {/* ── Module Assignments ── */}
-          {moduleAssignments.length > 0 && (
-            <div className="mt-12" style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.25s' }}>
-              <div className="flex items-center gap-4 mb-4">
-                <h2 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', color: '#e8e4dc', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <ClipboardList size={18} style={{ color: '#e8c97e' }} />
-                  Assignments
-                </h2>
-                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-              </div>
-              <div className="space-y-3">
-                {moduleAssignments.map(a => (
-                  <div
-                    key={a.id}
-                    style={{
-                      background: '#13141a',
-                      border: '1px solid rgba(255,255,255,0.07)',
-                      borderRadius: 8,
-                      padding: '16px 20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 16,
-                      transition: 'border-color 0.2s',
-                    }}
-                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,201,126,0.25)')}
-                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)')}
-                  >
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                        <span style={{
-                          fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
-                          padding: '2px 8px', borderRadius: 100,
-                          background: a.type === 'group' ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)',
-                          color: a.type === 'group' ? '#a78bfa' : '#60a5fa',
-                          display: 'flex', alignItems: 'center', gap: 4,
-                        }}>
-                          {a.type === 'group' ? <Users size={10} /> : <BookOpen size={10} />}
-                          {a.type === 'group' ? 'Group' : 'Individual'}
-                        </span>
-                        {a.submission_count > 0 && (
-                          <span style={{ fontSize: 10, color: '#4ade80', display: 'flex', alignItems: 'center', gap: 3 }}>
-                            <CheckCircle size={10} /> Submitted
-                          </span>
-                        )}
-                      </div>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#e8e4dc', marginBottom: 2 }}>
-                        {a.title}
-                      </p>
-                      {a.deadline && (
-                        <p style={{ fontSize: 11, color: '#6b6b78', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Clock size={10} />
-                          Due {formatDistanceToNow(parseISO(a.deadline), { addSuffix: true })}
-                        </p>
-                      )}
-                    </div>
-                    <Link
-                      to={`/assignments/${a.id}/work`}
-                      style={{
-                        flexShrink: 0,
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        background: '#e8c97e',
-                        color: '#0b0c0f',
-                        fontSize: 12, fontWeight: 700,
-                        padding: '8px 16px',
-                        borderRadius: 4,
-                        textDecoration: 'none',
-                        letterSpacing: '0.02em',
-                        transition: 'opacity 0.2s',
-                        whiteSpace: 'nowrap',
-                      }}
-                      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.85')}
-                      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
-                    >
-                      {a.submission_count > 0 ? 'View work' : 'Start'}
-                      <ArrowRight size={13} />
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Prev / Next navigation */}
           {moduleVideos.length > 1 && (
@@ -545,6 +515,71 @@ export default function VideoPage() {
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+    </div>
+  );
+}
+
+// ── Assignment card (used in Assignments tab) ─────────────────────────────────
+function AssignmentCard({ a }: { a: Assignment }) {
+  return (
+    <div
+      style={{
+        background: '#13141a',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 8,
+        padding: '14px 18px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 14,
+        transition: 'border-color 0.2s',
+      }}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,201,126,0.25)')}
+      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)')}
+    >
+      <div style={{ minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
+          <span style={{
+            fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
+            padding: '2px 8px', borderRadius: 100,
+            background: a.type === 'group' ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)',
+            color: a.type === 'group' ? '#a78bfa' : '#60a5fa',
+            display: 'flex', alignItems: 'center', gap: 4,
+          }}>
+            {a.type === 'group' ? <Users size={10} /> : <BookOpen size={10} />}
+            {a.type === 'group' ? 'Group' : 'Individual'}
+          </span>
+          {a.submission_count > 0 && (
+            <span style={{ fontSize: 10, color: '#4ade80', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <CheckCircle size={10} /> Submitted
+            </span>
+          )}
+        </div>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#e8e4dc', marginBottom: 2 }}>{a.title}</p>
+        {a.deadline && (
+          <p style={{ fontSize: 11, color: '#6b6b78', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Clock size={10} />
+            Due {formatDistanceToNow(parseISO(a.deadline), { addSuffix: true })}
+          </p>
+        )}
+      </div>
+      <Link
+        to={`/assignments/${a.id}/work`}
+        style={{
+          flexShrink: 0,
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: '#e8c97e', color: '#0b0c0f',
+          fontSize: 12, fontWeight: 700,
+          padding: '8px 14px', borderRadius: 4,
+          textDecoration: 'none', whiteSpace: 'nowrap',
+          transition: 'opacity 0.2s',
+        }}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.85')}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+      >
+        {a.submission_count > 0 ? 'View work' : 'Start'}
+        <ArrowRight size={13} />
+      </Link>
     </div>
   );
 }
