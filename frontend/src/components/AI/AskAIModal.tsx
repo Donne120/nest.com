@@ -201,10 +201,10 @@ export default function AskAIModal() {
         ref={modalRef}
         style={{
           position: 'fixed',
-          left: pos.x,
-          top: pos.y,
-          width: 820,
-          maxHeight: '82vh',
+          left: typeof window !== 'undefined' && window.innerWidth < 768 ? 8 : pos.x,
+          top: typeof window !== 'undefined' && window.innerWidth < 768 ? 64 : pos.y,
+          width: typeof window !== 'undefined' && window.innerWidth < 768 ? 'calc(100vw - 16px)' : 820,
+          maxHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? 'calc(100dvh - 148px)' : '82vh',
           zIndex: 51,
           display: 'flex',
           flexDirection: 'column',
