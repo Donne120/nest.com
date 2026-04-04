@@ -172,7 +172,7 @@ export default function VideoPage() {
 
       {/* ── Main content ── */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-3 pt-3 pb-6 sm:px-5 sm:py-6 lg:px-8 lg:py-8 max-w-5xl mx-auto w-full">
+        <div className="px-3 pt-3 pb-28 sm:pb-6 sm:px-5 sm:py-6 lg:px-8 lg:py-8 max-w-5xl mx-auto w-full">
 
           {/* Breadcrumb — on mobile show only module link, hide current video title */}
           <nav className="flex items-center gap-2 mb-3 sm:mb-6 overflow-hidden" style={{ fontSize: 12, letterSpacing: '0.04em' }}>
@@ -253,11 +253,12 @@ export default function VideoPage() {
           </div>
 
           {/* ── Compact action bar (replaces the old crowded row) ── */}
+          {/* ── Action bar ── */}
           <div
-            className="mt-3 flex items-center gap-2"
+            className="mt-3 flex items-center gap-2 overflow-x-auto scrollbar-none"
             style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.18s' }}
           >
-            {/* Duration + progress — compact pill */}
+            {/* Duration + progress pill */}
             <span style={{
               fontFamily: 'monospace',
               fontSize: 11,
@@ -273,51 +274,52 @@ export default function VideoPage() {
               {fmtTime(displayDuration)} · <span style={{ color: '#e8c97e' }}>{progressPct}%</span>
             </span>
 
-            {/* Spacer */}
-            <div style={{ flex: 1 }} />
+            {/* Spacer — desktop only */}
+            <div className="hidden sm:block" style={{ flex: 1 }} />
 
             {/* Notes icon button */}
-            <FloatingNotes videoId={video.id} onSeek={seekTo} inline />
+            <div style={{ flexShrink: 0 }}>
+              <FloatingNotes videoId={video.id} onSeek={seekTo} inline />
+            </div>
 
             {/* Q&A toggle — mobile only */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden flex items-center gap-1.5 rounded"
+              className="lg:hidden flex items-center gap-1 rounded"
               style={{
                 background: sidebarOpen ? 'rgba(232,201,126,0.12)' : '#1c1e27',
                 border: sidebarOpen ? '1px solid rgba(232,201,126,0.35)' : '1px solid rgba(255,255,255,0.07)',
                 color: sidebarOpen ? '#e8c97e' : '#9ca3af',
                 fontSize: 12,
-                padding: '8px 14px',
-                minHeight: 36,
+                padding: '7px 11px',
+                flexShrink: 0,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.15s',
               }}
             >
-              💬 Q&amp;A
+              💬 Q&A
             </button>
 
             {/* Mark complete */}
             <button
               onClick={() => { if (quizQuestions.length > 0) setShowQuiz(true); }}
-              className="flex items-center gap-1.5 font-semibold transition-all hover:opacity-85 active:scale-95"
+              className="flex items-center gap-1 font-semibold transition-all hover:opacity-85 active:scale-95"
               style={{
                 background: '#e8c97e',
                 color: '#0b0c0f',
                 fontSize: 12,
-                padding: '8px 14px',
-                minHeight: 36,
+                padding: '7px 11px',
+                flexShrink: 0,
                 borderRadius: 4,
                 border: 'none',
                 cursor: 'pointer',
-                letterSpacing: '0.02em',
                 fontFamily: 'inherit',
                 whiteSpace: 'nowrap',
               }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
               <span className="hidden sm:inline">Mark complete{quizQuestions.length > 0 ? ' & quiz' : ''}</span>
