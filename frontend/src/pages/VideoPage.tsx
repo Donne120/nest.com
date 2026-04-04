@@ -157,11 +157,14 @@ export default function VideoPage() {
 
   const [activeTab, setActiveTab] = useState<'notes' | 'assignments' | 'about'>('notes');
 
-  const tabs: { key: typeof activeTab; label: string; show: boolean }[] = [
-    { key: 'notes', label: 'Notes', show: true },
-    { key: 'assignments', label: `Assignments${moduleAssignments.length > 0 ? ` (${moduleAssignments.length})` : ''}`, show: true },
-    { key: 'about', label: 'About', show: !!(video.description) },
-  ].filter(t => t.show);
+  type TabKey = typeof activeTab;
+  const tabs = (
+    [
+      { key: 'notes' as TabKey, label: 'Notes', show: true },
+      { key: 'assignments' as TabKey, label: `Assignments${moduleAssignments.length > 0 ? ` (${moduleAssignments.length})` : ''}`, show: true },
+      { key: 'about' as TabKey, label: 'About', show: !!(video.description) },
+    ] as { key: TabKey; label: string; show: boolean }[]
+  ).filter(t => t.show);
 
   return (
     <div className="flex h-[calc(100vh-56px)] overflow-hidden" style={{ background: '#0b0c0f' }}>
