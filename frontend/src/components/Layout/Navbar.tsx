@@ -226,9 +226,12 @@ export default function Navbar() {
 
             {notifOpen && (
               <div
-                className="absolute right-0 top-11 z-50 overflow-hidden animate-scale-in"
+                className="notif-dropdown z-50 overflow-hidden animate-scale-in"
                 style={{
-                  width: 'min(320px, calc(100vw - 24px))',
+                  position: 'absolute',
+                  right: 0,
+                  top: 44,
+                  width: 'min(320px, calc(100vw - 16px))',
                   background: 'rgba(19,20,26,0.97)',
                   backdropFilter: 'blur(12px)',
                   border: '1px solid rgba(255,255,255,0.07)',
@@ -329,6 +332,17 @@ export default function Navbar() {
       </header>
 
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <style>{`
+        @media (max-width: 480px) {
+          .notif-dropdown {
+            position: fixed !important;
+            top: 56px !important;
+            left: 8px !important;
+            right: 8px !important;
+            width: auto !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

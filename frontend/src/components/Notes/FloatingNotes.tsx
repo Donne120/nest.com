@@ -129,7 +129,16 @@ export default function FloatingNotes({ videoId, onSeek, inline }: Props) {
 
       {/* Panel */}
       {open && (
-        <div className="mt-1.5 w-72 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[420px]">
+        <div
+          className="mt-1.5 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
+          style={{
+            width: 'min(288px, calc(100vw - 24px))',
+            maxHeight: 'min(420px, 55vh)',
+            position: 'absolute',
+            right: 0,
+            zIndex: 50,
+          }}
+        >
 
           {/* Panel header */}
           <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100 bg-amber-50 flex-shrink-0">
