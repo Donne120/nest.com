@@ -135,8 +135,6 @@ export default function NestAssistant() {
 
   return (
     <>
-      {/* Mobile backdrop */}
-      <div className="md:hidden" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} onClick={closeNestAssistant} />
       <div
         style={(() => {
           const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -153,9 +151,9 @@ export default function NestAssistant() {
             transition: 'height 0.25s ease',
             borderRadius: 16,
             ...(isMobile ? {
-              left: 8, right: 8, bottom: 72,
+              left: 8, right: 8, bottom: 80,
               width: 'auto',
-              height: minimized ? 52 : 'calc(100dvh - 148px)',
+              height: minimized ? 52 : 420,
             } : {
               right: 24, bottom: 24,
               width: 360,
