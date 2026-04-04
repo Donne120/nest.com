@@ -299,30 +299,6 @@ export default function VideoPage() {
               💬 Q&amp;A
             </button>
 
-            {/* Mark complete — full button on desktop, icon-only on mobile */}
-            <button
-              onClick={() => { if (quizQuestions.length > 0) setShowQuiz(true); }}
-              className="flex items-center gap-1.5 font-semibold transition-all hover:opacity-85 active:scale-95"
-              style={{
-                background: '#e8c97e',
-                color: '#0b0c0f',
-                fontSize: 12,
-                padding: '8px 14px',
-                minHeight: 36,
-                borderRadius: 4,
-                border: 'none',
-                cursor: 'pointer',
-                letterSpacing: '0.02em',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                <path d="M20 6L9 17l-5-5"/>
-              </svg>
-              <span className="hidden sm:inline">Mark complete{quizQuestions.length > 0 ? ' & quiz' : ''}</span>
-              <span className="sm:hidden">Done</span>
-            </button>
           </div>
 
           {/* ── Tab bar: Notes | Assignments | About ── */}
