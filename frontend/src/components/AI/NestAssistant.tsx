@@ -134,26 +134,37 @@ export default function NestAssistant() {
   const isEmpty = messages.length === 0;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: 24,
-        right: 24,
-        width: 360,
-        maxWidth: 'calc(100vw - 32px)',
-        zIndex: 9999,
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: 16,
-        overflow: 'hidden',
-        boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-        border: '1px solid rgba(255,255,255,0.09)',
-        background: 'rgba(14,15,20,0.98)',
-        backdropFilter: 'blur(20px)',
-        transition: 'height 0.25s ease',
-        height: minimized ? 52 : 520,
-      }}
-    >
+    <>
+      {/* Mobile backdrop */}
+      <div className="md:hidden" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} onClick={closeNestAssistant} />
+      <div
+        style={(() => {
+          const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+          return {
+            position: 'fixed' as const,
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column' as const,
+            overflow: 'hidden',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+            border: '1px solid rgba(255,255,255,0.09)',
+            background: 'rgba(14,15,20,0.98)',
+            backdropFilter: 'blur(20px)',
+            transition: 'height 0.25s ease',
+            borderRadius: 16,
+            ...(isMobile ? {
+              left: 8, right: 8, bottom: 72,
+              width: 'auto',
+              height: minimized ? 52 : 'calc(100dvh - 148px)',
+            } : {
+              right: 24, bottom: 24,
+              width: 360,
+              maxWidth: 'calc(100vw - 32px)',
+              height: minimized ? 52 : 520,
+            }),
+          };
+        })()}
+      >
       {/* Header */}
       <div
         style={{
@@ -385,5 +396,6 @@ export default function NestAssistant() {
         </>
       )}
     </div>
+    </>
   );
 }

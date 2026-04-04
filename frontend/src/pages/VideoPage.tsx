@@ -137,6 +137,9 @@ export default function VideoPage() {
   const progressPct = playerDuration > 0 ? Math.round((currentTime / playerDuration) * 100) : 0;
   const displayDuration = playerDuration > 0 ? playerDuration : (video?.duration_seconds ?? 0);
 
+  // ← hook must be before any conditional return
+  const [activeTab, setActiveTab] = useState<'notes' | 'assignments' | 'about'>('notes');
+
   if (videoLoading) {
     return (
       <div className="flex h-[calc(100vh-56px)]" style={{ background: '#0b0c0f' }}>
@@ -154,8 +157,6 @@ export default function VideoPage() {
       </div>
     );
   }
-
-  const [activeTab, setActiveTab] = useState<'notes' | 'assignments' | 'about'>('notes');
 
   type TabKey = typeof activeTab;
   const tabs = (
