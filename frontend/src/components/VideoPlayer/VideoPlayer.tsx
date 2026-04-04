@@ -232,29 +232,6 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
             title="Video player"
           />
 
-          {/* Top-left: mark complete */}
-          {onVideoEnd && (
-            <div className="absolute top-2 left-2">
-              <button
-                onClick={() => onVideoEnd()}
-                className="text-xs text-white/70 hover:text-white bg-black/40 hover:bg-black/60 px-2.5 py-1 rounded transition-colors"
-              >
-                Mark complete & take quiz
-              </button>
-            </div>
-          )}
-
-          {/* Top-right: open original */}
-          <div className="absolute top-2 right-2">
-            <a
-              href={videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-white/60 hover:text-white bg-black/40 px-2 py-0.5 rounded"
-            >
-              <ExternalLink size={11} /> Open original
-            </a>
-          </div>
         </div>
 
         {/* Timeline + Controls below iframe (YouTube only — full API support) */}
