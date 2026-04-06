@@ -75,6 +75,7 @@ export default function AdminModuleEditor() {
   // Module form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [aiNotes, setAiNotes] = useState('');
   const [resources, setResources] = useState<ModuleResource[]>([]);
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [orderIndex, setOrderIndex] = useState(0);
@@ -113,6 +114,7 @@ export default function AdminModuleEditor() {
     if (module) {
       setTitle(module.title);
       setDescription(module.description || '');
+      setAiNotes((module as any).ai_notes || '');
       setResources(module.resources ?? []);
       setThumbnailUrl(module.thumbnail_url || '');
       setOrderIndex(module.order_index);
@@ -126,6 +128,7 @@ export default function AdminModuleEditor() {
       const payload = {
         title,
         description: description || null,
+        ai_notes: aiNotes || null,
         resources: resources.length > 0 ? resources : null,
         thumbnail_url: thumbnailUrl || null,
         order_index: orderIndex,
@@ -267,6 +270,25 @@ export default function AdminModuleEditor() {
               placeholder="Describe what employees will learn in this module. Use headings, bullet points, bold text to make it clear and engaging…"
               minHeight={180}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              AI Context Notes
+              <span className="ml-1.5 text-[11px] font-normal text-gray-400 bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded-full">
+                Only visible to AI
+              </span>
+            </label>
+            <textarea
+              value={aiNotes}
+              onChange={e => setAiNotes(e.target.value)}
+              rows={6}
+              placeholder="Add notes, key concepts, terminology, or context that will help the AI give better answers to learner questions in this module. E.g. definitions, common misconceptions, instructor style preferences, course-specific vocabulary…"
+              className={`${inputCls} resize-y font-mono text-xs leading-relaxed`}
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              These notes are fed to the AI every time it drafts an answer for a question in this module. The richer the notes, the better the answers.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

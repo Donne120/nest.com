@@ -150,6 +150,7 @@ class ModuleCreate(BaseModel):
     resources: Optional[list] = None
     thumbnail_url: Optional[str] = Field(None, max_length=500)
     order_index: int = 0
+    ai_notes: Optional[str] = None
 
 
 class ModuleUpdate(BaseModel):
@@ -159,6 +160,7 @@ class ModuleUpdate(BaseModel):
     thumbnail_url: Optional[str] = Field(None, max_length=500)
     order_index: Optional[int] = None
     is_published: Optional[bool] = None
+    ai_notes: Optional[str] = None
 
 
 class ModuleOut(BaseModel):
@@ -167,6 +169,7 @@ class ModuleOut(BaseModel):
     description: Optional[str]
     resources: Optional[list] = None
     thumbnail_url: Optional[str]
+    ai_notes: Optional[str] = None
     duration_seconds: int
     order_index: int
     is_published: bool

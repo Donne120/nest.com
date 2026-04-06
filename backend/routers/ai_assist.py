@@ -367,6 +367,91 @@ async def platform_ask_stream(
     )
 
 
+# ─── Answer Suggestion (educator draft — no auto-save) ───────────────────────
+
+@router.get("/answer-suggestion/{question_id}")
+@limiter.limit("10/minute")
+async def answer_suggestion(
+    request: Request,
+    question_id: str,
+    current_user: models.User = Depends(auth_utils.get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Stream a draft answer for an educator to review/edit before posting. Nothing is saved."""
+    if current_user.role not in (models.UserRole.educator, models.UserRole.owner, models.UserRole.super_admin):
+        raise HTTPException(status_code=403, detail="Educators only")
+
+    if not settings.GROQ_API_KEY:
+        raise HTTPException(status_code=503, detail="AI service not configured.")
+
+    question = (
+        db.query(models.Question)
+        .join(models.Video, models.Question.video_id == models.Video.id)
+        .join(models.Module, models.Video.module_id == models.Module.id)
+        .filter(
+            models.Question.id == question_id,
+            models.Module.organization_id == current_user.organization_id,
+        )
+        .first()
+    )
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    video = question.video
+    module = video.module
+    transcript = video.transcript
+
+    transcript_ctx = _get_transcript_context(transcript, question.timestamp_seconds)
+    if transcript_ctx:
+        transcript_block = f"""
+Transcript of what was being taught at this moment:
+\"\"\"
+{transcript_ctx}
+\"\"\"
+Use this as your primary source."""
+    else:
+        transcript_block = "\n(No transcript available — answer based on the module/video context and your expertise.)"
+
+    ai_notes_block = f"\nModule educator notes:\n\"\"\"\n{module.ai_notes}\n\"\"\"\n" if module.ai_notes else ""
+
+    system_prompt = f"""You are helping an educator draft a clear, helpful answer for a learner's question.
+
+Course Module: "{module.title}"
+Video: "{video.title}"
+Question asked at: {_fmt_time(question.timestamp_seconds)}
+{ai_notes_block}{transcript_block}
+
+Write a concise, accurate answer the educator can review and edit before posting.
+- Be clear and direct
+- Stay on topic
+- 2–4 paragraphs is ideal — no unnecessary length
+- Plain text only, no markdown headers"""
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": question.question_text},
+    ]
+
+    async def generate():
+        try:
+            async for token in _stream_groq(messages):
+                yield f"data: {json.dumps({'token': token})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            return
+        yield f"data: {json.dumps({'done': True})}\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
+
+
 # ─── Direct Ask (no DB, no admin notifications) ───────────────────────────────
 
 class DirectAskRequest(BaseModel):

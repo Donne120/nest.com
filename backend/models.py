@@ -207,6 +207,7 @@ class Module(Base):
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     resources = Column(JSON, nullable=True)
+    ai_notes = Column(Text, nullable=True)   # educator notes to guide AI answers
     thumbnail_url = Column(String, nullable=True)
     duration_seconds = Column(Integer, nullable=False, default=0)
     order_index = Column(Integer, default=0)

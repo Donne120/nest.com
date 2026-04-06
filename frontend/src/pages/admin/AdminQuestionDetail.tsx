@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Clock, ExternalLink, Send, CheckCircle2, Archive } from 'lucide-react';
+import { ArrowLeft, Clock, ExternalLink, Send, CheckCircle2, Archive, Sparkles } from 'lucide-react';
 import api from '../../api/client';
 import type { Question, Video, QuestionStatus } from '../../types';
 import Avatar from '../../components/UI/Avatar';
@@ -22,6 +22,7 @@ export default function AdminQuestionDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [answerText, setAnswerText] = useState('');
+  const [aiDrafting, setAiDrafting] = useState(false);
 
   const { data: question, isLoading } = useQuery<Question>({
     queryKey: ['question', questionId],
@@ -60,6 +61,40 @@ export default function AdminQuestionDetail() {
       toast.success(`Status updated to ${status}`);
     },
   });
+
+  async function fetchAiDraft() {
+    setAiDrafting(true);
+    setAnswerText('');
+    try {
+      const token = localStorage.getItem('nest_token');
+      const res = await fetch(`/api/ai/answer-suggestion/${questionId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok || !res.body) throw new Error('AI request failed');
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let draft = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const lines = decoder.decode(value).split('\n');
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6);
+          if (data === '[DONE]') break;
+          try {
+            const chunk = JSON.parse(data);
+            if (chunk.token) { draft += chunk.token; setAnswerText(draft); }
+            if (chunk.done) break;
+          } catch { /* skip */ }
+        }
+      }
+    } catch {
+      toast.error('AI draft failed');
+    } finally {
+      setAiDrafting(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -169,9 +204,14 @@ export default function AdminQuestionDetail() {
               className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             />
             <div className="flex items-center justify-between mt-4">
-              <p className="text-xs text-gray-400">
-                This will be marked as an official answer and notify the employee.
-              </p>
+              <button
+                onClick={fetchAiDraft}
+                disabled={aiDrafting}
+                className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <Sparkles size={13} />
+                {aiDrafting ? 'Drafting…' : 'Ask AI for draft'}
+              </button>
               <Button
                 icon={<Send size={14} />}
                 onClick={() => submitAnswer.mutate()}

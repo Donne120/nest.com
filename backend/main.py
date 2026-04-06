@@ -148,6 +148,7 @@ def _run_db_setup():
             "ALTER TABLE users ADD COLUMN payment_verified BOOLEAN DEFAULT TRUE NOT NULL",
             "ALTER TABLE organizations ADD COLUMN subscription_end TIMESTAMP WITH TIME ZONE",
             "ALTER TABLE organizations ADD COLUMN renewal_notified_at TIMESTAMP WITH TIME ZONE",
+            "ALTER TABLE modules ADD COLUMN ai_notes TEXT",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:
