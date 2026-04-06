@@ -67,7 +67,7 @@ export default function AdminQuestionDetail() {
     setAnswerText('');
     try {
       const token = localStorage.getItem('nest_token');
-      const res = await fetch(`/api/ai/answer-suggestion/${questionId}`, {
+      const res = await fetch(`${api.defaults.baseURL}/ai/answer-suggestion/${questionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok || !res.body) throw new Error('AI request failed');
