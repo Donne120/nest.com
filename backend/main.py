@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
+
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -290,13 +290,28 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.get_cors_origins(),
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
-)
+_cors_origins = settings.get_cors_origins()
+_cors_wildcards = [o for o in _cors_origins if o.startswith("*.")]
+_cors_exact = [o for o in _cors_origins if not o.startswith("*.")]
+
+class DynamicCORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        origin = request.headers.get("origin", "")
+        allowed = origin in _cors_exact or any(
+            origin.endswith(wc[1:]) for wc in _cors_wildcards
+        )
+        if request.method == "OPTIONS":
+            response = JSONResponse({}, status_code=200)
+        else:
+            response = await call_next(request)
+        if allowed or not origin:
+            response.headers["Access-Control-Allow-Origin"] = origin or "*"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, X-Requested-With"
+        return response
+
+app.add_middleware(DynamicCORSMiddleware)
 
 # Routers
 app.include_router(auth.router)
