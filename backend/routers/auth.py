@@ -55,11 +55,25 @@ def _build_token_response(user: models.User, db: Session) -> schemas.Token:
 
 # ─── Standard login ───────────────────────────────────────────────────────────
 
+class _LoginJSON(schemas.BaseModel):
+    email: str
+    password: str
+
 @router.post("/login", response_model=schemas.Token)
 @limiter.limit("10/minute")
-def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == form.username).first()
-    if not user or not auth_utils.verify_password(form.password, user.hashed_password):
+async def login(request: Request, db: Session = Depends(get_db)):
+    """Accepts both JSON {email, password} and OAuth2 form-data {username, password}."""
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        body = await request.json()
+        email = body.get("email") or body.get("username", "")
+        password = body.get("password", "")
+    else:
+        form = await request.form()
+        email = form.get("username") or form.get("email", "")
+        password = form.get("password", "")
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user or not auth_utils.verify_password(password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account deactivated")
