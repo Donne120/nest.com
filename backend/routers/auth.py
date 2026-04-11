@@ -163,8 +163,18 @@ def accept_invite(request: Request, payload: schemas.AcceptInviteRequest, db: Se
         raise HTTPException(status_code=400, detail="Invite already used")
     if invite.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invite has expired")
-    if db.query(models.User).filter(models.User.email == invite.email).first():
-        raise HTTPException(status_code=400, detail="Unable to complete registration")
+    existing = db.query(models.User).filter(models.User.email == invite.email).first()
+    if existing:
+        if existing.organization_id != invite.organization_id:
+            raise HTTPException(
+                status_code=400,
+                detail="An account with this email already exists. Please sign in instead.",
+            )
+        # User already created (e.g. from a previous failed attempt) — just
+        # mark the invite accepted and log them in without creating a duplicate.
+        invite.is_accepted = True
+        db.commit()
+        return _build_token_response(existing, db)
 
     user = models.User(
         organization_id=invite.organization_id,
