@@ -73,10 +73,12 @@ async def login(request: Request, db: Session = Depends(get_db)):
         email = form.get("username") or form.get("email", "")
         password = form.get("password", "")
     user = db.query(models.User).filter(models.User.email == email).first()
-    if not user or not auth_utils.verify_password(password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    if not user:
+        raise HTTPException(status_code=401, detail="No account found with that email. Check for a typo or ask for an invite link.")
+    if not auth_utils.verify_password(password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Incorrect password. Try again or use 'Forgot password'.")
     if not user.is_active:
-        raise HTTPException(status_code=403, detail="Account deactivated")
+        raise HTTPException(status_code=403, detail="Your account has been deactivated. Contact your admin.")
     return _build_token_response(user, db)
 
 
@@ -143,6 +145,7 @@ def invite_info(token: str, db: Session = Depends(get_db)):
     return schemas.InviteInfoOut(
         org_name=invite.organization.name,
         org_logo_url=invite.organization.logo_url,
+        org_momo_number=invite.organization.momo_number,
         invited_role=invite.role,
         expires_at=invite.expires_at,
     )

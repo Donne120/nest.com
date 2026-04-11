@@ -79,8 +79,9 @@ export default function LoginPage() {
       toast.success(`Welcome back, ${data.user.full_name.split(' ')[0]}!`);
       const next = searchParams.get('next');
       navigate(next ? decodeURIComponent(next) : (data.user.role === 'learner' ? '/modules' : '/admin'));
-    } catch {
-      toast.error('Invalid email or password');
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail;
+      toast.error(msg || 'Sign in failed. Please try again.');
     } finally {
       setLoading(false);
     }

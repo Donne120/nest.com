@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../api/client';
+import { useAuthStore } from '../store';
 
 const INK   = '#1a1714';
 const INK2  = '#6b6460';
@@ -30,12 +31,24 @@ const METHODS = [
 export default function PaySubmitPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const { organization } = useAuthStore();
 
-  const planKey  = params.get('plan') ?? '';
-  const moduleId = params.get('module_id') ?? '';
-  const isModule = !!moduleId;
+  const planKey    = params.get('plan') ?? '';
+  const moduleId   = params.get('module_id') ?? '';
+  const fromInvite = params.get('source') === 'invite';
+  const isModule   = !!moduleId;
+
+  // Determine payment type
+  const paymentType = isModule
+    ? 'module_purchase'
+    : fromInvite
+      ? 'learner_access'
+      : 'teacher_subscription';
 
   const planInfo = PLAN_AMOUNTS[planKey];
+
+  // Use the org's MoMo number; fall back to a contact prompt if not set
+  const orgMomo = (organization as any)?.momo_number ?? null;
 
   const [method,   setMethod]   = useState('mtn_momo');
   const [phone,    setPhone]    = useState('');
@@ -52,7 +65,7 @@ export default function PaySubmitPage() {
   const submit = useMutation({
     mutationFn: async () => {
       const form = new FormData();
-      form.append('payment_type', isModule ? 'module_purchase' : 'teacher_subscription');
+      form.append('payment_type', paymentType);
       form.append('payment_method', method);
       form.append('amount', amount);
       form.append('currency', currency);
@@ -84,7 +97,7 @@ export default function PaySubmitPage() {
     reader.readAsDataURL(f);
   };
 
-  const canSubmit = amount && method && !submit.isPending;
+  const canSubmit = amount && method && file && !submit.isPending;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, fontFamily: "'Syne', 'Inter', sans-serif" }}>
@@ -112,37 +125,50 @@ export default function PaySubmitPage() {
           fontSize: 36, fontWeight: 300, fontStyle: 'italic',
           letterSpacing: '-0.02em', color: INK, marginBottom: 8,
         }}>
-          Submit payment proof
+          {fromInvite ? 'One last step — pay to unlock your access' : 'Submit payment proof'}
         </h1>
         <p style={{ fontSize: 14, color: INK2, lineHeight: 1.6, marginBottom: 40 }}>
-          Send your payment to the number below, then fill in the details and upload your confirmation screenshot.
-          We'll verify and activate your access within <strong style={{ color: INK }}>24 hours</strong>.
+          {fromInvite
+            ? `Your account is ready. Send your course fee to the number below, upload your screenshot, and you'll get full access within `
+            : 'Send your payment to the number below, then fill in the details and upload your confirmation screenshot. We\'ll verify and activate your access within '}
+          <strong style={{ color: INK }}>24 hours</strong>.
         </p>
 
         {/* ── Step 1: Payment details ──────────────────────────── */}
         <Section label="01" title="Payment destination">
-          <div style={{
-            background: INK, borderRadius: 6,
-            padding: '20px 24px', marginBottom: 16,
-          }}>
+          {orgMomo ? (
             <div style={{
-              fontFamily: "'Inconsolata', monospace",
-              fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.35)', marginBottom: 10,
+              background: INK, borderRadius: 6,
+              padding: '20px 24px', marginBottom: 16,
             }}>
-              MTN MoMo · Rwanda
+              <div style={{
+                fontFamily: "'Inconsolata', monospace",
+                fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.35)', marginBottom: 10,
+              }}>
+                MTN MoMo
+              </div>
+              <div style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 32, fontWeight: 400, color: '#f2ede8',
+                letterSpacing: '0.04em', lineHeight: 1,
+              }}>
+                {orgMomo}
+              </div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 6 }}>
+                {organization?.name ?? 'Your educator'}
+              </div>
             </div>
+          ) : (
             <div style={{
-              fontFamily: "'Fraunces', Georgia, serif",
-              fontSize: 32, fontWeight: 400, color: '#f2ede8',
-              letterSpacing: '0.04em', lineHeight: 1,
+              background: '#fff3cd', border: '1px solid #ffc107', borderRadius: 6,
+              padding: '16px 20px', marginBottom: 16,
+              fontSize: 13, color: '#856404',
             }}>
-              0792104982
+              Your educator hasn't set up their payment number yet.
+              Please contact them directly to arrange payment.
             </div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 6 }}>
-              Ngum Dieudonne · Nest Platform
-            </div>
-          </div>
+          )}
           <div style={{
             fontFamily: "'Inconsolata', monospace",
             fontSize: 11, color: INK3, letterSpacing: '0.05em',
@@ -249,7 +275,7 @@ export default function PaySubmitPage() {
         </Section>
 
         {/* ── Step 3: Upload proof ──────────────────────────────── */}
-        <Section label="03" title="Upload payment screenshot">
+        <Section label="03" title="Upload payment screenshot (required)">
           <input
             ref={fileRef}
             type="file"
@@ -307,6 +333,11 @@ export default function PaySubmitPage() {
           <p style={{ fontSize: 12.5, color: INK3, marginTop: 12, lineHeight: 1.5 }}>
             Take a screenshot of your MoMo payment confirmation screen. This helps us verify your payment quickly.
           </p>
+          {!file && (
+            <p style={{ fontSize: 12, color: ACC, marginTop: 4, fontWeight: 600 }}>
+              ✕ Screenshot is required to submit
+            </p>
+          )}
         </Section>
 
         {/* ── Submit ────────────────────────────────────────────── */}

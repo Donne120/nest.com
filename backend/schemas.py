@@ -96,6 +96,7 @@ class InviteInfoOut(BaseModel):
     """Public info returned before accepting an invite (no auth required)."""
     org_name: str
     org_logo_url: Optional[str]
+    org_momo_number: Optional[str]
     invited_role: UserRole
     expires_at: datetime
 

@@ -62,6 +62,7 @@ class ATSProvider(str, enum.Enum):
 class PaymentType(str, enum.Enum):
     teacher_subscription = "teacher_subscription"
     module_purchase = "module_purchase"
+    learner_access = "learner_access"  # student pays org for general course access
 
 
 class PaymentMethod(str, enum.Enum):

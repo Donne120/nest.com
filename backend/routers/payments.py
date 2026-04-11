@@ -120,6 +120,11 @@ async def submit_payment(
     current_user: User = Depends(get_current_user),
 ):
     # ── Input validation ───────────────────────────────────────────────────
+    if not proof_image or not proof_image.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="Payment proof screenshot is required. Please upload your payment confirmation.",
+        )
     if amount <= 0 or amount > 10_000_000:
         raise HTTPException(
             status_code=400, detail="Invalid amount."

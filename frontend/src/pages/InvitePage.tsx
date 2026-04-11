@@ -10,6 +10,7 @@ import Button from '../components/UI/Button';
 interface InviteInfo {
   org_name: string;
   org_logo_url: string | null;
+  org_momo_number: string | null;
   invited_role: string;
   expires_at: string;
 }
@@ -50,7 +51,12 @@ export default function InvitePage() {
       });
       setAuth(data.user, data.access_token, data.organization);
       toast.success(`Welcome to ${info?.org_name}!`);
-      navigate('/modules');
+      // Learners must pay before they can access content
+      if (info?.invited_role === 'learner') {
+        navigate('/pay/submit?source=invite');
+      } else {
+        navigate('/modules');
+      }
     } catch (err: any) {
       toast.error(err?.response?.data?.detail || 'Could not accept invite. Please try again.');
     } finally {
