@@ -49,6 +49,7 @@ export default function PaySubmitPage() {
 
   // Use the org's MoMo number; fall back to a contact prompt if not set
   const orgMomo = (organization as any)?.momo_number ?? null;
+  const orgMomoName = (organization as any)?.momo_name ?? organization?.name ?? null;
 
   const [method,   setMethod]   = useState('mtn_momo');
   const [phone,    setPhone]    = useState('');
@@ -156,7 +157,7 @@ export default function PaySubmitPage() {
                 {orgMomo}
               </div>
               <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 6 }}>
-                {organization?.name ?? 'Your educator'}
+                {orgMomoName}
               </div>
             </div>
           ) : (

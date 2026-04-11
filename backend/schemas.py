@@ -16,6 +16,7 @@ class OrganizationUpdate(BaseModel):
     logo_url: Optional[str] = None
     brand_color: Optional[str] = None  # hex string e.g. "#6366f1"
     momo_number: Optional[str] = None  # teacher's MoMo number for student payments
+    momo_name: Optional[str] = None    # account holder name shown to students
 
 
 class OrganizationOut(BaseModel):
@@ -25,6 +26,7 @@ class OrganizationOut(BaseModel):
     logo_url: Optional[str]
     brand_color: Optional[str]
     momo_number: Optional[str]
+    momo_name: Optional[str]
     plan: Plan
     subscription_status: SubscriptionStatus
     trial_ends_at: Optional[datetime]

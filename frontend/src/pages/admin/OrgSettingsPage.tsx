@@ -42,6 +42,7 @@ function OrgTab() {
   const [logoUrl, setLogoUrl] = useState(organization?.logo_url ?? '');
   const [brandColor, setBrandColor] = useState(organization?.brand_color ?? '#6366f1');
   const [momoNumber, setMomoNumber] = useState((organization as any)?.momo_number ?? '');
+  const [momoName, setMomoName] = useState((organization as any)?.momo_name ?? '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -52,6 +53,7 @@ function OrgTab() {
         logo_url: logoUrl.trim() || undefined,
         brand_color: brandColor,
         momo_number: momoNumber.trim() || undefined,
+        momo_name: momoName.trim() || undefined,
       });
       if (user) {
         const token = localStorage.getItem('nest_token') ?? '';
@@ -153,10 +155,24 @@ function OrgTab() {
         </div>
       </Field>
 
+      {/* MoMo account name */}
+      <Field
+        label="Payment account name"
+        hint="The account holder name students will see — e.g. your full name or business name."
+      >
+        <input
+          type="text"
+          value={momoName}
+          onChange={(e) => setMomoName(e.target.value)}
+          placeholder="e.g. Ngum Dieudonne"
+          className={inputCls}
+        />
+      </Field>
+
       {/* MoMo number — students will pay to this */}
       <Field
-        label="Your MoMo / payment number"
-        hint="Students will see this number when buying your modules. Add your MTN MoMo or Orange Money number."
+        label="MoMo / payment number"
+        hint="Students will see this number when buying your modules."
       >
         <input
           type="tel"
@@ -168,7 +184,7 @@ function OrgTab() {
         {momoNumber && (
           <div className="mt-2 flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
             <span>✓</span>
-            <span>Students will pay to <strong>{momoNumber}</strong> when buying your modules</span>
+            <span>Students pay to <strong>{momoName || momoNumber}</strong> · {momoNumber}</span>
           </div>
         )}
       </Field>

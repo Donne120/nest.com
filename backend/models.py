@@ -131,6 +131,7 @@ class Organization(Base):
     trial_ends_at = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     momo_number = Column(String, nullable=True)
+    momo_name = Column(String, nullable=True)
     subscription_end = Column(DateTime(timezone=True), nullable=True)
     renewal_notified_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

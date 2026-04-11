@@ -145,6 +145,7 @@ def _run_db_setup():
             "ALTER TABLE modules ADD COLUMN is_for_sale BOOLEAN DEFAULT FALSE NOT NULL",
             "ALTER TABLE modules ADD COLUMN currency VARCHAR DEFAULT 'RWF'",
             "ALTER TABLE organizations ADD COLUMN momo_number VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN momo_name VARCHAR",
             "ALTER TABLE users ADD COLUMN payment_verified BOOLEAN DEFAULT FALSE NOT NULL",
             "ALTER TABLE organizations ADD COLUMN subscription_end TIMESTAMP WITH TIME ZONE",
             "ALTER TABLE organizations ADD COLUMN renewal_notified_at TIMESTAMP WITH TIME ZONE",
