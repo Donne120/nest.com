@@ -135,8 +135,8 @@ function HeroVideo() {
       className="lp-hero-card"
       onClick={toggle}
       style={{
-        flex: '0 0 auto',
-        width: '100%', maxWidth: 480,
+        flex: '1 1 460px', maxWidth: 620,
+        width: '100%',
         borderRadius: 12, overflow: 'hidden',
         border: `1px solid rgba(200,169,110,0.18)`,
         boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
@@ -147,7 +147,7 @@ function HeroVideo() {
       <video
         ref={videoRef}
         src="/nest-promo.mp4"
-        style={{ width: '100%', display: 'block', maxHeight: 320, objectFit: 'cover' }}
+        style={{ width: '100%', display: 'block', maxHeight: 500, objectFit: 'cover' }}
         onEnded={() => setPlaying(false)}
         playsInline
       />
