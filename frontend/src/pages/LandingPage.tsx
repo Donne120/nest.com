@@ -416,6 +416,90 @@ function SLabel({ children }: { children: string }) {
 }
 
 // ── How it works ───────────────────────────────────────────────────────────
+function VideoSection() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const toggle = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) { v.play(); setPlaying(true); }
+    else          { v.pause(); setPlaying(false); }
+  };
+
+  return (
+    <section className="lp-reveal" style={{
+      opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease',
+      padding: 'clamp(64px,8vw,120px) clamp(16px,5vw,48px)',
+      position: 'relative',
+    }}>
+      <div style={{ maxWidth: 900, margin: '0 auto' }}>
+        {/* Label */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20,
+          fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.2em',
+          textTransform: 'uppercase', color: GOLD,
+        }}>
+          <span style={{ width: 28, height: 1, background: GOLD, opacity: 0.5, display: 'inline-block' }} />
+          See it in action
+        </div>
+
+        <h2 style={{
+          fontFamily: DISP,
+          fontSize: 'clamp(34px,4.5vw,58px)',
+          fontWeight: 300, lineHeight: 1.05,
+          letterSpacing: '-0.02em', color: INK, marginBottom: 48,
+        }}>
+          The learning experience<br />
+          <em style={{ fontStyle: 'italic', color: GOLD }}>your students deserve.</em>
+        </h2>
+
+        {/* Video wrapper */}
+        <div
+          onClick={toggle}
+          style={{
+            position: 'relative', borderRadius: 10, overflow: 'hidden',
+            border: `1px solid ${RULE}`,
+            cursor: 'pointer',
+            background: '#000',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
+          }}
+        >
+          <video
+            ref={videoRef}
+            src="/talk_about_education_202604120405.mp4"
+            style={{ width: '100%', display: 'block', maxHeight: 540, objectFit: 'cover' }}
+            onEnded={() => setPlaying(false)}
+            playsInline
+          />
+
+          {/* Play / pause overlay */}
+          {!playing && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(10,9,7,0.45)',
+              transition: 'background 0.2s',
+            }}>
+              <div style={{
+                width: 72, height: 72, borderRadius: '50%',
+                background: GOLD,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 8px 32px rgba(200,169,110,0.4)',
+              }}>
+                {/* Play triangle */}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#0a0907">
+                  <polygon points="6,4 22,12 6,20" />
+                </svg>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HowItWorks() {
   const steps = [
     {
@@ -1451,6 +1535,7 @@ export default function LandingPage() {
       <LandingNav />
       <Hero />
       <Ticker />
+      <VideoSection />
       <HowItWorks />
       <Features />
       <ForWho />
