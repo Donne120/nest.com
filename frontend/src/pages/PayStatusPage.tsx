@@ -29,6 +29,7 @@ const METHOD_LABELS: Record<string, string> = {
 const TYPE_LABELS: Record<string, string> = {
   teacher_subscription: 'Teacher Subscription',
   module_purchase:      'Module Purchase',
+  learner_access:       'Course Access',
 };
 
 type Submission = {
@@ -105,6 +106,43 @@ export default function PayStatusPage() {
             + New payment
           </button>
         </div>
+
+        {submissions.some(s => s.status === 'approved') && (
+          <div style={{
+            marginBottom: 28,
+            background: 'rgba(42,122,75,0.07)',
+            border: '1px solid rgba(42,122,75,0.2)',
+            borderRadius: 6, padding: '20px 24px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+          }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: GO, marginBottom: 4 }}>
+                ✓ Payment approved — your access is active
+              </div>
+              <div style={{ fontSize: 13, color: INK2 }}>
+                You can now access all your course content.
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/modules')}
+              style={{
+                background: GO, color: '#fff',
+                border: 'none', borderRadius: 4,
+                padding: '11px 22px',
+                fontSize: 13, fontWeight: 700,
+                fontFamily: "'Syne', sans-serif",
+                cursor: 'pointer', letterSpacing: '0.02em',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.82')}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+            >
+              Continue to learning space →
+            </button>
+          </div>
+        )}
 
         {isLoading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -196,18 +234,38 @@ export default function PayStatusPage() {
                     )}
                   </div>
 
-                  {/* Status badge */}
-                  <div style={{
-                    fontFamily: "'Inconsolata', monospace",
-                    fontSize: 10, fontWeight: 700,
-                    letterSpacing: '0.08em', textTransform: 'uppercase',
-                    color: cfg.color,
-                    background: cfg.bg,
-                    border: `1px solid ${cfg.border}`,
-                    borderRadius: 100, padding: '4px 12px',
-                    flexShrink: 0,
-                  }}>
-                    {cfg.label}
+                  {/* Status badge + action */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
+                    <div style={{
+                      fontFamily: "'Inconsolata', monospace",
+                      fontSize: 10, fontWeight: 700,
+                      letterSpacing: '0.08em', textTransform: 'uppercase',
+                      color: cfg.color,
+                      background: cfg.bg,
+                      border: `1px solid ${cfg.border}`,
+                      borderRadius: 100, padding: '4px 12px',
+                    }}>
+                      {cfg.label}
+                    </div>
+                    {sub.status === 'approved' && (
+                      <button
+                        onClick={() => navigate('/modules')}
+                        style={{
+                          background: GO, color: '#fff',
+                          border: 'none', borderRadius: 4,
+                          padding: '7px 14px',
+                          fontSize: 11.5, fontWeight: 600,
+                          fontFamily: "'Syne', sans-serif",
+                          cursor: 'pointer', letterSpacing: '0.02em',
+                          whiteSpace: 'nowrap',
+                          transition: 'opacity 0.2s',
+                        }}
+                        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.82')}
+                        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+                      >
+                        Go to learning space →
+                      </button>
+                    )}
                   </div>
                 </div>
               );
