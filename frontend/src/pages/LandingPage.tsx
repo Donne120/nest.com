@@ -119,95 +119,56 @@ function LandingNav() {
 }
 
 // ── Hero course card mockup ─────────────────────────────────────────────────
-function HeroCard() {
+function HeroVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const toggle = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) { v.play(); setPlaying(true); }
+    else          { v.pause(); setPlaying(false); }
+  };
+
   return (
-    <div style={{
-      background: CARD,
-      border: `1px solid rgba(200,169,110,0.15)`,
-      borderRadius: 16,
-      overflow: 'hidden',
-      width: '100%',
-      maxWidth: 340,
-      boxShadow: '0 40px 80px rgba(0,0,0,0.5)',
-      animation: 'lpFloat 6s ease-in-out infinite',
-      flexShrink: 0,
-    }}>
-      {/* Thumbnail */}
-      <div style={{
-        height: 160,
-        background: `linear-gradient(135deg, #1a1710 0%, #2a2418 100%)`,
-        position: 'relative',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        overflow: 'hidden',
-      }}>
+    <div
+      className="lp-hero-card"
+      onClick={toggle}
+      style={{
+        flex: '0 0 auto',
+        width: '100%', maxWidth: 480,
+        borderRadius: 12, overflow: 'hidden',
+        border: `1px solid rgba(200,169,110,0.18)`,
+        boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
+        cursor: 'pointer', position: 'relative',
+        background: '#000',
+      }}
+    >
+      <video
+        ref={videoRef}
+        src="/talk_about_education_202604120405.mp4"
+        style={{ width: '100%', display: 'block', maxHeight: 320, objectFit: 'cover' }}
+        onEnded={() => setPlaying(false)}
+        playsInline
+      />
+      {!playing && (
         <div style={{
           position: 'absolute', inset: 0,
-          background: `radial-gradient(ellipse at 30% 50%, rgba(200,169,110,0.12) 0%, transparent 65%)`,
-        }} />
-        {/* Play button */}
-        <div style={{
-          width: 48, height: 48,
-          border: `1.5px solid rgba(200,169,110,0.5)`,
-          borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1,
+          background: 'rgba(10,9,7,0.4)',
         }}>
-          <svg width="16" height="16" viewBox="0 0 20 20" fill={GOLD}><path d="M6 4l12 6-12 6V4z"/></svg>
-        </div>
-        {/* Duration badge */}
-        <div style={{
-          position: 'absolute', bottom: 10, right: 10,
-          fontFamily: MONO, fontSize: 10, color: INK2,
-          background: 'rgba(10,9,7,0.8)', padding: '3px 8px', borderRadius: 4,
-          letterSpacing: '0.06em',
-        }}>12:34</div>
-        {/* AI badge */}
-        <div style={{
-          position: 'absolute', top: 10, left: 10,
-          fontFamily: MONO, fontSize: 9, color: GOLD,
-          background: 'rgba(200,169,110,0.12)', border: `1px solid rgba(200,169,110,0.25)`,
-          padding: '3px 8px', borderRadius: 4, letterSpacing: '0.1em', textTransform: 'uppercase',
-        }}>AI Transcribed</div>
-      </div>
-
-      <div style={{ padding: '20px 20px 16px' }}>
-        <div style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 8 }}>Module 3 · Lesson 2</div>
-        <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 700, color: INK, marginBottom: 12, lineHeight: 1.3 }}>Creating Courses &amp; Videos</div>
-
-        {/* Progress bar */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontFamily: MONO, fontSize: 9, color: INK3, letterSpacing: '0.1em' }}>PROGRESS</span>
-            <span style={{ fontFamily: MONO, fontSize: 9, color: GOLD }}>68%</span>
-          </div>
-          <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ width: '68%', height: '100%', background: `linear-gradient(90deg, ${GOLD}, ${GOLD2})`, borderRadius: 2 }} />
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: GOLD,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 8px 32px rgba(200,169,110,0.45)',
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#0a0907">
+              <polygon points="6,4 22,12 6,20" />
+            </svg>
           </div>
         </div>
-
-        {/* Mini stats */}
-        <div style={{ display: 'flex', gap: 16, borderTop: `1px solid ${RULE}`, paddingTop: 14 }}>
-          {[['8', 'Lessons'],['3', 'Quizzes'],['AI', 'Q&A']].map(([v, l]) => (
-            <div key={l} style={{ textAlign: 'center' }}>
-              <div style={{ fontFamily: DISP, fontSize: 18, fontWeight: 400, color: GOLD2, lineHeight: 1 }}>{v}</div>
-              <div style={{ fontFamily: MONO, fontSize: 8, color: INK3, letterSpacing: '0.1em', marginTop: 3 }}>{l}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Bottom notification */}
-      <div style={{
-        borderTop: `1px solid ${RULE}`,
-        padding: '12px 20px',
-        display: 'flex', alignItems: 'center', gap: 10,
-        background: SURFACE,
-      }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: SAGE, flexShrink: 0 }} />
-        <span style={{ fontFamily: UI, fontSize: 11.5, color: INK2, lineHeight: 1.3 }}>
-          Certificate ready after module completion
-        </span>
-      </div>
+      )}
     </div>
   );
 }
@@ -332,10 +293,8 @@ function Hero() {
           </div>
         </div>
 
-        {/* Right — course card mockup */}
-        <div className="lp-hero-card" style={{ flex: '0 0 auto', display: 'flex', justifyContent: 'center' }}>
-          <HeroCard />
-        </div>
+        {/* Right — hero video */}
+        <HeroVideo />
       </div>
 
       {/* Stats strip */}
@@ -416,90 +375,6 @@ function SLabel({ children }: { children: string }) {
 }
 
 // ── How it works ───────────────────────────────────────────────────────────
-function VideoSection() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(false);
-
-  const toggle = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); }
-    else          { v.pause(); setPlaying(false); }
-  };
-
-  return (
-    <section className="lp-reveal" style={{
-      opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease',
-      padding: 'clamp(64px,8vw,120px) clamp(16px,5vw,48px)',
-      position: 'relative',
-    }}>
-      <div style={{ maxWidth: 900, margin: '0 auto' }}>
-        {/* Label */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20,
-          fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.2em',
-          textTransform: 'uppercase', color: GOLD,
-        }}>
-          <span style={{ width: 28, height: 1, background: GOLD, opacity: 0.5, display: 'inline-block' }} />
-          See it in action
-        </div>
-
-        <h2 style={{
-          fontFamily: DISP,
-          fontSize: 'clamp(34px,4.5vw,58px)',
-          fontWeight: 300, lineHeight: 1.05,
-          letterSpacing: '-0.02em', color: INK, marginBottom: 48,
-        }}>
-          The learning experience<br />
-          <em style={{ fontStyle: 'italic', color: GOLD }}>your students deserve.</em>
-        </h2>
-
-        {/* Video wrapper */}
-        <div
-          onClick={toggle}
-          style={{
-            position: 'relative', borderRadius: 10, overflow: 'hidden',
-            border: `1px solid ${RULE}`,
-            cursor: 'pointer',
-            background: '#000',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
-          }}
-        >
-          <video
-            ref={videoRef}
-            src="/talk_about_education_202604120405.mp4"
-            style={{ width: '100%', display: 'block', maxHeight: 540, objectFit: 'cover' }}
-            onEnded={() => setPlaying(false)}
-            playsInline
-          />
-
-          {/* Play / pause overlay */}
-          {!playing && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(10,9,7,0.45)',
-              transition: 'background 0.2s',
-            }}>
-              <div style={{
-                width: 72, height: 72, borderRadius: '50%',
-                background: GOLD,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 8px 32px rgba(200,169,110,0.4)',
-              }}>
-                {/* Play triangle */}
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#0a0907">
-                  <polygon points="6,4 22,12 6,20" />
-                </svg>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function HowItWorks() {
   const steps = [
     {
@@ -1535,7 +1410,6 @@ export default function LandingPage() {
       <LandingNav />
       <Hero />
       <Ticker />
-      <VideoSection />
       <HowItWorks />
       <Features />
       <ForWho />
