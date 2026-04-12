@@ -47,14 +47,17 @@ def _build_token_response(user: models.User, db: Session, response: Response | N
         "sub": user.id,
         "org_id": user.organization_id,
     })
-    # Set httpOnly cookie so JS cannot read the token
+    # Set httpOnly cookie so JS cannot read the token.
+    # In production the frontend (vercel.app) and backend (render.com) are on
+    # different domains, so we need SameSite=None; Secure for the cookie to be
+    # included in cross-origin API requests.  In dev we use lax + no secure.
     if response is not None:
         response.set_cookie(
             key="nest_token",
             value=token,
             httponly=True,
-            secure=_IS_PROD,        # HTTPS only in production
-            samesite="lax",
+            secure=_IS_PROD,
+            samesite="none" if _IS_PROD else "lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             path="/",
         )
