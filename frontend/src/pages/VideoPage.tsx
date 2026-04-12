@@ -43,7 +43,8 @@ export default function VideoPage() {
     queryKey: ['timeline', videoId],
     queryFn: () => api.get(`/videos/${videoId}/timeline`).then(r => r.data),
     enabled: !!videoId,
-    refetchInterval: 10000,
+    refetchInterval: 30000,
+    staleTime: 60_000,
   });
 
   const { data: module } = useQuery<Module>({

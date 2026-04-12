@@ -36,7 +36,8 @@ export default function Navbar() {
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ['notifications'],
     queryFn: () => api.get('/analytics/notifications?unread_only=false').then(r => r.data),
-    refetchInterval: 30000,
+    refetchInterval: 60000,
+    staleTime: 2 * 60 * 1000,
   });
 
   const unread = notifications.filter(n => !n.is_read).length;

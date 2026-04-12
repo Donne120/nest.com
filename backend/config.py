@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # No default — must be set as an env var.  Startup fails fast if missing.
     SECRET_KEY: str = ""  # Must be set via env var — see startup gate below
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 hours — balance security vs UX
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
     CORS_ORIGINS: str = '["http://localhost:5173","http://localhost:3000"]'
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_MB: int = 500

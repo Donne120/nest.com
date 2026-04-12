@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List
 from database import get_db
@@ -63,29 +63,49 @@ def list_modules(
             models.Module.organization_id == current_user.organization_id,
             models.Module.is_published.is_(True),
         )
+        .options(joinedload(models.Module.videos))
         .order_by(models.Module.order_index)
         .all()
     )
+
+    # Bulk fetch question counts for all modules in one query
+    module_ids = [m.id for m in modules]
+    all_video_ids = [v.id for m in modules for v in m.videos]
+
+    q_counts_by_module: dict = {}
+    if all_video_ids:
+        rows = (
+            db.query(models.Video.module_id, func.count(models.Question.id))
+            .join(models.Question, models.Video.id == models.Question.video_id)
+            .filter(models.Video.module_id.in_(module_ids))
+            .group_by(models.Video.module_id)
+            .all()
+        )
+        q_counts_by_module = {mid: cnt for mid, cnt in rows}
+
+    # Bulk fetch all progress records for this user in one query
+    progress_map: dict = {}
+    if module_ids:
+        progress_rows = (
+            db.query(models.UserProgress)
+            .filter(
+                models.UserProgress.user_id == current_user.id,
+                models.UserProgress.module_id.in_(module_ids),
+            )
+            .all()
+        )
+        progress_map = {p.module_id: p for p in progress_rows}
+
     result = []
     for m in modules:
-        video_ids = [v.id for v in m.videos]
-        q_count = (
-            db.query(func.count(models.Question.id))
-            .filter(models.Question.video_id.in_(video_ids))
-            .scalar()
-        ) if video_ids else 0
-
-        progress = db.query(models.UserProgress).filter(
-            models.UserProgress.user_id == current_user.id,
-            models.UserProgress.module_id == m.id,
-        ).first()
-
+        progress = progress_map.get(m.id)
         result.append(schemas.ModuleWithProgress(
             id=m.id, title=m.title, description=m.description,
             thumbnail_url=m.thumbnail_url,
             duration_seconds=sum(v.duration_seconds for v in m.videos),
             order_index=m.order_index, is_published=m.is_published,
-            created_at=m.created_at, video_count=len(m.videos), question_count=q_count,
+            created_at=m.created_at, video_count=len(m.videos),
+            question_count=q_counts_by_module.get(m.id, 0),
             status=progress.status if progress else models.ModuleStatus.not_started,
             progress_seconds=progress.progress_seconds if progress else 0,
             last_viewed_at=progress.last_viewed_at if progress else None,

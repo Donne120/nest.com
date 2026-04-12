@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Search, Award } from 'lucide-react';
+import { BookOpen, Search, Award, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
 import type { Module, Certificate } from '../types';
@@ -55,6 +55,55 @@ export default function ModulesPage() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const firstName = user?.full_name?.split(' ')[0] ?? '';
+
+  // Payment gate — learners must have an approved payment
+  if (user?.role === 'learner' && user.payment_verified === false) {
+    return (
+      <div style={{
+        background: DARK, minHeight: '100vh',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Inter', sans-serif", padding: 24,
+      }}>
+        <div style={{
+          background: DARK2, border: `1px solid ${BORDER}`,
+          borderRadius: 16, padding: '48px 40px', maxWidth: 460,
+          textAlign: 'center',
+        }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: 14,
+            background: 'rgba(232,201,126,0.1)',
+            border: '1px solid rgba(232,201,126,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px',
+          }}>
+            <Clock size={24} style={{ color: GOLD }} />
+          </div>
+          <h2 style={{
+            fontFamily: "'Lora', Georgia, serif",
+            fontSize: 22, fontWeight: 700, color: INK,
+            marginBottom: 10, letterSpacing: '-0.01em',
+          }}>
+            Payment pending approval
+          </h2>
+          <p style={{ fontSize: 14, color: INK2, lineHeight: 1.6, marginBottom: 24 }}>
+            Your payment proof has been received. You'll get full access to all
+            courses once an admin approves it — usually within 24 hours.
+          </p>
+          <Link
+            to="/pay/submit"
+            style={{
+              display: 'inline-block', padding: '10px 24px',
+              background: GOLD, color: DARK,
+              borderRadius: 8, fontWeight: 700, fontSize: 13,
+              textDecoration: 'none', letterSpacing: '0.01em',
+            }}
+          >
+            Submit payment proof
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const filtered = useMemo(() => {
     let list = modules;

@@ -153,7 +153,23 @@ async def submit_payment(
     if proof_image and proof_image.filename:
         try:
             content = await proof_image.read()
-            ext = proof_image.filename.rsplit(".", 1)[-1].lower() if "." in proof_image.filename else "jpg"
+
+            # Validate file type by magic bytes (not just extension)
+            _ALLOWED_MAGIC = {
+                b'\xff\xd8\xff': 'jpg',
+                b'\x89PNG': 'png',
+                b'GIF8': 'gif',
+                b'RIFF': 'webp',  # RIFF....WEBP
+            }
+            _detected = None
+            for magic, ftype in _ALLOWED_MAGIC.items():
+                if content[:len(magic)] == magic or (ftype == 'webp' and content[8:12] == b'WEBP'):
+                    _detected = ftype
+                    break
+            if _detected is None:
+                raise HTTPException(status_code=400, detail="Only JPG, PNG, GIF, or WEBP images are accepted as payment proof.")
+
+            ext = _detected
             filename = f"{uuid.uuid4()}.{ext}"
             client = storage_helper.get_client()
             client.storage.from_("payment-proofs").upload(

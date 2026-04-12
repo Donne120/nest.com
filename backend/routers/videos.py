@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List
 from database import get_db
@@ -28,8 +28,26 @@ def _org_video(video_id: str, org_id: str, db: Session) -> models.Video:
 
 
 def _video_out(v: models.Video, db: Session) -> schemas.VideoOut:
-    q_count = db.query(func.count(models.Question.id)).filter(models.Question.video_id == v.id).scalar()
+    q_count = (
+        db.query(func.count(models.Question.id))
+        .filter(models.Question.video_id == v.id)
+        .scalar()
+    )
     return schemas.VideoOut(**{**v.__dict__, "question_count": q_count})
+
+
+def _check_learner_access(user: models.User):
+    if (
+        user.role == models.UserRole.learner
+        and not user.payment_verified
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Access requires an approved payment. "
+                "Submit your proof and wait for admin approval."
+            ),
+        )
 
 
 @router.get("/module/{module_id}", response_model=List[schemas.VideoOut])
@@ -38,6 +56,7 @@ def list_videos(
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
+    _check_learner_access(current_user)
     # Verify the module belongs to this org
     module = db.query(models.Module).filter(
         models.Module.id == module_id,
@@ -99,8 +118,9 @@ def get_timeline_markers(
         db.query(models.Question)
         .filter(
             models.Question.video_id == video_id,
-            models.Question.is_public == True,
+            models.Question.is_public.is_(True),
         )
+        .options(joinedload(models.Question.answers))
         .order_by(models.Question.timestamp_seconds)
         .all()
     )

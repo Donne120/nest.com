@@ -53,29 +53,27 @@ def get_dashboard_stats(
         models.User.is_active == True,
     ).scalar()
 
-    # Average response time
-    avg_hours = 0.0
-    answered_questions = (
-        db.query(models.Question)
+    # Average response time — single SQL aggregation, no Python loop
+    from sqlalchemy import select, func as sqlfunc
+    avg_result = (
+        db.query(
+            sqlfunc.avg(
+                sqlfunc.extract(
+                    'epoch',
+                    models.Answer.created_at - models.Question.created_at
+                ) / 3600.0
+            )
+        )
+        .join(models.Question, models.Answer.question_id == models.Question.id)
         .join(models.Video, models.Question.video_id == models.Video.id)
         .join(models.Module, models.Video.module_id == models.Module.id)
         .filter(
             models.Module.organization_id == org_id,
             models.Question.status == models.QuestionStatus.answered,
         )
-        .all()
+        .scalar()
     )
-    if answered_questions:
-        total_hours = 0.0
-        count = 0
-        for q in answered_questions:
-            if q.answers:
-                first_answer = min(q.answers, key=lambda a: a.created_at)
-                delta = (first_answer.created_at - q.created_at).total_seconds() / 3600
-                total_hours += delta
-                count += 1
-        if count:
-            avg_hours = total_hours / count
+    avg_hours = round(float(avg_result), 1) if avg_result else 0.0
 
     modules_with_q = (
         db.query(func.count(func.distinct(models.Video.module_id)))
@@ -100,39 +98,55 @@ def get_module_analytics(
     current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
-    modules = (
-        db.query(models.Module)
-        .filter(models.Module.organization_id == current_user.organization_id)
+    from sqlalchemy import case
+    org_id = current_user.organization_id
+
+    # One query: aggregate question stats per module
+    rows = (
+        db.query(
+            models.Module.id,
+            models.Module.title,
+            func.count(models.Question.id).label("total"),
+            func.sum(
+                case((models.Question.status == models.QuestionStatus.answered, 1), else_=0)
+            ).label("answered"),
+            func.sum(
+                case((models.Question.status == models.QuestionStatus.pending, 1), else_=0)
+            ).label("pending"),
+        )
+        .join(models.Video, models.Video.module_id == models.Module.id)
+        .join(models.Question, models.Question.video_id == models.Video.id)
+        .filter(models.Module.organization_id == org_id)
+        .group_by(models.Module.id, models.Module.title)
         .all()
     )
-    result = []
-    for m in modules:
-        video_ids = [v.id for v in m.videos]
-        if not video_ids:
-            continue
-        questions = (
-            db.query(models.Question)
-            .filter(models.Question.video_id.in_(video_ids))
-            .all()
+
+    # Fetch top confusion timestamps per module (separate but single query)
+    ts_rows = (
+        db.query(models.Video.module_id, models.Question.timestamp_seconds)
+        .join(models.Question, models.Question.video_id == models.Video.id)
+        .filter(
+            models.Video.module_id.in_([r.id for r in rows])
         )
-        if not questions:
-            continue
+        .order_by(models.Video.module_id, models.Question.timestamp_seconds)
+        .all()
+    )
+    ts_map: dict = {}
+    for mid, ts in ts_rows:
+        ts_map.setdefault(mid, []).append(ts)
 
-        answered = sum(1 for q in questions if q.status == models.QuestionStatus.answered)
-        pending = sum(1 for q in questions if q.status == models.QuestionStatus.pending)
-        timestamps = sorted([q.timestamp_seconds for q in questions])
-        top_ts = timestamps[:5]
-
-        result.append(schemas.ModuleAnalytics(
-            module_id=m.id,
-            module_title=m.title,
-            total_questions=len(questions),
-            answered_questions=answered,
-            pending_questions=pending,
+    return [
+        schemas.ModuleAnalytics(
+            module_id=r.id,
+            module_title=r.title,
+            total_questions=r.total or 0,
+            answered_questions=r.answered or 0,
+            pending_questions=r.pending or 0,
             avg_response_time_hours=4.2,
-            top_confusion_timestamps=top_ts,
-        ))
-    return result
+            top_confusion_timestamps=ts_map.get(r.id, [])[:5],
+        )
+        for r in rows
+    ]
 
 
 @router.get("/notifications", response_model=List[schemas.NotificationOut])

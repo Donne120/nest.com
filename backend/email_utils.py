@@ -107,7 +107,7 @@ def _wrap(body: str, preheader: str = "") -> str:
               <td style="width:36px;height:36px;background:#2563eb;border-radius:10px;text-align:center;vertical-align:middle;">
                 <span style="color:#fff;font-weight:700;font-size:18px;line-height:36px;">N</span>
               </td>
-              <td style="padding-left:10px;font-size:15px;font-weight:700;color:#1e293b;">Nest Onboarding</td>
+              <td style="padding-left:10px;font-size:15px;font-weight:700;color:#1e293b;">Nest</td>
             </tr>
           </table>
         </td></tr>
@@ -120,7 +120,7 @@ def _wrap(body: str, preheader: str = "") -> str:
         <!-- Footer -->
         <tr><td style="padding-top:24px;text-align:center;">
           <p style="font-size:11px;color:#94a3b8;margin:0;">
-            &copy; Nest Onboarding Platform &mdash; You received this because you have an account on Nest.
+            &copy; Nest &mdash; You received this because you have an account on Nest.
           </p>
         </td></tr>
 
@@ -154,7 +154,7 @@ def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
         <strong style="color:#0f172a;text-transform:capitalize;">{role}</strong>.
       </p>
       <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
-        Click the button below to set up your account and start your onboarding journey.
+        Click the button below to set up your account and get started.
       </p>
       {_btn(invite_url, "Accept Invitation")}
       <p style="font-size:12px;color:#94a3b8;margin:20px 0 0;">
@@ -209,7 +209,7 @@ def send_welcome(to: str, admin_name: str, org_name: str, dashboard_url: str) ->
         <tr>
           <td style="padding:12px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:8px;">
             <p style="margin:0;font-size:14px;color:#0f172a;font-weight:600;">1. Create your first course</p>
-            <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Upload videos and build your onboarding program.</p>
+            <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Upload videos and build your course program.</p>
           </td>
         </tr>
         <tr><td style="height:8px;"></td></tr>
@@ -476,3 +476,78 @@ def send_meeting_declined(to: str, employee_name: str, reason: str | None, meeti
       {_btn(meetings_url, "Request Another Time")}
     </div>"""
     return send(to, subject, _wrap(body, "Your meeting request was not confirmed"))
+
+
+# ─── Subscription renewal reminder ────────────────────────────────────────────
+
+def send_subscription_renewal_reminder(
+    to: str,
+    user_name: str,
+    org_name: str,
+    days_left: int,
+    expiry_date: str,
+    renew_url: str,
+) -> bool:
+    """Sent ~7 days before a teacher subscription expires."""
+    user_name = html.escape(user_name)
+    org_name = html.escape(org_name)
+    expiry_date = html.escape(expiry_date)
+    first = html.escape(user_name.split(" ")[0])
+    subject = f"Your Nest subscription expires in {days_left} day{'s' if days_left != 1 else ''}"
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#f59e0b;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Subscription Reminder</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Renew your subscription, {first}</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
+        Your <strong style="color:#0f172a;">{org_name}</strong> subscription on Nest expires in
+        <strong style="color:#0f172a;">{days_left} day{'s' if days_left != 1 else ''}</strong>
+        &mdash; on <strong style="color:#0f172a;">{expiry_date}</strong>.
+      </p>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+        To keep your team's access uninterrupted, renew by submitting your payment proof
+        before the expiry date.
+      </p>
+      <div style="background:#fffbeb;border-radius:12px;border:1px solid #fde68a;padding:16px 20px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;color:#92400e;line-height:1.6;">
+          After expiry, your team members will lose access to courses until the renewal
+          is approved by an admin.
+        </p>
+      </div>
+      {_btn(renew_url, "Renew Subscription", "#f59e0b")}
+    </div>"""
+    return send(
+        to, subject,
+        _wrap(body, f"Your Nest subscription expires in {days_left} days — renew now"),
+    )
+
+
+# ─── Subscription expired ──────────────────────────────────────────────────────
+
+def send_subscription_expired(
+    to: str,
+    user_name: str,
+    org_name: str,
+    renew_url: str,
+) -> bool:
+    """Sent the day a teacher subscription expires."""
+    user_name = html.escape(user_name)
+    org_name = html.escape(org_name)
+    first = html.escape(user_name.split(" ")[0])
+    subject = f"Your Nest subscription has expired — renew to restore access"
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Subscription Expired</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Your subscription has ended, {first}</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
+        The subscription for <strong style="color:#0f172a;">{org_name}</strong> on Nest has expired.
+        Your team members no longer have access to courses.
+      </p>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+        To restore access, submit a new payment proof and an admin will approve it promptly.
+      </p>
+      {_btn(renew_url, "Renew Now", "#dc2626")}
+    </div>"""
+    return send(
+        to, subject,
+        _wrap(body, "Your Nest subscription has expired — submit payment to restore access"),
+    )
