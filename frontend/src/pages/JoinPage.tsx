@@ -156,6 +156,7 @@ export default function JoinPage() {
                 required
                 minLength={2}
                 placeholder="Your full name"
+                autoComplete="name"
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                 autoFocus
               />
@@ -169,6 +170,7 @@ export default function JoinPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="you@email.com"
+                autoComplete="email"
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
               />
             </div>
@@ -182,6 +184,7 @@ export default function JoinPage() {
                 required
                 minLength={6}
                 placeholder="Min. 6 characters"
+                autoComplete="new-password"
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
               />
             </div>
@@ -198,6 +201,7 @@ export default function JoinPage() {
                   onChange={(e) => setAccessCode(e.target.value)}
                   required
                   placeholder="Enter the code from your admin"
+                  autoComplete="one-time-code"
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all font-mono tracking-widest"
                 />
               </div>
