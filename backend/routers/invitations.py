@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from database import get_db
 import models
 import schemas
@@ -117,4 +117,84 @@ def revoke_invitation(
     if invite.is_accepted:
         raise HTTPException(status_code=400, detail="Cannot revoke an already accepted invitation")
     db.delete(invite)
+    db.commit()
+
+
+# ─── Bulk Invite Links ────────────────────────────────────────────────────────
+
+@router.post("/links", response_model=schemas.InviteLinkOut, status_code=201)
+def create_invite_link(
+    payload: schemas.InviteLinkCreate,
+    current_user: models.User = Depends(auth_utils.require_educator),
+    db: Session = Depends(get_db),
+):
+    expires_at = None
+    if payload.expires_days:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=payload.expires_days)
+
+    link = models.InviteLink(
+        organization_id=current_user.organization_id,
+        created_by=current_user.id,
+        label=payload.label,
+        role=models.UserRole(payload.role),
+        free_access=payload.free_access,
+        access_code=payload.access_code,
+        max_uses=payload.max_uses,
+        expires_at=expires_at,
+    )
+    db.add(link)
+    db.commit()
+    db.refresh(link)
+    return link
+
+
+@router.get("/links", response_model=List[schemas.InviteLinkOut])
+def list_invite_links(
+    current_user: models.User = Depends(auth_utils.require_educator),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(models.InviteLink)
+        .filter(models.InviteLink.organization_id == current_user.organization_id)
+        .order_by(models.InviteLink.created_at.desc())
+        .all()
+    )
+
+
+@router.patch("/links/{link_id}", response_model=schemas.InviteLinkOut)
+def update_invite_link(
+    link_id: str,
+    payload: dict,
+    current_user: models.User = Depends(auth_utils.require_educator),
+    db: Session = Depends(get_db),
+):
+    link = db.query(models.InviteLink).filter(
+        models.InviteLink.id == link_id,
+        models.InviteLink.organization_id == current_user.organization_id,
+    ).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Invite link not found")
+    # Only allow toggling is_active or updating label
+    if "is_active" in payload:
+        link.is_active = bool(payload["is_active"])
+    if "label" in payload:
+        link.label = payload["label"]
+    db.commit()
+    db.refresh(link)
+    return link
+
+
+@router.delete("/links/{link_id}", status_code=204)
+def delete_invite_link(
+    link_id: str,
+    current_user: models.User = Depends(auth_utils.require_owner),
+    db: Session = Depends(get_db),
+):
+    link = db.query(models.InviteLink).filter(
+        models.InviteLink.id == link_id,
+        models.InviteLink.organization_id == current_user.organization_id,
+    ).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Invite link not found")
+    db.delete(link)
     db.commit()

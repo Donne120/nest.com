@@ -818,3 +818,52 @@ class LessonQuestionOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ─── InviteLink ───────────────────────────────────────────────────────────────
+
+class InviteLinkCreate(BaseModel):
+    label: Optional[str] = None
+    role: str = "learner"
+    free_access: bool = False
+    access_code: Optional[str] = Field(None, min_length=4, max_length=32)
+    max_uses: Optional[int] = Field(None, ge=1)
+    expires_days: Optional[int] = Field(None, ge=1, le=365)   # days from now; None = never
+
+
+class InviteLinkOut(BaseModel):
+    id: str
+    token: str
+    label: Optional[str]
+    role: str
+    free_access: bool
+    access_code: Optional[str]
+    max_uses: Optional[int]
+    use_count: int
+    expires_at: Optional[datetime]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class JoinLinkInfo(BaseModel):
+    """Public info returned before the student registers."""
+    org_name: str
+    org_logo_url: Optional[str]
+    label: Optional[str]
+    role: str
+    free_access: bool
+    requires_code: bool      # True if access_code is set (don't expose the actual code)
+    max_uses: Optional[int]
+    use_count: int
+    expires_at: Optional[datetime]
+
+
+class JoinLinkRegister(BaseModel):
+    """Payload the student submits to register via a bulk invite link."""
+    full_name: str = Field(..., min_length=1, max_length=120)
+    email: str
+    password: str = Field(..., min_length=6)
+    access_code: Optional[str] = None   # required if link has an access_code set

@@ -156,6 +156,7 @@ class Organization(Base):
     users = relationship("User", back_populates="organization", foreign_keys="User.organization_id")
     modules = relationship("Module", back_populates="organization")
     invitations = relationship("Invitation", back_populates="organization")
+    invite_links = relationship("InviteLink", back_populates="organization")
 
 
 # ─── Invitation ───────────────────────────────────────────────────────────────
@@ -175,6 +176,37 @@ class Invitation(Base):
 
     organization = relationship("Organization", back_populates="invitations")
     inviter = relationship("User", foreign_keys=[invited_by])
+
+
+# ─── InviteLink (bulk / access-code shareable links) ─────────────────────────
+
+class InviteLink(Base):
+    __tablename__ = "invite_links"
+
+    id            = Column(String, primary_key=True, default=gen_uuid)
+    organization_id = Column(String, ForeignKey("organizations.id"), nullable=False, index=True)
+    created_by    = Column(String, ForeignKey("users.id"), nullable=False)
+
+    # URL slug — share as /join/{token}
+    token         = Column(String, unique=True, nullable=False, index=True, default=gen_invite_token)
+
+    label         = Column(String, nullable=True)          # friendly name e.g. "Cohort 3 - April 2026"
+    role          = Column(SAEnum(UserRole), default=UserRole.learner, nullable=False)
+
+    # Access control
+    free_access   = Column(Boolean, default=False, nullable=False)  # skip payment
+    access_code   = Column(String, nullable=True)           # optional PIN to enter on join
+
+    # Limits
+    max_uses      = Column(Integer, nullable=True)          # None = unlimited
+    use_count     = Column(Integer, default=0, nullable=False)
+    expires_at    = Column(DateTime(timezone=True), nullable=True)  # None = never expires
+
+    is_active     = Column(Boolean, default=True, nullable=False)
+    created_at    = Column(DateTime(timezone=True), server_default=func.now())
+
+    organization  = relationship("Organization", back_populates="invite_links")
+    creator       = relationship("User", foreign_keys=[created_by])
 
 
 # ─── User ─────────────────────────────────────────────────────────────────────

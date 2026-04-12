@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building2, Users, Mail, Copy, Check, Trash2, Shield, Crown, Plug, ExternalLink } from 'lucide-react';
+import { Building2, Users, Mail, Copy, Check, Trash2, Shield, Crown, Plug, ExternalLink, Link2, ToggleLeft, ToggleRight, Lock } from 'lucide-react';
 import api from '../../api/client';
 import { useAuthStore } from '../../store';
 import type { Organization, User, Invitation, UserRole, ATSProvider, ATSConnection } from '../../types';
@@ -305,6 +305,266 @@ function TeamTab() {
   );
 }
 
+// ─── Invite Links section ─────────────────────────────────────────────────────
+
+interface InviteLink {
+  id: string;
+  token: string;
+  label: string | null;
+  role: string;
+  free_access: boolean;
+  access_code: string | null;
+  max_uses: number | null;
+  use_count: number;
+  expires_at: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+function InviteLinksSection() {
+  const qc = useQueryClient();
+  const { organization } = useAuthStore();
+  const [showForm, setShowForm] = useState(false);
+  const [label, setLabel] = useState('');
+  const [role, setRole] = useState<UserRole>('learner');
+  const [freeAccess, setFreeAccess] = useState(false);
+  const [accessCode, setAccessCode] = useState('');
+  const [maxUses, setMaxUses] = useState('');
+  const [expiresDays, setExpiresDays] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const { data: links = [], isLoading } = useQuery<InviteLink[]>({
+    queryKey: ['invite-links'],
+    queryFn: () => api.get<InviteLink[]>('/invitations/links').then(r => r.data),
+    staleTime: 30_000,
+  });
+
+  const toggleActive = useMutation({
+    mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
+      api.patch(`/invitations/links/${id}`, { is_active }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['invite-links'] }),
+    onError: () => toast.error('Failed to update link'),
+  });
+
+  const deleteLink = useMutation({
+    mutationFn: (id: string) => api.delete(`/invitations/links/${id}`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['invite-links'] }); toast.success('Link deleted'); },
+    onError: () => toast.error('Failed to delete link'),
+  });
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    try {
+      await api.post('/invitations/links', {
+        label: label.trim() || null,
+        role,
+        free_access: freeAccess,
+        access_code: accessCode.trim() || null,
+        max_uses: maxUses ? parseInt(maxUses) : null,
+        expires_days: expiresDays ? parseInt(expiresDays) : null,
+      });
+      qc.invalidateQueries({ queryKey: ['invite-links'] });
+      toast.success('Invite link created');
+      setShowForm(false);
+      setLabel(''); setRole('learner'); setFreeAccess(false);
+      setAccessCode(''); setMaxUses(''); setExpiresDays('');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || 'Failed to create link');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const copyLink = async (link: InviteLink) => {
+    const url = `${window.location.origin}/join/${link.token}`;
+    await navigator.clipboard.writeText(url);
+    setCopiedId(link.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const frontendUrl = organization
+    ? `${window.location.origin}/join/`
+    : `${window.location.origin}/join/`;
+
+  return (
+    <div className="mt-10 pt-8 border-t border-gray-100">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+            <Link2 size={15} className="text-brand-600" />
+            Bulk invite links
+          </h3>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Share one link with many students. They register and follow the normal flow.
+          </p>
+        </div>
+        <Button size="sm" onClick={() => setShowForm(v => !v)}>
+          {showForm ? 'Cancel' : 'New link'}
+        </Button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleCreate} className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-5 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Label (optional)</label>
+              <input
+                type="text"
+                value={label}
+                onChange={e => setLabel(e.target.value)}
+                placeholder="e.g. Cohort A 2026"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Role</label>
+              <select
+                value={role}
+                onChange={e => setRole(e.target.value as UserRole)}
+                className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                {ROLE_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Max uses (optional)</label>
+              <input
+                type="number"
+                min="1"
+                value={maxUses}
+                onChange={e => setMaxUses(e.target.value)}
+                placeholder="Unlimited"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Expires in days (optional)</label>
+              <input
+                type="number"
+                min="1"
+                max="365"
+                value={expiresDays}
+                onChange={e => setExpiresDays(e.target.value)}
+                placeholder="Never"
+                className={inputCls}
+              />
+            </div>
+          </div>
+
+          {/* Free access toggle */}
+          <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-gray-800">Free access</p>
+              <p className="text-xs text-gray-400">Skip payment — students get instant access on sign-up</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setFreeAccess(v => !v)}
+              className={`transition-colors ${freeAccess ? 'text-brand-600' : 'text-gray-300'}`}
+            >
+              {freeAccess ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+            </button>
+          </div>
+
+          {/* Access code */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Access code (optional)
+              {accessCode && <span className="ml-1.5 inline-flex items-center gap-0.5 text-brand-600"><Lock size={10} /> Required to join</span>}
+            </label>
+            <input
+              type="text"
+              value={accessCode}
+              onChange={e => setAccessCode(e.target.value)}
+              placeholder="Leave blank for open link"
+              className={`${inputCls} font-mono`}
+              minLength={4}
+              maxLength={32}
+            />
+            <p className="text-xs text-gray-400 mt-1">Students must enter this code on the join page.</p>
+          </div>
+
+          <Button type="submit" loading={creating} size="sm">Create link</Button>
+        </form>
+      )}
+
+      {isLoading ? (
+        <div className="text-center py-4 text-sm text-gray-400">Loading…</div>
+      ) : links.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-4">No bulk invite links yet.</p>
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
+          {links.map(link => {
+            const url = `${frontendUrl}${link.token}`;
+            const expired = link.expires_at && new Date(link.expires_at) < new Date();
+            const exhausted = link.max_uses != null && link.use_count >= link.max_uses;
+            return (
+              <div key={link.id} className={`flex items-center gap-3 px-4 py-3.5 ${!link.is_active || expired || exhausted ? 'opacity-60' : ''}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-[13px] font-semibold text-gray-900 truncate">
+                      {link.label || 'Untitled link'}
+                    </p>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded capitalize ${
+                      link.role === 'learner' ? 'bg-slate-100 text-slate-600'
+                      : link.role === 'educator' ? 'bg-blue-100 text-blue-600'
+                      : 'bg-indigo-100 text-indigo-600'
+                    }`}>{link.role}</span>
+                    {link.free_access && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Free</span>
+                    )}
+                    {link.access_code && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 flex items-center gap-0.5">
+                        <Lock size={8} /> Code
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-0.5 font-mono truncate">{url}</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    {link.use_count}{link.max_uses != null ? `/${link.max_uses}` : ''} uses
+                    {link.expires_at && ` · Expires ${new Date(link.expires_at).toLocaleDateString()}`}
+                    {!link.is_active && ' · Deactivated'}
+                    {expired && ' · Expired'}
+                    {exhausted && ' · Full'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => copyLink(link)}
+                  title="Copy link"
+                  className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors flex-shrink-0"
+                >
+                  {copiedId === link.id ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                </button>
+                <button
+                  onClick={() => toggleActive.mutate({ id: link.id, is_active: !link.is_active })}
+                  title={link.is_active ? 'Deactivate' : 'Activate'}
+                  className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ${link.is_active ? 'text-brand-500 hover:bg-brand-50' : 'text-gray-300 hover:text-brand-500 hover:bg-brand-50'}`}
+                >
+                  {link.is_active ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                </button>
+                <button
+                  onClick={() => deleteLink.mutate(link.id)}
+                  title="Delete link"
+                  className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Invitations tab ─────────────────────────────────────────────────────────
 
 function InvitationsTab() {
@@ -452,6 +712,8 @@ function InvitationsTab() {
           )}
         </>
       )}
+
+      <InviteLinksSection />
     </div>
   );
 }

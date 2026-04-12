@@ -274,6 +274,92 @@ def reset_password(request: Request, payload: schemas.ResetPasswordRequest, db: 
     return {"message": "Password updated successfully"}
 
 
+# ─── Bulk Invite Link — public join ──────────────────────────────────────────
+
+@router.get("/join-info/{token}", response_model=schemas.JoinLinkInfo)
+def join_link_info(token: str, db: Session = Depends(get_db)):
+    """Public endpoint — returns just enough info for the registration page."""
+    link = db.query(models.InviteLink).filter(models.InviteLink.token == token).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Invite link not found")
+    if not link.is_active:
+        raise HTTPException(status_code=400, detail="This invite link has been deactivated")
+    if link.expires_at and link.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="This invite link has expired")
+    if link.max_uses is not None and link.use_count >= link.max_uses:
+        raise HTTPException(status_code=400, detail="This invite link has reached its maximum number of uses")
+    org = db.query(models.Organization).filter(models.Organization.id == link.organization_id).first()
+    return schemas.JoinLinkInfo(
+        org_name=org.name if org else "Unknown Organization",
+        org_logo_url=org.logo_url if org else None,
+        label=link.label,
+        role=link.role.value,
+        free_access=link.free_access,
+        requires_code=link.access_code is not None,
+        max_uses=link.max_uses,
+        use_count=link.use_count,
+        expires_at=link.expires_at,
+    )
+
+
+@router.post("/join/{token}", response_model=schemas.Token, status_code=201)
+@limiter.limit("10/minute")
+def join_via_link(
+    request: Request,
+    response: Response,
+    token: str,
+    payload: schemas.JoinLinkRegister,
+    db: Session = Depends(get_db),
+):
+    """Register a new user via a bulk invite link."""
+    link = db.query(models.InviteLink).filter(models.InviteLink.token == token).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Invite link not found")
+    if not link.is_active:
+        raise HTTPException(status_code=400, detail="This invite link has been deactivated")
+    if link.expires_at and link.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="This invite link has expired")
+    if link.max_uses is not None and link.use_count >= link.max_uses:
+        raise HTTPException(status_code=400, detail="This invite link has reached its maximum number of uses")
+
+    # Validate access code if required
+    if link.access_code:
+        if not payload.access_code or payload.access_code.strip() != link.access_code.strip():
+            raise HTTPException(status_code=400, detail="Incorrect access code")
+
+    # Normalise email
+    email = payload.email.strip().lower()
+
+    # Reject if email already exists in this org
+    if db.query(models.User).filter(
+        models.User.email == email,
+        models.User.organization_id == link.organization_id,
+    ).first():
+        raise HTTPException(status_code=400, detail="An account with this email already exists in this organisation")
+
+    # Also reject if they exist elsewhere (for now; can be relaxed later)
+    if db.query(models.User).filter(models.User.email == email).first():
+        raise HTTPException(
+            status_code=400,
+            detail="An account with this email already exists. Please sign in instead.",
+        )
+
+    user = models.User(
+        organization_id=link.organization_id,
+        email=email,
+        full_name=payload.full_name.strip(),
+        hashed_password=auth_utils.hash_password(payload.password),
+        role=link.role,
+        payment_verified=link.free_access,   # grant access immediately if free_access
+    )
+    db.add(user)
+    link.use_count += 1
+    db.commit()
+    db.refresh(user)
+
+    return _build_token_response(user, db, response)
+
+
 # ─── Change password (authenticated) ─────────────────────────────────────────
 
 @router.post("/change-password", status_code=200)

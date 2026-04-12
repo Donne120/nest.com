@@ -8,29 +8,22 @@ const api = axios.create({
   withCredentials: true, // send httpOnly cookie on every request
 });
 
-api.interceptors.request.use((config) => {
-  // Fallback: if token is in Zustand store (dev / mobile), attach as Bearer header.
-  // In production the httpOnly cookie is used automatically — no JS access needed.
-  try {
-    const stored = localStorage.getItem('nest_auth');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      const token = parsed?.state?.token;
-      if (token) config.headers.Authorization = `Bearer ${token}`;
-    }
-  } catch {
-    // ignore parse errors
-  }
-  return config;
-});
+// Auth routes where we should NOT trigger the 401 → logout flow
+const AUTH_PATHS = ['/auth/login', '/auth/logout', '/auth/register'];
+
+let loggingOut = false;
 
 api.interceptors.response.use(
   (r) => r,
   async (error) => {
-    if (error.response?.status === 401) {
-      // Call logout to clear cookie server-side, then redirect
+    const url: string = error.config?.url ?? '';
+    const isAuthRoute = AUTH_PATHS.some((p) => url.includes(p));
+
+    if (error.response?.status === 401 && !isAuthRoute && !loggingOut) {
+      loggingOut = true;
+      // Clear cookie server-side — fire and forget
       try { await api.post('/auth/logout'); } catch { /* ignore */ }
-      // Clear local auth state
+      // Clear persisted auth state so RequireAuth redirects to login on next render
       localStorage.removeItem('nest_auth');
       window.location.href = '/login';
     }

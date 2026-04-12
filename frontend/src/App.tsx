@@ -28,6 +28,7 @@ const AdminModuleEditor = lazy(() => import('./pages/admin/AdminModuleEditor'));
 const OnboardingWizard = lazy(() => import('./pages/admin/OnboardingWizard'));
 const SignupPage = lazy(() => import('./pages/SignupPage'));
 const InvitePage = lazy(() => import('./pages/InvitePage'));
+const JoinPage = lazy(() => import('./pages/JoinPage'));
 const OrgSettingsPage = lazy(() => import('./pages/admin/OrgSettingsPage'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const MeetingsPage = lazy(() => import('./pages/MeetingsPage'));
@@ -65,9 +66,12 @@ const queryClient = new QueryClient({
 });
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { token } = useAuthStore();
+  // Check `user` (persisted to localStorage) rather than `token` (in-memory only).
+  // The httpOnly cookie is the real auth — if it's expired, the first API call
+  // returns 401 and the axios interceptor clears the user and redirects to login.
+  const { user } = useAuthStore();
   const location = useLocation();
-  if (!token) {
+  if (!user) {
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/login?next=${next}`} replace />;
   }
@@ -75,9 +79,9 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 function HomeRoute() {
-  const { token, user } = useAuthStore();
-  if (!token) return <LandingPage />;
-  return <Navigate to={user?.role === 'learner' ? '/modules' : '/admin'} replace />;
+  const { user } = useAuthStore();
+  if (!user) return <LandingPage />;
+  return <Navigate to={user.role === 'learner' ? '/modules' : '/admin'} replace />;
 }
 
 function RequireManager({ children }: { children: ReactNode }) {
@@ -114,6 +118,7 @@ export default function App() {
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/invite/:token" element={<InvitePage />} />
+          <Route path="/join/:token" element={<JoinPage />} />
           <Route path="/certificate/:certId" element={<CertificatePage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/pitch" element={<PitchDeck />} />
