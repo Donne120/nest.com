@@ -166,6 +166,20 @@ def _run_db_setup():
                     logger.warning(f"Column migration skipped (already exists or error): {e}")
                     conn.rollback()
 
+        # ─── Enum value additions (PostgreSQL only) ──────────────────────────
+        if is_postgres:
+            _enums = [
+                "ALTER TYPE paymenttype ADD VALUE IF NOT EXISTS 'learner_access'",
+            ]
+            for _stmt in _enums:
+                with engine.connect() as conn:
+                    try:
+                        conn.execute(text(_stmt))
+                        conn.commit()
+                    except Exception as e:
+                        logger.warning(f"Enum migration skipped: {e}")
+                        conn.rollback()
+
         logger.info("✓ DB setup complete")
     except Exception as e:
         logger.warning(f"DB setup warning (non-fatal): {e}")
