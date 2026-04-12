@@ -36,21 +36,24 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
+      token: typeof window !== 'undefined' ? localStorage.getItem('nest_token') : null,
       organization: null,
       setAuth: (user, token, organization) => {
-        // Store token in memory only — cookie is set by the backend (httpOnly)
-        // Keep token in store for Authorization header on non-cookie requests
+        // Store token in memory for Authorization header fallback (cross-origin cookie backup)
+        // Cookie is ALSO set by the backend (httpOnly), but header ensures auth even if cookies fail
         set({ user, token, organization });
+        // Also persist token to localStorage for instant recovery on page reload
+        localStorage.setItem('nest_token', token);
       },
       updateUser: (user) => set({ user }),
       clearAuth: () => {
         set({ user: null, token: null, organization: null });
+        localStorage.removeItem('nest_token');
       },
     }),
     {
       name: 'nest_auth',
-      // Only persist non-sensitive user profile — never the raw token
+      // Only persist non-sensitive user profile — token persisted separately to localStorage
       partialize: (s) => ({ user: s.user, organization: s.organization }),
     }
   )

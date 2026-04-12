@@ -1,17 +1,30 @@
 import axios from 'axios';
+import { useAuthStore } from '../store';
 
 const baseURL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
 
 const api = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true, // send httpOnly cookie on every request
+  withCredentials: true, // send httpOnly cookie on every request (fallback strategy)
 });
 
 // Auth routes where we should NOT trigger the 401 → logout flow
 const AUTH_PATHS = ['/auth/login', '/auth/logout', '/auth/register'];
 
 let loggingOut = false;
+
+// Request interceptor: add Authorization header from in-memory token as fallback
+api.interceptors.request.use((config) => {
+  // If no Authorization header yet, try to get token from store (fallback for cross-origin cookies)
+  if (!config.headers.Authorization) {
+    const { token } = useAuthStore.getState();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
 
 api.interceptors.response.use(
   (r) => r,
