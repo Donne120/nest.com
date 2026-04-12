@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from slowapi import Limiter
@@ -11,6 +11,8 @@ import schemas
 import auth as auth_utils
 from config import settings
 import email_utils
+
+_IS_PROD = settings.ENVIRONMENT not in ("development", "dev")
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -36,7 +38,7 @@ def _unique_slug(base: str, db: Session) -> str:
     return slug
 
 
-def _build_token_response(user: models.User, db: Session) -> schemas.Token:
+def _build_token_response(user: models.User, db: Session, response: Response | None = None) -> schemas.Token:
     org = (
         db.query(models.Organization).filter(models.Organization.id == user.organization_id).first()
         if user.organization_id else None
@@ -45,6 +47,17 @@ def _build_token_response(user: models.User, db: Session) -> schemas.Token:
         "sub": user.id,
         "org_id": user.organization_id,
     })
+    # Set httpOnly cookie so JS cannot read the token
+    if response is not None:
+        response.set_cookie(
+            key="nest_token",
+            value=token,
+            httponly=True,
+            secure=_IS_PROD,        # HTTPS only in production
+            samesite="lax",
+            max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            path="/",
+        )
     return schemas.Token(
         access_token=token,
         token_type="bearer",
@@ -61,7 +74,7 @@ class _LoginJSON(schemas.BaseModel):
 
 @router.post("/login", response_model=schemas.Token)
 @limiter.limit("10/minute")
-async def login(request: Request, db: Session = Depends(get_db)):
+async def login(request: Request, response: Response, db: Session = Depends(get_db)):
     """Accepts both JSON {email, password} and OAuth2 form-data {username, password}."""
     content_type = request.headers.get("content-type", "")
     if "application/json" in content_type:
@@ -79,14 +92,31 @@ async def login(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Incorrect password. Try again or use 'Forgot password'.")
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Your account has been deactivated. Contact your admin.")
-    return _build_token_response(user, db)
+    return _build_token_response(user, db, response)
+
+
+# ─── Logout ───────────────────────────────────────────────────────────────────
+
+@router.post("/logout", status_code=200)
+def logout(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Revoke the current token and clear the auth cookie."""
+    # Try to get token from cookie or Authorization header
+    token = request.cookies.get("nest_token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+    if token:
+        auth_utils.revoke_token(token, db)
+    response.delete_cookie(key="nest_token", path="/")
+    return {"message": "Logged out successfully"}
 
 
 # ─── Company / Organisation registration ──────────────────────────────────────
 
 @router.post("/register-org", response_model=schemas.Token, status_code=201)
 @limiter.limit("5/hour")
-def register_org(request: Request, background_tasks: BackgroundTasks, payload: schemas.RegisterOrgRequest, db: Session = Depends(get_db)):
+def register_org(request: Request, response: Response, background_tasks: BackgroundTasks, payload: schemas.RegisterOrgRequest, db: Session = Depends(get_db)):
     """
     Self-service company signup. Creates an Organization + first Admin user
     in a single transaction, then returns a login token (auto-login).
@@ -128,7 +158,7 @@ def register_org(request: Request, background_tasks: BackgroundTasks, payload: s
         dashboard_url=dashboard_url,
     )
 
-    return _build_token_response(user, db)
+    return _build_token_response(user, db, response)
 
 
 # ─── Invite info (public — no auth) ──────────────────────────────────────────
@@ -155,7 +185,7 @@ def invite_info(token: str, db: Session = Depends(get_db)):
 
 @router.post("/accept-invite", response_model=schemas.Token, status_code=201)
 @limiter.limit("5/minute")
-def accept_invite(request: Request, payload: schemas.AcceptInviteRequest, db: Session = Depends(get_db)):
+def accept_invite(request: Request, response: Response, payload: schemas.AcceptInviteRequest, db: Session = Depends(get_db)):
     invite = db.query(models.Invitation).filter(models.Invitation.token == payload.token).first()
     if not invite:
         raise HTTPException(status_code=404, detail="Invite not found")
@@ -174,7 +204,7 @@ def accept_invite(request: Request, payload: schemas.AcceptInviteRequest, db: Se
         # mark the invite accepted and log them in without creating a duplicate.
         invite.is_accepted = True
         db.commit()
-        return _build_token_response(existing, db)
+        return _build_token_response(existing, db, response)
 
     user = models.User(
         organization_id=invite.organization_id,
@@ -188,7 +218,7 @@ def accept_invite(request: Request, payload: schemas.AcceptInviteRequest, db: Se
     db.commit()
     db.refresh(user)
 
-    return _build_token_response(user, db)
+    return _build_token_response(user, db, response)
 
 
 # ─── Password Reset ───────────────────────────────────────────────────────────

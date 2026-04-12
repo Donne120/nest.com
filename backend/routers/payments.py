@@ -125,6 +125,24 @@ async def submit_payment(
             status_code=400,
             detail="Payment proof screenshot is required. Please upload your payment confirmation.",
         )
+
+    # Validate payment_type matches the user's role — never trust the client
+    _ROLE_ALLOWED_TYPES = {
+        models.UserRole.learner:     {models.PaymentType.learner_access, models.PaymentType.module_purchase},
+        models.UserRole.educator:    {models.PaymentType.teacher_subscription},
+        models.UserRole.owner:       {models.PaymentType.teacher_subscription},
+        models.UserRole.super_admin: {models.PaymentType.teacher_subscription, models.PaymentType.learner_access, models.PaymentType.module_purchase},
+    }
+    try:
+        pt_enum = models.PaymentType(payment_type)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid payment type: {payment_type}")
+    allowed_for_role = _ROLE_ALLOWED_TYPES.get(current_user.role, set())
+    if pt_enum not in allowed_for_role:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Your account role is not permitted to submit a '{payment_type}' payment.",
+        )
     if amount <= 0 or amount > 10_000_000:
         raise HTTPException(
             status_code=400, detail="Invalid amount."

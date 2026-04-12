@@ -7,10 +7,16 @@ from sqlalchemy.sql import func
 from database import Base
 import enum
 import uuid
+import secrets
 
 
 def gen_uuid():
     return str(uuid.uuid4())
+
+
+def gen_invite_token():
+    """Cryptographically secure random token for invitations and security-sensitive links."""
+    return secrets.token_urlsafe(32)
 
 
 # ─── Enums ────────────────────────────────────────────────────────────────────
@@ -51,6 +57,17 @@ class QuestionType(str, enum.Enum):
     mcq = "mcq"
     short_answer = "short_answer"
     true_false = "true_false"
+
+
+# ─── Revoked tokens (logout blocklist) ───────────────────────────────────────
+
+class RevokedToken(Base):
+    __tablename__ = "revoked_tokens"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    jti = Column(String, unique=True, nullable=False, index=True)  # JWT ID
+    revoked_at = Column(DateTime(timezone=True), server_default=func.now())
+    expires_at = Column(DateTime(timezone=True), nullable=False)   # for cleanup
 
 
 class ATSProvider(str, enum.Enum):
@@ -149,7 +166,7 @@ class Invitation(Base):
     id = Column(String, primary_key=True, default=gen_uuid)
     organization_id = Column(String, ForeignKey("organizations.id"), nullable=False)
     email = Column(String, nullable=False, index=True)
-    token = Column(String, unique=True, nullable=False, index=True, default=gen_uuid)
+    token = Column(String, unique=True, nullable=False, index=True, default=gen_invite_token)
     role = Column(SAEnum(UserRole), default=UserRole.learner, nullable=False)
     invited_by = Column(String, ForeignKey("users.id"), nullable=False)
     is_accepted = Column(Boolean, default=False, nullable=False)
@@ -191,7 +208,7 @@ class PasswordResetToken(Base):
 
     id = Column(String, primary_key=True, default=gen_uuid)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    token = Column(String, unique=True, nullable=False, index=True, default=gen_uuid)
+    token = Column(String, unique=True, nullable=False, index=True, default=gen_invite_token)
     expires_at = Column(DateTime(timezone=True), nullable=False)
     used = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

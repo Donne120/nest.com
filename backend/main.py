@@ -180,6 +180,24 @@ def _run_db_setup():
                         logger.warning(f"Enum migration skipped: {e}")
                         conn.rollback()
 
+        # ─── Token revocation table ───────────────────────────────────────────
+        with engine.connect() as conn:
+            try:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS revoked_tokens (
+                        id VARCHAR PRIMARY KEY,
+                        jti VARCHAR UNIQUE NOT NULL,
+                        revoked_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                        expires_at TIMESTAMP WITH TIME ZONE NOT NULL
+                    )
+                """))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_revoked_tokens_jti ON revoked_tokens (jti)"))
+                conn.commit()
+                logger.info("✓ revoked_tokens table ready")
+            except Exception as e:
+                logger.warning(f"revoked_tokens table: {e}")
+                conn.rollback()
+
         logger.info("✓ DB setup complete")
     except Exception as e:
         logger.warning(f"DB setup warning (non-fatal): {e}")
@@ -281,9 +299,30 @@ async def lifespan(app: FastAPI):
             await asyncio.sleep(86400)  # run every 24 hours
             asyncio.get_event_loop().run_in_executor(None, _check_subscriptions)
 
+    def _cleanup_revoked_tokens():
+        """Delete expired entries from revoked_tokens to keep the table small."""
+        db = SessionLocal()
+        try:
+            from datetime import datetime, timezone
+            db.query(models.RevokedToken).filter(
+                models.RevokedToken.expires_at < datetime.now(timezone.utc)
+            ).delete()
+            db.commit()
+        except Exception as e:
+            logger.warning(f"Token cleanup error: {e}")
+        finally:
+            db.close()
+
+    async def _token_cleanup_loop():
+        while True:
+            await asyncio.sleep(3600)  # run every hour
+            asyncio.get_event_loop().run_in_executor(None, _cleanup_revoked_tokens)
+
     task = asyncio.create_task(_subscription_loop())
+    cleanup_task = asyncio.create_task(_token_cleanup_loop())
     yield
     task.cancel()
+    cleanup_task.cancel()
     logger.info("Shutting down...")
 
 
@@ -305,22 +344,19 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-_cors_origins = settings.get_cors_origins()
-_cors_wildcards = [o for o in _cors_origins if o.startswith("*.")]
-_cors_exact = [o for o in _cors_origins if not o.startswith("*.")]
+# Exact-match CORS only — no wildcards to prevent subdomain takeover attacks
+_cors_allowed = set(settings.get_cors_origins())
 
 class DynamicCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         origin = request.headers.get("origin", "")
-        allowed = origin in _cors_exact or any(
-            origin.endswith(wc[1:]) for wc in _cors_wildcards
-        )
+        allowed = origin in _cors_allowed
         if request.method == "OPTIONS":
             response = JSONResponse({}, status_code=200)
         else:
             response = await call_next(request)
-        if allowed or not origin:
-            response.headers["Access-Control-Allow-Origin"] = origin or "*"
+        if allowed:
+            response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
             response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, X-Requested-With"

@@ -20,10 +20,12 @@ export const useNotifStore = create<NotifState>()(
 );
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
+// Token is stored in an httpOnly cookie set by the backend — JS never touches it.
+// We only keep non-sensitive user profile data in memory/localStorage.
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  token: string | null;       // kept for Authorization header fallback (dev/mobile)
   organization: Organization | null;
   setAuth: (user: User, token: string, organization: Organization | null) => void;
   updateUser: (user: User) => void;
@@ -37,18 +39,19 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       organization: null,
       setAuth: (user, token, organization) => {
-        localStorage.setItem('nest_token', token);
+        // Store token in memory only — cookie is set by the backend (httpOnly)
+        // Keep token in store for Authorization header on non-cookie requests
         set({ user, token, organization });
       },
       updateUser: (user) => set({ user }),
       clearAuth: () => {
-        localStorage.removeItem('nest_token');
         set({ user: null, token: null, organization: null });
       },
     }),
     {
       name: 'nest_auth',
-      partialize: (s) => ({ user: s.user, token: s.token, organization: s.organization }),
+      // Only persist non-sensitive user profile — never the raw token
+      partialize: (s) => ({ user: s.user, organization: s.organization }),
     }
   )
 );
@@ -96,11 +99,9 @@ interface UIState {
   questionFormTimestamp: number | null;
   whiteboardQuestionId: string | null;
   whiteboardQuestionText: string;
-  // Direct AI ask (no Q&A, no DB, no admin)
   aiAskOpen: boolean;
   aiAskVideoId: string | null;
   aiAskTimestamp: number;
-  // Global Nest Assistant
   nestAssistantOpen: boolean;
   setSidebarOpen: (o: boolean) => void;
   setActiveQuestion: (id: string | null) => void;
