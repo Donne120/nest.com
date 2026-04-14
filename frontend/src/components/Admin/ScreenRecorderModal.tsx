@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   X, Monitor, Mic, MicOff, RotateCcw,
-  Square, AlertCircle, UploadCloud,
+  Square, AlertCircle, UploadCloud, Play, Pause,
 } from 'lucide-react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
@@ -57,6 +57,7 @@ export default function ScreenRecorderModal({ onClose, onUploaded }: ScreenRecor
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [error, setError]             = useState<string | null>(null);
   const [uploadPct, setUploadPct]     = useState(0);
+  const [isPlaying, setIsPlaying]     = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef        = useRef<Blob[]>([]);
@@ -79,24 +80,36 @@ export default function ScreenRecorderModal({ onClose, onUploaded }: ScreenRecor
     video.src = blobUrl;
     video.load();
 
-    // Duration-fix: seek to end so the scrubber knows the total length
+    // Duration-fix: only reset to 0 if WE triggered the scan seek,
+    // not if the user manually clicked the scrubber.
+    let durScanInProgress = false;
+
     const onMeta = () => {
       if (video.duration === Infinity || isNaN(video.duration)) {
+        durScanInProgress = true;
         video.currentTime = 1e10; // triggers duration scan
       }
     };
     const onSeeked = () => {
-      video.currentTime = 0; // reset to start after scan
+      if (durScanInProgress) {
+        durScanInProgress = false;
+        video.currentTime = 0; // reset to start after scan
+      }
     };
 
-    video.addEventListener('loadedmetadata', onMeta);
-    video.addEventListener('seeked', onSeeked, { once: true });
+    video.addEventListener('loadedmetadata', onMeta, { once: true });
+    video.addEventListener('seeked', onSeeked);
 
     return () => {
       video.removeEventListener('loadedmetadata', onMeta);
       video.removeEventListener('seeked', onSeeked);
     };
-  }, [blobUrl]);
+  // Include `phase` so the effect re-fires when phase changes to 'preview'.
+  // Without it, if blobUrl is set in the same batch as phase='preview', the
+  // effect may run while the video element isn't in the DOM yet (ref = null),
+  // exit early, and never retry — leaving the preview permanently black.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blobUrl, phase]);
 
   // ── Clean up on unmount ──────────────────────────────────────────────────
   const stopAll = useCallback(() => {
@@ -225,8 +238,11 @@ export default function ScreenRecorderModal({ onClose, onUploaded }: ScreenRecor
     setUploadPct(0);
 
     try {
-      const ext  = recordedBlob.type.includes('mp4') ? 'mp4' : 'webm';
-      const file = new File([recordedBlob], `screen-recording.${ext}`, { type: recordedBlob.type });
+      // Strip codec params (e.g. "video/webm;codecs=vp9,opus" → "video/webm")
+      // so the backend MIME check doesn't reject the upload.
+      const baseType = recordedBlob.type.split(';')[0].trim();
+      const ext  = baseType.includes('mp4') ? 'mp4' : 'webm';
+      const file = new File([recordedBlob], `screen-recording.${ext}`, { type: baseType });
       const fd   = new FormData();
       fd.append('file', file);
 
@@ -494,15 +510,40 @@ export default function ScreenRecorderModal({ onClose, onUploaded }: ScreenRecor
               </p>
 
               {/* Video preview */}
-              <div className="rounded-xl overflow-hidden" style={{ background: '#0b0c0f', border: '1px solid #d4cdc6' }}>
+              <div
+                className="relative rounded-xl overflow-hidden cursor-pointer group"
+                style={{ background: '#0b0c0f', border: '1px solid #d4cdc6', minHeight: 160 }}
+                onClick={() => {
+                  const v = previewRef.current;
+                  if (!v) return;
+                  if (v.paused) { v.play(); } else { v.pause(); }
+                }}
+              >
                 <video
                   ref={previewRef}
-                  controls
                   playsInline
                   preload="auto"
                   className="w-full"
                   style={{ maxHeight: 220, display: 'block' }}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => setIsPlaying(false)}
                 />
+                {/* Play / Pause overlay */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center transition-opacity"
+                  style={{ opacity: isPlaying ? 0 : 1, pointerEvents: 'none' }}
+                >
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+                    style={{ background: 'rgba(201,79,44,0.92)', backdropFilter: 'blur(4px)' }}
+                  >
+                    {isPlaying
+                      ? <Pause size={22} fill="white" style={{ color: '#fff' }} />
+                      : <Play  size={22} fill="white" style={{ color: '#fff', marginLeft: 2 }} />
+                    }
+                  </div>
+                </div>
               </div>
 
               {/* Stats row */}

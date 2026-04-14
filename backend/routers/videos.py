@@ -175,7 +175,8 @@ async def upload_video_file(
     current_user: models.User = Depends(auth_utils.require_educator),
 ):
     """Upload a video file to Supabase Storage. Returns the signed URL."""
-    if file.content_type not in _ALLOWED_VIDEO_MIME:
+    base_content_type = (file.content_type or '').split(';')[0].strip()
+    if base_content_type not in _ALLOWED_VIDEO_MIME:
         raise HTTPException(status_code=400, detail=f"Unsupported video type: {file.content_type}")
     data = await file.read()
     _check_upload(data, file.filename or "video.mp4", _ALLOWED_VIDEO_MIME, _ALLOWED_VIDEO_EXT, _VIDEO_MAX_BYTES, "video")
