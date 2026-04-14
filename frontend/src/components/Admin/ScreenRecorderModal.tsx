@@ -26,15 +26,24 @@ function fmt(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 
-function bestMimeType(): string {
+function makeBestRecorder(stream: MediaStream): MediaRecorder {
+  // isTypeSupported() lies — actually try constructing the MediaRecorder.
   const candidates = [
-    'video/webm;codecs=vp9,opus',
     'video/webm;codecs=vp9',
-    'video/webm;codecs=vp8,opus',
+    'video/webm;codecs=vp8',
     'video/webm',
     'video/mp4',
+    '',                        // browser default
   ];
-  return candidates.find(t => MediaRecorder.isTypeSupported(t)) ?? 'video/webm';
+  for (const mimeType of candidates) {
+    try {
+      const options = mimeType ? { mimeType } : {};
+      return new MediaRecorder(stream, options);
+    } catch {
+      // try next
+    }
+  }
+  return new MediaRecorder(stream); // last-ditch
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -161,8 +170,8 @@ export default function ScreenRecorderModal({ onClose, onUploaded }: ScreenRecor
     chunksRef.current = [];
     elapsedRef.current = 0;
 
-    const mimeType = bestMimeType();
-    const mr = new MediaRecorder(stream, { mimeType });
+    const mr = makeBestRecorder(stream);
+    const mimeType = mr.mimeType; // actual type chosen by the browser
     mediaRecorderRef.current = mr;
 
     mr.ondataavailable = e => {
@@ -170,7 +179,7 @@ export default function ScreenRecorderModal({ onClose, onUploaded }: ScreenRecor
     };
 
     mr.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: mimeType });
+      const blob = new Blob(chunksRef.current, { type: mimeType || 'video/webm' });
       const url  = URL.createObjectURL(blob);
       setRecordedBlob(blob);
       setBlobUrl(url);
