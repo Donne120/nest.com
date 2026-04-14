@@ -92,7 +92,7 @@ function RequireManager({ children }: { children: ReactNode }) {
 
 function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 font-sans">
+    <div className="min-h-screen bg-[#FAF7F2] dark:bg-slate-950 font-sans">
       <Navbar />
       <main className="pb-20 md:pb-0">{children}</main>
       <BottomNav />
@@ -111,7 +111,7 @@ export default function App() {
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <BrandColorApplier />
         <ErrorBoundary>
-        <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-slate-950" />}>
+        <Suspense fallback={<div className="min-h-screen bg-[#FAF7F2] dark:bg-slate-950" />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -191,7 +191,7 @@ export default function App() {
             path="/assignments/:assignmentId/work"
             element={
               <RequireAuth>
-                <div className="min-h-screen bg-gray-50 dark:bg-slate-950 font-sans flex flex-col">
+                <div className="min-h-screen bg-[#FAF7F2] dark:bg-slate-950 font-sans flex flex-col">
                   <Navbar />
                   <AssignmentWorkspace />
                 </div>
@@ -214,7 +214,7 @@ export default function App() {
             path="/video/:videoId"
             element={
               <RequireAuth>
-                <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
+                <div className="min-h-screen bg-[#FAF7F2] font-sans flex flex-col">
                   <Navbar />
                   <VideoPage />
                 </div>

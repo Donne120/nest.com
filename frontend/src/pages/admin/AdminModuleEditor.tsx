@@ -4,8 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, Trash2, Video,
   Save, GripVertical, Link as LinkIcon,
-  FileText, Film, Globe, File, UploadCloud, X, BookOpen,
+  FileText, Film, Globe, File, UploadCloud, X, BookOpen, ScreenShare,
 } from 'lucide-react';
+import ScreenRecorderModal from '../../components/Admin/ScreenRecorderModal';
 import api from '../../api/client';
 import type { Module, Video as VideoType, Lesson, ModuleResource } from '../../types';
 import Button from '../../components/UI/Button';
@@ -275,7 +276,7 @@ export default function AdminModuleEditor() {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               AI Context Notes
-              <span className="ml-1.5 text-[11px] font-normal text-gray-400 bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded-full">
+              <span className="ml-1.5 text-[11px] font-normal text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">
                 Only visible to AI
               </span>
             </label>
@@ -682,12 +683,15 @@ interface UploadFieldProps {
   endpoint: string;      // e.g. '/videos/upload/video'
   urlPlaceholder: string;
   required?: boolean;
+  allowRecord?: boolean;
+  onDurationHint?: (seconds: number) => void;
 }
 
-function UploadField({ label, value, onChange, accept, endpoint, urlPlaceholder, required }: UploadFieldProps) {
-  const [mode, setMode] = useState<'url' | 'upload'>(value ? 'url' : 'url');
+function UploadField({ label, value, onChange, accept, endpoint, urlPlaceholder, required, allowRecord, onDurationHint }: UploadFieldProps) {
+  const [mode, setMode] = useState<'url' | 'upload' | 'record'>('url');
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [showRecorder, setShowRecorder] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const inputCls = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition";
@@ -721,6 +725,16 @@ function UploadField({ label, value, onChange, accept, endpoint, urlPlaceholder,
           {label} {required && <span className="text-red-400">*</span>}
         </label>
         <div className="flex rounded-lg border border-gray-200 overflow-hidden text-[11px] font-semibold">
+          {allowRecord && (
+            <button
+              type="button"
+              onClick={() => setMode('record')}
+              className={clsx('px-2.5 py-1 flex items-center gap-1 transition-colors',
+                mode === 'record' ? 'bg-brand-600 text-white' : 'text-gray-500 hover:bg-gray-50')}
+            >
+              <ScreenShare size={10} /> Record
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setMode('url')}
@@ -740,14 +754,16 @@ function UploadField({ label, value, onChange, accept, endpoint, urlPlaceholder,
         </div>
       </div>
 
-      {mode === 'url' ? (
+      {mode === 'url' && (
         <input
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={urlPlaceholder}
           className={inputCls}
         />
-      ) : (
+      )}
+
+      {mode === 'upload' && (
         <div>
           {/* Drop zone */}
           <div
@@ -786,6 +802,47 @@ function UploadField({ label, value, onChange, accept, endpoint, urlPlaceholder,
 
           <input ref={fileRef} type="file" accept={accept} className="hidden" onChange={e => handleFiles(e.target.files)} />
         </div>
+      )}
+
+      {mode === 'record' && allowRecord && (
+        <div>
+          {value ? (
+            /* Already have a recorded URL */
+            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
+              <ScreenShare size={13} className="text-emerald-600 flex-shrink-0" />
+              <span className="text-[11px] text-emerald-700 truncate flex-1 font-mono">{value}</span>
+              <button type="button" onClick={() => onChange('')} className="text-emerald-400 hover:text-red-500 flex-shrink-0">
+                <X size={12} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowRecorder(true)}
+              className="w-full flex flex-col items-center gap-2 py-5 border-2 border-dashed border-brand-200 rounded-lg bg-brand-50/40 hover:bg-brand-50 hover:border-brand-300 transition-colors cursor-pointer"
+            >
+              <div className="w-9 h-9 rounded-xl bg-brand-100 flex items-center justify-center">
+                <ScreenShare size={17} className="text-brand-600" />
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-semibold text-brand-700">Record your screen</p>
+                <p className="text-[10px] text-brand-500 mt-0.5">Up to 5 minutes · screen + audio</p>
+              </div>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Screen recorder modal */}
+      {showRecorder && (
+        <ScreenRecorderModal
+          onClose={() => setShowRecorder(false)}
+          onUploaded={(url, duration) => {
+            onChange(url);
+            onDurationHint?.(duration);
+            setShowRecorder(false);
+          }}
+        />
       )}
     </div>
   );
@@ -830,6 +887,8 @@ function VideoFormCard({ form, setForm, onSave, onCancel, saving }: VideoFormCar
             endpoint="/videos/upload/video"
             urlPlaceholder="https://… (YouTube, Vimeo, mp4, m3u8)"
             required
+            allowRecord
+            onDurationHint={secs => f('duration_seconds', secs)}
           />
         </div>
 

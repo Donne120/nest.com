@@ -899,7 +899,7 @@ export default function OrgSettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('organization');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div>
       <div className="mx-auto max-w-5xl px-6 py-12 lg:px-8 lg:py-16">
         {/* Header */}
         <div className="mb-10">
