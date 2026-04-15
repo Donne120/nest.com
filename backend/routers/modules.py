@@ -25,13 +25,23 @@ def _check_learner_access(user: models.User):
         )
 
 
-def _org_module(module_id: str, org_id: str, db: Session) -> models.Module:
-    """Fetch an active (non-deleted) module scoped to the org."""
-    m = db.query(models.Module).filter(
+def _org_module(
+    module_id: str,
+    org_id: str | None,
+    db: Session,
+) -> models.Module:
+    """Fetch an active (non-deleted) module scoped to the org.
+
+    Super-admins have org_id=None — skip the org filter so they can
+    manage any module.
+    """
+    q = db.query(models.Module).filter(
         models.Module.id == module_id,
-        models.Module.organization_id == org_id,
         models.Module.deleted_at.is_(None),
-    ).first()
+    )
+    if org_id is not None:
+        q = q.filter(models.Module.organization_id == org_id)
+    m = q.first()
     if not m:
         raise HTTPException(status_code=404, detail="Module not found")
     return m
@@ -59,14 +69,24 @@ def list_modules(
     db: Session = Depends(get_db),
 ):
     _check_learner_access(current_user)
-    modules = (
+    is_admin = current_user.role in (
+        models.UserRole.educator,
+        models.UserRole.owner,
+        models.UserRole.super_admin,
+    )
+    q = (
         db.query(models.Module)
         .filter(
             models.Module.organization_id == current_user.organization_id,
-            models.Module.is_published.is_(True),
             models.Module.deleted_at.is_(None),
         )
-        .options(joinedload(models.Module.videos))
+    )
+    # Learners only see published modules; educators/owners/super_admin
+    # see all so the admin courses page works correctly.
+    if not is_admin:
+        q = q.filter(models.Module.is_published.is_(True))
+    modules = (
+        q.options(joinedload(models.Module.videos))
         .order_by(models.Module.order_index)
         .all()
     )
@@ -122,15 +142,17 @@ def create_module(
     current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
-    org = plan_limits.get_org_or_403(current_user, db)
-    # Count ALL modules ever created — including soft-deleted ones.
-    # This prevents the delete-reupload loop from bypassing the cap.
-    all_time_count = (
-        db.query(func.count(models.Module.id))
-        .filter(models.Module.organization_id == org.id)
-        .scalar()
-    ) or 0
-    plan_limits.check_module_limit(org, all_time_count)
+    # Super-admins have no org — skip plan limits entirely.
+    if current_user.role != models.UserRole.super_admin:
+        org = plan_limits.get_org_or_403(current_user, db)
+        # Count ALL modules ever created — including soft-deleted ones.
+        # This prevents the delete-reupload loop from bypassing the cap.
+        all_time_count = (
+            db.query(func.count(models.Module.id))
+            .filter(models.Module.organization_id == org.id)
+            .scalar()
+        ) or 0
+        plan_limits.check_module_limit(org, all_time_count)
 
     m = models.Module(
         **payload.model_dump(),
