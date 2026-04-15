@@ -4,9 +4,9 @@ Payments router — manual proof-of-payment verification system.
 Flow:
   1. User sends money via MoMo/bank to Nest's number
   2. User submits proof (screenshot + details) via POST /payments/submit
-  3. Admin (super_admin / owner) sees pending queue via GET /payments/pending
+  3. Admin sees pending queue via GET /payments/pending
   4. Admin approves → access granted automatically
-     - teacher_subscription → org.subscription_status = active, org.plan updated
+     - teacher_subscription → org.plan + subscription_status updated
      - module_purchase      → ModuleAccess row created for the student
   5. Admin rejects → rejection_reason stored, user notified
 """
@@ -35,6 +35,7 @@ from models import (
     User, UserRole, Module,
 )
 import email_utils
+import plan_limits
 import storage as storage_helper
 
 limiter = Limiter(key_func=get_remote_address)
@@ -43,7 +44,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/payments", tags=["payments"])
 
 
-# ── helpers ────────────────────────────────────────────────────────────────────
+# ── helpers ───────────────────────────────────────────────────────────
 
 _ALLOWED_CURRENCIES = {"RWF", "USD", "EUR", "XAF"}
 _PHONE_RE = re.compile(r"^\+?[0-9\-\s]{7,20}$")
@@ -81,8 +82,12 @@ def _serialize(sub: PaymentSubmission) -> dict:
         "plan": sub.plan,
         "module_id": sub.module_id,
         "rejection_reason": sub.rejection_reason,
-        "reviewed_at": sub.reviewed_at.isoformat() if sub.reviewed_at else None,
-        "created_at": sub.created_at.isoformat() if sub.created_at else None,
+        "reviewed_at": (
+            sub.reviewed_at.isoformat() if sub.reviewed_at else None
+        ),
+        "created_at": (
+            sub.created_at.isoformat() if sub.created_at else None
+        ),
         "payer": {
             "id": sub.payer.id,
             "full_name": sub.payer.full_name,
@@ -99,7 +104,7 @@ def _serialize(sub: PaymentSubmission) -> dict:
     }
 
 
-# ── submit proof ───────────────────────────────────────────────────────────────
+# ── submit proof ──────────────────────────────────────────────────────
 
 @router.post("/submit")
 @limiter.limit("10/minute")
@@ -119,34 +124,69 @@ async def submit_payment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ── Input validation ───────────────────────────────────────────────────
+    # ── Proof image required ───────────────────────────────────────────
     if not proof_image or not proof_image.filename:
         raise HTTPException(
             status_code=400,
-            detail="Payment proof screenshot is required. Please upload your payment confirmation.",
+            detail=(
+                "Payment proof screenshot is required. "
+                "Please upload your payment confirmation."
+            ),
         )
 
-    # Validate payment_type matches the user's role — never trust the client
-    _ROLE_ALLOWED_TYPES = {
-        models.UserRole.learner:     {models.PaymentType.learner_access, models.PaymentType.module_purchase},
-        models.UserRole.educator:    {models.PaymentType.teacher_subscription},
-        models.UserRole.owner:       {models.PaymentType.teacher_subscription},
-        models.UserRole.super_admin: {models.PaymentType.teacher_subscription, models.PaymentType.learner_access, models.PaymentType.module_purchase},
+    # ── Role-based payment type gate ───────────────────────────────────
+    # Never trust the client — validate the type against the user's role.
+    _ROLE_ALLOWED: dict = {
+        UserRole.learner: {
+            PaymentType.learner_access,
+            PaymentType.module_purchase,
+        },
+        UserRole.educator: {PaymentType.teacher_subscription},
+        UserRole.owner: {PaymentType.teacher_subscription},
+        UserRole.super_admin: {
+            PaymentType.teacher_subscription,
+            PaymentType.learner_access,
+            PaymentType.module_purchase,
+        },
     }
     try:
-        pt_enum = models.PaymentType(payment_type)
+        pt_enum = PaymentType(payment_type)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid payment type: {payment_type}")
-    allowed_for_role = _ROLE_ALLOWED_TYPES.get(current_user.role, set())
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid payment type: {payment_type}",
+        )
+    allowed_for_role = _ROLE_ALLOWED.get(current_user.role, set())
     if pt_enum not in allowed_for_role:
         raise HTTPException(
             status_code=403,
-            detail=f"Your account role is not permitted to submit a '{payment_type}' payment.",
+            detail=(
+                f"Your account role is not permitted to submit "
+                f"a '{payment_type}' payment."
+            ),
         )
+
+    # ── Trial org cannot collect learner payments ──────────────────────
+    # Learner access / module purchase payments flow money TO the org.
+    # Trial orgs are not verified and must not collect learner money.
+    if pt_enum in {
+        PaymentType.learner_access,
+        PaymentType.module_purchase,
+    }:
+        org = plan_limits.get_org_or_403(current_user, db)
+        if plan_limits.effective_plan(org) == Plan.trial:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "This organisation is on a free trial and cannot "
+                    "collect learner payments yet. "
+                    "Please contact the school administrator."
+                ),
+            )
+
+    # ── Input validation ───────────────────────────────────────────────
     if amount <= 0 or amount > 10_000_000:
-        raise HTTPException(
-            status_code=400, detail="Invalid amount."
-        )
+        raise HTTPException(status_code=400, detail="Invalid amount.")
     if currency not in _ALLOWED_CURRENCIES:
         raise HTTPException(
             status_code=400,
@@ -154,11 +194,12 @@ async def submit_payment(
         )
     if phone_number and not _PHONE_RE.match(phone_number):
         raise HTTPException(
-            status_code=400, detail="Invalid phone number format."
+            status_code=400, detail="Invalid phone number format.",
         )
     if notes and len(notes) > 1000:
         raise HTTPException(
-            status_code=400, detail="Notes must be under 1000 characters."
+            status_code=400,
+            detail="Notes must be under 1000 characters.",
         )
     if transaction_reference and len(transaction_reference) > 200:
         raise HTTPException(
@@ -166,7 +207,7 @@ async def submit_payment(
             detail="Transaction reference too long.",
         )
 
-    # Upload proof screenshot to Supabase
+    # ── Upload proof screenshot to Supabase ────────────────────────────
     proof_url = None
     if proof_image and proof_image.filename:
         try:
@@ -177,32 +218,51 @@ async def submit_payment(
                 b'\xff\xd8\xff': 'jpg',
                 b'\x89PNG': 'png',
                 b'GIF8': 'gif',
-                b'RIFF': 'webp',  # RIFF....WEBP
+                b'RIFF': 'webp',   # RIFF....WEBP
             }
             _detected = None
             for magic, ftype in _ALLOWED_MAGIC.items():
-                if content[:len(magic)] == magic or (ftype == 'webp' and content[8:12] == b'WEBP'):
+                is_webp = (
+                    ftype == 'webp' and content[8:12] == b'WEBP'
+                )
+                if content[:len(magic)] == magic or is_webp:
                     _detected = ftype
                     break
             if _detected is None:
-                raise HTTPException(status_code=400, detail="Only JPG, PNG, GIF, or WEBP images are accepted as payment proof.")
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Only JPG, PNG, GIF, or WEBP images are "
+                        "accepted as payment proof."
+                    ),
+                )
 
-            ext = _detected
-            filename = f"{uuid.uuid4()}.{ext}"
+            filename = f"{uuid.uuid4()}.{_detected}"
             client = storage_helper.get_client()
             client.storage.from_("payment-proofs").upload(
                 path=filename,
                 file=content,
-                file_options={"content-type": proof_image.content_type or "image/jpeg"},
+                file_options={
+                    "content-type": (
+                        proof_image.content_type or "image/jpeg"
+                    ),
+                },
             )
-            # Generate a signed URL valid for 1 year (admin needs to view it)
-            result = client.storage.from_("payment-proofs").create_signed_url(filename, 31536000)
-            proof_url = result.get("signedURL") or result.get("signed_url")
+            # Signed URL valid for 1 year so admin can always view it
+            result = client.storage.from_(
+                "payment-proofs"
+            ).create_signed_url(filename, 31536000)
+            proof_url = result.get("signedURL") or result.get(
+                "signed_url"
+            )
+        except HTTPException:
+            raise
         except Exception as e:
             logger.warning(f"Proof image upload failed (non-fatal): {e}")
 
-    # Resolve payee for module purchases — scoped to the user's own org
-    # so cross-tenant module IDs are rejected.
+    # ── Resolve payee for module purchases ─────────────────────────────
+    # Scoped to the user's own org so cross-tenant module IDs are
+    # rejected.
     payee_id = None
     if payment_type == PaymentType.module_purchase and module_id:
         mod = db.query(Module).filter(
@@ -265,7 +325,7 @@ async def submit_payment(
     }
 
 
-# ── admin: pending queue ───────────────────────────────────────────────────────
+# ── admin: pending queue ──────────────────────────────────────────────
 
 @router.get("/pending")
 def get_pending_payments(
@@ -280,9 +340,13 @@ def get_pending_payments(
 
     # Educators only see their own module purchase proofs
     if current_user.role == UserRole.educator:
-        q = q.filter(PaymentSubmission.payee_id == current_user.id)
+        q = q.filter(
+            PaymentSubmission.payee_id == current_user.id
+        )
 
-    submissions = q.order_by(PaymentSubmission.created_at.desc()).all()
+    submissions = q.order_by(
+        PaymentSubmission.created_at.desc()
+    ).all()
     return [_serialize(s) for s in submissions]
 
 
@@ -297,13 +361,17 @@ def get_all_payments(
         joinedload(PaymentSubmission.module),
     )
     if current_user.role == UserRole.educator:
-        q = q.filter(PaymentSubmission.payee_id == current_user.id)
+        q = q.filter(
+            PaymentSubmission.payee_id == current_user.id
+        )
 
-    submissions = q.order_by(PaymentSubmission.created_at.desc()).all()
+    submissions = q.order_by(
+        PaymentSubmission.created_at.desc()
+    ).all()
     return [_serialize(s) for s in submissions]
 
 
-# ── approve ────────────────────────────────────────────────────────────────────
+# ── approve ───────────────────────────────────────────────────────────
 
 @router.post("/{payment_id}/approve")
 def approve_payment(
@@ -318,9 +386,13 @@ def approve_payment(
         joinedload(PaymentSubmission.payer),
     ).filter(PaymentSubmission.id == payment_id).first()
     if not sub:
-        raise HTTPException(status_code=404, detail="Payment not found")
+        raise HTTPException(
+            status_code=404, detail="Payment not found"
+        )
     if sub.status != PaymentStatus.pending:
-        raise HTTPException(status_code=400, detail="Payment already processed")
+        raise HTTPException(
+            status_code=400, detail="Payment already processed"
+        )
 
     sub.status = PaymentStatus.approved
     sub.reviewed_by = current_user.id
@@ -339,10 +411,15 @@ def approve_payment(
                 org.subscription_status = SubscriptionStatus.active
                 if sub.plan:
                     org.plan = sub.plan
-                org.subscription_end = datetime.now(timezone.utc) + timedelta(days=30)
+                org.subscription_end = (
+                    datetime.now(timezone.utc) + timedelta(days=30)
+                )
                 org.renewal_notified_at = None
 
-    elif sub.payment_type == PaymentType.module_purchase and sub.module_id:
+    elif (
+        sub.payment_type == PaymentType.module_purchase
+        and sub.module_id
+    ):
         existing = db.query(ModuleAccess).filter(
             ModuleAccess.student_id == sub.payer_id,
             ModuleAccess.module_id == sub.module_id,
@@ -377,7 +454,7 @@ def approve_payment(
     return {"status": "approved", "message": "Access granted."}
 
 
-# ── reject ─────────────────────────────────────────────────────────────────────
+# ── reject ────────────────────────────────────────────────────────────
 
 class RejectBody(BaseModel):
     reason: str = ""
@@ -397,9 +474,13 @@ def reject_payment(
         joinedload(PaymentSubmission.payer),
     ).filter(PaymentSubmission.id == payment_id).first()
     if not sub:
-        raise HTTPException(status_code=404, detail="Payment not found")
+        raise HTTPException(
+            status_code=404, detail="Payment not found"
+        )
     if sub.status != PaymentStatus.pending:
-        raise HTTPException(status_code=400, detail="Payment already processed")
+        raise HTTPException(
+            status_code=400, detail="Payment already processed"
+        )
 
     sub.status = PaymentStatus.rejected
     sub.rejection_reason = body.reason
@@ -423,22 +504,24 @@ def reject_payment(
     return {"status": "rejected"}
 
 
-# ── user: my submissions ───────────────────────────────────────────────────────
+# ── user: my submissions ──────────────────────────────────────────────
 
 @router.get("/mine")
 def get_my_payments(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    submissions = db.query(PaymentSubmission).options(
-        joinedload(PaymentSubmission.module),
-    ).filter(
-        PaymentSubmission.payer_id == current_user.id
-    ).order_by(PaymentSubmission.created_at.desc()).all()
+    submissions = (
+        db.query(PaymentSubmission)
+        .options(joinedload(PaymentSubmission.module))
+        .filter(PaymentSubmission.payer_id == current_user.id)
+        .order_by(PaymentSubmission.created_at.desc())
+        .all()
+    )
     return [_serialize(s) for s in submissions]
 
 
-# ── check module access ────────────────────────────────────────────────────────
+# ── check module access ───────────────────────────────────────────────
 
 @router.get("/access/{module_id}")
 def check_module_access(

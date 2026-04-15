@@ -5,6 +5,7 @@ from database import get_db
 import models
 import schemas
 import auth as auth_utils
+import plan_limits
 
 router = APIRouter(prefix="/api/organizations", tags=["organizations"])
 
@@ -34,8 +35,13 @@ def update_my_org(
         models.Organization.id == current_user.organization_id
     ).first()
     if not org:
-        raise HTTPException(status_code=404, detail="Organization not found")
-    for field, value in payload.model_dump(exclude_unset=True).items():
+        raise HTTPException(
+            status_code=404, detail="Organization not found"
+        )
+    updates = payload.model_dump(exclude_unset=True)
+    if "logo_url" in updates or "brand_color" in updates:
+        plan_limits.check_custom_branding(org)
+    for field, value in updates.items():
         setattr(org, field, value)
     db.commit()
     db.refresh(org)

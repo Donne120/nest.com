@@ -8,6 +8,7 @@ import schemas
 import auth as auth_utils
 from config import settings
 import email_utils
+import plan_limits
 
 router = APIRouter(prefix="/api/invitations", tags=["invitations"])
 
@@ -21,7 +22,23 @@ def create_invitation(
 ):
     # Don't allow creating super_admin invites
     if payload.role == models.UserRole.super_admin:
-        raise HTTPException(status_code=400, detail="Cannot invite super_admin")
+        raise HTTPException(
+            status_code=400, detail="Cannot invite super_admin"
+        )
+
+    # Educator invites are capped by plan
+    if payload.role == models.UserRole.educator:
+        org = plan_limits.get_org_or_403(current_user, db)
+        current_educator_count = (
+            db.query(models.User)
+            .filter(
+                models.User.organization_id == org.id,
+                models.User.role == models.UserRole.educator,
+                models.User.is_active.is_(True),
+            )
+            .count()
+        )
+        plan_limits.check_educator_invite(org, current_educator_count)
 
     # Check if this email already has a pending invite in this org
     existing = db.query(models.Invitation).filter(

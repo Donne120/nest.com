@@ -269,6 +269,9 @@ class Module(Base):
     created_by = Column(String, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    # Soft delete — set instead of hard DELETE so all-time module count is preserved
+    # for plan limit enforcement (prevents delete-reupload fraud).
+    deleted_at = Column(DateTime(timezone=True), nullable=True, index=True)
 
     organization = relationship("Organization", back_populates="modules")
     videos = relationship("Video", back_populates="module", order_by="Video.order_index")

@@ -12,6 +12,16 @@ const BG2   = '#e8e2db';
 const ACC   = '#c94f2c';
 const GO    = '#2a7a4b';
 
+// Features shared across every paid plan (shown in the "all plans" strip)
+const ALL_PLAN_FEATURES = [
+  'AI Q&A on every video',
+  'Quizzes & assignments',
+  'Completion certificates',
+  'Analytics dashboard',
+  'Meeting bookings',
+  'Keep 100% of student payments',
+];
+
 const PLANS = [
   {
     key: 'starter',
@@ -22,9 +32,8 @@ const PLANS = [
     description: 'Perfect for individual tutors just getting started.',
     features: [
       'Up to 5 modules',
+      'Video uploads up to 500 MB',
       'Unlimited students',
-      'AI Q&A on videos',
-      'Certificates',
       'Email support',
     ],
   },
@@ -37,11 +46,8 @@ const PLANS = [
     description: 'For active educators building a serious learning business.',
     features: [
       'Unlimited modules',
+      'Video uploads up to 2 GB',
       'Unlimited students',
-      'AI Q&A on videos',
-      'Certificates',
-      'Assignments & quizzes',
-      'Analytics dashboard',
       'Priority support',
     ],
     highlight: true,
@@ -55,10 +61,10 @@ const PLANS = [
     description: 'For schools, academies, and institutions with multiple teachers.',
     features: [
       'Everything in Professional',
+      'Video uploads up to 5 GB',
       'Multiple teacher accounts',
-      'Custom branding',
+      'Custom branding (logo + colours)',
       'Dedicated onboarding',
-      'Invoice & PO billing',
       'SLA support',
     ],
   },
@@ -99,6 +105,37 @@ export default function PricingPage() {
           Subscribe once. Keep 100% of what your students pay.
           No commissions. No surprises.
         </p>
+      </div>
+
+      {/* ── Every plan includes ────────────────────────────────── */}
+      <div style={{
+        maxWidth: 960, margin: '0 auto 32px', padding: '0 24px',
+      }}>
+        <div style={{
+          background: SURF, border: `1px solid ${RULE}`,
+          borderRadius: 8, padding: '20px 28px',
+        }}>
+          <div style={{
+            fontFamily: "'Inconsolata', monospace",
+            fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: GO, marginBottom: 14,
+          }}>
+            Every paid plan includes
+          </div>
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: '10px 32px',
+          }}>
+            {ALL_PLAN_FEATURES.map(f => (
+              <div key={f} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontSize: 13, color: INK2,
+              }}>
+                <span style={{ color: GO, fontSize: 14 }}>✓</span>
+                {f}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── Plans grid ─────────────────────────────────────────── */}
@@ -176,13 +213,27 @@ export default function PricingPage() {
               {plan.features.map(f => (
                 <li key={f} style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  fontSize: 13, color: plan.highlight ? 'rgba(255,255,255,0.75)' : INK2,
+                  fontSize: 13,
+                  color: plan.highlight ? 'rgba(255,255,255,0.85)' : INK,
+                  fontWeight: 500,
                   marginBottom: 10,
                 }}>
-                  <span style={{ color: plan.highlight ? '#6fcf97' : GO, flexShrink: 0, fontSize: 15 }}>✓</span>
+                  <span style={{
+                    color: plan.highlight ? '#6fcf97' : GO,
+                    flexShrink: 0, fontSize: 15,
+                  }}>✓</span>
                   {f}
                 </li>
               ))}
+              <li style={{
+                borderTop: `1px solid ${plan.highlight ? 'rgba(255,255,255,0.1)' : RULE}`,
+                marginTop: 12, paddingTop: 12,
+                fontSize: 12,
+                color: plan.highlight ? 'rgba(255,255,255,0.4)' : INK3,
+                fontStyle: 'italic',
+              }}>
+                + all core features (AI Q&A, quizzes, analytics…)
+              </li>
             </ul>
 
             <button

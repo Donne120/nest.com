@@ -130,7 +130,7 @@ export default function SignupPage() {
   const slug = toSlug(orgName);
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, display: 'flex', fontFamily: UI, position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: UI, position: 'relative', overflow: 'hidden' }}>
 
       {/* Noise */}
       <div style={{
@@ -139,13 +139,20 @@ export default function SignupPage() {
         opacity: 0.032,
       }} />
 
+      {/* Card */}
+      <div style={{
+        display: 'flex', width: '100%', maxWidth: 960, minHeight: '100vh',
+        position: 'relative', zIndex: 1,
+        margin: '0 auto',
+      }}>
+
       {/* Left panel */}
       <div style={{
-        width: '45%', minHeight: '100vh',
+        width: 440, flexShrink: 0, minHeight: '100vh',
         borderRight: `1px solid ${RULE}`,
-        position: 'relative', overflow: 'hidden', flexShrink: 0,
+        position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-        padding: '48px 56px',
+        padding: '56px 56px',
       }}
         className="su-left-panel"
       >
@@ -201,8 +208,8 @@ export default function SignupPage() {
       </div>
 
       {/* Right: form */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 40px', position: 'relative', zIndex: 1 }}>
-        <div style={{ width: '100%', maxWidth: 400 }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '56px 64px', position: 'relative', zIndex: 1 }}>
+        <div style={{ width: '100%', maxWidth: 380 }}>
 
           {/* Success */}
           {step === 3 ? (
@@ -285,6 +292,8 @@ export default function SignupPage() {
           )}
         </div>
       </div>
+
+      </div>{/* /Card */}
 
       <style>{`
         @keyframes lp-spin { to { transform: rotate(360deg); } }

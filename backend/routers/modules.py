@@ -6,6 +6,7 @@ from database import get_db
 import models
 import schemas
 import auth as auth_utils
+import plan_limits
 
 router = APIRouter(prefix="/api/modules", tags=["modules"])
 
@@ -25,10 +26,11 @@ def _check_learner_access(user: models.User):
 
 
 def _org_module(module_id: str, org_id: str, db: Session) -> models.Module:
-    """Fetch a module scoped to the org. Raises 404 if not found or cross-org."""
+    """Fetch an active (non-deleted) module scoped to the org."""
     m = db.query(models.Module).filter(
         models.Module.id == module_id,
         models.Module.organization_id == org_id,
+        models.Module.deleted_at.is_(None),
     ).first()
     if not m:
         raise HTTPException(status_code=404, detail="Module not found")
@@ -62,6 +64,7 @@ def list_modules(
         .filter(
             models.Module.organization_id == current_user.organization_id,
             models.Module.is_published.is_(True),
+            models.Module.deleted_at.is_(None),
         )
         .options(joinedload(models.Module.videos))
         .order_by(models.Module.order_index)
@@ -119,6 +122,16 @@ def create_module(
     current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
+    org = plan_limits.get_org_or_403(current_user, db)
+    # Count ALL modules ever created — including soft-deleted ones.
+    # This prevents the delete-reupload loop from bypassing the cap.
+    all_time_count = (
+        db.query(func.count(models.Module.id))
+        .filter(models.Module.organization_id == org.id)
+        .scalar()
+    ) or 0
+    plan_limits.check_module_limit(org, all_time_count)
+
     m = models.Module(
         **payload.model_dump(),
         created_by=current_user.id,
@@ -186,6 +199,9 @@ def delete_module(
     current_user: models.User = Depends(auth_utils.require_owner),
     db: Session = Depends(get_db),
 ):
+    from datetime import datetime, timezone
     m = _org_module(module_id, current_user.organization_id, db)
-    db.delete(m)
+    # Soft delete — preserve the row so the all-time module count
+    # remains accurate and the delete-reupload loop stays closed.
+    m.deleted_at = datetime.now(timezone.utc)
     db.commit()

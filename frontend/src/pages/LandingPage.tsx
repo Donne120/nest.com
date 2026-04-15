@@ -702,26 +702,26 @@ const PLANS = [
   {
     tier: 'Starter', name: 'For individual educators',
     desc: 'Everything you need to launch your first course.',
-    price: <><sup style={{ fontSize: 28, verticalAlign: 'top', marginTop: 12, opacity: 0.7 }}>$</sup>29<span style={{ fontSize: 16, color: INK3, fontWeight: 400, fontFamily: UI }}>/mo</span></>,
-    period: 'billed monthly',
+    price: <><sup style={{ fontSize: 28, verticalAlign: 'top', marginTop: 12, opacity: 0.7 }}>$</sup>9<span style={{ fontSize: 16, color: INK3, fontWeight: 400, fontFamily: UI }}>/mo</span></>,
+    period: '≈ 13,000 RWF / month',
     cta: 'Start free trial', ctaTo: '/signup', featured: false,
-    features: ['Up to 50 learners','5 courses','Unlimited videos','Quiz engine','AI Q&A','Progress analytics','Mobile payment collection','Email support'],
+    features: ['Up to 5 modules','Video uploads up to 500 MB','Unlimited students','AI Q&A, quizzes & assignments','Certificates & analytics','Email support'],
   },
   {
     tier: 'Professional', name: 'For growing institutions',
-    desc: 'Unlimited learners, advanced tools, full control.',
-    price: <><sup style={{ fontSize: 28, verticalAlign: 'top', marginTop: 12, opacity: 0.7 }}>$</sup>99<span style={{ fontSize: 16, color: INK3, fontWeight: 400, fontFamily: UI }}>/mo</span></>,
-    period: 'billed monthly',
+    desc: 'Unlimited modules, larger uploads, priority support.',
+    price: <><sup style={{ fontSize: 28, verticalAlign: 'top', marginTop: 12, opacity: 0.7 }}>$</sup>29<span style={{ fontSize: 16, color: INK3, fontWeight: 400, fontFamily: UI }}>/mo</span></>,
+    period: '≈ 42,000 RWF / month',
     cta: 'Start free trial', ctaTo: '/signup', featured: true,
-    features: ['Unlimited learners','Unlimited courses','Advanced analytics','Custom branding','ATS — hiring pipeline','1-on-1 meeting scheduling','Assignments &amp; grading','Priority support'],
+    features: ['Unlimited modules','Video uploads up to 2 GB','Unlimited students','AI Q&A, quizzes & assignments','Certificates & analytics','Priority support'],
   },
   {
-    tier: 'Enterprise', name: 'For large organisations',
-    desc: 'Custom everything. Dedicated team. Full compliance.',
-    price: <span style={{ fontSize: 44, color: INK }}>Custom</span>,
-    period: 'tailored to your institution',
-    cta: 'Contact us', ctaTo: '/login', featured: false,
-    features: ['Everything in Professional','SSO / SAML 2.0','Custom domain','Dedicated success manager','SLA guarantee','Audit logs','API access','Volume pricing'],
+    tier: 'School', name: 'For schools & academies',
+    desc: 'Multiple teachers, custom branding, dedicated support.',
+    price: <><sup style={{ fontSize: 28, verticalAlign: 'top', marginTop: 12, opacity: 0.7 }}>$</sup>79<span style={{ fontSize: 16, color: INK3, fontWeight: 400, fontFamily: UI }}>/mo</span></>,
+    period: '≈ 115,000 RWF / month',
+    cta: 'Start free trial', ctaTo: '/signup', featured: false,
+    features: ['Everything in Professional','Video uploads up to 5 GB','Multiple teacher accounts','Custom branding (logo + colours)','Dedicated onboarding','SLA support'],
   },
 ];
 
@@ -734,7 +734,7 @@ function Pricing() {
           <h2 style={{ fontFamily: DISP, fontSize: 'clamp(42px,5vw,64px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK, marginBottom: 16 }}>
             <em style={{ fontStyle: 'italic', color: GOLD }}>Simple,</em> transparent pricing.
           </h2>
-          <p style={{ fontSize: 16, color: INK2, fontFamily: UI }}>14-day free trial on every plan. No credit card required. Cancel anytime.</p>
+          <p style={{ fontSize: 16, color: INK2, fontFamily: UI }}>Start free — upgrade when you're ready. No credit card. Cancel anytime.</p>
         </div>
 
         <div className="lp-reveal lp-three-col" style={{
@@ -785,7 +785,7 @@ function Pricing() {
           ))}
         </div>
         <p style={{ textAlign: 'center', marginTop: 28, fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.06em' }}>
-          All plans include a 14-day free trial · Mobile payment support included · Cancel anytime
+          All plans include AI Q&A, quizzes, assignments, analytics & certificates · MoMo payment accepted · Cancel anytime
         </p>
       </div>
     </section>

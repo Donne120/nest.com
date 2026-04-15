@@ -10,7 +10,6 @@ from database import get_db
 import models
 import schemas
 import auth as auth_utils
-
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 

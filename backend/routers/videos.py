@@ -7,6 +7,7 @@ import models
 import schemas
 import auth as auth_utils
 import storage
+import plan_limits
 
 router = APIRouter(prefix="/api/videos", tags=["videos"])
 
@@ -105,7 +106,10 @@ def get_video(
     return _video_out(v, db)
 
 
-@router.get("/{video_id}/timeline", response_model=List[schemas.TimelineMarker])
+@router.get(
+    "/{video_id}/timeline",
+    response_model=List[schemas.TimelineMarker],
+)
 def get_timeline_markers(
     video_id: str,
     current_user: models.User = Depends(auth_utils.get_current_user),
@@ -128,7 +132,10 @@ def get_timeline_markers(
         schemas.TimelineMarker(
             timestamp_seconds=q.timestamp_seconds,
             question_id=q.id,
-            question_preview=q.question_text[:80] + ("..." if len(q.question_text) > 80 else ""),
+            question_preview=(
+                q.question_text[:80]
+                + ("..." if len(q.question_text) > 80 else "")
+            ),
             status=q.status,
             answer_count=len(q.answers),
         )
@@ -151,36 +158,46 @@ def update_video(
     return _video_out(v, db)
 
 
-_VIDEO_MAX_BYTES = 500 * 1024 * 1024   # 500 MB
 _IMAGE_MAX_BYTES = 10 * 1024 * 1024    # 10 MB
 
-_ALLOWED_VIDEO_MIME = {"video/mp4", "video/webm", "video/ogg", "video/quicktime"}
+_ALLOWED_VIDEO_MIME = {
+    "video/mp4", "video/webm", "video/ogg", "video/quicktime",
+}
 _ALLOWED_VIDEO_EXT = {".mp4", ".webm", ".ogg", ".mov"}
 _ALLOWED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp"}
 _ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp"}
 
 
-def _check_upload(data: bytes, filename: str, allowed_mime: set, allowed_ext: set, max_bytes: int, label: str):
+def _check_ext(filename: str, allowed_ext: set, label: str):
     import os
     ext = os.path.splitext(filename.lower())[1]
     if ext not in allowed_ext:
-        raise HTTPException(status_code=400, detail=f"Unsupported {label} extension: {ext}")
-    if len(data) > max_bytes:
-        raise HTTPException(status_code=413, detail=f"{label.capitalize()} exceeds maximum size of {max_bytes // (1024*1024)} MB")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported {label} extension: {ext}",
+        )
 
 
 @router.post("/upload/video", status_code=201)
 async def upload_video_file(
     file: UploadFile = File(...),
     current_user: models.User = Depends(auth_utils.require_educator),
+    db: Session = Depends(get_db),
 ):
     """Upload a video file to Supabase Storage. Returns the signed URL."""
     base_content_type = (file.content_type or '').split(';')[0].strip()
     if base_content_type not in _ALLOWED_VIDEO_MIME:
-        raise HTTPException(status_code=400, detail=f"Unsupported video type: {file.content_type}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported video type: {file.content_type}",
+        )
     data = await file.read()
-    _check_upload(data, file.filename or "video.mp4", _ALLOWED_VIDEO_MIME, _ALLOWED_VIDEO_EXT, _VIDEO_MAX_BYTES, "video")
-    url = storage.upload_video(data, file.filename or "video.mp4", file.content_type)
+    _check_ext(file.filename or "video.mp4", _ALLOWED_VIDEO_EXT, "video")
+    org = plan_limits.get_org_or_403(current_user, db)
+    plan_limits.check_upload_size(org, len(data))
+    url = storage.upload_video(
+        data, file.filename or "video.mp4", file.content_type,
+    )
     return {"url": url}
 
 
@@ -191,10 +208,22 @@ async def upload_thumbnail_file(
 ):
     """Upload a thumbnail image to Supabase Storage. Returns the public URL."""
     if file.content_type not in _ALLOWED_IMAGE_MIME:
-        raise HTTPException(status_code=400, detail=f"Unsupported image type: {file.content_type}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported image type: {file.content_type}",
+        )
     data = await file.read()
-    _check_upload(data, file.filename or "thumb.jpg", _ALLOWED_IMAGE_MIME, _ALLOWED_IMAGE_EXT, _IMAGE_MAX_BYTES, "image")
-    url = storage.upload_thumbnail(data, file.filename or "thumb.jpg", file.content_type)
+    _check_ext(
+        file.filename or "thumb.jpg", _ALLOWED_IMAGE_EXT, "image",
+    )
+    if len(data) > _IMAGE_MAX_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail="Image exceeds maximum size of 10 MB",
+        )
+    url = storage.upload_thumbnail(
+        data, file.filename or "thumb.jpg", file.content_type,
+    )
     return {"url": url}
 
 
