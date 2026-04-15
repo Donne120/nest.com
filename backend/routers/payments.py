@@ -169,10 +169,11 @@ async def submit_payment(
     # ── Trial org cannot collect learner payments ──────────────────────
     # Learner access / module purchase payments flow money TO the org.
     # Trial orgs are not verified and must not collect learner money.
-    if pt_enum in {
-        PaymentType.learner_access,
-        PaymentType.module_purchase,
-    }:
+    # Super-admin is fully exempt from this check.
+    if (
+        pt_enum in {PaymentType.learner_access, PaymentType.module_purchase}
+        and current_user.role != UserRole.super_admin
+    ):
         org = plan_limits.get_org_or_403(current_user, db)
         if plan_limits.effective_plan(org) == Plan.trial:
             raise HTTPException(

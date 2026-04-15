@@ -12,17 +12,23 @@ import plan_limits
 router = APIRouter(prefix="/api/videos", tags=["videos"])
 
 
-def _org_video(video_id: str, org_id: str, db: Session) -> models.Video:
-    """Fetch a video scoped to the org via module FK. Raises 404 otherwise."""
-    v = (
+def _org_video(
+    video_id: str,
+    org_id: str | None,
+    db: Session,
+) -> models.Video:
+    """Fetch a video scoped to the org via module FK.
+
+    Super-admins have org_id=None — skip the org filter.
+    """
+    q = (
         db.query(models.Video)
         .join(models.Module, models.Video.module_id == models.Module.id)
-        .filter(
-            models.Video.id == video_id,
-            models.Module.organization_id == org_id,
-        )
-        .first()
+        .filter(models.Video.id == video_id)
     )
+    if org_id is not None:
+        q = q.filter(models.Module.organization_id == org_id)
+    v = q.first()
     if not v:
         raise HTTPException(status_code=404, detail="Video not found")
     return v
@@ -58,11 +64,13 @@ def list_videos(
     db: Session = Depends(get_db),
 ):
     _check_learner_access(current_user)
-    # Verify the module belongs to this org
-    module = db.query(models.Module).filter(
-        models.Module.id == module_id,
-        models.Module.organization_id == current_user.organization_id,
-    ).first()
+    # Verify the module belongs to this org (super_admin sees any module)
+    q = db.query(models.Module).filter(models.Module.id == module_id)
+    if current_user.organization_id is not None:
+        q = q.filter(
+            models.Module.organization_id == current_user.organization_id
+        )
+    module = q.first()
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
 
@@ -193,8 +201,10 @@ async def upload_video_file(
         )
     data = await file.read()
     _check_ext(file.filename or "video.mp4", _ALLOWED_VIDEO_EXT, "video")
-    org = plan_limits.get_org_or_403(current_user, db)
-    plan_limits.check_upload_size(org, len(data))
+    # Super-admin is exempt from upload size limits
+    if current_user.role != models.UserRole.super_admin:
+        org = plan_limits.get_org_or_403(current_user, db)
+        plan_limits.check_upload_size(org, len(data))
     url = storage.upload_video(
         data, file.filename or "video.mp4", file.content_type,
     )

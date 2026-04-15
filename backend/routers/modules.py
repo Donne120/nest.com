@@ -74,13 +74,10 @@ def list_modules(
         models.UserRole.owner,
         models.UserRole.super_admin,
     )
-    q = (
-        db.query(models.Module)
-        .filter(
-            models.Module.organization_id == current_user.organization_id,
-            models.Module.deleted_at.is_(None),
-        )
-    )
+    q = db.query(models.Module).filter(models.Module.deleted_at.is_(None))
+    # Super-admins have no org — they see all modules across every org.
+    if current_user.organization_id is not None:
+        q = q.filter(models.Module.organization_id == current_user.organization_id)
     # Learners only see published modules; educators/owners/super_admin
     # see all so the admin courses page works correctly.
     if not is_admin:
