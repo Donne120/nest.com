@@ -131,7 +131,7 @@ export default function ModulesPage() {
         {/* Animated grid lines */}
         <div className="hero-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
 
-        <div style={{ maxWidth: 1024, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 2 }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 2 }}>
 
           {/* Eyebrow */}
           <div style={{
@@ -204,7 +204,7 @@ export default function ModulesPage() {
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
       <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(11,12,15,0.8)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 1024, margin: '0 auto', padding: '0 16px', minHeight: 52, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 16px', minHeight: 52, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
 
           {/* Filter tabs — horizontally scrollable on mobile */}
           <div style={{ display: 'flex', gap: 2, overflowX: 'auto', WebkitOverflowScrolling: 'touch', flexShrink: 0, scrollbarWidth: 'none' }}>
@@ -254,7 +254,7 @@ export default function ModulesPage() {
       </div>
 
       {/* ══ MODULE GRID ═══════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: 1024, margin: '0 auto', padding: '24px 24px 60px' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '24px 32px 60px' }}>
         {isLoading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -285,7 +285,7 @@ export default function ModulesPage() {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
             {filtered.map(m => (
               <div key={m.id} style={{ position: 'relative' }}>
                 <ModuleCard module={m} />
