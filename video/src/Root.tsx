@@ -3,6 +3,8 @@ import { Composition, Still } from 'remotion';
 import { TutorialThumbnail } from './tutorial/TutorialThumbnail';
 import { NestPromo } from './NestPromo';
 import { NestCourseIntro } from './NestCourseIntro';
+import { LessonVideo } from './LessonVideo';
+import type { LessonVideoProps } from './LessonVideo';
 import { Onboarding01 } from './onboarding/Onboarding01';
 import { Onboarding02 } from './onboarding/Onboarding02';
 import { Onboarding03 } from './onboarding/Onboarding03';
@@ -66,6 +68,27 @@ const TUTORIAL_COMPONENTS = [
 
 export const Root: React.FC = () => (
   <>
+    {/* ── Auto-generated lesson videos (3–5 min, data-driven) ── */}
+    <Composition
+      id="LessonVideo"
+      component={LessonVideo}
+      durationInFrames={300}
+      fps={30}
+      width={1920}
+      height={1080}
+      defaultProps={{
+        course_title: 'Course Title',
+        module_title: 'Module Title',
+        lesson_title: 'Lesson Title',
+        lesson_number: 1,
+        total_frames: 300,
+        slides: [],
+      } satisfies LessonVideoProps}
+      calculateMetadata={({ props }) => ({
+        durationInFrames: (props as LessonVideoProps).total_frames || 300,
+      })}
+    />
+
     {/* Course pre-roll intro — 10 seconds, 1920×1080 */}
     <Composition
       id="NestCourseIntro"

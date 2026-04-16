@@ -17,3 +17,4 @@ frontend/.env
 *.log
 .vscode/
 .idea/
+tools/nest-gen/.env
