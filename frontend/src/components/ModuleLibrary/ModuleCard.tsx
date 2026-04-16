@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Play, Clock, MessageSquare, CheckCircle2, BookOpen } from 'lucide-react';
+import { Play, Clock, MessageSquare, CheckCircle2, BookOpen, Lock, ShoppingCart } from 'lucide-react';
 import type { Module } from '../../types';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
@@ -27,6 +27,10 @@ const STATUS_CONFIG = {
 
 interface Props { module: Module; }
 
+function formatPrice(price: number, currency: string) {
+  return `${Number(price).toLocaleString()} ${currency}`;
+}
+
 export default function ModuleCard({ module }: Props) {
   const navigate  = useNavigate();
   const status    = module.status ?? 'not_started';
@@ -35,6 +39,17 @@ export default function ModuleCard({ module }: Props) {
     ? Math.round(((module.progress_seconds ?? 0) / module.duration_seconds) * 100)
     : 0;
 
+  const isPaid    = module.is_for_sale && !!module.price;
+  const isLocked  = isPaid && status === 'not_started';
+
+  const handleClick = () => {
+    if (isLocked) {
+      navigate(`/pay/submit?module_id=${module.id}`);
+    } else {
+      navigate(`/modules/${module.id}`);
+    }
+  };
+
   // Strip HTML tags from description for clean preview
   const plainDesc = module.description
     ? module.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
@@ -42,7 +57,7 @@ export default function ModuleCard({ module }: Props) {
 
   return (
     <article
-      onClick={() => navigate(`/modules/${module.id}`)}
+      onClick={handleClick}
       style={{
         background: DARK2,
         border: `1px solid ${BORDER}`,
@@ -148,6 +163,27 @@ export default function ModuleCard({ module }: Props) {
             <CheckCircle2 size={14} style={{ color: GREEN }} />
           </div>
         )}
+
+        {/* Price badge — top right */}
+        {isPaid && (
+          <div style={{
+            position: 'absolute', top: 12, right: 12,
+            display: 'flex', alignItems: 'center', gap: 5,
+            background: isLocked ? 'rgba(196,92,60,0.85)' : 'rgba(52,211,153,0.85)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: 100, padding: '3px 10px 3px 8px',
+          }}>
+            {isLocked
+              ? <Lock size={9} style={{ color: '#fff' }} />
+              : <CheckCircle2 size={9} style={{ color: '#fff' }} />}
+            <span style={{
+              fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.08em',
+              color: '#fff', fontWeight: 600,
+            }}>
+              {isLocked ? formatPrice(module.price!, module.currency ?? 'RWF') : 'Purchased'}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -188,6 +224,35 @@ export default function ModuleCard({ module }: Props) {
             </span>
           )}
         </div>
+
+        {/* Buy CTA — locked paid modules */}
+        {isLocked && (
+          <div
+            style={{
+              marginTop: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'rgba(196,92,60,0.08)', border: '1px solid rgba(196,92,60,0.2)',
+              borderRadius: 8, padding: '10px 14px',
+            }}
+            onClick={e => { e.stopPropagation(); navigate(`/pay/submit?module_id=${module.id}`); }}
+          >
+            <div>
+              <p style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: TERRA, marginBottom: 2 }}>
+                Purchase to unlock
+              </p>
+              <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 15, fontWeight: 600, color: INK, letterSpacing: '-0.01em' }}>
+                {formatPrice(module.price!, module.currency ?? 'RWF')}
+              </p>
+            </div>
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: TERRA, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <ShoppingCart size={14} style={{ color: '#fff' }} />
+            </div>
+          </div>
+        )}
 
         {/* Progress bar */}
         {(status === 'in_progress' || status === 'completed') && (

@@ -14,9 +14,19 @@ class OrganizationCreate(BaseModel):
 class OrganizationUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=2, max_length=100)
     logo_url: Optional[str] = None
-    brand_color: Optional[str] = None  # hex string e.g. "#6366f1"
-    momo_number: Optional[str] = None  # teacher's MoMo number for student payments
-    momo_name: Optional[str] = None    # account holder name shown to students
+    brand_color: Optional[str] = None
+    # MTN MoMo
+    momo_number: Optional[str] = None
+    momo_name:   Optional[str] = None
+    # Orange Money
+    payment_orange_number: Optional[str] = None
+    payment_orange_name:   Optional[str] = None
+    # Bank transfer
+    payment_bank_name:    Optional[str] = None
+    payment_bank_account: Optional[str] = None
+    payment_bank_holder:  Optional[str] = None
+    # Custom instructions shown to learners on the payment page
+    payment_instructions: Optional[str] = None
 
 
 class OrganizationOut(BaseModel):
@@ -25,8 +35,18 @@ class OrganizationOut(BaseModel):
     slug: str
     logo_url: Optional[str]
     brand_color: Optional[str]
+    # MTN MoMo
     momo_number: Optional[str]
-    momo_name: Optional[str]
+    momo_name:   Optional[str]
+    # Orange Money
+    payment_orange_number: Optional[str] = None
+    payment_orange_name:   Optional[str] = None
+    # Bank transfer
+    payment_bank_name:    Optional[str] = None
+    payment_bank_account: Optional[str] = None
+    payment_bank_holder:  Optional[str] = None
+    # Custom instructions
+    payment_instructions: Optional[str] = None
     plan: Plan
     subscription_status: SubscriptionStatus
     trial_ends_at: Optional[datetime]
@@ -154,6 +174,9 @@ class ModuleCreate(BaseModel):
     thumbnail_url: Optional[str] = Field(None, max_length=500)
     order_index: int = 0
     ai_notes: Optional[str] = None
+    is_for_sale: bool = False
+    price: Optional[float] = None
+    currency: Optional[str] = 'RWF'
 
 
 class ModuleUpdate(BaseModel):
@@ -164,6 +187,9 @@ class ModuleUpdate(BaseModel):
     order_index: Optional[int] = None
     is_published: Optional[bool] = None
     ai_notes: Optional[str] = None
+    is_for_sale: Optional[bool] = None
+    price: Optional[float] = None
+    currency: Optional[str] = None
 
 
 class ModuleOut(BaseModel):
@@ -179,6 +205,9 @@ class ModuleOut(BaseModel):
     created_at: datetime
     video_count: int = 0
     question_count: int = 0
+    is_for_sale: bool = False
+    price: Optional[float] = None
+    currency: Optional[str] = None
 
     class Config:
         from_attributes = True

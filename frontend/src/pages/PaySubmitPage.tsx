@@ -21,12 +21,36 @@ const PLAN_AMOUNTS: Record<string, { usd: number; rwf: string }> = {
   enterprise:   { usd: 79, rwf: '115,000' },
 };
 
-const METHODS = [
-  { key: 'mtn_momo',      label: 'MTN MoMo',      number: '0792104982',  name: 'Ngum Dieudonne' },
-  { key: 'orange_money',  label: 'Orange Money',   number: 'Contact us',  name: '—' },
-  { key: 'bank_transfer', label: 'Bank Transfer',  number: 'Contact us',  name: '—' },
-  { key: 'other',         label: 'Other',          number: '',            name: '' },
-];
+interface PayMethod {
+  key: string;
+  label: string;
+  number: string;
+  name: string;
+  detail?: string;
+}
+
+function buildMethods(org: import('../types').Organization | null | undefined): PayMethod[] {
+  const methods: PayMethod[] = [];
+  if (org?.momo_number) {
+    methods.push({ key: 'mtn_momo', label: 'MTN MoMo', number: org.momo_number, name: org.momo_name ?? '' });
+  }
+  if (org?.payment_orange_number) {
+    methods.push({ key: 'orange_money', label: 'Orange Money', number: org.payment_orange_number, name: org.payment_orange_name ?? '' });
+  }
+  if (org?.payment_bank_account) {
+    methods.push({
+      key: 'bank_transfer',
+      label: 'Bank Transfer',
+      number: org.payment_bank_account,
+      name: org.payment_bank_holder ?? '',
+      detail: org.payment_bank_name ?? undefined,
+    });
+  }
+  if (methods.length === 0) {
+    methods.push({ key: 'other', label: 'Other', number: '', name: '' });
+  }
+  return methods;
+}
 
 export default function PaySubmitPage() {
   const navigate = useNavigate();
@@ -38,7 +62,6 @@ export default function PaySubmitPage() {
   const fromInvite = params.get('source') === 'invite';
   const isModule   = !!moduleId;
 
-  // Determine payment type
   const paymentType = isModule
     ? 'module_purchase'
     : fromInvite
@@ -46,12 +69,9 @@ export default function PaySubmitPage() {
       : 'teacher_subscription';
 
   const planInfo = PLAN_AMOUNTS[planKey];
+  const METHODS  = buildMethods(organization);
 
-  // Use the org's MoMo number; fall back to a contact prompt if not set
-  const orgMomo = (organization as any)?.momo_number ?? null;
-  const orgMomoName = (organization as any)?.momo_name ?? organization?.name ?? null;
-
-  const [method,   setMethod]   = useState('mtn_momo');
+  const [method,   setMethod]   = useState(METHODS[0]?.key ?? 'other');
   const [phone,    setPhone]    = useState('');
   const [ref,      setRef]      = useState('');
   const [amount,   setAmount]   = useState(planInfo ? String(planInfo.usd) : '');
@@ -60,8 +80,6 @@ export default function PaySubmitPage() {
   const [file,     setFile]     = useState<File | null>(null);
   const [preview,  setPreview]  = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const selectedMethod = METHODS.find(m => m.key === method)!;
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -135,50 +153,69 @@ export default function PaySubmitPage() {
           <strong style={{ color: INK }}>24 hours</strong>.
         </p>
 
-        {/* ── Step 1: Payment details ──────────────────────────── */}
+        {/* ── Step 1: Payment destination ──────────────────────── */}
         <Section label="01" title="Payment destination">
-          {orgMomo ? (
-            <div style={{
-              background: INK, borderRadius: 6,
-              padding: '20px 24px', marginBottom: 16,
-            }}>
-              <div style={{
-                fontFamily: "'Inconsolata', monospace",
-                fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.35)', marginBottom: 10,
-              }}>
-                MTN MoMo
-              </div>
-              <div style={{
-                fontFamily: "'Fraunces', Georgia, serif",
-                fontSize: 32, fontWeight: 400, color: '#f2ede8',
-                letterSpacing: '0.04em', lineHeight: 1,
-              }}>
-                {orgMomo}
-              </div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 6 }}>
-                {orgMomoName}
-              </div>
-            </div>
-          ) : (
+          {METHODS.length === 1 && METHODS[0].key === 'other' ? (
             <div style={{
               background: '#fff3cd', border: '1px solid #ffc107', borderRadius: 6,
               padding: '16px 20px', marginBottom: 16,
               fontSize: 13, color: '#856404',
             }}>
-              Your educator hasn't set up their payment number yet.
+              Your educator hasn't set up their payment details yet.
               Please contact them directly to arrange payment.
             </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+              {METHODS.map(m => (
+                <button
+                  key={m.key}
+                  onClick={() => setMethod(m.key)}
+                  style={{
+                    textAlign: 'left',
+                    background: method === m.key ? INK : SURF,
+                    border: `1.5px solid ${method === m.key ? INK : RULE}`,
+                    borderRadius: 6, padding: '16px 20px',
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{
+                    fontFamily: "'Inconsolata', monospace",
+                    fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
+                    color: method === m.key ? 'rgba(255,255,255,0.4)' : INK3,
+                    marginBottom: 6,
+                  }}>
+                    {m.label}{m.detail ? ` · ${m.detail}` : ''}
+                  </div>
+                  <div style={{
+                    fontFamily: "'Fraunces', Georgia, serif",
+                    fontSize: 26, fontWeight: 400, lineHeight: 1,
+                    color: method === m.key ? '#f2ede8' : INK,
+                    letterSpacing: '0.03em',
+                  }}>
+                    {m.number || '—'}
+                  </div>
+                  {m.name && (
+                    <div style={{
+                      fontSize: 12.5, marginTop: 5,
+                      color: method === m.key ? 'rgba(255,255,255,0.5)' : INK2,
+                    }}>
+                      {m.name}
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           )}
-          <div style={{
-            fontFamily: "'Inconsolata', monospace",
-            fontSize: 11, color: INK3, letterSpacing: '0.05em',
-          }}>
-            Need Orange Money or bank transfer?{' '}
-            <a href="mailto:dieudonnen450@gmail.com" style={{ color: ACC, textDecoration: 'none' }}>
-              Contact us →
-            </a>
-          </div>
+          {organization?.payment_instructions && (
+            <div style={{
+              background: 'rgba(42,122,75,0.06)', border: '1px solid rgba(42,122,75,0.15)',
+              borderRadius: 4, padding: '10px 14px',
+              fontSize: 12.5, color: GO,
+              fontFamily: "'Inconsolata', monospace",
+            }}>
+              {organization.payment_instructions}
+            </div>
+          )}
         </Section>
 
         {/* ── Step 2: Your payment info ─────────────────────────── */}

@@ -17,6 +17,14 @@ export interface Organization {
   trial_ends_at: string | null;
   is_active: boolean;
   created_at: string;
+  momo_number: string | null;
+  momo_name: string | null;
+  payment_orange_number: string | null;
+  payment_orange_name: string | null;
+  payment_bank_name: string | null;
+  payment_bank_account: string | null;
+  payment_bank_holder: string | null;
+  payment_instructions: string | null;
 }
 
 // ─── Invitation ───────────────────────────────────────────────────────────────
@@ -125,6 +133,9 @@ export interface Module {
   status?: ModuleStatus;
   progress_seconds?: number;
   last_viewed_at?: string | null;
+  price: number | null;
+  is_for_sale: boolean;
+  currency: string | null;
 }
 
 // ─── Notifications ────────────────────────────────────────────────────────────

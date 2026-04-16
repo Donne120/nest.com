@@ -2,6 +2,7 @@ import React from 'react';
 import { Composition, Still } from 'remotion';
 import { TutorialThumbnail } from './tutorial/TutorialThumbnail';
 import { NestPromo } from './NestPromo';
+import { NestCourseIntro } from './NestCourseIntro';
 import { Onboarding01 } from './onboarding/Onboarding01';
 import { Onboarding02 } from './onboarding/Onboarding02';
 import { Onboarding03 } from './onboarding/Onboarding03';
@@ -65,6 +66,16 @@ const TUTORIAL_COMPONENTS = [
 
 export const Root: React.FC = () => (
   <>
+    {/* Course pre-roll intro — 10 seconds, 1920×1080 */}
+    <Composition
+      id="NestCourseIntro"
+      component={NestCourseIntro}
+      durationInFrames={300}
+      fps={30}
+      width={1920}
+      height={1080}
+    />
+
     {/* Promo video */}
     <Composition
       id="NestPromo"

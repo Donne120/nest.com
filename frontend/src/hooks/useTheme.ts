@@ -22,18 +22,25 @@ export function useTheme() {
     () => (localStorage.getItem(STORAGE_KEY) as Theme) ?? 'system'
   );
 
-  // Apply on mount and whenever theme changes
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(
+    () => {
+      const saved = (localStorage.getItem(STORAGE_KEY) as Theme) ?? 'system';
+      return saved === 'system' ? getSystemTheme() : saved;
+    }
+  );
+
   useEffect(() => {
     applyTheme(theme);
     localStorage.setItem(STORAGE_KEY, theme);
+    setResolvedTheme(theme === 'system' ? getSystemTheme() : theme);
   }, [theme]);
 
-  // Re-apply when system preference changes (only matters when theme === 'system')
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = () => {
       if ((localStorage.getItem(STORAGE_KEY) as Theme) === 'system') {
         applyTheme('system');
+        setResolvedTheme(getSystemTheme());
       }
     };
     mq.addEventListener('change', handler);
@@ -42,7 +49,7 @@ export function useTheme() {
 
   const setTheme = (t: Theme) => setThemeState(t);
 
-  return { theme, setTheme };
+  return { theme, setTheme, resolvedTheme };
 }
 
 // Initialise theme before React mounts (prevents flash)

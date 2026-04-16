@@ -41,8 +41,18 @@ function OrgTab() {
   const [name, setName] = useState(organization?.name ?? '');
   const [logoUrl, setLogoUrl] = useState(organization?.logo_url ?? '');
   const [brandColor, setBrandColor] = useState(organization?.brand_color ?? '#6366f1');
-  const [momoNumber, setMomoNumber] = useState((organization as any)?.momo_number ?? '');
-  const [momoName, setMomoName] = useState((organization as any)?.momo_name ?? '');
+  // MTN MoMo
+  const [momoNumber, setMomoNumber] = useState(organization?.momo_number ?? '');
+  const [momoName, setMomoName]     = useState(organization?.momo_name ?? '');
+  // Orange Money
+  const [orangeNumber, setOrangeNumber] = useState(organization?.payment_orange_number ?? '');
+  const [orangeName, setOrangeName]     = useState(organization?.payment_orange_name ?? '');
+  // Bank Transfer
+  const [bankName, setBankName]       = useState(organization?.payment_bank_name ?? '');
+  const [bankAccount, setBankAccount] = useState(organization?.payment_bank_account ?? '');
+  const [bankHolder, setBankHolder]   = useState(organization?.payment_bank_holder ?? '');
+  // Custom instructions
+  const [instructions, setInstructions] = useState(organization?.payment_instructions ?? '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -52,8 +62,14 @@ function OrgTab() {
         name: name.trim() || undefined,
         logo_url: logoUrl.trim() || undefined,
         brand_color: brandColor,
-        momo_number: momoNumber.trim() || undefined,
-        momo_name: momoName.trim() || undefined,
+        momo_number:             momoNumber.trim()   || null,
+        momo_name:               momoName.trim()     || null,
+        payment_orange_number:   orangeNumber.trim() || null,
+        payment_orange_name:     orangeName.trim()   || null,
+        payment_bank_name:       bankName.trim()     || null,
+        payment_bank_account:    bankAccount.trim()  || null,
+        payment_bank_holder:     bankHolder.trim()   || null,
+        payment_instructions:    instructions.trim() || null,
       });
       if (user) {
         const token = localStorage.getItem('nest_token') ?? '';
@@ -155,39 +171,93 @@ function OrgTab() {
         </div>
       </Field>
 
-      {/* MoMo account name */}
-      <Field
-        label="Payment account name"
-        hint="The account holder name students will see — e.g. your full name or business name."
-      >
-        <input
-          type="text"
-          value={momoName}
-          onChange={(e) => setMomoName(e.target.value)}
-          placeholder="e.g. Ngum Dieudonne"
-          className={inputCls}
-        />
-      </Field>
+      {/* ── Payment methods ──────────────────────────────────────────── */}
+      <div className="border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <p className="text-sm font-semibold text-gray-800">Payment methods</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Configure how learners pay you. Only methods with a number/account filled in will be shown to learners.
+          </p>
+        </div>
 
-      {/* MoMo number — students will pay to this */}
-      <Field
-        label="MoMo / payment number"
-        hint="Students will see this number when buying your modules."
-      >
-        <input
-          type="tel"
-          value={momoNumber}
-          onChange={(e) => setMomoNumber(e.target.value)}
-          placeholder="e.g. 0781234567"
-          className={inputCls}
-        />
-        {momoNumber && (
-          <div className="mt-2 flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
-            <span>✓</span>
-            <span>Students pay to <strong>{momoName || momoNumber}</strong> · {momoNumber}</span>
+        {/* MTN MoMo */}
+        <div className="px-4 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-black text-yellow-900">M</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-800">MTN MoMo</span>
           </div>
-        )}
-      </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="MoMo number">
+              <input type="tel" value={momoNumber} onChange={e => setMomoNumber(e.target.value)}
+                placeholder="e.g. 0792104982" className={inputCls} />
+            </Field>
+            <Field label="Account name">
+              <input type="text" value={momoName} onChange={e => setMomoName(e.target.value)}
+                placeholder="e.g. Ngum Dieudonne" className={inputCls} />
+            </Field>
+          </div>
+        </div>
+
+        {/* Orange Money */}
+        <div className="px-4 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-black text-white">O</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-800">Orange Money</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Orange number">
+              <input type="tel" value={orangeNumber} onChange={e => setOrangeNumber(e.target.value)}
+                placeholder="e.g. 0699123456" className={inputCls} />
+            </Field>
+            <Field label="Account name">
+              <input type="text" value={orangeName} onChange={e => setOrangeName(e.target.value)}
+                placeholder="e.g. Ngum Dieudonne" className={inputCls} />
+            </Field>
+          </div>
+        </div>
+
+        {/* Bank Transfer */}
+        <div className="px-4 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-black text-white">B</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-800">Bank Transfer</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Bank name">
+              <input type="text" value={bankName} onChange={e => setBankName(e.target.value)}
+                placeholder="e.g. UBA Cameroon" className={inputCls} />
+            </Field>
+            <Field label="Account number">
+              <input type="text" value={bankAccount} onChange={e => setBankAccount(e.target.value)}
+                placeholder="e.g. 00123456789" className={inputCls} />
+            </Field>
+          </div>
+          <Field label="Account holder name">
+            <input type="text" value={bankHolder} onChange={e => setBankHolder(e.target.value)}
+              placeholder="e.g. Ngum Dieudonne" className={inputCls} />
+          </Field>
+        </div>
+
+        {/* Custom instructions */}
+        <div className="px-4 py-4">
+          <Field label="Custom payment instructions (optional)"
+            hint="Additional notes shown to learners — e.g. specific transfer reference format, contact info, etc.">
+            <textarea
+              value={instructions}
+              onChange={e => setInstructions(e.target.value)}
+              rows={3}
+              placeholder="e.g. Always include your email as the transfer reference."
+              className={inputCls + ' resize-none leading-relaxed'}
+            />
+          </Field>
+        </div>
+      </div>
 
       <div className="pt-2">
         <Button onClick={handleSave} loading={saving}>

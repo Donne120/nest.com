@@ -254,9 +254,9 @@ export default function ModulesPage() {
       </div>
 
       {/* ══ MODULE GRID ═══════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '24px 32px 60px' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '24px clamp(16px, 4vw, 32px) 60px' }}>
         {isLoading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} style={{ background: DARK2, borderRadius: 14, overflow: 'hidden', border: `1px solid ${BORDER}` }}>
                 <div style={{ aspectRatio: '16/9', background: DARK3, animation: 'pulse 2s infinite' }} />
@@ -285,7 +285,7 @@ export default function ModulesPage() {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
             {filtered.map(m => (
               <div key={m.id} style={{ position: 'relative' }}>
                 <ModuleCard module={m} />

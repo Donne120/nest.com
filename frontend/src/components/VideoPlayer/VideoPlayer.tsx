@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { usePlayerStore, useUIStore } from '../../store';
 import Controls from './Controls';
 import Timeline from './Timeline';
+import NestIntroOverlay from './NestIntroOverlay';
 import type { TimelineMarker } from '../../types';
-import { ExternalLink } from 'lucide-react';
+import { useAuthStore } from '../../store';
 
 interface Props {
   videoUrl: string;
@@ -11,6 +12,8 @@ interface Props {
   videoId: string;
   onTimeUpdate?: (t: number) => void;
   onVideoEnd?: () => void;
+  /** Set false to suppress the Nest intro for this player instance */
+  showIntro?: boolean;
 }
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
@@ -73,12 +76,18 @@ function loadYouTubeAPI(callback: () => void) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, onVideoEnd }: Props) {
+export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, onVideoEnd, showIntro = true }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const ytPlayerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
+
+  // ── Nest intro pre-roll ────────────────────────────────────────────────────
+  const { organization } = useAuthStore();
+  const [introDone, setIntroDone] = useState<boolean>(() => !showIntro);
+  // reset intro whenever the video changes
+  useEffect(() => { if (showIntro) setIntroDone(false); }, [videoId, showIntro]);
 
   const {
     isPlaying, volume, playbackRate, seekTarget, currentTime,
@@ -219,7 +228,16 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   // ── YouTube / Vimeo player ─────────────────────────────────────────────────
   if (isEmbed) {
     return (
-      <div ref={containerRef} className="bg-black rounded-xl overflow-hidden">
+      <div ref={containerRef} className="bg-black rounded-xl overflow-hidden" style={{ position: 'relative' }}>
+        {!introDone && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 20, borderRadius: 'inherit', overflow: 'hidden' }}>
+            <NestIntroOverlay
+              orgName={organization?.name}
+              orgLogoUrl={organization?.logo_url}
+              onComplete={() => setIntroDone(true)}
+            />
+          </div>
+        )}
         {/* Iframe */}
         <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
           <iframe
@@ -299,6 +317,13 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
       className="relative bg-black rounded-xl overflow-hidden group"
       style={{ aspectRatio: '16/9' }}
     >
+      {!introDone && (
+        <NestIntroOverlay
+          orgName={organization?.name}
+          orgLogoUrl={organization?.logo_url}
+          onComplete={() => setIntroDone(true)}
+        />
+      )}
       <video
         ref={videoRef}
         src={videoUrl}

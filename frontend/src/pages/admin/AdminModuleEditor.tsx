@@ -81,6 +81,9 @@ export default function AdminModuleEditor() {
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [orderIndex, setOrderIndex] = useState(0);
   const [isPublished, setIsPublished] = useState(true);
+  const [isForSale, setIsForSale]     = useState(false);
+  const [price, setPrice]             = useState('');
+  const [currency, setCurrency]       = useState('RWF');
 
   // Video management
   const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
@@ -120,6 +123,9 @@ export default function AdminModuleEditor() {
       setThumbnailUrl(module.thumbnail_url || '');
       setOrderIndex(module.order_index);
       setIsPublished(module.is_published);
+      setIsForSale(module.is_for_sale ?? false);
+      setPrice(module.price != null ? String(module.price) : '');
+      setCurrency(module.currency ?? 'RWF');
     }
   }, [module]);
 
@@ -134,6 +140,9 @@ export default function AdminModuleEditor() {
         thumbnail_url: thumbnailUrl || null,
         order_index: orderIndex,
         is_published: isPublished,
+        is_for_sale: isForSale,
+        price: isForSale && price ? Number(price) : null,
+        currency: isForSale ? currency : null,
       };
       return isEdit
         ? api.put(`/modules/${moduleId}`, payload)
@@ -337,6 +346,64 @@ export default function AdminModuleEditor() {
           <Button icon={<Save size={14} />} onClick={handleSaveModule} loading={saveModule.isPending}>
             {isEdit ? 'Save Changes' : 'Create Module'}
           </Button>
+        </div>
+      </Section>
+
+      {/* ─── Pricing section ─── */}
+      <Section title="Pricing">
+        <div className="space-y-4">
+          {/* Sell toggle */}
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <div className="relative flex-shrink-0">
+              <input type="checkbox" checked={isForSale} onChange={e => setIsForSale(e.target.checked)} className="sr-only peer" />
+              <div className="w-10 h-6 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 transition-colors" />
+              <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-700">Sell this module separately</p>
+              <p className="text-xs text-gray-400">
+                {isForSale ? 'Learners must purchase to access' : 'Free for all enrolled learners'}
+              </p>
+            </div>
+          </label>
+
+          {/* Price + currency — visible only when for sale */}
+          {isForSale && (
+            <div className="flex gap-3 items-end pl-[52px]">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Price</label>
+                <input
+                  type="number"
+                  min={0}
+                  step="any"
+                  value={price}
+                  onChange={e => setPrice(e.target.value)}
+                  placeholder="e.g. 5000"
+                  className={inputCls}
+                />
+              </div>
+              <div className="w-28">
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Currency</label>
+                <select
+                  value={currency}
+                  onChange={e => setCurrency(e.target.value)}
+                  className={inputCls}
+                >
+                  <option value="RWF">RWF</option>
+                  <option value="XAF">XAF</option>
+                  <option value="USD">USD</option>
+                  <option value="KES">KES</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {isForSale && price && (
+            <div className="ml-[52px] flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+              <span>✓</span>
+              <span>Learners pay <strong>{Number(price).toLocaleString()} {currency}</strong> to unlock this module</span>
+            </div>
+          )}
         </div>
       </Section>
 

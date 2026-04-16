@@ -147,8 +147,15 @@ class Organization(Base):
     subscription_status = Column(SAEnum(SubscriptionStatus), default=SubscriptionStatus.active, nullable=False)
     trial_ends_at = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
-    momo_number = Column(String, nullable=True)
-    momo_name = Column(String, nullable=True)
+    momo_number = Column(String, nullable=True)   # MTN MoMo number
+    momo_name = Column(String, nullable=True)      # MTN MoMo account name
+    # ── Additional payment methods ────────────────────────────────────────────
+    payment_orange_number = Column(String, nullable=True)
+    payment_orange_name   = Column(String, nullable=True)
+    payment_bank_name     = Column(String, nullable=True)
+    payment_bank_account  = Column(String, nullable=True)
+    payment_bank_holder   = Column(String, nullable=True)
+    payment_instructions  = Column(String, nullable=True)  # free-text note to learners
     subscription_end = Column(DateTime(timezone=True), nullable=True)
     renewal_notified_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
