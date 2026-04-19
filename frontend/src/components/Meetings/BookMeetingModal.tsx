@@ -27,7 +27,10 @@ export default function BookMeetingModal({ moduleId, moduleTitle, onClose }: Pro
       qc.invalidateQueries({ queryKey: ['meetings'] });
       onClose();
     },
-    onError: () => toast.error('Failed to send request. Please try again.'),
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail ?? err?.message ?? 'Failed to send request. Please try again.';
+      toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+    },
   });
 
   return (
@@ -53,12 +56,14 @@ export default function BookMeetingModal({ moduleId, moduleTitle, onClose }: Pro
         <div className="px-6 py-5 space-y-4">
           {/* Preferred time */}
           <div>
-            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="meeting-requested-at" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
               <Calendar size={13} className="text-gray-400" />
               Preferred date & time
               <span className="text-gray-400 font-normal text-xs">(optional)</span>
             </label>
             <input
+              id="meeting-requested-at"
+              name="requested_at"
               type="datetime-local"
               value={requestedAt}
               onChange={e => setRequestedAt(e.target.value)}
@@ -68,12 +73,14 @@ export default function BookMeetingModal({ moduleId, moduleTitle, onClose }: Pro
 
           {/* Note */}
           <div>
-            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="meeting-note" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
               <MessageSquare size={13} className="text-gray-400" />
               What would you like to discuss?
               <span className="text-gray-400 font-normal text-xs">(optional)</span>
             </label>
             <textarea
+              id="meeting-note"
+              name="note"
               value={note}
               onChange={e => setNote(e.target.value)}
               rows={3}
