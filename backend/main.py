@@ -344,13 +344,33 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-# Exact-match CORS only — no wildcards to prevent subdomain takeover attacks
-_cors_allowed = set(settings.get_cors_origins())
+def _is_origin_allowed(origin: str) -> bool:
+    """Return True if this origin should receive CORS headers.
+
+    Checks the explicit allow-list from CORS_ORIGINS env var plus Vercel
+    preview URLs (*.vercel.app) which change with every deployment.
+    Re-reads the env var at call time so Render config changes take
+    effect without a service restart.
+    """
+    if not origin:
+        return False
+    # Re-read live so env-var updates on Render work without redeploy
+    try:
+        allowed = set(settings.get_cors_origins())
+    except Exception:
+        allowed = set()
+    if origin in allowed:
+        return True
+    # Allow any Vercel preview URL (*.vercel.app) for the nest-com project
+    if origin.startswith("https://") and origin.endswith(".vercel.app"):
+        return True
+    return False
+
 
 class DynamicCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         origin = request.headers.get("origin", "")
-        allowed = origin in _cors_allowed
+        allowed = _is_origin_allowed(origin)
         if request.method == "OPTIONS":
             response = JSONResponse({}, status_code=200)
         else:
@@ -358,8 +378,12 @@ class DynamicCORSMiddleware(BaseHTTPMiddleware):
         if allowed:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-            response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, X-Requested-With"
+            response.headers["Access-Control-Allow-Methods"] = (
+                "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            )
+            response.headers["Access-Control-Allow-Headers"] = (
+                "Authorization, Content-Type, Accept, X-Requested-With"
+            )
         return response
 
 app.add_middleware(DynamicCORSMiddleware)
