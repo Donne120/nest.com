@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from database import get_db
 import models
@@ -10,12 +10,23 @@ import email_utils
 
 router = APIRouter(prefix="/api/meetings", tags=["meetings"])
 
+_LOAD_OPTS = [
+    joinedload(models.MeetingBooking.learner),
+    joinedload(models.MeetingBooking.owner),
+    joinedload(models.MeetingBooking.module),
+]
+
 
 def _get_meeting(meeting_id: str, org_id: str, db: Session) -> models.MeetingBooking:
-    m = db.query(models.MeetingBooking).filter(
-        models.MeetingBooking.id == meeting_id,
-        models.MeetingBooking.organization_id == org_id,
-    ).first()
+    m = (
+        db.query(models.MeetingBooking)
+        .options(*_LOAD_OPTS)
+        .filter(
+            models.MeetingBooking.id == meeting_id,
+            models.MeetingBooking.organization_id == org_id,
+        )
+        .first()
+    )
     if not m:
         raise HTTPException(status_code=404, detail="Meeting not found")
     return m
@@ -44,7 +55,6 @@ async def request_meeting(
     )
     db.add(meeting)
 
-    # Notify all educators/owners in the org
     managers = db.query(models.User).filter(
         models.User.organization_id == current_user.organization_id,
         models.User.role.in_([models.UserRole.educator, models.UserRole.owner]),
@@ -60,19 +70,19 @@ async def request_meeting(
         ))
 
     db.commit()
-    db.refresh(meeting)
+    meeting_id = meeting.id  # capture before session expires
 
     await ws_manager.broadcast({
         "event": "meeting_request",
-        "meeting_id": meeting.id,
+        "meeting_id": meeting_id,
         "requested_by": current_user.full_name,
     })
 
-    # Email each manager
     from config import settings as _settings
     meetings_url = f"{_settings.FRONTEND_URL}/admin/meetings"
     for mgr in managers:
-        background_tasks.add_task(email_utils.send_meeting_request_to_manager,
+        background_tasks.add_task(
+            email_utils.send_meeting_request_to_manager,
             to=mgr.email,
             manager_name=mgr.full_name,
             employee_name=current_user.full_name,
@@ -80,7 +90,14 @@ async def request_meeting(
             meetings_url=meetings_url,
         )
 
-    return _to_out(meeting)
+    # Re-fetch with all relationships loaded (avoids lazy-load after async boundary)
+    loaded = (
+        db.query(models.MeetingBooking)
+        .options(*_LOAD_OPTS)
+        .filter(models.MeetingBooking.id == meeting_id)
+        .first()
+    )
+    return _to_out(loaded)
 
 
 @router.get("", response_model=List[schemas.MeetingOut])
@@ -89,10 +106,11 @@ def list_meetings(
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
-    q = db.query(models.MeetingBooking).filter(
-        models.MeetingBooking.organization_id == current_user.organization_id,
+    q = (
+        db.query(models.MeetingBooking)
+        .options(*_LOAD_OPTS)
+        .filter(models.MeetingBooking.organization_id == current_user.organization_id)
     )
-    # Learners only see their own meetings
     if current_user.role == models.UserRole.learner:
         q = q.filter(models.MeetingBooking.learner_id == current_user.id)
     if status:
@@ -111,7 +129,9 @@ async def confirm_meeting(
 ):
     meeting = _get_meeting(meeting_id, current_user.organization_id, db)
     if meeting.status != models.MeetingStatus.pending:
-        raise HTTPException(status_code=400, detail="Only pending meetings can be confirmed")
+        raise HTTPException(
+            status_code=400, detail="Only pending meetings can be confirmed"
+        )
 
     meeting.status = models.MeetingStatus.confirmed
     meeting.owner_id = current_user.id
@@ -122,16 +142,18 @@ async def confirm_meeting(
         user_id=meeting.learner_id,
         type="meeting_confirmed",
         title="1-on-1 Meeting Confirmed",
-        message=f"{current_user.full_name} confirmed your meeting request. Check your meetings page for the link.",
+        message=(
+            f"{current_user.full_name} confirmed your meeting request. "
+            "Check your meetings page for the link."
+        ),
         reference_id=meeting.id,
     ))
     db.commit()
-    db.refresh(meeting)
 
-    # Send confirmation email
     employee = db.query(models.User).filter_by(id=meeting.learner_id).first()
     if employee:
-        background_tasks.add_task(email_utils.send_meeting_confirmed,
+        background_tasks.add_task(
+            email_utils.send_meeting_confirmed,
             to=employee.email,
             employee_name=employee.full_name,
             confirmed_at=payload.confirmed_at.strftime("%A, %d %B %Y at %H:%M UTC"),
@@ -143,7 +165,14 @@ async def confirm_meeting(
         "meeting_id": meeting.id,
         "learner_id": meeting.learner_id,
     })
-    return _to_out(meeting)
+
+    loaded = (
+        db.query(models.MeetingBooking)
+        .options(*_LOAD_OPTS)
+        .filter(models.MeetingBooking.id == meeting.id)
+        .first()
+    )
+    return _to_out(loaded)
 
 
 @router.patch("/{meeting_id}/decline", response_model=schemas.MeetingOut)
@@ -156,7 +185,9 @@ async def decline_meeting(
 ):
     meeting = _get_meeting(meeting_id, current_user.organization_id, db)
     if meeting.status != models.MeetingStatus.pending:
-        raise HTTPException(status_code=400, detail="Only pending meetings can be declined")
+        raise HTTPException(
+            status_code=400, detail="Only pending meetings can be declined"
+        )
 
     meeting.status = models.MeetingStatus.declined
     meeting.owner_id = current_user.id
@@ -166,11 +197,13 @@ async def decline_meeting(
         user_id=meeting.learner_id,
         type="meeting_declined",
         title="1-on-1 Request Declined",
-        message=payload.decline_reason or f"{current_user.full_name} declined your meeting request.",
+        message=(
+            payload.decline_reason
+            or f"{current_user.full_name} declined your meeting request."
+        ),
         reference_id=meeting.id,
     ))
     db.commit()
-    db.refresh(meeting)
 
     await ws_manager.broadcast({
         "event": "meeting_declined",
@@ -178,18 +211,24 @@ async def decline_meeting(
         "learner_id": meeting.learner_id,
     })
 
-    # Email the learner
     employee = db.query(models.User).filter_by(id=meeting.learner_id).first()
     if employee:
         from config import settings as _settings
-        background_tasks.add_task(email_utils.send_meeting_declined,
+        background_tasks.add_task(
+            email_utils.send_meeting_declined,
             to=employee.email,
             employee_name=employee.full_name,
             reason=payload.decline_reason,
             meetings_url=f"{_settings.FRONTEND_URL}/meetings",
         )
 
-    return _to_out(meeting)
+    loaded = (
+        db.query(models.MeetingBooking)
+        .options(*_LOAD_OPTS)
+        .filter(models.MeetingBooking.id == meeting.id)
+        .first()
+    )
+    return _to_out(loaded)
 
 
 @router.patch("/{meeting_id}/complete", response_model=schemas.MeetingOut)
@@ -200,9 +239,15 @@ def complete_meeting(
 ):
     meeting = _get_meeting(meeting_id, current_user.organization_id, db)
     if meeting.status != models.MeetingStatus.confirmed:
-        raise HTTPException(status_code=400, detail="Only confirmed meetings can be marked complete")
-
+        raise HTTPException(
+            status_code=400, detail="Only confirmed meetings can be marked complete"
+        )
     meeting.status = models.MeetingStatus.completed
     db.commit()
-    db.refresh(meeting)
-    return _to_out(meeting)
+    loaded = (
+        db.query(models.MeetingBooking)
+        .options(*_LOAD_OPTS)
+        .filter(models.MeetingBooking.id == meeting.id)
+        .first()
+    )
+    return _to_out(loaded)
