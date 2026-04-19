@@ -150,6 +150,13 @@ def _run_db_setup():
             "ALTER TABLE organizations ADD COLUMN subscription_end TIMESTAMP WITH TIME ZONE",
             "ALTER TABLE organizations ADD COLUMN renewal_notified_at TIMESTAMP WITH TIME ZONE",
             "ALTER TABLE modules ADD COLUMN ai_notes TEXT",
+            # migration 013 — extended org payment methods
+            "ALTER TABLE organizations ADD COLUMN payment_orange_number VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN payment_orange_name VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN payment_bank_name VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN payment_bank_account VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN payment_bank_holder VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN payment_instructions TEXT",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:
