@@ -1,6 +1,8 @@
-# Nest Interactive Video Onboarding Platform
+# Nest — Interactive Learning Platform
 
-Transform passive video watching into an active learning experience. Employees ask questions timestamped directly to video moments. Answers build a permanent, searchable knowledge base for all future hires.
+Transform passive video watching into an active learning experience. Learners ask questions timestamped directly to video moments. AI answers using the actual video transcript. Every answer builds a permanent, searchable knowledge base for the whole community.
+
+**Live:** [nest-com.vercel.app](https://nest-com.vercel.app) · Backend: [nest-com.onrender.com](https://nest-com.onrender.com)
 
 ---
 
@@ -8,13 +10,29 @@ Transform passive video watching into an active learning experience. Employees a
 
 | Feature | Description |
 |---|---|
-| **Interactive Video Timeline** | Click anywhere on the timeline to ask a question at that exact timestamp |
-| **Timeline Markers** | Visual pins on the video scrubber show where Q&A exists |
-| **Q&A Sidebar** | Real-time question/answer panel with filter, search, and reply |
-| **Admin Dashboard** | Analytics, pending queue, resolution metrics |
-| **WebSocket Real-time** | Instant notifications when questions are asked or answered |
-| **Module Library** | Progress tracking, completion status per module |
-| **Role-based Access** | Employee / Manager / Admin roles |
+| **Interactive Video Timeline** | Ask questions at exact timestamps — pins appear on the scrubber |
+| **AI-Powered Answers** | Groq LLM answers using the video transcript as context |
+| **Nest Assistant** | Global AI chat (✨ in navbar) — knows all platform features, multi-turn, streaming |
+| **Timestamped Q&A** | Reusable knowledge base — every question/answer persists for future learners |
+| **Module Library** | Progress tracking and completion status per module |
+| **Onboarding Tour** | 6-step first-login walkthrough for learners and educators |
+| **Role-based Access** | Learner / Educator / Admin / Super Admin roles |
+| **Payment System** | MoMo/bank transfer proof-of-payment — admin approval flow with email notifications |
+| **Real-time Notifications** | WebSocket push for new questions, answers, and approvals |
+| **Admin Dashboard** | Analytics, pending queue, resolution metrics, org management |
+
+---
+
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | FastAPI + SQLAlchemy + PostgreSQL (Supabase) |
+| Frontend | React + TypeScript + Vite + Tailwind CSS |
+| AI | Groq LLM (transcript-aware Q&A + platform assistant) |
+| Storage | Supabase (videos, thumbnails) |
+| Email | SendGrid HTTP API |
+| Hosting | Render (backend) + Vercel (frontend) |
 
 ---
 
@@ -28,8 +46,8 @@ Transform passive video watching into an active learning experience. Employees a
 ```bash
 cd backend
 cp .env.example .env
+# Set GROQ_API_KEY, DATABASE_URL, SECRET_KEY in .env
 pip install -r requirements.txt
-python seed.py          # Seeds demo data
 uvicorn main:app --reload --port 8000
 ```
 
@@ -44,101 +62,98 @@ npm run dev
 
 App: http://localhost:5173
 
-### Or run both at once
-```bash
-chmod +x start-dev.sh
-./start-dev.sh
-```
-
 ---
 
-## Demo Accounts
+## Roles
 
-| Role | Email | Password |
-|---|---|---|
-| Admin | admin@nestonboarding.com | admin123 |
-| Manager | manager@nestonboarding.com | manager123 |
-| Employee | alice@nestonboarding.com | employee123 |
-| Employee | bob@nestonboarding.com | employee123 |
-
----
-
-## Docker (Production)
-
-```bash
-# Copy and configure environment
-cp backend/.env.example backend/.env
-# Edit backend/.env with production values
-
-docker-compose up -d
-```
-
-App runs on port 80. Backend on 8000.
+| Role | Access |
+|---|---|
+| **Learner** | Watch videos, ask questions, view answers |
+| **Educator** | Upload videos, answer questions, manage modules |
+| **Admin** | Manage users, approve payments, view analytics |
+| **Super Admin** | Full org management |
 
 ---
 
 ## Architecture
 
 ```
-nest-onboarding/
+nest.com/
 ├── backend/                # FastAPI
-│   ├── main.py             # App entry + middleware
+│   ├── main.py             # App entry, middleware, security headers
 │   ├── models.py           # SQLAlchemy ORM models
 │   ├── schemas.py          # Pydantic request/response schemas
-│   ├── auth.py             # JWT authentication
-│   ├── seed.py             # Demo data seeder
+│   ├── auth.py             # JWT authentication (HS256, iat claim)
+│   ├── config.py           # Settings — crashes on weak SECRET_KEY in prod
 │   └── routers/
-│       ├── auth.py         # Login, register, /me
+│       ├── auth.py         # Login, register, password reset
 │       ├── modules.py      # Module CRUD
 │       ├── videos.py       # Video CRUD + timeline markers
 │       ├── questions.py    # Question + answer CRUD
 │       ├── analytics.py    # Dashboard stats, notifications
 │       ├── progress.py     # User progress tracking
+│       ├── payments.py     # Proof-of-payment submission and approval
+│       ├── ai_assist.py    # Transcript Q&A + platform assistant endpoints
 │       └── ws.py           # WebSocket connection manager
 │
 └── frontend/               # React + TypeScript + Vite
     └── src/
         ├── components/
-        │   ├── VideoPlayer/ # Custom player + timeline + controls
-        │   ├── QA/          # Sidebar, question cards, form
+        │   ├── VideoPlayer/   # Custom player + timeline + controls
+        │   ├── QA/            # Sidebar, question cards, form
         │   ├── ModuleLibrary/ # Module grid cards
-        │   └── UI/          # Button, Badge, Avatar, Skeleton
+        │   ├── NestAssistant/ # Global AI chat widget
+        │   └── UI/            # Button, Badge, Avatar, Skeleton
         ├── pages/
         │   ├── LoginPage
         │   ├── ModulesPage
         │   ├── ModuleDetailPage
-        │   ├── VideoPage    # Main video + Q&A view
-        │   └── admin/       # Dashboard, Questions, Analytics
-        ├── store/           # Zustand (auth, player, UI state)
-        ├── api/             # Axios client
-        └── hooks/           # WebSocket, query invalidation
+        │   ├── VideoPage      # Main video + Q&A view
+        │   └── admin/         # Dashboard, Questions, Analytics
+        ├── store/             # Zustand (auth, player, UI state)
+        ├── api/               # Axios client
+        └── hooks/             # WebSocket, query invalidation
 ```
 
 ---
 
-## API Reference
+## Key API Endpoints
 
 | Endpoint | Method | Description |
 |---|---|---|
 | `/api/auth/login` | POST | Login (returns JWT) |
 | `/api/auth/register` | POST | Register user |
 | `/api/modules` | GET/POST | List or create modules |
-| `/api/videos/module/{id}` | GET | Videos in a module |
 | `/api/videos/{id}/timeline` | GET | Timeline markers for video |
 | `/api/questions` | GET/POST | List or create questions |
-| `/api/questions/{id}/answers` | POST | Add answer to question |
+| `/api/questions/{id}/answers` | POST | Add answer |
+| `/api/ai/ask` | POST | AI answer using video transcript |
+| `/api/ai/platform-ask` | POST | Nest Assistant (platform-wide chat) |
+| `/api/payments/submit` | POST | Submit proof of payment |
+| `/api/payments/{id}/approve` | POST | Approve payment (admin only) |
 | `/api/analytics/dashboard` | GET | Admin stats |
-| `/api/analytics/modules` | GET | Per-module analytics |
 | `/ws/{user_id}` | WS | Real-time event stream |
+
+---
+
+## Security
+
+- JWT signed HS256 with `iat` claim — algorithm hardcoded, not env-swappable
+- CSP, HSTS (2yr + preload), Permissions-Policy headers
+- Rate limiting on all AI, auth, and payment endpoints
+- DOMPurify sanitization on all AI-rendered HTML
+- API docs disabled in production
+- Payment approval restricted to owner/super_admin only
 
 ---
 
 ## Production Checklist
 
-- [ ] Change `SECRET_KEY` in `.env` (min 32 chars, random)
-- [ ] Set `CORS_ORIGINS` to your actual domain
-- [ ] Switch to PostgreSQL: `DATABASE_URL=postgresql://user:pass@host/db`
-- [ ] Configure SSL (Let's Encrypt + nginx)
-- [ ] Set up proper video hosting (S3, Cloudflare R2, or Bunny CDN)
-- [ ] Configure email notifications (add SMTP settings)
-- [ ] Enable rate limiting (nginx or FastAPI middleware)
+- [ ] `SECRET_KEY` — strong random value: `python -c "import secrets; print(secrets.token_hex(32))"`
+- [ ] `GROQ_API_KEY` — set in Render env vars
+- [ ] `CORS_ORIGINS` — set to your actual domain
+- [ ] `DATABASE_URL` — PostgreSQL connection string (Supabase)
+- [ ] `SENDGRID_API_KEY` + `SENDGRID_FROM` — single sender verified in SendGrid
+- [ ] `FRONTEND_URL` — set to Vercel deployment URL
+- [ ] Make GitHub repo private (Settings → Danger Zone)
+- [ ] Move JWT from localStorage to httpOnly cookies (future hardening)
