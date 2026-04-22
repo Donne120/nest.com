@@ -139,6 +139,7 @@ def _run_db_setup():
         # ─── doesn't block the rest) ─────────────────────────────────────────
         _cols = [
             "ALTER TABLE answers ADD COLUMN is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL",
+            "ALTER TABLE meeting_bookings ADD COLUMN learner_id VARCHAR REFERENCES users(id)",
             "ALTER TABLE meeting_bookings ADD COLUMN assignment_id TEXT",
             "ALTER TABLE meeting_bookings ADD COLUMN locked BOOLEAN DEFAULT FALSE NOT NULL",
             "ALTER TABLE modules ADD COLUMN price FLOAT",
