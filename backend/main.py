@@ -139,7 +139,15 @@ def _run_db_setup():
         # ─── doesn't block the rest) ─────────────────────────────────────────
         _cols = [
             "ALTER TABLE answers ADD COLUMN is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL",
-            "ALTER TABLE meeting_bookings ADD COLUMN learner_id VARCHAR REFERENCES users(id)",
+            # employee_id was the old name for learner_id — rename if still present,
+            # and drop the spurious empty learner_id column we may have added first.
+            """DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name='meeting_bookings' AND column_name='employee_id') THEN
+    ALTER TABLE meeting_bookings DROP COLUMN IF EXISTS learner_id;
+    ALTER TABLE meeting_bookings RENAME COLUMN employee_id TO learner_id;
+  END IF;
+END $$""",
             "ALTER TABLE meeting_bookings ADD COLUMN owner_id VARCHAR REFERENCES users(id)",
             "ALTER TABLE meeting_bookings ADD COLUMN requested_at TIMESTAMP WITH TIME ZONE",
             "ALTER TABLE meeting_bookings ADD COLUMN confirmed_at TIMESTAMP WITH TIME ZONE",
