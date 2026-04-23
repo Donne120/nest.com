@@ -140,6 +140,13 @@ def _run_db_setup():
         _cols = [
             "ALTER TABLE answers ADD COLUMN is_ai_generated BOOLEAN DEFAULT FALSE NOT NULL",
             "ALTER TABLE meeting_bookings ADD COLUMN learner_id VARCHAR REFERENCES users(id)",
+            "ALTER TABLE meeting_bookings ADD COLUMN owner_id VARCHAR REFERENCES users(id)",
+            "ALTER TABLE meeting_bookings ADD COLUMN requested_at TIMESTAMP WITH TIME ZONE",
+            "ALTER TABLE meeting_bookings ADD COLUMN confirmed_at TIMESTAMP WITH TIME ZONE",
+            "ALTER TABLE meeting_bookings ADD COLUMN note TEXT",
+            "ALTER TABLE meeting_bookings ADD COLUMN meeting_link VARCHAR",
+            "ALTER TABLE meeting_bookings ADD COLUMN decline_reason TEXT",
+            "ALTER TABLE meeting_bookings ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE",
             "ALTER TABLE meeting_bookings ADD COLUMN assignment_id TEXT",
             "ALTER TABLE meeting_bookings ADD COLUMN locked BOOLEAN DEFAULT FALSE NOT NULL",
             "ALTER TABLE modules ADD COLUMN price FLOAT",
