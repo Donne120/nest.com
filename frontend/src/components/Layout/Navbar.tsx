@@ -233,7 +233,20 @@ export default function Navbar() {
             >
               <Bell size={14} />
               {displayUnread > 0 && (
-                <span className="absolute top-1 right-1 w-[7px] h-[7px] rounded-full" style={{ background: '#c45c3c', border: `2px solid ${isDark ? '#0b0c0f' : '#faf7f2'}` }} />
+                <span
+                  className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] rounded-full flex items-center justify-center font-bold animate-pulse"
+                  style={{
+                    background: '#c45c3c',
+                    color: '#fff',
+                    fontSize: 9,
+                    lineHeight: 1,
+                    padding: '0 3px',
+                    border: `1.5px solid ${isDark ? '#0b0c0f' : '#faf7f2'}`,
+                    boxShadow: '0 0 0 2px rgba(196,92,60,0.35)',
+                  }}
+                >
+                  {displayUnread > 9 ? '9+' : displayUnread}
+                </span>
               )}
             </IconButton>
 

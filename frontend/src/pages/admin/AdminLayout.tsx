@@ -271,10 +271,18 @@ export default function AdminLayout() {
                 <Bell size={15} />
                 {unread > 0 && (
                   <span style={{
-                    position: 'absolute', top: 5, right: 5,
-                    width: 6, height: 6, borderRadius: '50%',
-                    background: ACC, border: `1.5px solid ${SURF}`,
-                  }} />
+                    position: 'absolute', top: -5, right: -5,
+                    minWidth: 17, height: 17, borderRadius: 9,
+                    background: ACC, color: '#fff',
+                    border: `1.5px solid ${SURF}`,
+                    fontSize: 9, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '0 3px', lineHeight: 1,
+                    boxShadow: `0 0 0 2px ${ACC}55`,
+                    animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',
+                  }}>
+                    {unread > 9 ? '9+' : unread}
+                  </span>
                 )}
               </button>
 
