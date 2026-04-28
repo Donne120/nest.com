@@ -31,8 +31,12 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 flex items-stretch"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 flex items-stretch"
+      style={{
+        background: '#0f1014',
+        borderTop: '1px solid rgba(255,255,255,0.08)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
       aria-label="Mobile navigation"
     >
       {tabs.map(({ to, icon: Icon, label }) => {
@@ -41,12 +45,8 @@ export default function BottomNav() {
           <Link
             key={to}
             to={to}
-            className={clsx(
-              'flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold tracking-wide transition-colors',
-              active
-                ? 'text-brand-600 dark:text-brand-400'
-                : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
-            )}
+            className={clsx('flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold tracking-wide transition-colors')}
+            style={{ color: active ? '#e8c97e' : 'rgba(255,255,255,0.35)' }}
           >
             <Icon size={20} strokeWidth={active ? 2.5 : 1.8} />
             {label}

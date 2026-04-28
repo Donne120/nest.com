@@ -1,8 +1,9 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Sparkles, Clock, Users, BookOpen, CheckCircle, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Clock, Users, BookOpen, CheckCircle, ArrowRight, Play, Trash2, Pencil, Check, Plus } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import api from '../api/client';
+import toast from 'react-hot-toast';
 import type { Video, Module, TimelineMarker, QuizQuestion, QuizSubmissionResult, Assignment } from '../types';
 import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
 import QASidebar from '../components/QA/QASidebar';
@@ -22,6 +23,20 @@ function fmtTime(s: number) {
   return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
 }
 
+function fmtDur(s: number) {
+  const m = Math.floor(s / 60);
+  if (m === 0) return `${s}s`;
+  if (m < 60) return `${m}m`;
+  return `${Math.floor(m / 60)}h ${m % 60}m`;
+}
+
+interface Note {
+  id: string;
+  content: string;
+  timestamp_seconds: number | null;
+  created_at: string;
+}
+
 export default function VideoPage() {
   const { videoId } = useParams<{ videoId: string }>();
   const navigate = useNavigate();
@@ -30,6 +45,10 @@ export default function VideoPage() {
   const { seekTo, currentTime, duration: playerDuration } = usePlayerStore();
   const getPlayerDuration = () => usePlayerStore.getState().duration;
   const [showQuiz, setShowQuiz] = useState(false);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [notePinTime, setNotePinTime] = useState(false);
+  const [noteEditId, setNoteEditId] = useState<string | null>(null);
+  const [noteEditContent, setNoteEditContent] = useState('');
 
   useQueryInvalidation();
 
@@ -75,6 +94,37 @@ export default function VideoPage() {
     queryKey: ['assignments', 'module', video?.module_id],
     queryFn: () => api.get(`/assignments/my?module_id=${video!.module_id}`).then(r => r.data),
     enabled: !!video?.module_id,
+  });
+
+  const { data: notes = [] } = useQuery<Note[]>({
+    queryKey: ['notes', videoId],
+    queryFn: () => api.get(`/notes/video/${videoId}`).then(r => r.data),
+    enabled: !!videoId,
+  });
+
+  const createNote = useMutation({
+    mutationFn: (payload: { content: string; timestamp_seconds?: number }) =>
+      api.post(`/notes/video/${videoId}`, payload).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes', videoId] });
+      setNoteDraft('');
+      setNotePinTime(false);
+    },
+    onError: () => toast.error('Could not save note'),
+  });
+
+  const updateNote = useMutation({
+    mutationFn: ({ id, content }: { id: string; content: string }) =>
+      api.put(`/notes/${id}`, { content }).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes', videoId] });
+      setNoteEditId(null);
+    },
+  });
+
+  const deleteNote = useMutation({
+    mutationFn: (id: string) => api.delete(`/notes/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notes', videoId] }),
   });
 
   const invalidateProgress = useCallback(() => {
@@ -132,6 +182,37 @@ export default function VideoPage() {
     if (quizQuestions.length > 0) setShowQuiz(true);
   }, [videoId, video?.duration_seconds, quizQuestions.length, invalidateProgress]);
 
+  const handleNoteSave = useCallback(() => {
+    const trimmed = noteDraft.trim();
+    if (!trimmed) return;
+    createNote.mutate({
+      content: trimmed,
+      timestamp_seconds: notePinTime ? currentTime : undefined,
+    });
+  }, [noteDraft, notePinTime, currentTime, createNote]);
+
+  const handleMarkComplete = useCallback(async () => {
+    if (quizQuestions.length > 0) {
+      setShowQuiz(true);
+      return;
+    }
+    if (!videoId) return;
+    const dur = getPlayerDuration();
+    const finalDuration = dur > 0 ? Math.round(dur) : (video?.duration_seconds ?? 0);
+    try {
+      await api.post('/progress/update', {
+        video_id: videoId,
+        progress_seconds: finalDuration,
+        duration_seconds: finalDuration > 0 ? finalDuration : undefined,
+        status: 'completed',
+      });
+      invalidateProgress();
+      toast.success('Marked as complete!');
+    } catch {
+      toast.error('Could not save progress');
+    }
+  }, [quizQuestions.length, videoId, video?.duration_seconds, invalidateProgress]);
+
   const currentIndex = moduleVideos.findIndex(v => v.id === videoId);
   const prevVideo = moduleVideos[currentIndex - 1];
   const nextVideo = moduleVideos[currentIndex + 1];
@@ -139,7 +220,7 @@ export default function VideoPage() {
   const displayDuration = playerDuration > 0 ? playerDuration : (video?.duration_seconds ?? 0);
 
   // ← hook must be before any conditional return
-  const [activeTab, setActiveTab] = useState<'notes' | 'assignments' | 'about'>('notes');
+  const [activeTab, setActiveTab] = useState<'notes' | 'playlist' | 'assignments' | 'about'>('notes');
 
   if (videoLoading) {
     return (
@@ -162,7 +243,8 @@ export default function VideoPage() {
   type TabKey = typeof activeTab;
   const tabs = (
     [
-      { key: 'notes' as TabKey, label: 'Notes', show: true },
+      { key: 'notes' as TabKey, label: `Notes${notes.length > 0 ? ` (${notes.length})` : ''}`, show: true },
+      { key: 'playlist' as TabKey, label: `Playlist (${moduleVideos.length})`, show: moduleVideos.length > 1 },
       { key: 'assignments' as TabKey, label: `Assignments${moduleAssignments.length > 0 ? ` (${moduleAssignments.length})` : ''}`, show: true },
       { key: 'about' as TabKey, label: 'About', show: !!(video.description) },
     ] as { key: TabKey; label: string; show: boolean }[]
@@ -305,7 +387,7 @@ export default function VideoPage() {
 
             {/* Mark complete */}
             <button
-              onClick={() => { if (quizQuestions.length > 0) setShowQuiz(true); }}
+              onClick={handleMarkComplete}
               className="flex items-center gap-1 font-semibold transition-all hover:opacity-85 active:scale-95"
               style={{
                 background: '#e8c97e',
@@ -360,18 +442,164 @@ export default function VideoPage() {
             {/* Tab content */}
             <div className="pt-5">
               {activeTab === 'notes' && (
-                <div style={{
-                  background: '#13141a',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  borderRadius: 6,
-                  padding: '18px 20px',
-                  minHeight: 72,
-                  color: '#6b6b78',
-                  fontSize: 14,
-                  lineHeight: 1.7,
-                  fontStyle: 'italic',
-                }}>
-                  Click to start writing notes for this lesson…
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {/* Note input */}
+                  <div style={{ background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '14px 16px' }}>
+                    <textarea
+                      value={noteDraft}
+                      onChange={e => setNoteDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleNoteSave(); }}
+                      placeholder="Write a note… (Ctrl+Enter to save)"
+                      rows={3}
+                      style={{
+                        width: '100%', background: 'transparent', border: 'none',
+                        color: '#e8e4dc', fontSize: 14, fontFamily: 'inherit',
+                        lineHeight: 1.6, resize: 'none', outline: 'none', boxSizing: 'border-box',
+                      }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                      <button
+                        onClick={() => setNotePinTime(v => !v)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
+                          color: notePinTime ? '#e8c97e' : '#6b6b78',
+                          background: notePinTime ? 'rgba(232,201,126,0.1)' : 'transparent',
+                          border: notePinTime ? '1px solid rgba(232,201,126,0.25)' : '1px solid transparent',
+                          borderRadius: 4, padding: '4px 8px', cursor: 'pointer',
+                          fontFamily: 'inherit', transition: 'all 0.15s',
+                        }}
+                      >
+                        <Clock size={11} />
+                        {notePinTime ? fmtTime(currentTime) : 'Pin timestamp'}
+                      </button>
+                      <button
+                        onClick={handleNoteSave}
+                        disabled={!noteDraft.trim() || createNote.isPending}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
+                          color: '#0b0c0f',
+                          background: !noteDraft.trim() ? 'rgba(232,201,126,0.3)' : '#e8c97e',
+                          border: 'none', borderRadius: 4, padding: '6px 14px',
+                          cursor: !noteDraft.trim() ? 'not-allowed' : 'pointer',
+                          fontFamily: 'inherit', transition: 'all 0.15s',
+                        }}
+                      >
+                        <Plus size={12} /> Save
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Notes list */}
+                  {notes.length === 0 ? (
+                    <p style={{ color: '#6b6b78', fontSize: 13, fontStyle: 'italic', padding: '4px 0' }}>
+                      No notes yet. Write something above to capture insights while you learn.
+                    </p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {notes.map(note => (
+                        <div key={note.id} style={{ background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '12px 14px' }}>
+                          {noteEditId === note.id ? (
+                            <div>
+                              <textarea
+                                value={noteEditContent}
+                                onChange={e => setNoteEditContent(e.target.value)}
+                                autoFocus rows={3}
+                                style={{
+                                  width: '100%', background: '#0b0c0f',
+                                  border: '1px solid rgba(232,201,126,0.3)', borderRadius: 4,
+                                  color: '#e8e4dc', fontSize: 13, fontFamily: 'inherit',
+                                  lineHeight: 1.6, resize: 'none', outline: 'none',
+                                  padding: '8px 10px', boxSizing: 'border-box',
+                                }}
+                              />
+                              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                                <button
+                                  onClick={() => updateNote.mutate({ id: note.id, content: noteEditContent.trim() })}
+                                  disabled={!noteEditContent.trim()}
+                                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, background: '#e8c97e', color: '#0b0c0f', border: 'none', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}
+                                >
+                                  <Check size={11} /> Save
+                                </button>
+                                <button
+                                  onClick={() => setNoteEditId(null)}
+                                  style={{ fontSize: 11, color: '#6b6b78', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div>
+                              {note.timestamp_seconds != null && (
+                                <button
+                                  onClick={() => seekTo(note.timestamp_seconds!)}
+                                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#e8c97e', fontFamily: 'monospace', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4 }}
+                                >
+                                  <Clock size={10} /> {fmtTime(note.timestamp_seconds)}
+                                </button>
+                              )}
+                              <p style={{ fontSize: 13, color: '#e8e4dc', lineHeight: 1.65, whiteSpace: 'pre-wrap', margin: 0 }}>
+                                {note.content}
+                              </p>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 8 }}>
+                                <button
+                                  onClick={() => { setNoteEditId(note.id); setNoteEditContent(note.content); }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#6b6b78', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}
+                                >
+                                  <Pencil size={11} /> Edit
+                                </button>
+                                <button
+                                  onClick={() => deleteNote.mutate(note.id)}
+                                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#6b6b78', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}
+                                >
+                                  <Trash2 size={11} /> Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'playlist' && (
+                <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, overflow: 'hidden' }}>
+                  {moduleVideos.map((v, idx) => {
+                    const isCurrent = v.id === videoId;
+                    return (
+                      <button
+                        key={v.id}
+                        onClick={() => !isCurrent && navigate(`/video/${v.id}`)}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                          padding: '12px 16px',
+                          background: isCurrent ? 'rgba(232,201,126,0.08)' : '#13141a',
+                          borderTop: 'none', borderRight: 'none',
+                          borderBottom: idx < moduleVideos.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                          borderLeft: `3px solid ${isCurrent ? '#e8c97e' : 'transparent'}`,
+                          cursor: isCurrent ? 'default' : 'pointer',
+                          textAlign: 'left', fontFamily: 'inherit', transition: 'background 0.15s',
+                        }}
+                      >
+                        <span style={{ fontFamily: 'monospace', fontSize: 10, color: isCurrent ? '#e8c97e' : '#6b6b78', width: 20, flexShrink: 0, letterSpacing: '0.08em' }}>
+                          {String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <div style={{ width: 26, height: 26, borderRadius: 4, background: isCurrent ? 'rgba(232,201,126,0.15)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Play size={10} fill={isCurrent ? '#e8c97e' : '#6b6b78'} style={{ color: isCurrent ? '#e8c97e' : '#6b6b78', marginLeft: 1 }} />
+                        </div>
+                        <span style={{ flex: 1, fontSize: 13, fontWeight: isCurrent ? 600 : 400, color: isCurrent ? '#e8e4dc' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {v.title}
+                        </span>
+                        {v.duration_seconds > 0 && (
+                          <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#6b6b78', flexShrink: 0 }}>
+                            {fmtDur(v.duration_seconds)}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
