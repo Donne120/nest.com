@@ -6,15 +6,7 @@ import api from '../api/client';
 import { useAuthStore } from '../store';
 import type { PaymentCountryConfig } from '../types';
 
-const INK   = '#1a1714';
-const INK2  = '#6b6460';
-const INK3  = '#a09990';
-const RULE  = '#d4cdc6';
-const SURF  = '#fffcf8';
-const BG    = '#f2ede8';
-const BG2   = '#e8e2db';
-const ACC   = '#c94f2c';
-const GO    = '#2a7a4b';
+import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, GO } from '../lib/colors';
 
 const PLAN_AMOUNTS: Record<string, { usd: number; rwf: string }> = {
   starter:      { usd: 9,  rwf: '13,000' },
@@ -421,8 +413,8 @@ export default function PaySubmitPage() {
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 12px', fontSize: 13.5,
-  fontFamily: "'Inter', sans-serif", color: '#1a1714',
-  background: '#fffcf8', border: '1px solid #d4cdc6',
+  fontFamily: "'Inter', sans-serif", color: INK,
+  background: SURF, border: `1px solid ${RULE}`,
   borderRadius: 4, outline: 'none', marginBottom: 16, boxSizing: 'border-box',
 };
 
@@ -431,15 +423,15 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       style={{ ...inputStyle, ...(props.style ?? {}) }}
-      onFocus={e => (e.currentTarget.style.borderColor = '#1a1714')}
-      onBlur={e => (e.currentTarget.style.borderColor = '#d4cdc6')}
+      onFocus={e => (e.currentTarget.style.borderColor = INK)}
+      onBlur={e => (e.currentTarget.style.borderColor = RULE)}
     />
   );
 }
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#a09990', marginBottom: 7, fontWeight: 500 }}>
+    <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3, marginBottom: 7, fontWeight: 500 }}>
       {children}
     </div>
   );
@@ -449,8 +441,8 @@ function Section({ label, title, children }: { label: string; title: string; chi
   return (
     <div style={{ marginBottom: 36 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 18 }}>
-        <span style={{ fontFamily: "'Inconsolata', monospace", fontSize: 11, fontWeight: 700, color: '#c94f2c', letterSpacing: '0.08em' }}>{label}</span>
-        <span style={{ fontSize: 14.5, fontWeight: 700, color: '#1a1714' }}>{title}</span>
+        <span style={{ fontFamily: "'Inconsolata', monospace", fontSize: 11, fontWeight: 700, color: ACC, letterSpacing: '0.08em' }}>{label}</span>
+        <span style={{ fontSize: 14.5, fontWeight: 700, color: INK }}>{title}</span>
       </div>
       {children}
     </div>

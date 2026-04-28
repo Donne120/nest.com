@@ -9,17 +9,10 @@ import { useAuthStore } from '../../store';
 import type { Organization } from '../../types';
 import toast from 'react-hot-toast';
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const BG   = '#f2ede8';
-const SURF = '#fffcf8';
-const INK  = '#1a1714';
-const INK2 = '#5a524a';
-const INK3 = '#9a8e84';
-const RULE = '#d4cdc6';
-const BG2  = '#e8e2db';
-const ACC  = '#c94f2c';
+import { BG, BG2, SURF, RULE, INK, ACC, GO } from '../../lib/colors';
+const INK2 = 'var(--c-ink2)';
+const INK3 = 'var(--c-ink3)';
 const ACC2 = '#e07a5f';
-const GO   = '#2a7a4b';
 const WARN = '#c97a2c';
 const DISP = "'Fraunces', Georgia, serif";
 const UI   = "'Syne', 'Inter', sans-serif";

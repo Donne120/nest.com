@@ -1,16 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store';
 
-// Design tokens — exact match with the rest of Nest
-const INK   = '#1a1714';
-const INK2  = '#6b6460';
-const INK3  = '#a09990';
-const RULE  = '#d4cdc6';
-const SURF  = '#fffcf8';
-const BG    = '#f2ede8';
-const BG2   = '#e8e2db';
-const ACC   = '#c94f2c';
-const GO    = '#2a7a4b';
+import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, GO } from '../lib/colors';
 
 // Features shared across every paid plan (shown in the "all plans" strip)
 const ALL_PLAN_FEATURES = [

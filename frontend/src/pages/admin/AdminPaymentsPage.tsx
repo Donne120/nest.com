@@ -4,17 +4,8 @@ import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 import api from '../../api/client';
 
-const INK   = '#1a1714';
-const INK2  = '#6b6460';
-const INK3  = '#a09990';
-const RULE  = '#d4cdc6';
-const SURF  = '#fffcf8';
-const BG    = '#f2ede8';
-const BG2   = '#e8e2db';
-const ACC   = '#c94f2c';
-const ACC2  = '#2c6bc9';
-const GO    = '#2a7a4b';
-const WARN  = '#c97a2c';
+import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, ACC2, GO } from '../../lib/colors';
+const WARN = '#c97a2c';
 
 const STATUS_CFG = {
   pending:  { label: 'Pending',  color: WARN, bg: 'rgba(201,122,44,0.08)', border: 'rgba(201,122,44,0.2)' },

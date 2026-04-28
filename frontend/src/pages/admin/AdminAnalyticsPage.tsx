@@ -9,18 +9,8 @@ import type { ModuleAnalytics, DashboardStats, BenchmarkData } from '../../types
 import { Skeleton } from '../../components/UI/Skeleton';
 import { Download, Zap } from 'lucide-react';
 
-// ── Design tokens (matches AdminLayout / AdminDashboard) ────────────────────
-const INK    = '#1a1714';
-const INK2   = '#6b6460';
-const INK3   = '#a09990';
-const RULE   = '#d4cdc6';
-const SURF   = '#fffcf8';
-const BG     = '#f2ede8';
-const BG2    = '#e8e2db';
-const ACC    = '#c94f2c';   // terracotta
-const ACC2   = '#2c6bc9';   // blue
-const GO     = '#2a7a4b';   // green
-const WARN   = '#c97a2c';   // amber
+import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, ACC2, GO } from '../../lib/colors';
+const WARN = '#c97a2c';
 const UI     = "'Syne', 'Inter', sans-serif";
 const MONO   = "'Inconsolata', monospace";
 const DISP   = "'Fraunces', Georgia, serif";

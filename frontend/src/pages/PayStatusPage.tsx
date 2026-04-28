@@ -3,15 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import api from '../api/client';
 
-const INK   = '#1a1714';
-const INK2  = '#6b6460';
-const INK3  = '#a09990';
-const RULE  = '#d4cdc6';
-const SURF  = '#fffcf8';
-const BG    = '#f2ede8';
-const ACC   = '#c94f2c';
-const GO    = '#2a7a4b';
-const WARN  = '#c97a2c';
+import { BG, SURF, RULE, INK, INK2, INK3, ACC, GO } from '../lib/colors';
+const WARN = '#c97a2c';
 
 const STATUS_CONFIG = {
   pending:  { label: 'Under Review',  color: WARN,  bg: 'rgba(201,122,44,0.08)',  border: 'rgba(201,122,44,0.2)'  },

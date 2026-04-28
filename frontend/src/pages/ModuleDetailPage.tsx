@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import api from '../api/client';
 import type { Module, Video, Lesson, ModuleResource } from '../types';
+import { BG, SURF, RULE, INK, INK2, INK3, ACC, ACC2 } from '../lib/colors';
 import { Skeleton } from '../components/UI/Skeleton';
 import BookMeetingModal from '../components/Meetings/BookMeetingModal';
 
@@ -118,15 +119,10 @@ export default function ModuleDetailPage() {
   ].sort((a, b) => a.item.order_index - b.item.order_index);
   const totalQuizzes = 31;
 
-  // CSS vars as inline style shortcuts
-  const INK  = '#1a1714';
-  const INK2 = '#6b6460';
-  const INK3 = '#a09990';
-  const RULE = '#d4cdc6';
-  const SURFACE = '#fffcf8';
-  const BG = '#f2ede8';
-  const ACCENT = '#c94f2c';
-  const BLUE = '#2c5fc9';
+  // Aliases used in this component
+  const SURFACE = SURF;
+  const ACCENT  = ACC;
+  const BLUE    = ACC2;
 
   return (
     <div style={{ background: BG, minHeight: '100vh', fontFamily: "'DM Sans', 'Inter', sans-serif" }}>

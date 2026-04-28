@@ -4,6 +4,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Nest warm palette — light & dark ───────────────────────────────────── */
+/* These are consumed by inline styles via var(--c-xxx) across all pages.    */
+/* Toggling .dark on <html> is all that's needed to switch every page.       */
+:root {
+  --c-bg:   #f2ede8;   /* page background  */
+  --c-bg2:  #e8e2db;   /* slightly deeper  */
+  --c-surf: #fffcf8;   /* card / surface   */
+  --c-rule: #d4cdc6;   /* border / divider */
+  --c-ink:  #1a1714;   /* primary text     */
+  --c-ink2: #6b6460;   /* secondary text   */
+  --c-ink3: #a09990;   /* muted text       */
+  --c-acc:  #c94f2c;   /* terracotta       */
+  --c-acc2: #2c6bc9;   /* blue             */
+  --c-go:   #2a7a4b;   /* green            */
+}
+
+html.dark {
+  --c-bg:   #0f1014;
+  --c-bg2:  #0b0c0f;
+  --c-surf: #1a1d24;
+  --c-rule: rgba(255,255,255,0.08);
+  --c-ink:  #e8e4dc;
+  --c-ink2: #9ca3af;
+  --c-ink3: #6b7280;
+  --c-acc:  #e0613a;   /* slightly brighter on dark */
+  --c-acc2: #60a5fa;
+  --c-go:   #34d399;
+}
+
 /* ─── Brand palette CSS vars (overridden at runtime per org) ─────────────── */
 /* Default: Nest warm terracotta — feels grounded, warm, human */
 :root {
@@ -32,8 +61,8 @@
   }
 
   body {
-    background-color: #FAF7F2;
-    color: #1C1A17;
+    background-color: var(--c-bg);
+    color: var(--c-ink);
     @apply antialiased;
     font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
