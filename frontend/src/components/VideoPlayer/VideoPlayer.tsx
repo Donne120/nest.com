@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePlayerStore, useUIStore } from '../../store';
 import Controls from './Controls';
 import Timeline from './Timeline';
@@ -82,6 +82,8 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   const ytPlayerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(false);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Nest intro pre-roll ────────────────────────────────────────────────────
   const { organization } = useAuthStore();
@@ -210,6 +212,15 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
     else document.exitFullscreen();
   };
 
+  const showControlsBriefly = useCallback(() => {
+    setControlsVisible(true);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setControlsVisible(false), 3500);
+  }, []);
+
+  // Always visible in fullscreen OR briefly after a touch/hover
+  const shouldShowControls = fullscreen || controlsVisible;
+
   const handleTimelineClick = (t: number) => {
     if (isYouTube && ytPlayerRef.current?.seekTo) {
       ytPlayerRef.current.seekTo(t, true);
@@ -220,15 +231,22 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
     }
   };
 
-  const handleAskAtTimestamp = () => {
+  // Exit fullscreen first so the question form modal (rendered outside the
+  // player container) is visible in the normal page flow.
+  const handleAskAt = useCallback(async (t: number) => {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => {});
+    }
     setPlaying(false);
-    openQuestionForm(currentTime);
-  };
+    openQuestionForm(t);
+  }, [openQuestionForm, setPlaying]);
+
+  const handleAskAtTimestamp = () => handleAskAt(currentTime);
 
   // ── YouTube / Vimeo player ─────────────────────────────────────────────────
   if (isEmbed) {
     return (
-      <div ref={containerRef} className="bg-black rounded-xl overflow-hidden" style={{ position: 'relative' }}>
+      <div ref={containerRef} className="bg-black rounded-xl overflow-hidden" style={{ position: 'relative' }} onPointerDown={showControlsBriefly}>
         {!introDone && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 20, borderRadius: 'inherit', overflow: 'hidden' }}>
             <NestIntroOverlay
@@ -260,9 +278,9 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
               onSeek={handleTimelineClick}
               onMarkerClick={(m) => {
                 handleTimelineClick(m.timestamp_seconds);
-                openQuestionForm(m.timestamp_seconds);
+                handleAskAt(m.timestamp_seconds);
               }}
-              onAskAt={(t) => { setPlaying(false); openQuestionForm(t); }}
+              onAskAt={handleAskAt}
             />
             <Controls
               onToggleFullscreen={toggleFullscreen}
@@ -314,8 +332,9 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   return (
     <div
       ref={containerRef}
-      className="relative bg-black rounded-xl overflow-hidden group"
+      className="relative bg-black rounded-xl overflow-hidden"
       style={{ aspectRatio: '16/9' }}
+      onPointerDown={showControlsBriefly}
     >
       {!introDone && (
         <NestIntroOverlay
@@ -342,16 +361,23 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
         crossOrigin="anonymous"
       />
 
-      {/* Overlay gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
+      {/* Overlay gradient — visible on hover, touch, or fullscreen */}
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent transition-opacity duration-200 pointer-events-none"
+        style={{ opacity: shouldShowControls ? 1 : 0 }}
+      />
 
-      {/* Controls */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      {/* Controls — tap anywhere on video to reveal; always on in fullscreen */}
+      <div
+        className="absolute bottom-0 left-0 right-0 px-4 pb-3 transition-opacity duration-200"
+        style={{ opacity: shouldShowControls ? 1 : 0 }}
+        onPointerDown={e => e.stopPropagation()}
+      >
         <Timeline
           markers={markers}
           onSeek={handleTimelineClick}
-          onMarkerClick={(m) => handleTimelineClick(m.timestamp_seconds)}
-          onAskAt={(t) => { setPlaying(false); openQuestionForm(t); }}
+          onMarkerClick={(m) => handleAskAt(m.timestamp_seconds)}
+          onAskAt={handleAskAt}
         />
         <Controls
           onToggleFullscreen={toggleFullscreen}
