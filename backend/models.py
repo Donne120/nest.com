@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, String, Integer, Float, Boolean, DateTime, Text, JSON,
-    ForeignKey, Enum as SAEnum
+    ForeignKey, Enum as SAEnum, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -164,6 +164,48 @@ class Organization(Base):
     modules = relationship("Module", back_populates="organization")
     invitations = relationship("Invitation", back_populates="organization")
     invite_links = relationship("InviteLink", back_populates="organization")
+    payment_country_configs = relationship(
+        "PaymentCountryConfig", back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+
+
+# ─── Per-country payment config ───────────────────────────────────────────────
+
+class PaymentCountryConfig(Base):
+    __tablename__ = "payment_country_configs"
+
+    id           = Column(String, primary_key=True, default=gen_uuid)
+    org_id       = Column(String, ForeignKey("organizations.id"), nullable=False, index=True)
+    country_code = Column(String(4), nullable=False)   # ISO 3166-1 alpha-2: CM, RW …
+    country_name = Column(String, nullable=False)       # "Cameroon", "Rwanda" …
+    currency_code   = Column(String(10), nullable=False)  # XAF, RWF, KES …
+    currency_symbol = Column(String(10), nullable=False)  # FCFA, Fr, KSh …
+
+    # Primary mobile-money / payment method
+    provider     = Column(String, nullable=True)   # "MTN MoMo", "M-Pesa" …
+    number       = Column(String, nullable=True)
+    account_name = Column(String, nullable=True)
+
+    # Optional secondary method (e.g. Orange Money alongside MTN)
+    provider2     = Column(String, nullable=True)
+    number2       = Column(String, nullable=True)
+    account_name2 = Column(String, nullable=True)
+
+    # Recommended price in local currency (pre-fills the form)
+    price = Column(Float, nullable=True)
+
+    # Country-specific payment instructions shown to the learner
+    instructions = Column(Text, nullable=True)
+
+    is_active  = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    organization = relationship("Organization", back_populates="payment_country_configs")
+
+    __table_args__ = (
+        UniqueConstraint("org_id", "country_code", name="uq_org_country"),
+    )
 
 
 # ─── Invitation ───────────────────────────────────────────────────────────────

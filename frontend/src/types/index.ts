@@ -27,6 +27,25 @@ export interface Organization {
   payment_instructions: string | null;
 }
 
+// ─── Per-country payment config ───────────────────────────────────────────────
+
+export interface PaymentCountryConfig {
+  id: string;
+  country_code: string;
+  country_name: string;
+  currency_code: string;
+  currency_symbol: string;
+  provider: string | null;
+  number: string | null;
+  account_name: string | null;
+  provider2: string | null;
+  number2: string | null;
+  account_name2: string | null;
+  price: number | null;
+  instructions: string | null;
+  is_active: boolean;
+}
+
 // ─── Invitation ───────────────────────────────────────────────────────────────
 
 export interface Invitation {

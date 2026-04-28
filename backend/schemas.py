@@ -57,6 +57,43 @@ class OrganizationOut(BaseModel):
         from_attributes = True
 
 
+# ─── Per-country payment config ───────────────────────────────────────────────
+
+class PaymentCountryConfigCreate(BaseModel):
+    country_code:    str = Field(..., min_length=2, max_length=4)
+    country_name:    str = Field(..., min_length=1, max_length=100)
+    currency_code:   str = Field(..., min_length=2, max_length=10)
+    currency_symbol: str = Field(..., min_length=1, max_length=10)
+    provider:        Optional[str] = None
+    number:          Optional[str] = None
+    account_name:    Optional[str] = None
+    provider2:       Optional[str] = None
+    number2:         Optional[str] = None
+    account_name2:   Optional[str] = None
+    price:           Optional[float] = None
+    instructions:    Optional[str] = None
+
+
+class PaymentCountryConfigOut(BaseModel):
+    id:              str
+    country_code:    str
+    country_name:    str
+    currency_code:   str
+    currency_symbol: str
+    provider:        Optional[str]
+    number:          Optional[str]
+    account_name:    Optional[str]
+    provider2:       Optional[str]
+    number2:         Optional[str]
+    account_name2:   Optional[str]
+    price:           Optional[float]
+    instructions:    Optional[str]
+    is_active:       bool
+
+    class Config:
+        from_attributes = True
+
+
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 
 class Token(BaseModel):

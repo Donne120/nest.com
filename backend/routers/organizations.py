@@ -153,6 +153,103 @@ def reactivate_member(
 
 # ── Super-admin: list all orgs ────────────────────────────────────────
 
+# ── Country payment configs (admin) ──────────────────────────────────
+
+@router.get(
+    "/mine/payment-countries",
+    response_model=List[schemas.PaymentCountryConfigOut],
+)
+def list_payment_countries(
+    current_user: models.User = Depends(auth_utils.require_owner),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(models.PaymentCountryConfig)
+        .filter(models.PaymentCountryConfig.org_id == current_user.organization_id)
+        .order_by(models.PaymentCountryConfig.country_name)
+        .all()
+    )
+
+
+@router.post(
+    "/mine/payment-countries",
+    response_model=schemas.PaymentCountryConfigOut,
+    status_code=201,
+)
+def create_payment_country(
+    payload: schemas.PaymentCountryConfigCreate,
+    current_user: models.User = Depends(auth_utils.require_owner),
+    db: Session = Depends(get_db),
+):
+    existing = (
+        db.query(models.PaymentCountryConfig)
+        .filter(
+            models.PaymentCountryConfig.org_id == current_user.organization_id,
+            models.PaymentCountryConfig.country_code == payload.country_code,
+        )
+        .first()
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="A config for this country already exists.")
+    config = models.PaymentCountryConfig(
+        org_id=current_user.organization_id,
+        **payload.model_dump(),
+    )
+    db.add(config)
+    db.commit()
+    db.refresh(config)
+    return config
+
+
+@router.put(
+    "/mine/payment-countries/{config_id}",
+    response_model=schemas.PaymentCountryConfigOut,
+)
+def update_payment_country(
+    config_id: str,
+    payload: schemas.PaymentCountryConfigCreate,
+    current_user: models.User = Depends(auth_utils.require_owner),
+    db: Session = Depends(get_db),
+):
+    config = (
+        db.query(models.PaymentCountryConfig)
+        .filter(
+            models.PaymentCountryConfig.id == config_id,
+            models.PaymentCountryConfig.org_id == current_user.organization_id,
+        )
+        .first()
+    )
+    if not config:
+        raise HTTPException(status_code=404, detail="Not found")
+    for field, value in payload.model_dump().items():
+        setattr(config, field, value)
+    db.commit()
+    db.refresh(config)
+    return config
+
+
+@router.delete("/mine/payment-countries/{config_id}", status_code=204)
+def delete_payment_country(
+    config_id: str,
+    current_user: models.User = Depends(auth_utils.require_owner),
+    db: Session = Depends(get_db),
+):
+    config = (
+        db.query(models.PaymentCountryConfig)
+        .filter(
+            models.PaymentCountryConfig.id == config_id,
+            models.PaymentCountryConfig.org_id == current_user.organization_id,
+        )
+        .first()
+    )
+    if not config:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(config)
+    db.commit()
+
+
+# ── Super-admin: all orgs ─────────────────────────────────────────────
+
 @router.get("", response_model=List[schemas.OrganizationOut])
 def list_all_orgs(
     current_user: models.User = Depends(

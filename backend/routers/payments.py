@@ -30,7 +30,8 @@ from auth import get_current_user
 from config import settings
 from database import get_db
 from models import (
-    ModuleAccess, Organization, PaymentMethod, PaymentStatus,
+    ModuleAccess, Organization, PaymentCountryConfig,
+    PaymentMethod, PaymentStatus,
     PaymentSubmission, PaymentType, Plan, SubscriptionStatus,
     User, UserRole, Module,
 )
@@ -46,7 +47,11 @@ router = APIRouter(prefix="/api/payments", tags=["payments"])
 
 # ── helpers ───────────────────────────────────────────────────────────
 
-_ALLOWED_CURRENCIES = {"RWF", "USD", "EUR", "XAF"}
+_ALLOWED_CURRENCIES = {
+    "RWF", "USD", "EUR", "XAF", "XOF",
+    "KES", "NGN", "GHS", "UGX", "TZS",
+    "ETB", "ZAR", "MAD", "ZMW", "MWK",
+}
 _PHONE_RE = re.compile(r"^\+?[0-9\-\s]{7,20}$")
 
 
@@ -520,6 +525,43 @@ def get_my_payments(
         .all()
     )
     return [_serialize(s) for s in submissions]
+
+
+# ── country payment configs (public — for learners) ───────────────────
+
+@router.get("/country-configs")
+def get_country_configs(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Active country payment configs for the learner's organisation."""
+    configs = (
+        db.query(PaymentCountryConfig)
+        .filter(
+            PaymentCountryConfig.org_id == current_user.organization_id,
+            PaymentCountryConfig.is_active.is_(True),
+        )
+        .order_by(PaymentCountryConfig.country_name)
+        .all()
+    )
+    return [
+        {
+            "id": c.id,
+            "country_code": c.country_code,
+            "country_name": c.country_name,
+            "currency_code": c.currency_code,
+            "currency_symbol": c.currency_symbol,
+            "provider": c.provider,
+            "number": c.number,
+            "account_name": c.account_name,
+            "provider2": c.provider2,
+            "number2": c.number2,
+            "account_name2": c.account_name2,
+            "price": c.price,
+            "instructions": c.instructions,
+        }
+        for c in configs
+    ]
 
 
 # ── check module access ───────────────────────────────────────────────

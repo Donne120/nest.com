@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building2, Users, Mail, Copy, Check, Trash2, Shield, Crown, Plug, ExternalLink, Link2, ToggleLeft, ToggleRight, Lock } from 'lucide-react';
+import { Building2, Users, Mail, Copy, Check, Trash2, Shield, Crown, Plug, ExternalLink, Link2, ToggleLeft, ToggleRight, Lock, Plus, Pencil, X, Globe } from 'lucide-react';
 import api from '../../api/client';
 import { useAuthStore } from '../../store';
-import type { Organization, User, Invitation, UserRole, ATSProvider, ATSConnection } from '../../types';
+import type { Organization, User, Invitation, UserRole, ATSProvider, ATSConnection, PaymentCountryConfig } from '../../types';
 import toast from 'react-hot-toast';
 import Button from '../../components/UI/Button';
 import Avatar from '../../components/UI/Avatar';
@@ -33,6 +33,289 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 const inputCls = "w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition";
+
+// ─── Country payment config data ──────────────────────────────────────────────
+
+const COUNTRY_LIST = [
+  { code: 'CM', name: 'Cameroon',             currency: 'XAF', symbol: 'FCFA',  providers: ['MTN MoMo', 'Orange Money'] },
+  { code: 'RW', name: 'Rwanda',               currency: 'RWF', symbol: 'Fr',    providers: ['MTN MoMo', 'Airtel Money'] },
+  { code: 'NG', name: 'Nigeria',              currency: 'NGN', symbol: '₦',     providers: ['MTN', 'Airtel Money', 'Opay', 'Palmpay'] },
+  { code: 'KE', name: 'Kenya',                currency: 'KES', symbol: 'KSh',   providers: ['M-Pesa', 'Airtel Money'] },
+  { code: 'GH', name: 'Ghana',                currency: 'GHS', symbol: 'GH₵',   providers: ['MTN MoMo', 'Vodafone Cash', 'AirtelTigo Money'] },
+  { code: 'UG', name: 'Uganda',               currency: 'UGX', symbol: 'USh',   providers: ['MTN MoMo', 'Airtel Money'] },
+  { code: 'TZ', name: 'Tanzania',             currency: 'TZS', symbol: 'TSh',   providers: ['M-Pesa', 'Tigo Pesa', 'Airtel Money'] },
+  { code: 'CI', name: "Côte d'Ivoire",        currency: 'XOF', symbol: 'CFA',   providers: ['MTN MoMo', 'Orange Money', 'Moov Money', 'Wave'] },
+  { code: 'SN', name: 'Senegal',              currency: 'XOF', symbol: 'CFA',   providers: ['Orange Money', 'Wave', 'Free Money'] },
+  { code: 'ET', name: 'Ethiopia',             currency: 'ETB', symbol: 'Br',    providers: ['TeleBirr', 'CBE Birr'] },
+  { code: 'ZA', name: 'South Africa',         currency: 'ZAR', symbol: 'R',     providers: ['Bank Transfer'] },
+  { code: 'ZW', name: 'Zimbabwe',             currency: 'USD', symbol: '$',     providers: ['EcoCash', 'Telecash'] },
+  { code: 'ZM', name: 'Zambia',               currency: 'ZMW', symbol: 'ZK',   providers: ['MTN MoMo', 'Airtel Money'] },
+  { code: 'MW', name: 'Malawi',               currency: 'MWK', symbol: 'MK',   providers: ['Airtel Money', 'TNM Mpamba'] },
+  { code: 'MA', name: 'Morocco',              currency: 'MAD', symbol: 'د.م.',  providers: ['CIH Pay', 'Wafacash', 'Bank Transfer'] },
+  { code: 'INTL', name: 'International (USD)', currency: 'USD', symbol: '$',    providers: ['PayPal', 'Bank Transfer', 'Other'] },
+] as const;
+
+type CountryEntry = typeof COUNTRY_LIST[number];
+
+const BLANK_FORM = {
+  country_code: '', country_name: '', currency_code: '', currency_symbol: '',
+  provider: '', number: '', account_name: '',
+  provider2: '', number2: '', account_name2: '',
+  price: '', instructions: '',
+};
+
+function PaymentCountriesSection() {
+  const qc = useQueryClient();
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState<PaymentCountryConfig | null>(null);
+  const [form, setForm] = useState({ ...BLANK_FORM });
+
+  const { data: configs = [], isLoading } = useQuery<PaymentCountryConfig[]>({
+    queryKey: ['payment-countries'],
+    queryFn: () => api.get('/organizations/mine/payment-countries').then(r => r.data),
+  });
+
+  const save = useMutation({
+    mutationFn: (payload: typeof BLANK_FORM) => {
+      const body = {
+        ...payload,
+        price: payload.price ? parseFloat(payload.price) : null,
+        provider:      payload.provider || null,
+        number:        payload.number || null,
+        account_name:  payload.account_name || null,
+        provider2:     payload.provider2 || null,
+        number2:       payload.number2 || null,
+        account_name2: payload.account_name2 || null,
+        instructions:  payload.instructions || null,
+      };
+      return editing
+        ? api.put(`/organizations/mine/payment-countries/${editing.id}`, body)
+        : api.post('/organizations/mine/payment-countries', body);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['payment-countries'] });
+      toast.success(editing ? 'Country config updated' : 'Country added');
+      setShowModal(false);
+      setEditing(null);
+      setForm({ ...BLANK_FORM });
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.detail ?? 'Failed to save');
+    },
+  });
+
+  const del = useMutation({
+    mutationFn: (id: string) => api.delete(`/organizations/mine/payment-countries/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['payment-countries'] });
+      toast.success('Removed');
+    },
+  });
+
+  const openAdd = () => {
+    setEditing(null);
+    setForm({ ...BLANK_FORM });
+    setShowModal(true);
+  };
+
+  const openEdit = (c: PaymentCountryConfig) => {
+    setEditing(c);
+    setForm({
+      country_code: c.country_code, country_name: c.country_name,
+      currency_code: c.currency_code, currency_symbol: c.currency_symbol,
+      provider: c.provider ?? '', number: c.number ?? '', account_name: c.account_name ?? '',
+      provider2: c.provider2 ?? '', number2: c.number2 ?? '', account_name2: c.account_name2 ?? '',
+      price: c.price != null ? String(c.price) : '',
+      instructions: c.instructions ?? '',
+    });
+    setShowModal(true);
+  };
+
+  const pickCountry = (code: string) => {
+    const entry = COUNTRY_LIST.find(c => c.code === code) as CountryEntry | undefined;
+    if (!entry) return;
+    setForm(f => ({
+      ...f,
+      country_code: entry.code,
+      country_name: entry.name,
+      currency_code: entry.currency,
+      currency_symbol: entry.symbol,
+      provider: entry.providers[0] ?? '',
+      provider2: entry.providers[1] ?? '',
+    }));
+  };
+
+  const existingCodes = new Set(configs.map(c => c.country_code));
+
+  return (
+    <>
+      <div className="border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+              <Globe size={14} className="text-brand-500" /> Countries &amp; currencies
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Per-country payment numbers and prices. Learners see the details matching their country.
+            </p>
+          </div>
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-800 px-2.5 py-1.5 rounded-lg border border-brand-200 hover:border-brand-400 transition-colors"
+          >
+            <Plus size={12} /> Add country
+          </button>
+        </div>
+
+        {isLoading && (
+          <div className="px-4 py-6 text-sm text-gray-400 text-center animate-pulse">Loading…</div>
+        )}
+
+        {!isLoading && configs.length === 0 && (
+          <div className="px-4 py-6 text-sm text-gray-400 text-center">
+            No countries configured yet. Add one so learners can select their country at checkout.
+          </div>
+        )}
+
+        {configs.map((c, i) => (
+          <div key={c.id} className={`px-4 py-3 flex items-start gap-3 ${i < configs.length - 1 ? 'border-b border-gray-100' : ''}`}>
+            <span className="text-xl leading-none mt-0.5" title={c.country_name}>
+              {c.country_code === 'INTL' ? '🌍' : `${String.fromCodePoint(...[...c.country_code].map(ch => 0x1F1E0 + ch.charCodeAt(0) - 65))}`}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-800">{c.country_name}
+                <span className="ml-2 font-mono text-xs text-gray-400">{c.currency_code} · {c.currency_symbol}</span>
+              </p>
+              {c.provider && c.number && (
+                <p className="text-xs text-gray-500 mt-0.5">{c.provider}: <span className="font-mono font-semibold text-gray-700">{c.number}</span>{c.account_name ? ` · ${c.account_name}` : ''}</p>
+              )}
+              {c.provider2 && c.number2 && (
+                <p className="text-xs text-gray-500">{c.provider2}: <span className="font-mono font-semibold text-gray-700">{c.number2}</span>{c.account_name2 ? ` · ${c.account_name2}` : ''}</p>
+              )}
+              {c.price != null && (
+                <p className="text-xs text-emerald-600 font-semibold mt-0.5">{c.price.toLocaleString()} {c.currency_symbol}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button onClick={() => openEdit(c)} className="p-1.5 text-gray-400 hover:text-brand-600 rounded transition-colors" title="Edit">
+                <Pencil size={13} />
+              </button>
+              <button onClick={() => del.mutate(c.id)} className="p-1.5 text-gray-400 hover:text-red-500 rounded transition-colors" title="Remove">
+                <Trash2 size={13} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Add / Edit modal ── */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h3 className="text-base font-bold text-gray-900">{editing ? 'Edit country config' : 'Add country'}</h3>
+              <button onClick={() => { setShowModal(false); setEditing(null); }} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              {/* Country picker */}
+              <Field label="Country">
+                <select
+                  value={form.country_code}
+                  onChange={e => pickCountry(e.target.value)}
+                  className={inputCls}
+                  disabled={!!editing}
+                >
+                  <option value="">— Select a country —</option>
+                  {COUNTRY_LIST.filter(c => editing ? true : !existingCodes.has(c.code)).map(c => (
+                    <option key={c.code} value={c.code}>{c.name} ({c.currency})</option>
+                  ))}
+                </select>
+              </Field>
+
+              {/* Currency (auto-filled, editable) */}
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Currency code" hint="e.g. XAF, RWF, KES">
+                  <input className={inputCls} value={form.currency_code}
+                    onChange={e => setForm(f => ({ ...f, currency_code: e.target.value }))} placeholder="XAF" />
+                </Field>
+                <Field label="Currency symbol" hint="e.g. FCFA, Fr, KSh">
+                  <input className={inputCls} value={form.currency_symbol}
+                    onChange={e => setForm(f => ({ ...f, currency_symbol: e.target.value }))} placeholder="FCFA" />
+                </Field>
+              </div>
+
+              <hr className="border-gray-100" />
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Primary payment method</p>
+
+              <Field label="Provider (e.g. MTN MoMo, M-Pesa)">
+                <input className={inputCls} value={form.provider}
+                  onChange={e => setForm(f => ({ ...f, provider: e.target.value }))} placeholder="MTN MoMo" />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Number / account">
+                  <input className={inputCls} type="tel" value={form.number}
+                    onChange={e => setForm(f => ({ ...f, number: e.target.value }))} placeholder="0792104982" />
+                </Field>
+                <Field label="Account name">
+                  <input className={inputCls} value={form.account_name}
+                    onChange={e => setForm(f => ({ ...f, account_name: e.target.value }))} placeholder="Ngum Dieudonne" />
+                </Field>
+              </div>
+
+              <hr className="border-gray-100" />
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Secondary method <span className="normal-case font-normal text-gray-400">(optional)</span></p>
+
+              <Field label="Provider">
+                <input className={inputCls} value={form.provider2}
+                  onChange={e => setForm(f => ({ ...f, provider2: e.target.value }))} placeholder="Orange Money" />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Number / account">
+                  <input className={inputCls} type="tel" value={form.number2}
+                    onChange={e => setForm(f => ({ ...f, number2: e.target.value }))} placeholder="0699123456" />
+                </Field>
+                <Field label="Account name">
+                  <input className={inputCls} value={form.account_name2}
+                    onChange={e => setForm(f => ({ ...f, account_name2: e.target.value }))} placeholder="Ngum Dieudonne" />
+                </Field>
+              </div>
+
+              <hr className="border-gray-100" />
+              <Field label="Recommended price in local currency" hint="Pre-fills the amount for learners (they can adjust)">
+                <div className="flex gap-2 items-center">
+                  <input className={inputCls} style={{ marginBottom: 0 }} type="number" value={form.price}
+                    onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="6000" />
+                  <span className="text-sm font-mono text-gray-500 whitespace-nowrap">{form.currency_code || 'currency'}</span>
+                </div>
+              </Field>
+
+              <Field label="Payment instructions (optional)" hint="Shown to learners from this country">
+                <textarea className={inputCls + ' resize-none leading-relaxed'} rows={2} value={form.instructions}
+                  onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))}
+                  placeholder="Always include your email as the transfer reference." />
+              </Field>
+            </div>
+            <div className="flex gap-3 px-5 pb-5">
+              <button onClick={() => { setShowModal(false); setEditing(null); }}
+                className="flex-1 py-2.5 text-sm font-semibold border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={() => save.mutate(form)}
+                disabled={!form.country_code || !form.currency_code || save.isPending}
+                className="flex-1 py-2.5 text-sm font-semibold bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white rounded-xl transition-colors"
+              >
+                {save.isPending ? 'Saving…' : editing ? 'Update' : 'Add country'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 // ─── Organization tab ─────────────────────────────────────────────────────────
 
@@ -258,6 +541,9 @@ function OrgTab() {
           </Field>
         </div>
       </div>
+
+      {/* ── Countries & currencies ─────────────────────────────────── */}
+      <PaymentCountriesSection />
 
       <div className="pt-2">
         <Button onClick={handleSave} loading={saving}>
