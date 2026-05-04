@@ -335,7 +335,6 @@ export default function VideoPage() {
             </div>
           </div>
 
-          {/* ── Compact action bar (replaces the old crowded row) ── */}
           {/* ── Action bar ── */}
           <div
             className="mt-3 flex items-center gap-2 overflow-x-auto scrollbar-none"
@@ -386,28 +385,48 @@ export default function VideoPage() {
             </button>
 
             {/* Mark complete */}
-            <button
-              onClick={handleMarkComplete}
-              className="flex items-center gap-1 font-semibold transition-all hover:opacity-85 active:scale-95"
-              style={{
-                background: '#e8c97e',
-                color: '#0b0c0f',
-                fontSize: 12,
-                padding: '7px 11px',
-                flexShrink: 0,
-                borderRadius: 4,
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6L9 17l-5-5"/>
-              </svg>
-              <span className="hidden sm:inline">Mark complete{quizQuestions.length > 0 ? ' & quiz' : ''}</span>
-              <span className="sm:hidden">Done</span>
-            </button>
+            {existingSubmission?.passed || (quizQuestions.length === 0 && progressPct >= 95) ? (
+              <span
+                className="flex items-center gap-1 font-semibold"
+                style={{
+                  background: 'rgba(52,211,153,0.12)',
+                  color: '#34d399',
+                  border: '1px solid rgba(52,211,153,0.25)',
+                  fontSize: 12,
+                  padding: '7px 11px',
+                  flexShrink: 0,
+                  borderRadius: 4,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <CheckCircle size={12} />
+                <span className="hidden sm:inline">Completed</span>
+                <span className="sm:hidden">Done</span>
+              </span>
+            ) : (
+              <button
+                onClick={handleMarkComplete}
+                className="flex items-center gap-1 font-semibold transition-all hover:opacity-85 active:scale-95"
+                style={{
+                  background: '#e8c97e',
+                  color: '#0b0c0f',
+                  fontSize: 12,
+                  padding: '7px 11px',
+                  flexShrink: 0,
+                  borderRadius: 4,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                <span className="hidden sm:inline">Mark complete{quizQuestions.length > 0 ? ' & quiz' : ''}</span>
+                <span className="sm:hidden">Done</span>
+              </button>
+            )}
 
           </div>
 
@@ -456,6 +475,7 @@ export default function VideoPage() {
                         color: '#e8e4dc', fontSize: 14, fontFamily: 'inherit',
                         lineHeight: 1.6, resize: 'none', outline: 'none', boxSizing: 'border-box',
                       }}
+                      className="placeholder-[#6b6b78]"
                     />
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                       <button

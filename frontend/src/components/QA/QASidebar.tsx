@@ -141,6 +141,7 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
             className="w-full pl-8 pr-3 outline-none transition-colors"
             style={{
               minHeight: 44,
+              fontSize: 13,
               background: '#0b0c0f',
               border: '1px solid rgba(255,255,255,0.07)',
               borderRadius: 4,
