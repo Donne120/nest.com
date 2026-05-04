@@ -84,7 +84,7 @@ function renderMarkdown(text: string): string {
 type Phase = 'input' | 'streaming' | 'done' | 'error';
 
 export default function AskAIModal() {
-  const { aiAskVideoId, aiAskTimestamp, closeAIAsk } = useUIStore();
+  const { aiAskVideoId, aiAskTimestamp, aiAskHasTranscript, closeAIAsk } = useUIStore();
   const { currentTime } = usePlayerStore();
 
   const [phase, setPhase]           = useState<Phase>('input');
@@ -323,6 +323,12 @@ export default function AskAIModal() {
               <p style={{ fontFamily: 'Caveat, cursive', fontSize: '0.9rem', color: '#9ca3af', marginTop: '0.3rem' }}>
                 Press Enter to send · Shift+Enter for new line
               </p>
+              <p style={{ fontFamily: 'Caveat, cursive', fontSize: '0.82rem', color: '#b3c6e0', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Sparkles size={11} style={{ color: aiAskHasTranscript ? '#93c5fd' : '#fbbf24' }} />
+                {aiAskHasTranscript
+                  ? 'AI is grounded in this video\'s transcript.'
+                  : 'No transcript yet — AI will use course context instead.'}
+              </p>
 
               <div style={{ marginTop: '1.4rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {['Explain this simply', 'Give a real-world example', 'What was just covered?', 'Why does this matter?'].map(hint => (
@@ -375,7 +381,10 @@ export default function AskAIModal() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 160, textAlign: 'center', gap: 12 }}>
               <AlertTriangle size={36} style={{ color: '#f59e0b' }} />
               <p style={{ fontFamily: 'Caveat, cursive', fontSize: '1.15rem', color: '#dc2626' }}>
-                Couldn't reach the AI — check GROQ_API_KEY in .env
+                Couldn't reach the AI right now — please try again in a moment.
+              </p>
+              <p style={{ fontFamily: 'Caveat, cursive', fontSize: '0.95rem', color: '#9ca3af' }}>
+                If this keeps happening, contact your educator or admin.
               </p>
             </div>
           )}

@@ -1,9 +1,7 @@
 from fastapi import FastAPI, Request
 
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -37,8 +35,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         )
         response.headers["Content-Security-Policy"] = (
             "default-src 'none'; "
-            "script-src 'none'; "
-            "object-src 'none'; "
             "frame-ancestors 'none';"
         )
         if request.url.scheme == "https":
@@ -173,6 +169,7 @@ END $$""",
             "ALTER TABLE organizations ADD COLUMN payment_bank_account VARCHAR",
             "ALTER TABLE organizations ADD COLUMN payment_bank_holder VARCHAR",
             "ALTER TABLE organizations ADD COLUMN payment_instructions TEXT",
+            "ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE NOT NULL",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:
@@ -384,8 +381,8 @@ def _is_origin_allowed(origin: str) -> bool:
         allowed = set()
     if origin in allowed:
         return True
-    # Allow any Vercel preview URL (*.vercel.app) for the nest-com project
-    if origin.startswith("https://") and origin.endswith(".vercel.app"):
+    # Allow only nest-com Vercel preview URLs (not any *.vercel.app project)
+    if origin.startswith("https://nest-com") and origin.endswith(".vercel.app"):
         return True
     return False
 

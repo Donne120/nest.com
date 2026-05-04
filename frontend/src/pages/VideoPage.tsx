@@ -723,7 +723,7 @@ export default function VideoPage() {
       {/* Ask AI FAB — gold gradient */}
       {videoId && !aiAskOpen && !whiteboardQuestionId && (
         <button
-          onClick={() => openAIAsk(videoId, currentTime)}
+          onClick={() => openAIAsk(videoId, currentTime, video.has_transcript)}
           className="fixed bottom-20 right-4 lg:bottom-7 lg:right-7 z-40 flex items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95"
           style={{
             background: 'linear-gradient(135deg, #e8c97e, #c45c3c)',

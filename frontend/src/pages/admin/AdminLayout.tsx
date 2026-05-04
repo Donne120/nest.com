@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, MessageSquare, TrendingUp, BookOpen, Settings,
-  LogOut, Bell, Video, Users, Menu, X, HeartPulse, ArrowUpRight, ClipboardList, Banknote,
+  LogOut, Bell, Video, Menu, X, HeartPulse, ArrowUpRight, ClipboardList, Banknote,
 } from 'lucide-react';
 import { useAuthStore } from '../../store';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,7 +18,6 @@ const navLinks = [
   { to: '/admin/analytics', end: false, icon: TrendingUp, label: 'Analytics' },
   { to: '/admin/people', end: false, icon: HeartPulse, label: 'People' },
   { to: '/admin/meetings', end: false, icon: Video, label: 'Meetings' },
-  { to: '/admin/users', end: false, icon: Users, label: 'Users' },
   { to: '/admin/payments', end: false, icon: Banknote, label: 'Payments' },
   { to: '/admin/settings', end: false, icon: Settings, label: 'Settings' },
 ];
@@ -35,7 +34,6 @@ const PAGE_TITLES: [string, string][] = [
   ['/admin/analytics', 'Analytics'],
   ['/admin/people', 'People'],
   ['/admin/meetings', 'Meetings'],
-  ['/admin/users', 'Users'],
   ['/admin/payments', 'Payments'],
   ['/admin/settings', 'Settings'],
   ['/admin', 'Dashboard'],

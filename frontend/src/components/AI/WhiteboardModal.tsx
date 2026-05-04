@@ -215,8 +215,8 @@ export default function WhiteboardModal({ questionId, questionText, videoId }: P
             <div className="flex flex-col items-center justify-center h-40 text-center gap-3">
               <AlertTriangle size={32} className="text-amber-400" />
               <div>
-                <p className="text-gray-700 font-medium">Couldn't reach the AI</p>
-                <p className="text-gray-400 text-sm mt-1">Check that GROQ_API_KEY is set in your .env</p>
+                <p className="text-gray-700 font-medium">Couldn't reach the AI right now</p>
+                <p className="text-gray-400 text-sm mt-1">Please try again in a moment, or contact your educator.</p>
               </div>
             </div>
           )}

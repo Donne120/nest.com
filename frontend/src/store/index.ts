@@ -105,6 +105,7 @@ interface UIState {
   aiAskOpen: boolean;
   aiAskVideoId: string | null;
   aiAskTimestamp: number;
+  aiAskHasTranscript: boolean;
   nestAssistantOpen: boolean;
   setSidebarOpen: (o: boolean) => void;
   setActiveQuestion: (id: string | null) => void;
@@ -112,7 +113,7 @@ interface UIState {
   closeQuestionForm: () => void;
   openWhiteboard: (questionId: string, questionText?: string) => void;
   closeWhiteboard: () => void;
-  openAIAsk: (videoId: string, timestamp?: number) => void;
+  openAIAsk: (videoId: string, timestamp?: number, hasTranscript?: boolean) => void;
   closeAIAsk: () => void;
   openNestAssistant: () => void;
   closeNestAssistant: () => void;
@@ -129,6 +130,7 @@ export const useUIStore = create<UIState>((set) => ({
   aiAskOpen: false,
   aiAskVideoId: null,
   aiAskTimestamp: 0,
+  aiAskHasTranscript: false,
   nestAssistantOpen: false,
   setSidebarOpen: (o) => set({ sidebarOpen: o }),
   setActiveQuestion: (id) => set({ activeQuestionId: id }),
@@ -137,9 +139,9 @@ export const useUIStore = create<UIState>((set) => ({
   openWhiteboard: (questionId, questionText = '') =>
     set({ whiteboardQuestionId: questionId, whiteboardQuestionText: questionText }),
   closeWhiteboard: () => set({ whiteboardQuestionId: null, whiteboardQuestionText: '' }),
-  openAIAsk: (videoId, timestamp = 0) =>
-    set({ aiAskOpen: true, aiAskVideoId: videoId, aiAskTimestamp: timestamp }),
-  closeAIAsk: () => set({ aiAskOpen: false, aiAskVideoId: null, aiAskTimestamp: 0 }),
+  openAIAsk: (videoId, timestamp = 0, hasTranscript = false) =>
+    set({ aiAskOpen: true, aiAskVideoId: videoId, aiAskTimestamp: timestamp, aiAskHasTranscript: hasTranscript }),
+  closeAIAsk: () => set({ aiAskOpen: false, aiAskVideoId: null, aiAskTimestamp: 0, aiAskHasTranscript: false }),
   openNestAssistant: () => set({ nestAssistantOpen: true }),
   closeNestAssistant: () => set({ nestAssistantOpen: false }),
   toggleNestAssistant: () => set((s) => ({ nestAssistantOpen: !s.nestAssistantOpen })),

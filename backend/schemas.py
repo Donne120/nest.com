@@ -290,6 +290,7 @@ class VideoOut(BaseModel):
     captions_url: Optional[str]
     created_at: datetime
     question_count: int = 0
+    has_transcript: bool = False
 
     class Config:
         from_attributes = True

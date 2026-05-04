@@ -88,9 +88,10 @@ export default function InvitePage() {
   }
 
   const roleLabel: Record<string, string> = {
-    employee: 'Employee',
-    manager: 'Manager',
-    admin: 'Admin',
+    learner: 'Learner',
+    educator: 'Educator',
+    owner: 'Owner',
+    super_admin: 'Super Admin',
   };
 
   return (

@@ -144,6 +144,7 @@ def _btn(url: str, label: str, color: str = "#2563eb") -> str:
 def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
     org_name = html.escape(org_name)
     role = html.escape(role)
+    safe_url = html.escape(invite_url)
     subject = f"You're invited to join {org_name} on Nest"
     body = f"""
     <div style="padding:36px 40px;">
@@ -157,7 +158,11 @@ def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
         Click the button below to set up your account and get started.
       </p>
       {_btn(invite_url, "Accept Invitation")}
-      <p style="font-size:12px;color:#94a3b8;margin:20px 0 0;">
+      <p style="font-size:12px;color:#64748b;margin:16px 0 0;line-height:1.6;">
+        Button not showing? Copy and paste this link into your browser:<br>
+        <a href="{safe_url}" style="color:#2563eb;word-break:break-all;">{safe_url}</a>
+      </p>
+      <p style="font-size:12px;color:#94a3b8;margin:12px 0 0;">
         This invitation expires in 7 days. If you weren't expecting this, you can safely ignore it.
       </p>
     </div>"""
@@ -167,6 +172,7 @@ def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
 # ─── Password reset ────────────────────────────────────────────────────────────
 
 def send_password_reset(to: str, reset_url: str) -> bool:
+    safe_url = html.escape(reset_url)
     subject = "Reset your Nest password"
     body = f"""
     <div style="padding:36px 40px;">
@@ -177,6 +183,10 @@ def send_password_reset(to: str, reset_url: str) -> bool:
         This link will expire in <strong style="color:#0f172a;">1 hour</strong>.
       </p>
       {_btn(reset_url, "Choose New Password")}
+      <p style="font-size:12px;color:#64748b;margin:16px 0 0;line-height:1.6;">
+        Button not showing? Copy and paste this link into your browser:<br>
+        <a href="{safe_url}" style="color:#2563eb;word-break:break-all;">{safe_url}</a>
+      </p>
       <div style="margin-top:24px;padding:14px 16px;background:#fef3c7;border-radius:10px;border:1px solid #fde68a;">
         <p style="font-size:12px;color:#92400e;margin:0;line-height:1.6;">
           If you didn't request this, your account is safe. No action is needed.

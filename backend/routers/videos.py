@@ -40,7 +40,15 @@ def _video_out(v: models.Video, db: Session) -> schemas.VideoOut:
         .filter(models.Question.video_id == v.id)
         .scalar()
     )
-    return schemas.VideoOut(**{**v.__dict__, "question_count": q_count})
+    has_transcript = bool(
+        db.query(models.VideoTranscript.id)
+        .filter(
+            models.VideoTranscript.video_id == v.id,
+            models.VideoTranscript.full_text.isnot(None),
+        )
+        .first()
+    )
+    return schemas.VideoOut(**{**v.__dict__, "question_count": q_count, "has_transcript": has_transcript})
 
 
 def _check_learner_access(user: models.User):
@@ -80,7 +88,35 @@ def list_videos(
         .order_by(models.Video.order_index)
         .all()
     )
-    return [_video_out(v, db) for v in videos]
+    # Bulk question count and transcript status — one query each instead of one per video
+    video_ids = [v.id for v in videos]
+    q_counts: dict = {}
+    transcript_ids: set = set()
+    if video_ids:
+        q_rows = (
+            db.query(models.Question.video_id, func.count(models.Question.id))
+            .filter(models.Question.video_id.in_(video_ids))
+            .group_by(models.Question.video_id)
+            .all()
+        )
+        q_counts = {vid: cnt for vid, cnt in q_rows}
+        t_rows = (
+            db.query(models.VideoTranscript.video_id)
+            .filter(
+                models.VideoTranscript.video_id.in_(video_ids),
+                models.VideoTranscript.full_text.isnot(None),
+            )
+            .all()
+        )
+        transcript_ids = {r[0] for r in t_rows}
+    return [
+        schemas.VideoOut(**{
+            **v.__dict__,
+            "question_count": q_counts.get(v.id, 0),
+            "has_transcript": v.id in transcript_ids,
+        })
+        for v in videos
+    ]
 
 
 @router.post("", response_model=schemas.VideoOut, status_code=201)

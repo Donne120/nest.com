@@ -219,8 +219,15 @@ def delete_module(
     db: Session = Depends(get_db),
 ):
     from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
     m = _org_module(module_id, current_user.organization_id, db)
-    # Soft delete — preserve the row so the all-time module count
-    # remains accurate and the delete-reupload loop stays closed.
-    m.deleted_at = datetime.now(timezone.utc)
+
+    # Hard-delete all child videos. The DB FK ondelete="CASCADE" on questions,
+    # quiz_questions, transcripts, and notes will automatically clean up orphans.
+    db.query(models.Video).filter(
+        models.Video.module_id == module_id
+    ).delete(synchronize_session=False)
+
+    # Soft-delete the module row itself so the all-time count stays accurate.
+    m.deleted_at = now
     db.commit()

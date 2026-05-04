@@ -128,6 +128,7 @@ export interface Video {
   captions_url: string | null;
   created_at: string;
   question_count: number;
+  has_transcript: boolean;
 }
 
 export interface ModuleResource {

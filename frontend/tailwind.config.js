@@ -18,6 +18,18 @@ export default {
           800: 'rgb(var(--brand-800) / <alpha-value>)',
           900: 'rgb(var(--brand-900) / <alpha-value>)',
         },
+        // Video player cinema palette — fixed dark theme, not org-branded
+        cinema: {
+          bg:      '#0b0c0f',  // outermost background
+          surface: '#13141a',  // cards, input areas
+          elevated:'#1c1e27',  // pills, raised surfaces
+          ink:     '#e8e4dc',  // primary text
+          muted:   '#9ca3af',  // secondary text
+          ghost:   '#6b6b78',  // tertiary / disabled text
+          gold:    '#e8c97e',  // accent / active state
+          'gold-dim': '#c8a96e', // gold hover
+          rule:    'rgba(255,255,255,0.07)', // dividers / borders
+        },
       },
       fontFamily: {
         sans: ['Inter', 'SF Pro Display', 'system-ui', 'sans-serif'],

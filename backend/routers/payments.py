@@ -214,10 +214,18 @@ async def submit_payment(
         )
 
     # ── Upload proof screenshot to Supabase ────────────────────────────
+    _PROOF_MAX_BYTES = 10 * 1024 * 1024  # 10 MB
+
     proof_url = None
     if proof_image and proof_image.filename:
         try:
             content = await proof_image.read()
+
+            if len(content) > _PROOF_MAX_BYTES:
+                raise HTTPException(
+                    status_code=413,
+                    detail="Proof image must be under 10 MB.",
+                )
 
             # Validate file type by magic bytes (not just extension)
             _ALLOWED_MAGIC = {

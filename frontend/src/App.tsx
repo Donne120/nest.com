@@ -33,7 +33,6 @@ const OrgSettingsPage = lazy(() => import('./pages/admin/OrgSettingsPage'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const MeetingsPage = lazy(() => import('./pages/MeetingsPage'));
 const AdminMeetingsPage = lazy(() => import('./pages/admin/AdminMeetingsPage'));
-const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminPeoplePage = lazy(() => import('./pages/admin/AdminPeoplePage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CertificatePage = lazy(() => import('./pages/CertificatePage'));
@@ -54,6 +53,7 @@ const BusinessPlanPage = lazy(() => import('./pages/BusinessPlanPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const MediaKitPage = lazy(() => import('./pages/MediaKitPage'));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -116,6 +116,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/invite/:token" element={<InvitePage />} />
           <Route path="/join/:token" element={<JoinPage />} />
@@ -264,7 +265,7 @@ export default function App() {
             <Route path="analytics" element={<AdminAnalyticsPage />} />
             <Route path="people" element={<AdminPeoplePage />} />
             <Route path="meetings" element={<AdminMeetingsPage />} />
-            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="users" element={<Navigate to="/admin/people" replace />} />
             <Route path="settings" element={<OrgSettingsPage />} />
             <Route path="assignments" element={<AdminAssignmentsPage />} />
             <Route path="assignments/new" element={<AdminAssignmentEditor />} />

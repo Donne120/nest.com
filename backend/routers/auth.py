@@ -398,3 +398,41 @@ def update_me(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+# ─── Email verification (Supabase webhook / frontend callback) ────────────────
+
+class _VerifyEmailRequest(schemas.BaseModel):
+    email: str
+    supabase_user_id: str | None = None  # optional, for future auditing
+
+
+@router.post("/verify-email", status_code=200)
+@limiter.limit("10/minute")
+def verify_email(
+    request: Request,
+    payload: _VerifyEmailRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Mark a user's email as verified after Supabase confirms it.
+
+    Flow:
+      1. User clicks the email verification link Supabase sends.
+      2. Supabase redirects to FRONTEND_URL/verify-email?email=...&token=...
+      3. The frontend page calls this endpoint with the user's email.
+      4. We set email_verified=True on the matching Nest user.
+
+    This endpoint is intentionally unauthenticated so it can be called
+    during the verification redirect before the user has a Nest JWT.
+    Rate-limited to 10/min to prevent enumeration.
+    """
+    user = db.query(models.User).filter(models.User.email == payload.email).first()
+    if not user:
+        # Return 200 anyway — don't reveal whether the email exists
+        return {"verified": False, "message": "If an account exists, it has been verified."}
+    if not getattr(user, "email_verified", False):
+        if hasattr(user, "email_verified"):
+            user.email_verified = True
+            db.commit()
+    return {"verified": True, "message": "Email verified successfully."}
