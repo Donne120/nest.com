@@ -169,6 +169,31 @@ def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
     return send(to, subject, _wrap(body, f"You've been invited to join {org_name}"))
 
 
+# ─── Email verification ────────────────────────────────────────────────────────
+
+def send_verification_email(to: str, full_name: str, verify_url: str) -> bool:
+    first = html.escape(full_name.split(" ")[0]) if full_name else "there"
+    safe_url = html.escape(verify_url)
+    subject = "Verify your Nest email address"
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Welcome to Nest</p>
+      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Hi {first}, confirm your email</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 4px;">
+        Thanks for signing up. Click the button below to verify your email address and activate your account.
+      </p>
+      {_btn(verify_url, "Verify my email")}
+      <p style="font-size:12px;color:#64748b;margin:16px 0 0;line-height:1.6;">
+        Button not showing? Copy and paste this link into your browser:<br>
+        <a href="{safe_url}" style="color:#2563eb;word-break:break-all;">{safe_url}</a>
+      </p>
+      <p style="font-size:12px;color:#94a3b8;margin:12px 0 0;">
+        This link expires in 24 hours. If you didn't create a Nest account, you can safely ignore this email.
+      </p>
+    </div>"""
+    return send(to, subject, _wrap(body, "Confirm your Nest email address"))
+
+
 # ─── Password reset ────────────────────────────────────────────────────────────
 
 def send_password_reset(to: str, reset_url: str) -> bool:

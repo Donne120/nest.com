@@ -298,6 +298,21 @@ class PasswordResetToken(Base):
     user = relationship("User")
 
 
+# ─── Email Verification Token ────────────────────────────────────────────────
+
+class EmailVerificationToken(Base):
+    __tablename__ = "email_verification_tokens"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    token = Column(String, unique=True, nullable=False, index=True, default=gen_invite_token)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
+
+
 # ─── Module ───────────────────────────────────────────────────────────────────
 
 class Module(Base):

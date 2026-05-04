@@ -200,6 +200,26 @@ END $$""",
                         logger.warning(f"Enum migration skipped: {e}")
                         conn.rollback()
 
+        # ─── Email verification tokens table ─────────────────────────────────
+        with engine.connect() as conn:
+            try:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS email_verification_tokens (
+                        id VARCHAR PRIMARY KEY,
+                        user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        token VARCHAR UNIQUE NOT NULL,
+                        expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+                        used BOOLEAN DEFAULT FALSE NOT NULL,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    )
+                """))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_email_verification_tokens_token ON email_verification_tokens (token)"))
+                conn.commit()
+                logger.info("✓ email_verification_tokens table ready")
+            except Exception as e:
+                logger.warning(f"email_verification_tokens table: {e}")
+                conn.rollback()
+
         # ─── Token revocation table ───────────────────────────────────────────
         with engine.connect() as conn:
             try:

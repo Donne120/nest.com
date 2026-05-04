@@ -21,6 +21,29 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
+def _queue_verification_email(user: models.User, db: Session, background_tasks: BackgroundTasks):
+    """Create a 24-hour verification token and queue the email."""
+    # Invalidate any existing unused tokens for this user
+    db.query(models.EmailVerificationToken).filter(
+        models.EmailVerificationToken.user_id == user.id,
+        models.EmailVerificationToken.used == False,
+    ).delete()
+
+    token = models.EmailVerificationToken(
+        user_id=user.id,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=24),
+    )
+    db.add(token)
+    db.flush()  # get token.token before background task
+
+    verify_url = f"{settings.FRONTEND_URL}/verify-email?token={token.token}"
+    background_tasks.add_task(
+        email_utils.send_verification_email,
+        to=user.email,
+        full_name=user.full_name,
+        verify_url=verify_url,
+    )
+
 def _generate_slug(name: str) -> str:
     slug = name.lower().strip()
     slug = re.sub(r"[^a-z0-9\s-]", "", slug)
@@ -160,6 +183,8 @@ def register_org(request: Request, response: Response, background_tasks: Backgro
         org_name=org.name,
         dashboard_url=dashboard_url,
     )
+    _queue_verification_email(user, db, background_tasks)
+    db.commit()
 
     return _build_token_response(user, db, response)
 
@@ -188,7 +213,7 @@ def invite_info(token: str, db: Session = Depends(get_db)):
 
 @router.post("/accept-invite", response_model=schemas.Token, status_code=201)
 @limiter.limit("5/minute")
-def accept_invite(request: Request, response: Response, payload: schemas.AcceptInviteRequest, db: Session = Depends(get_db)):
+def accept_invite(request: Request, response: Response, background_tasks: BackgroundTasks, payload: schemas.AcceptInviteRequest, db: Session = Depends(get_db)):
     invite = db.query(models.Invitation).filter(models.Invitation.token == payload.token).first()
     if not invite:
         raise HTTPException(status_code=404, detail="Invite not found")
@@ -218,6 +243,8 @@ def accept_invite(request: Request, response: Response, payload: schemas.AcceptI
     )
     db.add(user)
     invite.is_accepted = True
+    db.flush()
+    _queue_verification_email(user, db, background_tasks)
     db.commit()
     db.refresh(user)
 
@@ -310,6 +337,7 @@ def join_link_info(token: str, db: Session = Depends(get_db)):
 def join_via_link(
     request: Request,
     response: Response,
+    background_tasks: BackgroundTasks,
     token: str,
     payload: schemas.JoinLinkRegister,
     db: Session = Depends(get_db),
@@ -357,6 +385,8 @@ def join_via_link(
     )
     db.add(user)
     link.use_count += 1
+    db.flush()
+    _queue_verification_email(user, db, background_tasks)
     db.commit()
     db.refresh(user)
 
@@ -400,39 +430,48 @@ def update_me(
     return current_user
 
 
-# ─── Email verification (Supabase webhook / frontend callback) ────────────────
+# ─── Email verification ───────────────────────────────────────────────────────
 
-class _VerifyEmailRequest(schemas.BaseModel):
-    email: str
-    supabase_user_id: str | None = None  # optional, for future auditing
-
-
-@router.post("/verify-email", status_code=200)
+@router.get("/verify-email", status_code=200)
 @limiter.limit("10/minute")
 def verify_email(
     request: Request,
-    payload: _VerifyEmailRequest,
+    token: str,
     db: Session = Depends(get_db),
 ):
     """
-    Mark a user's email as verified after Supabase confirms it.
-
-    Flow:
-      1. User clicks the email verification link Supabase sends.
-      2. Supabase redirects to FRONTEND_URL/verify-email?email=...&token=...
-      3. The frontend page calls this endpoint with the user's email.
-      4. We set email_verified=True on the matching Nest user.
-
-    This endpoint is intentionally unauthenticated so it can be called
-    during the verification redirect before the user has a Nest JWT.
-    Rate-limited to 10/min to prevent enumeration.
+    Verify a user's email address via a token link sent by Nest.
+    Called by the frontend at /verify-email?token=xxx.
     """
-    user = db.query(models.User).filter(models.User.email == payload.email).first()
+    record = db.query(models.EmailVerificationToken).filter(
+        models.EmailVerificationToken.token == token,
+    ).first()
+
+    if not record or record.used or record.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Invalid or expired verification link.")
+
+    user = db.query(models.User).filter(models.User.id == record.user_id).first()
     if not user:
-        # Return 200 anyway — don't reveal whether the email exists
-        return {"verified": False, "message": "If an account exists, it has been verified."}
-    if not getattr(user, "email_verified", False):
-        if hasattr(user, "email_verified"):
-            user.email_verified = True
-            db.commit()
+        raise HTTPException(status_code=400, detail="User not found.")
+
+    user.email_verified = True
+    record.used = True
+    db.commit()
+
     return {"verified": True, "message": "Email verified successfully."}
+
+
+@router.post("/resend-verification", status_code=200)
+@limiter.limit("3/hour")
+def resend_verification(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    current_user: models.User = Depends(auth_utils.get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Resend the verification email for the currently logged-in user."""
+    if current_user.email_verified:
+        return {"message": "Your email is already verified."}
+    _queue_verification_email(current_user, db, background_tasks)
+    db.commit()
+    return {"message": "Verification email sent."}

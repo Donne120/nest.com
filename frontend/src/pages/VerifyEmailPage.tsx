@@ -1,57 +1,21 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import api from '../api/client';
 
 type Phase = 'loading' | 'success' | 'error';
 
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
-  } catch {
-    return null;
-  }
-}
-
-function parseHashParams(hash: string): Record<string, string> {
-  return Object.fromEntries(
-    hash.replace(/^#/, '').split('&').map(pair => pair.split('=').map(decodeURIComponent))
-  );
-}
-
 export default function VerifyEmailPage() {
+  const [params] = useSearchParams();
   const [phase, setPhase] = useState<Phase>('loading');
 
   useEffect(() => {
-    // Supabase puts tokens in the URL hash: #access_token=...&type=signup
-    const hash = parseHashParams(window.location.hash);
-    const accessToken = hash['access_token'];
-    const type = hash['type'];
+    const token = params.get('token');
+    if (!token) { setPhase('error'); return; }
 
-    // Only process email confirmation events
-    if (!accessToken || type !== 'signup') {
-      setPhase('error');
-      return;
-    }
-
-    // Decode the JWT to get the user's email without the Supabase SDK
-    const payload = decodeJwtPayload(accessToken);
-    const email = payload?.email as string | undefined;
-
-    if (!email) {
-      setPhase('error');
-      return;
-    }
-
-    // Tell our backend to mark this user as email-verified
-    api.post('/auth/verify-email', { email })
+    api.get(`/auth/verify-email?token=${token}`)
       .then(() => setPhase('success'))
-      .catch(() => {
-        // Even if our backend call fails, Supabase already verified them.
-        // Show success so they're not blocked.
-        setPhase('success');
-      });
+      .catch(() => setPhase('error'));
   }, []);
 
   return (
