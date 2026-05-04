@@ -255,7 +255,7 @@ export default function VideoPage() {
 
       {/* ── Main content ── */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-3 pt-3 pb-28 sm:pb-6 sm:px-5 sm:py-6 lg:px-8 lg:py-8 max-w-5xl mx-auto w-full">
+        <div className="px-3 pt-3 pb-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8 max-w-5xl mx-auto w-full">
 
           {/* Breadcrumb — on mobile show only module link, hide current video title */}
           <nav className="flex items-center gap-2 mb-3 sm:mb-6 overflow-hidden" style={{ fontSize: 12, letterSpacing: '0.04em' }}>
@@ -367,17 +367,16 @@ export default function VideoPage() {
             {/* Q&A toggle — mobile only */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden flex items-center gap-1 rounded"
+              className="lg:hidden flex items-center gap-1.5 rounded-full"
               style={{
-                background: sidebarOpen ? 'rgba(232,201,126,0.12)' : '#1c1e27',
-                border: sidebarOpen ? '1px solid rgba(232,201,126,0.35)' : '1px solid rgba(255,255,255,0.07)',
+                background: sidebarOpen ? 'rgba(232,201,126,0.15)' : '#1c1e27',
+                border: sidebarOpen ? '1px solid rgba(232,201,126,0.4)' : '1px solid rgba(255,255,255,0.09)',
                 color: sidebarOpen ? '#e8c97e' : '#9ca3af',
-                fontSize: 12,
-                padding: '7px 11px',
-                flexShrink: 0,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
+                fontSize: 12, fontWeight: 600,
+                padding: '9px 14px',
+                flexShrink: 0, cursor: 'pointer',
+                fontFamily: 'inherit', whiteSpace: 'nowrap',
+                minHeight: 40,
                 transition: 'all 0.15s',
               }}
             >
@@ -432,25 +431,22 @@ export default function VideoPage() {
 
           {/* ── Tab bar: Notes | Assignments | About ── */}
           <div className="mt-6" style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.22s' }}>
-            {/* Tab strip */}
-            <div className="flex gap-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            {/* Tab strip — horizontally scrollable on mobile */}
+            <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', borderBottom: '1px solid rgba(255,255,255,0.07)', gap: 0 }}>
               {tabs.map(t => (
                 <button
                   key={t.key}
                   onClick={() => setActiveTab(t.key)}
                   style={{
-                    background: 'none',
-                    border: 'none',
+                    background: 'none', border: 'none',
                     borderBottom: activeTab === t.key ? '2px solid #e8c97e' : '2px solid transparent',
                     color: activeTab === t.key ? '#e8e4dc' : '#6b6b78',
-                    fontFamily: 'inherit',
-                    fontSize: 13,
+                    fontFamily: 'inherit', fontSize: 13,
                     fontWeight: activeTab === t.key ? 600 : 400,
-                    padding: '10px 16px',
-                    cursor: 'pointer',
+                    padding: '10px 16px', cursor: 'pointer',
                     transition: 'color 0.15s, border-color 0.15s',
-                    marginBottom: -1,
-                    whiteSpace: 'nowrap',
+                    marginBottom: -1, whiteSpace: 'nowrap', flexShrink: 0,
+                    minHeight: 44,
                   }}
                 >
                   {t.label}
@@ -689,28 +685,51 @@ export default function VideoPage() {
         </div>
       </div>
 
-      {/* ── Q&A Sidebar — always visible on lg+, toggled on mobile ── */}
+      {/* ── Q&A Sidebar — always visible on lg+, bottom sheet on mobile ── */}
       {videoId && (
         <>
           {/* Mobile backdrop */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 z-30 lg:hidden"
-              style={{ background: 'rgba(0,0,0,0.6)' }}
+              className="fixed inset-0 lg:hidden"
+              style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(3px)', zIndex: 45 }}
               onClick={() => setSidebarOpen(false)}
             />
           )}
-          {/* Sidebar */}
-          <div className={`
-            fixed inset-y-14 right-0 z-40 w-full
-            lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:max-w-none lg:flex
-            ${sidebarOpen ? 'flex' : 'hidden'}
-          `} style={{ maxWidth: 'min(384px, 100vw)' }}>
-            <QASidebar
-              videoId={videoId}
-              activeQuestionId={activeQuestionId}
-              onClose={() => setSidebarOpen(false)}
-            />
+          {/* Sidebar — desktop: right panel | mobile: bottom sheet */}
+          <div
+            className={`lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:max-w-none lg:flex ${sidebarOpen ? '' : 'hidden lg:flex'}`}
+            style={{
+              position: undefined,
+            }}
+          >
+            {/* Mobile: fixed bottom sheet */}
+            <div
+              className="lg:hidden"
+              style={{
+                position: 'fixed',
+                left: 0, right: 0,
+                bottom: 0,
+                height: '80vh',
+                zIndex: 46,
+                borderRadius: '20px 20px 0 0',
+                overflow: 'hidden',
+                transform: sidebarOpen ? 'translateY(0)' : 'translateY(100%)',
+                transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              {/* Drag handle */}
+              <div style={{ background: '#13141a', padding: '10px 0 4px', display: 'flex', justifyContent: 'center', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
+              </div>
+              <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} onClose={() => setSidebarOpen(false)} />
+            </div>
+            {/* Desktop: inline panel */}
+            <div className="hidden lg:flex" style={{ height: '100%' }}>
+              <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} onClose={() => setSidebarOpen(false)} />
+            </div>
           </div>
         </>
       )}
@@ -744,7 +763,8 @@ export default function VideoPage() {
       {videoId && !aiAskOpen && !whiteboardQuestionId && (
         <button
           onClick={() => openAIAsk(videoId, currentTime, video.has_transcript)}
-          className="fixed bottom-20 right-4 lg:bottom-7 lg:right-7 z-40 flex items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95"
+          className="fixed right-4 lg:bottom-7 lg:right-7 z-40 flex items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)' } as React.CSSProperties}
           style={{
             background: 'linear-gradient(135deg, #e8c97e, #c45c3c)',
             color: '#0b0c0f',

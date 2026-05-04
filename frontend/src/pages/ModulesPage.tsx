@@ -203,26 +203,25 @@ export default function ModulesPage() {
       </div>
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
-      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(11,12,15,0.8)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 16px', minHeight: 52, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(11,12,15,0.88)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 20 }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '8px 16px' }}>
 
-          {/* Filter tabs — horizontally scrollable on mobile, 44px touch targets */}
-          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', flexShrink: 0, scrollbarWidth: 'none' }}>
+          {/* Row 1: filter tabs */}
+          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', marginBottom: 8 }}>
             {FILTERS.map(f => (
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
                 style={{
                   fontFamily: 'monospace',
-                  fontSize: 12, fontWeight: 500,
-                  letterSpacing: '0.04em', textTransform: 'uppercase',
-                  padding: '10px 14px', borderRadius: 8,
-                  border: 'none', cursor: 'pointer',
-                  transition: 'all 0.15s', flexShrink: 0,
-                  minHeight: 44,
-                  background: filter === f.key ? DARK3 : 'transparent',
+                  fontSize: 11, fontWeight: filter === f.key ? 700 : 500,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  padding: '8px 16px', borderRadius: 100,
+                  border: filter === f.key ? `1px solid rgba(232,201,126,0.25)` : `1px solid ${BORDER}`,
+                  cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
+                  minHeight: 36,
+                  background: filter === f.key ? 'rgba(232,201,126,0.1)' : 'transparent',
                   color: filter === f.key ? f.color : INK3,
-                  outline: filter === f.key ? `1px solid ${BORDER}` : 'none',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -231,29 +230,43 @@ export default function ModulesPage() {
             ))}
           </div>
 
-          {/* Search — grows to fill remaining space */}
-          <div style={{ marginLeft: 'auto', position: 'relative', minWidth: 0 }}>
-            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: INK3, pointerEvents: 'none' }} />
+          {/* Row 2: search full-width */}
+          <div style={{ position: 'relative' }}>
+            <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: INK3, pointerEvents: 'none' }} />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search…"
+              placeholder="Search modules…"
               style={{
-                paddingLeft: 30, paddingRight: 12, paddingTop: 7, paddingBottom: 7,
-                width: 'clamp(100px, 30vw, 220px)', fontSize: 13,
+                width: '100%', boxSizing: 'border-box',
+                paddingLeft: 36, paddingRight: 16, paddingTop: 10, paddingBottom: 10,
+                fontSize: 14, /* 14px+ prevents iOS zoom */
                 background: DARK2, border: `1px solid ${BORDER}`,
-                borderRadius: 8, color: INK, outline: 'none',
+                borderRadius: 10, color: INK, outline: 'none',
                 fontFamily: 'inherit', transition: 'border-color 0.15s',
               }}
-              onFocus={e => (e.target.style.borderColor = `rgba(232,201,126,0.35)`)}
+              onFocus={e => (e.target.style.borderColor = `rgba(232,201,126,0.4)`)}
               onBlur={e => (e.target.style.borderColor = BORDER)}
             />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                style={{
+                  position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                  width: 22, height: 22, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: INK3,
+                }}
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* ══ MODULE GRID ═══════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '24px clamp(16px, 4vw, 32px) 60px' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: 'clamp(16px,3vw,24px) clamp(12px,4vw,32px) 24px' }}>
         {isLoading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -321,6 +334,9 @@ export default function ModulesPage() {
         @media (max-width: 640px) {
           .hero-desktop-only { display: none !important; }
           .modules-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 480px) {
+          .modules-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
         }
 
         /* ── Animated orbs ── */

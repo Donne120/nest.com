@@ -163,14 +163,15 @@ function AssignmentCard({ a }: { a: Assignment }) {
         {/* Right: deadline + CTA */}
         <div className="flex flex-col items-end justify-between gap-2 flex-shrink-0 ml-2 sm:ml-4">
           {deadline && (
-            <span className={`hidden sm:flex items-center gap-1 text-xs font-medium ${
+            <span className={`flex items-center gap-1 text-xs font-medium ${
               overdue ? 'text-red-500 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
             }`}>
               {overdue ? <AlertCircle size={11} /> : <Clock size={11} />}
-              {overdue ? 'Overdue' : formatDistanceToNow(deadline, { addSuffix: true })}
+              <span className="hidden sm:inline">{overdue ? 'Overdue' : formatDistanceToNow(deadline, { addSuffix: true })}</span>
+              <span className="sm:hidden">{overdue ? 'Overdue' : formatDistanceToNow(deadline, { addSuffix: false })}</span>
             </span>
           )}
-          <span className={`flex items-center gap-1 text-xs font-semibold ${cfg.textColor} group-hover:gap-2 transition-all`}>
+          <span className={`flex items-center gap-1 text-xs font-semibold whitespace-nowrap ${cfg.textColor} group-hover:gap-2 transition-all`}>
             {cfg.cta} <ChevronRight size={13} />
           </span>
         </div>
@@ -206,7 +207,7 @@ export default function AssignmentsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
       {/* ─── Hero header ─────────────────────────────────────────────────────── */}
       <div className="bg-gradient-to-br from-brand-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border border-brand-100 dark:border-slate-700 rounded-2xl px-6 py-7 mb-8 shadow-card">

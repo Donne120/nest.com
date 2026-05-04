@@ -227,7 +227,7 @@ export default function ModuleDetailPage() {
       </section>
 
       {/* ══ BODY ═══════════════════════════════════════════════════════ */}
-      <div className="module-body-grid" style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(24px,4vw,48px) clamp(16px,5vw,56px) 100px', display: 'grid', gridTemplateColumns: '1fr', gap: 24, alignItems: 'start' }}>
+      <div className="module-body-grid" style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px,4vw,48px) clamp(12px,5vw,56px) 24px', display: 'grid', gridTemplateColumns: '1fr', gap: 20, alignItems: 'start' }}>
 
         {/* ── LEFT ── */}
         <div style={{ minWidth: 0 }}>
@@ -409,10 +409,21 @@ export default function ModuleDetailPage() {
         .about-prose ul { padding-left: 20px; margin-bottom: 12px; }
         .about-prose li { margin-bottom: 4px; font-size: 14px; color: #6b6460; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+        /* Desktop: 2-column */
         @media (min-width: 900px) {
-          .module-body-grid { grid-template-columns: 1fr 340px !important; gap: 32px !important; }
+          .module-body-grid { grid-template-columns: 1fr 320px !important; gap: 32px !important; }
           .module-sidebar { position: sticky; top: 64px; }
+          .module-sidebar-mobile-cta { display: none !important; }
         }
+        /* Mobile: sidebar moves below content, sidebar progress card compact */
+        @media (max-width: 899px) {
+          .module-body-grid { grid-template-columns: 1fr !important; }
+          .module-sidebar { order: -1; }
+          .module-sidebar > div:first-child { display: none !important; } /* hide donut card */
+          .module-sidebar-mobile-cta { display: flex !important; }
+        }
+        /* Tight mobile */
         @media (max-width: 599px) {
           .learn-grid { grid-template-columns: 1fr !important; }
           .module-hero-meta { flex-wrap: wrap; gap: 8px !important; }
