@@ -764,8 +764,8 @@ export default function VideoPage() {
         <button
           onClick={() => openAIAsk(videoId, currentTime, video.has_transcript)}
           className="fixed right-4 lg:bottom-7 lg:right-7 z-40 flex items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)' } as React.CSSProperties}
           style={{
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
             background: 'linear-gradient(135deg, #e8c97e, #c45c3c)',
             color: '#0b0c0f',
             fontSize: 13,
