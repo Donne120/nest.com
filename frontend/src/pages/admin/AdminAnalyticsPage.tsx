@@ -113,8 +113,7 @@ function KpiGrid({ stats }: { stats: DashboardStats }) {
   };
 
   return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: 'repeat(4,1fr)',
+    <div className="analytics-kpi-grid" style={{
       gap: '1px', background: RULE,
       border: `1px solid ${RULE}`, borderRadius: 6,
       overflow: 'hidden', marginBottom: 24,
@@ -372,7 +371,7 @@ export default function AdminAnalyticsPage() {
   const confusionModules = moduleAnalytics.filter(m => m.top_confusion_timestamps.length > 0);
 
   return (
-    <div style={{ padding: 32, fontFamily: UI }}>
+    <div className="analytics-root" style={{ padding: 32, fontFamily: UI }}>
 
       {/* ── Header ── */}
       <div style={{ marginBottom: 32, animation: 'dash-slideUp 0.5s ease both' }}>
@@ -392,7 +391,7 @@ export default function AdminAnalyticsPage() {
       {stats ? (
         <KpiGrid stats={stats} />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 4, marginBottom: 24 }}>
+        <div className="analytics-kpi-grid" style={{ gap: 4, marginBottom: 24 }}>
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded" />)}
         </div>
       )}
@@ -417,7 +416,7 @@ export default function AdminAnalyticsPage() {
       )}
 
       {/* ── Lower grid: Benchmarks + Completion side-by-side ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 20, marginBottom: 24 }}>
+      <div className="analytics-lower-grid" style={{ gap: 20, marginBottom: 24 }}>
         <BenchmarksPanel />
         <CompletionReportPanel />
       </div>
@@ -511,6 +510,21 @@ export default function AdminAnalyticsPage() {
 
       <style>{`
         @keyframes dash-slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .analytics-kpi-grid   { display: grid; grid-template-columns: repeat(4,1fr); }
+        .analytics-lower-grid { display: grid; grid-template-columns: 280px 1fr; }
+        @media (max-width: 900px) {
+          .analytics-kpi-grid   { grid-template-columns: repeat(2,1fr); }
+          .analytics-lower-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 540px) {
+          .analytics-root       { padding: 16px !important; }
+          .analytics-kpi-grid   { grid-template-columns: repeat(2,1fr); }
+          .analytics-lower-grid { grid-template-columns: 1fr; }
+        }
+        /* Resolution bar wraps on mobile */
+        @media (max-width: 480px) {
+          .analytics-res-bar { flex-wrap: wrap; }
+        }
       `}</style>
     </div>
   );

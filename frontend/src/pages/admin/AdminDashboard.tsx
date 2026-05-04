@@ -129,7 +129,7 @@ export default function AdminDashboard() {
     : 0;
 
   return (
-    <div style={{ padding: 32, fontFamily: "'Syne', 'Inter', sans-serif" }}>
+    <div className="admin-dash-root" style={{ padding: 32, fontFamily: "'Syne', 'Inter', sans-serif" }}>
 
       {/* ── Greeting ─────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 36, animation: 'dash-slideUp 0.5s ease both' }}>
@@ -151,12 +151,11 @@ export default function AdminDashboard() {
 
       {/* ── KPI grid ─────────────────────────────────────────── */}
       {statsLoading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 4, marginBottom: 28 }}>
+        <div className="dash-kpi-grid" style={{ gap: 4, marginBottom: 28 }}>
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded" />)}
         </div>
       ) : (
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4,1fr)',
+        <div className="dash-kpi-grid" style={{
           gap: '1px', background: RULE,
           border: `1px solid ${RULE}`, borderRadius: 6,
           overflow: 'hidden', marginBottom: 28,
@@ -214,7 +213,7 @@ export default function AdminDashboard() {
       )}
 
       {/* ── Lower grid ───────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20, animation: 'dash-slideUp 0.55s ease both 0.16s' }}>
+      <div className="dash-lower-grid" style={{ gap: 20, animation: 'dash-slideUp 0.55s ease both 0.16s' }}>
 
         {/* Pending questions */}
         <Panel
@@ -357,6 +356,20 @@ export default function AdminDashboard() {
         @keyframes dash-slideUp {
           from { opacity:0; transform:translateY(10px); }
           to   { opacity:1; transform:translateY(0); }
+        }
+        /* Desktop: 4-col KPIs, side-by-side lower */
+        .dash-kpi-grid   { display: grid; grid-template-columns: repeat(4,1fr); }
+        .dash-lower-grid { display: grid; grid-template-columns: 1fr 340px; }
+        /* Tablet: 2×2 KPIs */
+        @media (max-width: 900px) {
+          .dash-kpi-grid   { grid-template-columns: repeat(2,1fr); }
+          .dash-lower-grid { grid-template-columns: 1fr; }
+        }
+        /* Mobile: 1-col KPIs, stacked lower */
+        @media (max-width: 540px) {
+          .admin-dash-root { padding: 16px !important; }
+          .dash-kpi-grid   { grid-template-columns: repeat(2,1fr); gap: 1px; }
+          .dash-lower-grid { grid-template-columns: 1fr; }
         }
       `}</style>
     </div>

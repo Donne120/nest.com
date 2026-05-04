@@ -204,32 +204,41 @@ export default function AdminLayout() {
         <header style={{
           height: 52,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 16px',
+          padding: '0 12px 0 8px',
           borderBottom: `1px solid ${RULE}`,
           background: SURF,
           position: 'sticky', top: 0, zIndex: 40,
           flexShrink: 0,
+          gap: 8,
         }}>
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            style={{ background: 'none', border: 'none', color: INK2, cursor: 'pointer', padding: 4, marginRight: 12 }}
+            style={{
+              width: 36, height: 36, borderRadius: 8,
+              background: BG2, border: `1px solid ${RULE}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: INK2, cursor: 'pointer', flexShrink: 0,
+              transition: 'border-color 0.2s',
+            }}
             className="lg-menu-btn"
             aria-label="Open menu"
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = INK3)}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = RULE)}
           >
-            <Menu size={18} />
+            <Menu size={16} />
           </button>
 
-          {/* Breadcrumb */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 500, color: INK2 }}>
-            <span>Admin</span>
-            <span style={{ opacity: 0.35, fontSize: 11 }}>›</span>
-            <span style={{ color: INK, fontWeight: 700 }}>{pageTitle}</span>
+          {/* Page title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: INK, flex: 1, minWidth: 0 }}>
+            <span style={{ color: INK2, fontWeight: 400, flexShrink: 0, fontSize: 12 }} className="live-pill-text">Admin</span>
+            <span style={{ opacity: 0.3, fontSize: 10, flexShrink: 0 }} className="live-pill-text">›</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pageTitle}</span>
           </div>
 
-          {/* Right */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginLeft: 'auto' }}>
-            {/* Live pill — hidden on small screens */}
+          {/* Right — desktop shows live pill + user chip; mobile shows notif only */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            {/* Live pill — desktop only */}
             <div className="live-pill" style={{
               display: 'flex', alignItems: 'center', gap: 7,
               background: BG2, border: `1px solid ${RULE}`,
@@ -239,7 +248,7 @@ export default function AdminLayout() {
               letterSpacing: '0.04em',
             }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2a7a4b', animation: 'notif-blink 2s ease infinite', display: 'inline-block' }} />
-              Live dashboard
+              Live
             </div>
 
             {/* Notifications */}
@@ -247,7 +256,7 @@ export default function AdminLayout() {
               <button
                 onClick={() => { setNotifOpen(o => !o); if (unread > 0) markAllRead.mutate(); }}
                 style={{
-                  width: 32, height: 32, borderRadius: 6,
+                  width: 36, height: 36, borderRadius: 8,
                   background: BG2, border: `1px solid ${RULE}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', position: 'relative',
@@ -261,15 +270,15 @@ export default function AdminLayout() {
                 <Bell size={15} />
                 {unread > 0 && (
                   <span style={{
-                    position: 'absolute', top: -5, right: -5,
-                    minWidth: 17, height: 17, borderRadius: 9,
+                    position: 'absolute', top: -4, right: -4,
+                    minWidth: 16, height: 16, borderRadius: 8,
                     background: ACC, color: '#fff',
-                    border: `1.5px solid ${SURF}`,
+                    border: `2px solid ${SURF}`,
                     fontSize: 9, fontWeight: 700,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     padding: '0 3px', lineHeight: 1,
-                    boxShadow: `0 0 0 2px ${ACC}55`,
-                    animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',
+                    boxShadow: `0 0 0 2px ${ACC}44`,
+                    animation: 'notif-blink 2s ease infinite',
                   }}>
                     {unread > 9 ? '9+' : unread}
                   </span>
@@ -277,46 +286,74 @@ export default function AdminLayout() {
               </button>
 
               {notifOpen && (
-                <div style={{
-                  position: 'absolute', right: 0, top: 42,
-                  width: 300, zIndex: 50,
-                  background: SURF, border: `1px solid ${RULE}`,
-                  borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{ padding: '14px 18px', borderBottom: `1px solid ${RULE}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: INK }}>Notifications</span>
-                    {unread === 0 && <span style={{ fontSize: 11, color: '#2a7a4b', background: 'rgba(42,122,75,0.08)', padding: '2px 8px', borderRadius: 100 }}>All read</span>}
-                  </div>
-                  <div style={{ maxHeight: 320, overflowY: 'auto' }}>
-                    {notifications.length === 0 ? (
-                      <p style={{ padding: '20px', textAlign: 'center', fontSize: 12.5, color: INK3 }}>No notifications yet</p>
-                    ) : (
-                      notifications.slice(0, 10).map(n => (
-                        <div
-                          key={n.id}
-                          onClick={() => { setNotifOpen(false); if (n.reference_id) navigate(`/admin/questions/${n.reference_id}`); }}
-                          style={{ padding: '12px 18px', borderBottom: `1px solid rgba(212,205,198,0.5)`, cursor: 'pointer', transition: 'background 0.15s', background: !n.is_read ? 'rgba(44,107,201,0.04)' : 'transparent' }}
-                          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = BG2)}
-                          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = !n.is_read ? 'rgba(44,107,201,0.04)' : 'transparent')}
-                        >
-                          <p style={{ fontSize: 13, fontWeight: 500, color: INK, marginBottom: 2 }}>{n.title}</p>
-                          <p style={{ fontSize: 11.5, color: INK3, lineHeight: 1.4 }}>{n.message}</p>
+                <>
+                  {/* Mobile backdrop */}
+                  <div
+                    className="admin-notif-backdrop"
+                    style={{ position: 'fixed', inset: 0, zIndex: 49, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
+                    onClick={() => setNotifOpen(false)}
+                  />
+                  <div
+                    className="admin-notif-panel"
+                    style={{
+                      zIndex: 50,
+                      background: SURF, border: `1px solid ${RULE}`,
+                      borderRadius: 12, boxShadow: '0 16px 48px rgba(0,0,0,0.18)',
+                      overflow: 'hidden',
+                      animation: 'slideDown 0.18s cubic-bezier(0.16,1,0.3,1) both',
+                    }}>
+                    <div style={{ padding: '14px 18px', borderBottom: `1px solid ${RULE}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: INK }}>Notifications</span>
+                        {unread > 0 && (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: ACC, borderRadius: 100, padding: '1px 6px' }}>{unread}</span>
+                        )}
+                      </div>
+                      {unread === 0 && <span style={{ fontSize: 11, color: '#2a7a4b', background: 'rgba(42,122,75,0.08)', padding: '2px 8px', borderRadius: 100 }}>All read</span>}
+                    </div>
+                    <div style={{ maxHeight: 'min(340px, 55vh)', overflowY: 'auto' }}>
+                      {notifications.length === 0 ? (
+                        <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+                          <Bell size={20} style={{ color: INK3, opacity: 0.4, margin: '0 auto 8px' }} />
+                          <p style={{ fontSize: 12.5, color: INK3 }}>No notifications yet</p>
                         </div>
-                      ))
-                    )}
+                      ) : (
+                        notifications.slice(0, 10).map(n => (
+                          <div
+                            key={n.id}
+                            onClick={() => { setNotifOpen(false); if (n.reference_id) navigate(`/admin/questions/${n.reference_id}`); }}
+                            style={{
+                              padding: '12px 18px', borderBottom: `1px solid rgba(212,205,198,0.4)`,
+                              cursor: 'pointer', transition: 'background 0.15s',
+                              background: !n.is_read ? 'rgba(44,107,201,0.03)' : 'transparent',
+                              display: 'flex', gap: 10, alignItems: 'flex-start',
+                            }}
+                            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = BG2)}
+                            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = !n.is_read ? 'rgba(44,107,201,0.03)' : 'transparent')}
+                          >
+                            <div style={{ width: 7, height: 7, borderRadius: '50%', background: !n.is_read ? ACC2 : 'transparent', border: `1.5px solid ${!n.is_read ? ACC2 : RULE}`, flexShrink: 0, marginTop: 4 }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: 13, fontWeight: 500, color: INK, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</p>
+                              <p style={{ fontSize: 11.5, color: INK3, lineHeight: 1.4 }}>{n.message}</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
 
-            {/* User chip */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              background: BG2, border: `1px solid ${RULE}`,
-              padding: '5px 12px 5px 5px', borderRadius: 100,
-              cursor: 'pointer', transition: 'border-color 0.2s',
-            }}
+            {/* User chip — desktop only */}
+            <div
+              className="admin-user-chip"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: BG2, border: `1px solid ${RULE}`,
+                padding: '5px 12px 5px 5px', borderRadius: 100,
+                cursor: 'pointer', transition: 'border-color 0.2s',
+              }}
               onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = INK3)}
               onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = RULE)}
             >
@@ -340,20 +377,58 @@ export default function AdminLayout() {
       </div>
 
       <style>{`
-        @keyframes notif-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes notif-blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+        @keyframes slideDown {
+          from { opacity:0; transform: translateY(-6px) scale(0.98); }
+          to   { opacity:1; transform: translateY(0)   scale(1);    }
+        }
+
+        /* ── Sidebar ── */
         .lg-sidebar { }
         @media (max-width: 1023px) {
           .lg-sidebar { transform: translateX(-100%); }
           .admin-main { margin-left: 0 !important; }
-          .live-pill { display: none !important; }
+          .live-pill  { display: none !important; }
+          .lg-hidden  { display: block; }
+          .lg-menu-btn { display: flex !important; }
+          .admin-user-chip { display: none !important; }
+          .live-pill-text { display: none; }
         }
         @media (min-width: 1024px) {
-          .admin-main { margin-left: 196px; }
-          .admin-topbar { padding: 0 32px !important; }
+          .admin-main  { margin-left: 196px; }
+          .lg-menu-btn { display: none !important; }
+          .lg-hidden   { display: none; }
         }
-        .lg-hidden { display: none; }
-        @media (max-width: 1023px) { .lg-hidden { display: block; } .lg-menu-btn { display: block; } }
-        @media (min-width: 1024px) { .lg-menu-btn { display: none; } }
+
+        /* ── Notification panel ── */
+        /* Desktop: anchored dropdown */
+        .admin-notif-panel {
+          position: absolute;
+          right: 0;
+          top: 44px;
+          width: 320px;
+        }
+        .admin-notif-backdrop { display: none; }
+
+        /* Mobile: full-width sheet */
+        @media (max-width: 639px) {
+          .admin-notif-panel {
+            position: fixed !important;
+            top: 60px !important;
+            left: 8px !important;
+            right: 8px !important;
+            width: auto !important;
+            border-radius: 16px !important;
+          }
+          .admin-notif-backdrop { display: block !important; }
+        }
+
+        /* ── Page content scroll clearance for mobile ── */
+        @media (max-width: 767px) {
+          .admin-page-content {
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px) !important;
+          }
+        }
       `}</style>
     </div>
   );

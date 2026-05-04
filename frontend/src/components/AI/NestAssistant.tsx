@@ -135,34 +135,10 @@ export default function NestAssistant() {
 
   return (
     <>
-      <div
-        style={(() => {
-          const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-          return {
-            position: 'fixed' as const,
-            zIndex: 9999,
-            display: 'flex',
-            flexDirection: 'column' as const,
-            overflow: 'hidden',
-            boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-            border: '1px solid rgba(255,255,255,0.09)',
-            background: 'rgba(14,15,20,0.98)',
-            backdropFilter: 'blur(20px)',
-            transition: 'height 0.25s ease',
-            borderRadius: 16,
-            ...(isMobile ? {
-              left: 8, right: 8, bottom: 80,
-              width: 'auto',
-              height: minimized ? 52 : 420,
-            } : {
-              right: 24, bottom: 24,
-              width: 360,
-              maxWidth: 'calc(100vw - 32px)',
-              height: minimized ? 52 : 520,
-            }),
-          };
-        })()}
-      >
+      {/* Mobile backdrop when open */}
+      <div className="nest-ai-backdrop" onClick={closeNestAssistant} />
+
+      <div className={`nest-ai-panel ${minimized ? 'nest-ai-minimized' : ''}`}>
       {/* Header */}
       <div
         style={{
@@ -394,6 +370,71 @@ export default function NestAssistant() {
         </>
       )}
     </div>
+
+      <style>{`
+        /* ── Desktop: anchored bottom-right ─────────── */
+        .nest-ai-backdrop { display: none; }
+        .nest-ai-panel {
+          position: fixed;
+          right: 24px;
+          bottom: 24px;
+          width: 360px;
+          max-width: calc(100vw - 48px);
+          height: 520px;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          border-radius: 16px;
+          border: 1px solid rgba(255,255,255,0.09);
+          background: rgba(14,15,20,0.98);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+          transition: height 0.28s cubic-bezier(0.16,1,0.3,1), opacity 0.2s, transform 0.28s cubic-bezier(0.16,1,0.3,1);
+          animation: nestAiIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .nest-ai-minimized {
+          height: 52px !important;
+        }
+
+        /* ── Mobile: full-width sheet above bottom nav ── */
+        @media (max-width: 767px) {
+          .nest-ai-backdrop {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+          }
+          .nest-ai-minimized + .nest-ai-backdrop,
+          .nest-ai-backdrop:has(+ .nest-ai-minimized) {
+            display: none;
+          }
+          .nest-ai-panel {
+            right: 8px;
+            left: 8px;
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
+            width: auto;
+            max-width: none;
+            height: min(65vh, 480px);
+            border-radius: 20px;
+          }
+          .nest-ai-minimized {
+            height: 52px !important;
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 72px) !important;
+            backdrop-filter: none !important;
+            background: rgba(20,21,28,0.96) !important;
+          }
+        }
+
+        @keyframes nestAiIn {
+          from { opacity: 0; transform: translateY(12px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)   scale(1);    }
+        }
+      `}</style>
     </>
   );
 }

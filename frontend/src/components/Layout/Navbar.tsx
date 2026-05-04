@@ -62,6 +62,7 @@ export default function Navbar() {
 
   const userMenuRef  = useRef<HTMLDivElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
+  const notifBellRef = useRef<HTMLDivElement>(null);
   const queryClient  = useQueryClient();
 
   // close user menu on outside click
@@ -175,18 +176,20 @@ export default function Navbar() {
             <Search size={20} />
           </button>
 
-          {/* ── Nest Assistant ── */}
-          <IconButton
-            onClick={toggleNestAssistant}
-            aria-label="Nest Assistant"
-            title="Ask Nest Assistant"
-            active={nestAssistantOpen}
-            activeStyle={{ background: 'rgba(232,201,126,0.15)', border: '1px solid rgba(232,201,126,0.35)', color: '#e8c97e' }}
-            idleStyle={{ background: tk.pillBg, border: `1px solid ${tk.pillBorder}`, color: tk.iconColor }}
-            hoverStyle={{ background: 'rgba(232,201,126,0.10)', border: '1px solid rgba(232,201,126,0.25)', color: '#e8c97e' }}
-          >
-            <Sparkles size={14} />
-          </IconButton>
+          {/* ── Nest Assistant (desktop only — mobile uses BottomNav) ── */}
+          <span className="hidden md:flex">
+            <IconButton
+              onClick={toggleNestAssistant}
+              aria-label="Nest Assistant"
+              title="Ask Nest Assistant"
+              active={nestAssistantOpen}
+              activeStyle={{ background: 'rgba(232,201,126,0.15)', border: '1px solid rgba(232,201,126,0.35)', color: '#e8c97e' }}
+              idleStyle={{ background: tk.pillBg, border: `1px solid ${tk.pillBorder}`, color: tk.iconColor }}
+              hoverStyle={{ background: 'rgba(232,201,126,0.10)', border: '1px solid rgba(232,201,126,0.25)', color: '#e8c97e' }}
+            >
+              <Sparkles size={14} />
+            </IconButton>
+          </span>
 
           {/* ── Theme toggle ── */}
           <div className="relative" ref={themeMenuRef}>
@@ -226,7 +229,7 @@ export default function Navbar() {
           </div>
 
           {/* ── Notifications ── */}
-          <div className="relative">
+          <div className="relative" ref={notifBellRef}>
             <IconButton
               onClick={() => { setNotifOpen(!notifOpen); if (unread > 0) markAllRead.mutate(); }}
               aria-label={`Notifications${displayUnread > 0 ? `, ${displayUnread} unread` : ''}`}
@@ -256,41 +259,75 @@ export default function Navbar() {
             </IconButton>
 
             {notifOpen && (
-              <div
-                className="notif-dropdown z-50 overflow-hidden animate-scale-in"
-                style={{ position: 'absolute', right: 0, top: 44, width: 'min(320px, calc(100vw - 16px))', background: tk.dropdownBg, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: `1px solid ${tk.dropdownBorder}`, borderRadius: 12, boxShadow: isDark ? '0 20px 60px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.12)' }}
-              >
-                <div className="px-4 py-3" style={{ borderBottom: `1px solid ${tk.dropdownDivider}` }}>
-                  <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 700, color: tk.textPrimary, fontSize: 14 }}>Notifications</h3>
-                </div>
-                <div className="overflow-y-auto" style={{ maxHeight: 'min(320px, 60vh)' }}>
-                  {notifications.length === 0 ? (
-                    <p className="p-6 text-center" style={{ fontSize: 13, color: tk.textSecondary }}>No notifications yet</p>
-                  ) : (
-                    notifications.slice(0, 10).map(n => (
-                      <div
-                        key={n.id}
-                        className="px-4 py-3 cursor-pointer transition-colors"
-                        style={{ borderBottom: `1px solid ${tk.dropdownDivider}` }}
-                        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = tk.dropdownItemHov)}
-                        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
-                        onClick={() => {
-                          setNotifOpen(false);
-                          if (n.type === 'meeting_confirmed' || n.type === 'meeting_declined' || n.type === 'meeting_request') {
-                            navigate(isManager ? '/admin/meetings' : '/meetings');
-                          } else if (n.reference_id) {
-                            navigate(isManager ? `/admin/questions/${n.reference_id}` : '/modules');
-                          }
-                        }}
-                      >
-                        {!n.is_read && <span className="inline-block w-1.5 h-1.5 rounded-full mb-1" style={{ background: '#e8c97e' }} />}
-                        <p style={{ fontSize: 13, fontWeight: 500, color: tk.textPrimary, lineHeight: 1.4 }}>{n.title}</p>
-                        <p style={{ fontSize: 11.5, color: tk.textSecondary, marginTop: 2, lineHeight: 1.5 }} className="line-clamp-2">{n.message}</p>
+              <>
+                {/* Mobile backdrop */}
+                <div
+                  className="sm:hidden fixed inset-0 z-40"
+                  style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
+                  onClick={() => setNotifOpen(false)}
+                />
+                <div
+                  className="notif-panel z-50 overflow-hidden animate-scale-in"
+                  style={{
+                    background: tk.dropdownBg,
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: `1px solid ${tk.dropdownBorder}`,
+                    borderRadius: 16,
+                    boxShadow: isDark
+                      ? '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)'
+                      : '0 12px 48px rgba(0,0,0,0.15)',
+                  }}
+                >
+                  <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: `1px solid ${tk.dropdownDivider}` }}>
+                    <div className="flex items-center gap-2">
+                      <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 700, color: tk.textPrimary, fontSize: 14 }}>Notifications</h3>
+                      {displayUnread > 0 && (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: '#c45c3c', borderRadius: 100, padding: '1px 6px' }}>
+                          {displayUnread}
+                        </span>
+                      )}
+                    </div>
+                    {displayUnread === 0 && (
+                      <span style={{ fontSize: 11, color: '#2a7a4b', background: 'rgba(42,122,75,0.1)', padding: '2px 8px', borderRadius: 100, fontWeight: 600 }}>All read</span>
+                    )}
+                  </div>
+                  <div className="overflow-y-auto" style={{ maxHeight: 'min(360px, 55vh)' }}>
+                    {notifications.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 gap-2">
+                        <Bell size={22} style={{ color: tk.textSecondary, opacity: 0.4 }} />
+                        <p style={{ fontSize: 13, color: tk.textSecondary }}>No notifications yet</p>
                       </div>
-                    ))
-                  )}
+                    ) : (
+                      notifications.slice(0, 10).map(n => (
+                        <div
+                          key={n.id}
+                          className="px-4 py-3 cursor-pointer transition-colors flex gap-3"
+                          style={{ borderBottom: `1px solid ${tk.dropdownDivider}` }}
+                          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = tk.dropdownItemHov)}
+                          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                          onClick={() => {
+                            setNotifOpen(false);
+                            if (n.type === 'meeting_confirmed' || n.type === 'meeting_declined' || n.type === 'meeting_request') {
+                              navigate(isManager ? '/admin/meetings' : '/meetings');
+                            } else if (n.reference_id) {
+                              navigate(isManager ? `/admin/questions/${n.reference_id}` : '/modules');
+                            }
+                          }}
+                        >
+                          <div className="flex-shrink-0 mt-0.5">
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: !n.is_read ? '#e8c97e' : 'transparent', border: `1.5px solid ${!n.is_read ? '#e8c97e' : tk.textSecondary}`, marginTop: 4 }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p style={{ fontSize: 13, fontWeight: 500, color: tk.textPrimary, lineHeight: 1.4 }}>{n.title}</p>
+                            <p style={{ fontSize: 11.5, color: tk.textSecondary, marginTop: 2, lineHeight: 1.5 }} className="line-clamp-2">{n.message}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
 
@@ -348,13 +385,29 @@ export default function Navbar() {
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <style>{`
-        @media (max-width: 480px) {
-          .notif-dropdown {
+        @keyframes animate-scale-in {
+          from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+          to   { opacity: 1; transform: scale(1)    translateY(0);    }
+        }
+        .animate-scale-in { animation: animate-scale-in 0.15s cubic-bezier(0.16,1,0.3,1) both; }
+
+        /* Desktop: anchored to bell button */
+        .notif-panel {
+          position: absolute;
+          right: 0;
+          top: 50px;
+          width: 340px;
+        }
+
+        /* Mobile: full-width sheet below header */
+        @media (max-width: 639px) {
+          .notif-panel {
             position: fixed !important;
             top: 56px !important;
             left: 8px !important;
             right: 8px !important;
             width: auto !important;
+            border-radius: 20px !important;
           }
         }
       `}</style>

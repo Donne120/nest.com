@@ -86,14 +86,14 @@ export default function AdminPaymentsPage() {
   });
 
   return (
-    <div style={{ padding: 32, fontFamily: "'Syne', 'Inter', sans-serif" }}>
+    <div className="pay-root" style={{ padding: 32, fontFamily: "'Syne', 'Inter', sans-serif" }}>
 
       {/* ── Header ────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{
             fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 'clamp(24px, 3vw, 36px)',
+            fontSize: 'clamp(22px, 3vw, 36px)',
             fontWeight: 300, fontStyle: 'italic',
             letterSpacing: '-0.02em', color: INK, lineHeight: 1.1,
           }}>
@@ -115,7 +115,7 @@ export default function AdminPaymentsPage() {
             borderRadius: 100, padding: '6px 16px',
             fontFamily: "'Inconsolata', monospace",
             fontSize: 11, fontWeight: 700, color: WARN,
-            letterSpacing: '0.06em',
+            letterSpacing: '0.06em', whiteSpace: 'nowrap',
           }}>
             {pendingCount} awaiting review
           </div>
@@ -124,17 +124,18 @@ export default function AdminPaymentsPage() {
 
       {/* ── Filter tabs ───────────────────────────────────────── */}
       <div style={{
-        display: 'flex', gap: 2,
+        display: 'flex', gap: 2, overflowX: 'auto',
         background: BG2, border: `1px solid ${RULE}`,
         borderRadius: 6, padding: 3,
-        width: 'fit-content', marginBottom: 24,
+        width: 'fit-content', maxWidth: '100%', marginBottom: 24,
+        scrollbarWidth: 'none',
       }}>
         {(['pending', 'approved', 'rejected', 'all'] as const).map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             style={{
-              padding: '6px 18px',
+              padding: '6px 16px', flexShrink: 0,
               borderRadius: 4, border: 'none', cursor: 'pointer',
               fontFamily: "'Inconsolata', monospace",
               fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
@@ -142,7 +143,7 @@ export default function AdminPaymentsPage() {
               background: filter === f ? SURF : 'transparent',
               color: filter === f ? INK : INK3,
               boxShadow: filter === f ? `0 1px 3px rgba(0,0,0,0.08)` : 'none',
-              transition: 'all 0.15s',
+              transition: 'all 0.15s', whiteSpace: 'nowrap',
             }}
           >
             {f}
@@ -150,13 +151,11 @@ export default function AdminPaymentsPage() {
         ))}
       </div>
 
-      {/* ── Table ─────────────────────────────────────────────── */}
-      <div style={{
-        background: SURF, border: `1px solid ${RULE}`,
-        borderRadius: 6, overflow: 'hidden',
-      }}>
-        {/* Table head */}
-        <div style={{
+      {/* ── Table (desktop) / Cards (mobile) ─────────────────── */}
+      <div style={{ background: SURF, border: `1px solid ${RULE}`, borderRadius: 6, overflow: 'hidden' }}>
+
+        {/* Desktop table head */}
+        <div className="pay-table-head" style={{
           display: 'grid',
           gridTemplateColumns: '2fr 1fr 1fr 1fr 120px 100px',
           padding: '10px 20px',
@@ -174,9 +173,7 @@ export default function AdminPaymentsPage() {
         </div>
 
         {isLoading ? (
-          <div style={{ padding: '48px 20px', textAlign: 'center', color: INK3, fontSize: 13 }}>
-            Loading…
-          </div>
+          <div style={{ padding: '48px 20px', textAlign: 'center', color: INK3, fontSize: 13 }}>Loading…</div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: '56px 20px', textAlign: 'center' }}>
             <div style={{ fontSize: 28, marginBottom: 10, opacity: 0.25 }}>✓</div>
@@ -190,77 +187,69 @@ export default function AdminPaymentsPage() {
         ) : (
           filtered.map((sub, i) => {
             const cfg = STATUS_CFG[sub.status];
+            const initials = (sub.payer?.full_name ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
             return (
-              <div
-                key={sub.id}
-                onClick={() => setSelected(sub)}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 1fr 1fr 120px 100px',
-                  padding: '14px 20px',
-                  borderBottom: i < filtered.length - 1 ? `1px solid rgba(212,205,198,0.5)` : 'none',
-                  cursor: 'pointer', transition: 'background 0.15s',
-                  alignItems: 'center',
-                }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = BG)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
-              >
-                {/* Payer */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    background: ACC, flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontWeight: 700, color: '#fff',
-                  }}>
-                    {(sub.payer?.full_name ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {sub.payer?.full_name ?? '—'}
+              <div key={sub.id} onClick={() => setSelected(sub)}>
+                {/* Desktop row */}
+                <div
+                  className="pay-table-row"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '2fr 1fr 1fr 1fr 120px 100px',
+                    padding: '14px 20px',
+                    borderBottom: i < filtered.length - 1 ? `1px solid rgba(212,205,198,0.5)` : 'none',
+                    cursor: 'pointer', transition: 'background 0.15s', alignItems: 'center',
+                  }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = BG)}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: ACC, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff' }}>
+                      {initials}
                     </div>
-                    <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10.5, color: INK3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {sub.payer?.email ?? '—'}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.payer?.full_name ?? '—'}</div>
+                      <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10.5, color: INK3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.payer?.email ?? '—'}</div>
                     </div>
                   </div>
+                  <div style={{ fontSize: 12.5, color: INK2 }}>{sub.payment_type === 'teacher_subscription' ? '🎓 Subscription' : '📦 Module'}{sub.plan && <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10, color: INK3, textTransform: 'uppercase', marginTop: 2 }}>{sub.plan}</div>}</div>
+                  <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 11.5, color: INK2 }}>{METHOD_LABELS[sub.payment_method] ?? sub.payment_method}</div>
+                  <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 13, fontWeight: 700, color: INK }}>{sub.amount} {sub.currency}</div>
+                  <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10.5, color: INK3 }}>{formatDistanceToNow(new Date(sub.created_at), { addSuffix: true })}</div>
+                  <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 100, padding: '3px 10px', display: 'inline-flex', alignItems: 'center' }}>{cfg.label}</div>
                 </div>
 
-                {/* Type */}
-                <div style={{ fontSize: 12.5, color: INK2 }}>
-                  {sub.payment_type === 'teacher_subscription' ? '🎓 Subscription' : '📦 Module'}
-                  {sub.plan && (
-                    <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10, color: INK3, textTransform: 'uppercase', marginTop: 2 }}>
-                      {sub.plan}
+                {/* Mobile card */}
+                <div
+                  className="pay-mobile-card"
+                  style={{
+                    padding: '16px',
+                    borderBottom: i < filtered.length - 1 ? `1px solid rgba(212,205,198,0.5)` : 'none',
+                    cursor: 'pointer', display: 'none',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: ACC, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff' }}>{initials}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.payer?.full_name ?? '—'}</div>
+                      <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 11, color: INK3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.payer?.email ?? '—'}</div>
                     </div>
-                  )}
-                </div>
-
-                {/* Method */}
-                <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 11.5, color: INK2 }}>
-                  {METHOD_LABELS[sub.payment_method] ?? sub.payment_method}
-                </div>
-
-                {/* Amount */}
-                <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 13, fontWeight: 700, color: INK }}>
-                  {sub.amount} {sub.currency}
-                </div>
-
-                {/* Time */}
-                <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10.5, color: INK3 }}>
-                  {formatDistanceToNow(new Date(sub.created_at), { addSuffix: true })}
-                </div>
-
-                {/* Status */}
-                <div style={{
-                  fontFamily: "'Inconsolata', monospace",
-                  fontSize: 9.5, fontWeight: 700,
-                  letterSpacing: '0.08em', textTransform: 'uppercase',
-                  color: cfg.color, background: cfg.bg,
-                  border: `1px solid ${cfg.border}`,
-                  borderRadius: 100, padding: '3px 10px',
-                  display: 'inline-flex', alignItems: 'center',
-                }}>
-                  {cfg.label}
+                    <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 100, padding: '3px 10px', flexShrink: 0 }}>{cfg.label}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3, marginBottom: 2 }}>Amount</div>
+                      <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 15, fontWeight: 700, color: INK }}>{sub.amount} {sub.currency}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3, marginBottom: 2 }}>Method</div>
+                      <div style={{ fontSize: 13, color: INK2 }}>{METHOD_LABELS[sub.payment_method] ?? sub.payment_method}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3, marginBottom: 2 }}>Submitted</div>
+                      <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 11, color: INK3 }}>{formatDistanceToNow(new Date(sub.created_at), { addSuffix: true })}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             );
@@ -273,14 +262,14 @@ export default function AdminPaymentsPage() {
         <>
           <div
             onClick={() => { setSelected(null); setShowProof(false); setRejectReason(''); }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 50 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(3px)', zIndex: 50 }}
           />
-          <div style={{
-            position: 'fixed', top: 0, right: 0, bottom: 0, width: 460,
+          <div className="pay-detail-panel" style={{
+            position: 'fixed', top: 0, right: 0, bottom: 0,
             background: SURF, zIndex: 51,
-            boxShadow: '-8px 0 40px rgba(0,0,0,0.15)',
+            boxShadow: '-8px 0 60px rgba(0,0,0,0.2)',
             overflowY: 'auto', display: 'flex', flexDirection: 'column',
-            animation: 'slideIn 0.22s ease',
+            animation: 'slideIn 0.22s cubic-bezier(0.16,1,0.3,1)',
           }}>
             {/* Panel header */}
             <div style={{
@@ -493,8 +482,18 @@ export default function AdminPaymentsPage() {
 
       <style>{`
         @keyframes slideIn {
-          from { transform: translateX(40px); opacity: 0; }
+          from { transform: translateX(100%); opacity: 0; }
           to   { transform: translateX(0);    opacity: 1; }
+        }
+        /* Desktop: 460px side drawer */
+        .pay-detail-panel { width: 460px; }
+        /* Mobile: full-screen sheet */
+        @media (max-width: 639px) {
+          .pay-root { padding: 16px !important; }
+          .pay-detail-panel { width: 100% !important; top: 0 !important; border-radius: 0 !important; }
+          .pay-table-head  { display: none !important; }
+          .pay-table-row   { display: none !important; }
+          .pay-mobile-card { display: block !important; }
         }
       `}</style>
     </div>

@@ -94,7 +94,10 @@ function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#FAF7F2] dark:bg-slate-950 font-sans">
       <Navbar />
-      <main className="pb-20 md:pb-0">{children}</main>
+      <main className="md:pb-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)' }}>
+        <style>{`@media (min-width: 768px) { main { padding-bottom: 0 !important; } }`}</style>
+        {children}
+      </main>
       <BottomNav />
     </div>
   );
