@@ -154,64 +154,68 @@ export default function LoginPage() {
       </div>
 
       {/* Right: form */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '56px 64px', position: 'relative', zIndex: 1 }}>
-        <div style={{ width: '100%', maxWidth: 380 }}>
+      <div className="login-form-panel" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
 
-          <div style={{ marginBottom: 40 }}>
-            <h2 style={{ fontFamily: DISP, fontSize: 36, fontWeight: 400, color: INK, letterSpacing: '-0.02em', marginBottom: 8 }}>Sign in</h2>
-            <p style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Enter your credentials to continue</p>
+          {/* Mobile-only logo */}
+          <div className="login-mobile-logo" style={{ display: 'none', marginBottom: 32, textAlign: 'center' }}>
+            <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 36, height: 36, border: `1.5px solid rgba(200,169,110,0.4)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: GOLD, fontFamily: UI }}>N</div>
+              <span style={{ fontFamily: DISP, fontSize: 26, fontWeight: 600, color: GOLD2, letterSpacing: '0.01em' }}>Nest</span>
+            </Link>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h2 style={{ fontFamily: DISP, fontSize: 'clamp(28px, 6vw, 36px)', fontWeight: 400, color: INK, letterSpacing: '-0.02em', marginBottom: 8 }}>Sign in</h2>
+            <p style={{ fontFamily: MONO, fontSize: 12, color: INK3, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Enter your credentials to continue</p>
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <Field label="Work Email" id="email" type="email" value={email} onChange={setEmail} placeholder="you@company.com" required autoFocus />
+            <Field label="Email" id="email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required autoFocus />
 
             <Field label="Password" id="password" type={showPw ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="••••••••" required>
               <button
                 type="button"
                 onClick={() => setShowPw(p => !p)}
-                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: INK3, padding: 2, transition: 'color 0.2s' }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK3)}
+                aria-label={showPw ? 'Hide password' : 'Show password'}
+                style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: INK3 }}
               >
-                {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </Field>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Link to="/forgot-password" style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.08em', color: GOLD, textDecoration: 'none', transition: 'opacity 0.2s' }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.7')}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
-              >Forgot password?</Link>
+              <Link to="/forgot-password" style={{ fontSize: 13, color: GOLD, textDecoration: 'none' }}>
+                Forgot password?
+              </Link>
             </div>
 
             <button type="submit" disabled={loading} style={{
-              fontFamily: UI, fontSize: 13, fontWeight: 700,
-              letterSpacing: '0.06em', textTransform: 'uppercase',
+              fontFamily: UI, fontSize: 15, fontWeight: 700,
+              letterSpacing: '0.04em',
               color: BG, background: loading ? 'rgba(200,169,110,0.6)' : GOLD,
-              padding: '13px 24px', borderRadius: 4, border: 'none',
+              padding: '15px 24px', borderRadius: 6, border: 'none',
               cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background 0.2s, transform 0.15s',
+              minHeight: 52,
+              transition: 'background 0.2s',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            }}
-              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = GOLD2; }}
-              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = GOLD; }}
-            >
+              width: '100%',
+            }}>
               {loading ? (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 12, height: 12, border: `2px solid rgba(10,9,7,0.3)`, borderTopColor: BG, borderRadius: '50%', display: 'inline-block', animation: 'lp-spin 0.7s linear infinite' }} />
+                  <span style={{ width: 14, height: 14, border: `2px solid rgba(10,9,7,0.3)`, borderTopColor: BG, borderRadius: '50%', display: 'inline-block', animation: 'lp-spin 0.7s linear infinite' }} />
                   Signing in…
                 </span>
               ) : 'Sign In'}
             </button>
           </form>
 
-          <div style={{ marginTop: 36, paddingTop: 24, borderTop: `1px solid ${RULE}` }}>
-            <p style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.06em', textAlign: 'center' }}>
+          <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${RULE}` }}>
+            <p style={{ fontSize: 14, color: INK3, textAlign: 'center' }}>
               New to Nest?{' '}
-              <Link to="/signup" style={{ color: GOLD, textDecoration: 'none', fontWeight: 500 }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.textDecoration = 'underline')}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.textDecoration = 'none')}
-              >Register your company →</Link>
+              <Link to="/signup" style={{ color: GOLD, textDecoration: 'none', fontWeight: 600 }}>
+                Register your organisation →
+              </Link>
             </p>
           </div>
         </div>
@@ -221,7 +225,14 @@ export default function LoginPage() {
 
       <style>{`
         @keyframes lp-spin { to { transform: rotate(360deg); } }
-        @media (max-width: 768px) { .login-left-panel { display: none !important; } }
+        @media (max-width: 768px) {
+          .login-left-panel { display: none !important; }
+          .login-form-panel { padding: 40px 24px !important; align-items: flex-start !important; padding-top: 60px !important; }
+          .login-mobile-logo { display: flex !important; justify-content: center; }
+        }
+        @media (min-width: 769px) {
+          .login-form-panel { padding: 56px 64px; }
+        }
       `}</style>
     </div>
   );

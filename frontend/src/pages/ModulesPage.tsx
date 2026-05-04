@@ -117,19 +117,19 @@ export default function ModulesPage() {
 
       {/* ══ HERO ═══════════════════════════════════════════════════════════ */}
       <div style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(28px,5vw,48px) 0 clamp(24px,4vw,40px)' }}>
-        {/* Canvas particle field */}
-        <ParticleCanvas />
+        {/* Canvas particle field — desktop only (battery drain on mobile) */}
+        <div className="hero-desktop-only"><ParticleCanvas /></div>
 
-        {/* Animated floating orbs */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        {/* Animated floating orbs — desktop only */}
+        <div className="hero-desktop-only" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
           <div className="orb orb-gold" />
           <div className="orb orb-terra" />
           <div className="orb orb-blue" />
           <div className="orb orb-gold2" />
         </div>
 
-        {/* Animated grid lines */}
-        <div className="hero-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+        {/* Animated grid lines — desktop only */}
+        <div className="hero-desktop-only hero-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
 
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 2 }}>
 
@@ -206,26 +206,25 @@ export default function ModulesPage() {
       <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(11,12,15,0.8)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20 }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 16px', minHeight: 52, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
 
-          {/* Filter tabs — horizontally scrollable on mobile */}
-          <div style={{ display: 'flex', gap: 2, overflowX: 'auto', WebkitOverflowScrolling: 'touch', flexShrink: 0, scrollbarWidth: 'none' }}>
+          {/* Filter tabs — horizontally scrollable on mobile, 44px touch targets */}
+          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', flexShrink: 0, scrollbarWidth: 'none' }}>
             {FILTERS.map(f => (
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
                 style={{
                   fontFamily: 'monospace',
-                  fontSize: 11, fontWeight: 500,
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
-                  padding: '5px 12px', borderRadius: 6,
+                  fontSize: 12, fontWeight: 500,
+                  letterSpacing: '0.04em', textTransform: 'uppercase',
+                  padding: '10px 14px', borderRadius: 8,
                   border: 'none', cursor: 'pointer',
                   transition: 'all 0.15s', flexShrink: 0,
+                  minHeight: 44,
                   background: filter === f.key ? DARK3 : 'transparent',
                   color: filter === f.key ? f.color : INK3,
                   outline: filter === f.key ? `1px solid ${BORDER}` : 'none',
                   whiteSpace: 'nowrap',
                 }}
-                onMouseEnter={e => { if (filter !== f.key) (e.currentTarget as HTMLElement).style.color = INK2; }}
-                onMouseLeave={e => { if (filter !== f.key) (e.currentTarget as HTMLElement).style.color = INK3; }}
               >
                 {f.label}
               </button>
@@ -285,7 +284,7 @@ export default function ModulesPage() {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+          <div className="modules-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
             {filtered.map(m => (
               <div key={m.id} style={{ position: 'relative' }}>
                 <ModuleCard module={m} />
@@ -317,6 +316,12 @@ export default function ModulesPage() {
 
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+        /* ── Mobile overrides ── */
+        @media (max-width: 640px) {
+          .hero-desktop-only { display: none !important; }
+          .modules-grid { grid-template-columns: 1fr !important; }
+        }
 
         /* ── Animated orbs ── */
         .orb {

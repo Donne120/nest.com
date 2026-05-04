@@ -227,6 +227,51 @@ html.dark {
   }
 }
 
+/* ─── Mobile-first global fixes ─────────────────────────────────────────── */
+
+/* Prevent font size inflation on iOS when rotating */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Pages with BottomNav need padding so content isn't hidden behind it */
+@media (max-width: 767px) {
+  .main-content {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Respect user's motion preference — disable all animations */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Hide scrollbars on mobile horizontal scroll containers */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure tap highlight is subtle on mobile */
+* {
+  -webkit-tap-highlight-color: rgba(232, 201, 126, 0.15);
+}
+
+/* PaySubmit country grid: 2 cols on small phones */
+@media (max-width: 480px) {
+  .country-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
 /* ─── Rich text editor (Tiptap / prose) ─────────────────────────────────── */
 .prose h1 { @apply text-2xl font-bold mt-4 mb-2; font-family: 'Lora', Georgia, serif; color: #1C1A17; letter-spacing: -0.02em; }
 .prose h2 { @apply text-xl font-bold mt-4 mb-2; font-family: 'Lora', Georgia, serif; color: #1C1A17; letter-spacing: -0.02em; }

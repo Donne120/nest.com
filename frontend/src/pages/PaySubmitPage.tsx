@@ -175,7 +175,7 @@ export default function PaySubmitPage() {
         {/* ── Step 1: Select your country ───────────────────────────── */}
         {hasCountries && (
           <Section label="01" title="Select your country">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 10, marginBottom: 4 }}>
+            <div className="country-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10, marginBottom: 4 }}>
               {countryConfigs.map(c => {
                 const isActive = c.id === selectedCountryId;
                 return (
@@ -394,7 +394,7 @@ export default function PaySubmitPage() {
         <button
           onClick={() => submit.mutate()}
           disabled={!canSubmit}
-          style={{ width: '100%', padding: '15px', background: canSubmit ? ACC : BG2, color: canSubmit ? '#fff' : INK3, border: 'none', borderRadius: 4, fontSize: 14, fontWeight: 700, fontFamily: "'Syne', sans-serif", cursor: canSubmit ? 'pointer' : 'not-allowed', letterSpacing: '0.02em', transition: 'opacity 0.2s, background 0.2s' }}
+          style={{ width: '100%', padding: '16px', minHeight: 56, background: canSubmit ? ACC : BG2, color: canSubmit ? '#fff' : INK3, border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, fontFamily: "'Syne', sans-serif", cursor: canSubmit ? 'pointer' : 'not-allowed', letterSpacing: '0.02em', transition: 'opacity 0.2s, background 0.2s' }}
           onMouseEnter={e => { if (canSubmit) (e.currentTarget as HTMLElement).style.opacity = '0.85'; }}
           onMouseLeave={e => { if (canSubmit) (e.currentTarget as HTMLElement).style.opacity = '1'; }}
         >
@@ -412,10 +412,11 @@ export default function PaySubmitPage() {
 // ── Small helpers ──────────────────────────────────────────────────────────────
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '10px 12px', fontSize: 13.5,
+  width: '100%', padding: '13px 14px', fontSize: 15,
   fontFamily: "'Inter', sans-serif", color: INK,
   background: SURF, border: `1px solid ${RULE}`,
-  borderRadius: 4, outline: 'none', marginBottom: 16, boxSizing: 'border-box',
+  borderRadius: 6, outline: 'none', marginBottom: 16, boxSizing: 'border-box',
+  minHeight: 50,
 };
 
 function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
@@ -431,7 +432,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3, marginBottom: 7, fontWeight: 500 }}>
+    <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: INK3, marginBottom: 8, fontWeight: 600 }}>
       {children}
     </div>
   );

@@ -5,8 +5,8 @@ import clsx from 'clsx';
 
 const learnerTabs = [
   { to: '/modules',      icon: BookOpen,       label: 'Learn'       },
-  { to: '/meetings',     icon: Video,          label: 'Meetings'    },
   { to: '/assignments',  icon: ClipboardList,  label: 'Assignments' },
+  { to: '/meetings',     icon: Video,          label: 'Meetings'    },
   { to: '/profile',      icon: UserCircle,     label: 'Profile'     },
 ];
 
@@ -45,11 +45,30 @@ export default function BottomNav() {
           <Link
             key={to}
             to={to}
-            className={clsx('flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold tracking-wide transition-colors')}
-            style={{ color: active ? '#e8c97e' : 'rgba(255,255,255,0.35)' }}
+            className={clsx('flex-1 flex flex-col items-center justify-center gap-1 transition-colors')}
+            style={{
+              color: active ? '#e8c97e' : 'rgba(255,255,255,0.4)',
+              minHeight: 56,
+              paddingTop: 10,
+              paddingBottom: 10,
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: '0.02em',
+              textDecoration: 'none',
+            }}
           >
-            <Icon size={20} strokeWidth={active ? 2.5 : 1.8} />
-            {label}
+            <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
+            <span style={{ lineHeight: 1 }}>{label}</span>
+            {active && (
+              <span style={{
+                position: 'absolute',
+                bottom: 0,
+                width: 24,
+                height: 2,
+                background: '#e8c97e',
+                borderRadius: 2,
+              }} />
+            )}
           </Link>
         );
       })}

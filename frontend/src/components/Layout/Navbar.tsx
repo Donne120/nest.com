@@ -154,7 +154,7 @@ export default function Navbar() {
           {/* Search pill — desktop */}
           <button
             onClick={() => setSearchOpen(true)}
-            aria-label="Search (Ctrl+K)"
+            aria-label="Search"
             className="hidden sm:flex items-center gap-2 transition-all duration-150"
             style={{ background: tk.pillBg, border: `1px solid ${tk.pillBorder}`, padding: '7px 14px', borderRadius: 100, fontSize: 12.5, color: tk.pillText, cursor: 'pointer', transition: 'border-color 0.15s' }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = tk.pillBorderHover)}
@@ -162,12 +162,17 @@ export default function Navbar() {
           >
             <Search size={13} />
             <span>Search</span>
-            <kbd style={{ fontFamily: 'monospace', background: tk.kbdBg, border: `1px solid ${tk.pillBorder}`, padding: '1px 5px', borderRadius: 3, fontSize: 11, color: tk.kbdColor }}>⌘K</kbd>
+            <kbd style={{ fontFamily: 'monospace', background: tk.kbdBg, border: `1px solid ${tk.pillBorder}`, padding: '1px 5px', borderRadius: 3, fontSize: 11, color: tk.kbdColor }}>Ctrl+K</kbd>
           </button>
 
-          {/* Search icon — mobile */}
-          <button onClick={() => setSearchOpen(true)} aria-label="Search" className="sm:hidden p-2 rounded-xl" style={{ color: tk.iconColor }}>
-            <Search size={17} />
+          {/* Search icon — mobile (44px touch target) */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search"
+            className="sm:hidden flex items-center justify-center rounded-full"
+            style={{ width: 44, height: 44, color: tk.iconColor, background: 'transparent', border: 'none', cursor: 'pointer' }}
+          >
+            <Search size={20} />
           </button>
 
           {/* ── Nest Assistant ── */}
@@ -258,7 +263,7 @@ export default function Navbar() {
                 <div className="px-4 py-3" style={{ borderBottom: `1px solid ${tk.dropdownDivider}` }}>
                   <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 700, color: tk.textPrimary, fontSize: 14 }}>Notifications</h3>
                 </div>
-                <div className="max-h-80 overflow-y-auto">
+                <div className="overflow-y-auto" style={{ maxHeight: 'min(320px, 60vh)' }}>
                   {notifications.length === 0 ? (
                     <p className="p-6 text-center" style={{ fontSize: 13, color: tk.textSecondary }}>No notifications yet</p>
                   ) : (
@@ -422,7 +427,7 @@ function IconButton({ onClick, 'aria-label': ariaLabel, title, active, activeSty
       onClick={onClick}
       aria-label={ariaLabel}
       title={title}
-      style={{ ...idleStyle, ...(active ? activeStyle : {}), width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', position: 'relative', ...style }}
+      style={{ ...idleStyle, ...(active ? activeStyle : {}), width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', position: 'relative', ...style }}
       onMouseEnter={e => { if (!active) Object.assign((e.currentTarget as HTMLElement).style, hoverStyle); }}
       onMouseLeave={e => { if (!active) Object.assign((e.currentTarget as HTMLElement).style, idleStyle); }}
     >

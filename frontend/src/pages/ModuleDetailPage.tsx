@@ -179,7 +179,7 @@ export default function ModuleDetailPage() {
           </h1>
 
           {/* Meta row */}
-          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginBottom: 28 }}>
+          <div className="module-hero-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0, marginBottom: 28 }}>
             {[
               { icon: '▷', val: fmt(module.duration_seconds) },
               { icon: '▷', val: `${module.video_count} lessons` },
@@ -201,7 +201,7 @@ export default function ModuleDetailPage() {
           </div>
 
           {/* CTAs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div className="module-cta-row" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <button
               onClick={() => {
                 if (!firstItem) return;
@@ -415,6 +415,10 @@ export default function ModuleDetailPage() {
         }
         @media (max-width: 599px) {
           .learn-grid { grid-template-columns: 1fr !important; }
+          .module-hero-meta { flex-wrap: wrap; gap: 8px !important; }
+          .module-hero-meta > div { border-right: none !important; padding-right: 0 !important; margin-right: 0 !important; }
+          .module-cta-row { flex-direction: column !important; }
+          .module-cta-row button { width: 100% !important; justify-content: center !important; min-height: 52px !important; font-size: 15px !important; }
         }
       `}</style>
     </div>
@@ -454,12 +458,13 @@ function LessonCurriculumItem({ lesson, index, isLast, onClick, INK, INK3, RULE,
       onMouseLeave={() => setHovered(false)}
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 16,
-        padding: '16px 28px',
+        padding: '18px 20px',
         borderBottom: isLast ? 'none' : `1px solid ${RULE}`,
         background: hovered ? BG : 'transparent',
         cursor: 'pointer', textAlign: 'left', border: 'none',
         borderBottomColor: isLast ? 'transparent' : RULE,
         borderBottomStyle: 'solid', borderBottomWidth: isLast ? 0 : 1,
+        minHeight: 64,
         transition: 'background 0.15s',
       }}
     >
@@ -499,12 +504,13 @@ function CurriculumItem({ video, index, isLast, onClick, INK, INK3, RULE, BG }: 
       onMouseLeave={() => setHovered(false)}
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 16,
-        padding: '16px 28px',
+        padding: '18px 20px',
         borderBottom: isLast ? 'none' : `1px solid ${RULE}`,
         background: hovered ? BG : 'transparent',
         cursor: 'pointer', textAlign: 'left', border: 'none',
         borderBottomColor: isLast ? 'transparent' : RULE,
         borderBottomStyle: 'solid', borderBottomWidth: isLast ? 0 : 1,
+        minHeight: 64,
         transition: 'background 0.15s',
       }}
     >
