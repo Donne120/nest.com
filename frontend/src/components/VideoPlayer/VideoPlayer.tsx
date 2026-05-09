@@ -216,11 +216,11 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   const showControlsBriefly = useCallback(() => {
     setControlsVisible(true);
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    hideTimerRef.current = setTimeout(() => setControlsVisible(false), 3500);
+    hideTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
   }, []);
 
-  // Always visible in fullscreen OR briefly after a touch/hover OR always on mobile
-  const shouldShowControls = fullscreen || controlsVisible || window.innerWidth < 1024;
+  // Show controls when: fullscreen, briefly after tap/hover, or video is paused
+  const shouldShowControls = fullscreen || controlsVisible || !isPlaying;
 
   const handleTimelineClick = (t: number) => {
     if (isYouTube && ytPlayerRef.current?.seekTo) {
@@ -363,8 +363,8 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => { setPlaying(false); onVideoEnd?.(); }}
-        onClick={() => setPlaying(!isPlaying)}
-        onTouchEnd={(e) => { e.preventDefault(); setPlaying(!isPlaying); }}
+        onClick={() => { setPlaying(!isPlaying); showControlsBriefly(); }}
+        onTouchEnd={(e) => { e.preventDefault(); setPlaying(!isPlaying); showControlsBriefly(); }}
         preload="metadata"
         crossOrigin="anonymous"
       />
