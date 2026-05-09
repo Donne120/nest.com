@@ -219,8 +219,8 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
     hideTimerRef.current = setTimeout(() => setControlsVisible(false), 3500);
   }, []);
 
-  // Always visible in fullscreen OR briefly after a touch/hover
-  const shouldShowControls = fullscreen || controlsVisible;
+  // Always visible in fullscreen OR briefly after a touch/hover OR always on mobile
+  const shouldShowControls = fullscreen || controlsVisible || window.innerWidth < 1024;
 
   const handleTimelineClick = (t: number) => {
     if (isYouTube && ytPlayerRef.current?.seekTo) {
@@ -364,6 +364,7 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
         onPause={() => setPlaying(false)}
         onEnded={() => { setPlaying(false); onVideoEnd?.(); }}
         onClick={() => setPlaying(!isPlaying)}
+        onTouchEnd={(e) => { e.preventDefault(); setPlaying(!isPlaying); }}
         preload="metadata"
         crossOrigin="anonymous"
       />

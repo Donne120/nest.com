@@ -24,15 +24,27 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  const getTimeFromEvent = (e: React.MouseEvent) => {
+  const getTimeFromX = (clientX: number) => {
     if (!barRef.current || duration === 0) return 0;
     const rect = barRef.current.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     return ratio * duration;
   };
 
+  const getTimeFromEvent = (e: React.MouseEvent) => getTimeFromX(e.clientX);
+
   const handleBarClick = (e: React.MouseEvent) => onSeek(getTimeFromEvent(e));
   const handleMouseMove = (e: React.MouseEvent) => setHoveredTs(getTimeFromEvent(e));
+
+  // Touch support for mobile scrubbing
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    onSeek(getTimeFromX(e.touches[0].clientX));
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    onSeek(getTimeFromX(e.touches[0].clientX));
+  };
 
   return (
     <div className="relative mb-2">
@@ -42,16 +54,19 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
         <span>{formatTime(duration)}</span>
       </div>
 
-      {/* Bar */}
+      {/* Bar — tall touch target wraps the thin visual track */}
       <div
         ref={barRef}
         className="relative cursor-pointer group/bar rounded-full transition-all duration-150"
-        style={{ height: 3, background: 'rgba(255,255,255,0.12)' }}
+        style={{ height: 20, background: 'transparent', display: 'flex', alignItems: 'center' }}
         onClick={handleBarClick}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => { setHoveredTs(null); setTooltipMarker(null); }}
-        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.height = '5px'; }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
       >
+      {/* Visual track inside the touch target */}
+      <div className="absolute inset-x-0" style={{ top: '50%', transform: 'translateY(-50%)', height: 3, background: 'rgba(255,255,255,0.12)', borderRadius: 999 }}>
         {/* Gold fill */}
         <div
           className="absolute left-0 top-0 h-full rounded-full transition-[width] duration-100"
@@ -143,7 +158,8 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent" style={{ borderTopColor: '#1c1e27' }} />
           </div>
         )}
-      </div>
+      </div>{/* end visual track */}
+      </div>{/* end touch target */}
     </div>
   );
 }
