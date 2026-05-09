@@ -91,13 +91,6 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   // reset intro whenever the video changes
   useEffect(() => { if (showIntro) setIntroDone(false); }, [videoId, showIntro]);
 
-  // unmute YouTube player as soon as intro is done
-  useEffect(() => {
-    if (introDone && isYouTube && ytPlayerRef.current?.unMute) {
-      ytPlayerRef.current.unMute();
-    }
-  }, [introDone, isYouTube]);
-
   const {
     isPlaying, volume, playbackRate, seekTarget, currentTime,
     setCurrentTime, setDuration, setPlaying, clearSeek,
@@ -108,6 +101,13 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   const embed = getEmbedInfo(videoUrl);
   const isEmbed = embed.type !== 'native';
   const isYouTube = embed.type === 'youtube';
+
+  // unmute YouTube player as soon as intro is done
+  useEffect(() => {
+    if (introDone && isYouTube && ytPlayerRef.current?.unMute) {
+      ytPlayerRef.current.unMute();
+    }
+  }, [introDone, isYouTube]);
   // Stable iframe ID based on videoId so the YT API can find the element
   const iframeId = `yt-player-${videoId}`;
 
