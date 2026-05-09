@@ -42,7 +42,7 @@ function getEmbedInfo(url: string): { type: 'youtube' | 'vimeo' | 'native'; embe
   const ytId = getYouTubeId(url);
   if (ytId) return {
     type: 'youtube',
-    embedUrl: `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&origin=${encodeURIComponent(origin)}`,
+    embedUrl: `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=0&origin=${encodeURIComponent(origin)}`,
   };
   const viId = getVimeoId(url);
   if (viId) return { type: 'vimeo', embedUrl: `https://player.vimeo.com/video/${viId}` };
@@ -254,7 +254,7 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
             <NestIntroOverlay
               orgName={organization?.name}
               orgLogoUrl={organization?.logo_url}
-              onComplete={() => setIntroDone(true)}
+              onComplete={() => { setPlaying(false); setIntroDone(true); }}
             />
           </div>
         )}

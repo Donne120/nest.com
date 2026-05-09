@@ -1,4 +1,4 @@
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, MessageCirclePlus, Settings } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings } from 'lucide-react';
 import { usePlayerStore } from '../../store';
 import { useState } from 'react';
 import clsx from 'clsx';
@@ -11,7 +11,7 @@ interface Props {
   onAskQuestion: () => void;
 }
 
-export default function Controls({ onToggleFullscreen, isFullscreen, onAskQuestion }: Props) {
+export default function Controls({ onToggleFullscreen, isFullscreen, onAskQuestion: _onAskQuestion }: Props) {
   const { isPlaying, volume, playbackRate, setPlaying, setVolume, setPlaybackRate } = usePlayerStore();
   const [showSettings, setShowSettings] = useState(false);
   const isMuted = volume === 0;
@@ -47,15 +47,6 @@ export default function Controls({ onToggleFullscreen, isFullscreen, onAskQuesti
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        {/* Ask Question */}
-        <button
-          onClick={onAskQuestion}
-          className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-md text-xs font-medium transition-colors backdrop-blur-sm"
-        >
-          <MessageCirclePlus size={14} />
-          Ask Question
-        </button>
-
         {/* Speed */}
         <div className="relative">
           <button
