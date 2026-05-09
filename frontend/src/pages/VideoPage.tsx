@@ -570,53 +570,45 @@ export default function VideoPage() {
         </div>{/* end desktop */}
       </div>
 
-      {/* ── Q&A Sidebar — always visible on lg+, bottom sheet on mobile ── */}
+      {/* ── Q&A Sidebar: desktop inline panel (lg+) ── */}
       {videoId && (
-        <>
-          {/* Mobile backdrop */}
+        <div className="hidden lg:flex" style={{ height: '100%' }}>
+          <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} onClose={() => setSidebarOpen(false)} />
+        </div>
+      )}
+
+      {/* ── Q&A Sidebar: mobile bottom sheet (< lg) ── */}
+      {videoId && (
+        <div className="lg:hidden">
+          {/* Backdrop */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 lg:hidden"
+              className="fixed inset-0"
               style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(3px)', zIndex: 45 }}
               onClick={() => setSidebarOpen(false)}
             />
           )}
-          {/* Sidebar — desktop: right panel | mobile: bottom sheet */}
+          {/* Sheet */}
           <div
-            className={`lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:max-w-none lg:flex ${sidebarOpen ? '' : 'hidden lg:flex'}`}
             style={{
-              position: undefined,
+              position: 'fixed',
+              left: 0, right: 0, bottom: 0,
+              height: '80vh',
+              zIndex: 46,
+              borderRadius: '20px 20px 0 0',
+              overflow: 'hidden',
+              transform: sidebarOpen ? 'translateY(0)' : 'translateY(100%)',
+              transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)',
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
-            {/* Mobile: fixed bottom sheet */}
-            <div
-              className="lg:hidden"
-              style={{
-                position: 'fixed',
-                left: 0, right: 0,
-                bottom: 0,
-                height: '80vh',
-                zIndex: 46,
-                borderRadius: '20px 20px 0 0',
-                overflow: 'hidden',
-                transform: sidebarOpen ? 'translateY(0)' : 'translateY(100%)',
-                transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              {/* Drag handle */}
-              <div style={{ background: '#13141a', padding: '10px 0 4px', display: 'flex', justifyContent: 'center', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
-              </div>
-              <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} onClose={() => setSidebarOpen(false)} />
+            <div style={{ background: '#13141a', padding: '10px 0 4px', display: 'flex', justifyContent: 'center', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
             </div>
-            {/* Desktop: inline panel */}
-            <div className="hidden lg:flex" style={{ height: '100%' }}>
-              <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} onClose={() => setSidebarOpen(false)} />
-            </div>
+            <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} onClose={() => setSidebarOpen(false)} />
           </div>
-        </>
+        </div>
       )}
 
       {/* Question form modal */}
