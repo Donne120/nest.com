@@ -102,12 +102,6 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   const isEmbed = embed.type !== 'native';
   const isYouTube = embed.type === 'youtube';
 
-  // unmute YouTube player as soon as intro is done
-  useEffect(() => {
-    if (introDone && isYouTube && ytPlayerRef.current?.unMute) {
-      ytPlayerRef.current.unMute();
-    }
-  }, [introDone, isYouTube]);
   // Stable iframe ID based on videoId so the YT API can find the element
   const iframeId = `yt-player-${videoId}`;
 
@@ -122,8 +116,6 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
         events: {
           onReady: (e: any) => {
             if (!mounted) return;
-            // Mute until intro finishes so the iframe doesn't echo under the overlay
-            if (!introDone) e.target.mute();
             const dur = e.target.getDuration();
             if (dur > 0) setDuration(dur);
           },
@@ -256,8 +248,9 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   if (isEmbed) {
     return (
       <div ref={containerRef} className="bg-black rounded-xl overflow-hidden" style={{ position: 'relative' }} onPointerDown={showControlsBriefly}>
+        {/* Intro overlay — shown first; iframe not mounted until it's done */}
         {!introDone && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 20, borderRadius: 'inherit', overflow: 'hidden' }}>
+          <div style={{ aspectRatio: '16/9', position: 'relative' }}>
             <NestIntroOverlay
               orgName={organization?.name}
               orgLogoUrl={organization?.logo_url}
@@ -265,7 +258,8 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
             />
           </div>
         )}
-        {/* Iframe */}
+        {/* Iframe — only mounted after intro completes, guaranteeing no audio bleed */}
+        {introDone && (
         <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
           <iframe
             id={isYouTube ? iframeId : undefined}
@@ -276,8 +270,8 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
             allowFullScreen
             title="Video player"
           />
-
         </div>
+        )}
 
         {/* Timeline + Controls below iframe (YouTube only — full API support) */}
         {isYouTube && (
