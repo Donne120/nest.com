@@ -227,6 +227,17 @@ html.dark {
   }
 }
 
+/* ─── Video player aspect ratio ─────────────────────────────────────────── */
+/* Taller on mobile so learners can clearly see the content */
+.video-player-container {
+  aspect-ratio: 4 / 3;
+}
+@media (min-width: 1024px) {
+  .video-player-container {
+    aspect-ratio: 16 / 9;
+  }
+}
+
 /* ─── Mobile-first global fixes ─────────────────────────────────────────── */
 
 /* Prevent font size inflation on iOS when rotating */

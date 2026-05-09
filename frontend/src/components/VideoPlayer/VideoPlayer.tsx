@@ -247,10 +247,10 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   // ── YouTube / Vimeo player ─────────────────────────────────────────────────
   if (isEmbed) {
     return (
-      <div ref={containerRef} className="bg-black rounded-xl overflow-hidden" style={{ position: 'relative' }} onPointerDown={showControlsBriefly}>
+      <div ref={containerRef} className="bg-black video-player-container overflow-hidden" style={{ position: 'relative' }} onPointerDown={showControlsBriefly}>
         {/* Intro overlay — shown first; iframe not mounted until it's done */}
         {!introDone && (
-          <div style={{ aspectRatio: '16/9', position: 'relative' }}>
+          <div className="video-player-container" style={{ position: 'relative' }}>
             <NestIntroOverlay
               orgName={organization?.name}
               orgLogoUrl={organization?.logo_url}
@@ -260,7 +260,7 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
         )}
         {/* Iframe — only mounted after intro completes, guaranteeing no audio bleed */}
         {introDone && (
-        <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+        <div className="relative w-full video-player-container">
           <iframe
             id={isYouTube ? iframeId : undefined}
             ref={iframeRef}
@@ -335,8 +335,8 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   return (
     <div
       ref={containerRef}
-      className="relative bg-black rounded-xl overflow-hidden"
-      style={{ aspectRatio: '16/9' }}
+      className="relative bg-black video-player-container overflow-hidden"
+      style={{}}
       onPointerDown={showControlsBriefly}
     >
       {!introDone && (
