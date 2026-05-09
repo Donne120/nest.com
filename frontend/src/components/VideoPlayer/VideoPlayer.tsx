@@ -343,14 +343,17 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
         <NestIntroOverlay
           orgName={organization?.name}
           orgLogoUrl={organization?.logo_url}
-          onComplete={() => setIntroDone(true)}
+          onComplete={() => { setPlaying(false); setIntroDone(true); }}
         />
       )}
+      {/* Video only mounted after intro — avoids audio bleeding under the overlay.
+          React's muted prop is broken and doesn't update after mount, so we
+          gate on introDone instead of relying on muted={!introDone}. */}
+      {introDone && (
       <video
         ref={videoRef}
         src={videoUrl}
         className="w-full h-full object-contain"
-        muted={!introDone}
         onTimeUpdate={(e) => {
           const t = e.currentTarget.currentTime;
           setCurrentTime(t);
@@ -364,6 +367,7 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
         preload="metadata"
         crossOrigin="anonymous"
       />
+      )}
 
       {/* Overlay gradient — visible on hover, touch, or fullscreen */}
       <div
