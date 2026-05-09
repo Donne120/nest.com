@@ -220,6 +220,12 @@ export default function VideoPage() {
 
   // ← hook must be before any conditional return
   const [activeTab, setActiveTab] = useState<'notes' | 'playlist' | 'assignments' | 'about'>('notes');
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   if (videoLoading) {
     return (
@@ -255,18 +261,21 @@ export default function VideoPage() {
       {/* ── Main content ── */}
       <div className="flex-1 overflow-y-auto">
 
-        {/* ── MOBILE: video edge-to-edge at top, no padding ── */}
+        {/* ── MOBILE UI ── */}
         <div className="lg:hidden">
-          {/* Video — full bleed, no border radius, no margin */}
-          <div style={{ background: '#000', lineHeight: 0 }}>
-            <VideoPlayer
-              videoUrl={video.video_url}
-              markers={markers}
-              videoId={video.id}
-              onTimeUpdate={handleTimeUpdate}
-              onVideoEnd={handleVideoEnd}
-            />
-          </div>
+
+          {/* Video — full-bleed, single instance */}
+          {isMobile && (
+            <div style={{ background: '#000', lineHeight: 0 }}>
+              <VideoPlayer
+                videoUrl={video.video_url}
+                markers={markers}
+                videoId={video.id}
+                onTimeUpdate={handleTimeUpdate}
+                onVideoEnd={handleVideoEnd}
+              />
+            </div>
+          )}
 
           {/* Progress bar — thin strip directly below video */}
           <div style={{ height: 3, background: '#1c1e27' }}>
@@ -491,15 +500,18 @@ export default function VideoPage() {
             )}
           </h1>
 
-          <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 40px 80px rgba(0,0,0,0.55)', marginBottom: 16 }}>
-            <VideoPlayer
-              videoUrl={video.video_url}
-              markers={markers}
-              videoId={video.id}
-              onTimeUpdate={handleTimeUpdate}
-              onVideoEnd={handleVideoEnd}
-            />
-          </div>
+          {/* Video — desktop instance, only mounted when not mobile */}
+          {!isMobile && (
+            <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 40px 80px rgba(0,0,0,0.55)', marginBottom: 16 }}>
+              <VideoPlayer
+                videoUrl={video.video_url}
+                markers={markers}
+                videoId={video.id}
+                onTimeUpdate={handleTimeUpdate}
+                onVideoEnd={handleVideoEnd}
+              />
+            </div>
+          )}
 
           {/* Desktop action bar */}
           <div className="flex items-center gap-2 mb-6">
@@ -636,13 +648,12 @@ export default function VideoPage() {
       {/* AI Ask modal */}
       {aiAskOpen && videoId && <AskAIModal />}
 
-      {/* Ask AI FAB — gold gradient */}
+      {/* Ask AI FAB — desktop only (mobile uses BottomNav assistant) */}
       {videoId && !aiAskOpen && !whiteboardQuestionId && (
         <button
           onClick={() => openAIAsk(videoId, currentTime, video.has_transcript)}
-          className="fixed right-4 lg:bottom-7 lg:right-7 z-40 flex items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95"
+          className="hidden lg:flex fixed bottom-7 right-7 z-40 items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95"
           style={{
-            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
             background: 'linear-gradient(135deg, #e8c97e, #c45c3c)',
             color: '#0b0c0f',
             fontSize: 13,
@@ -661,7 +672,6 @@ export default function VideoPage() {
         </button>
       )}
 
-      {/* Fade-up keyframes */}
       <style>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(14px); }
