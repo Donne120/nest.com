@@ -121,7 +121,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  sidebarOpen: true,
+  sidebarOpen: window.innerWidth >= 1024,
   activeQuestionId: null,
   showQuestionForm: false,
   questionFormTimestamp: null,

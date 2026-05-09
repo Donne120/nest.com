@@ -13,7 +13,6 @@ import { useUIStore, usePlayerStore } from '../store';
 import { useQueryInvalidation } from '../hooks/useQueryInvalidation';
 import { Skeleton } from '../components/UI/Skeleton';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import FloatingNotes from '../components/Notes/FloatingNotes';
 import WhiteboardModal from '../components/AI/WhiteboardModal';
 import AskAIModal from '../components/AI/AskAIModal';
 
@@ -255,184 +254,176 @@ export default function VideoPage() {
 
       {/* ── Main content ── */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-3 pt-3 pb-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8 max-w-5xl mx-auto w-full">
 
-          {/* Breadcrumb — on mobile show only module link, hide current video title */}
-          <nav className="flex items-center gap-2 mb-3 sm:mb-6 overflow-hidden" style={{ fontSize: 12, letterSpacing: '0.04em' }}>
-            <Link to="/modules" style={{ color: '#6b6b78', textDecoration: 'none', transition: 'color 0.2s', flexShrink: 0 }}
-              onMouseEnter={e => ((e.target as HTMLElement).style.color = '#e8e4dc')}
-              onMouseLeave={e => ((e.target as HTMLElement).style.color = '#6b6b78')}
-            >
-              Modules
-            </Link>
-            {module && (
-              <>
-                <span style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>/</span>
-                <Link to={`/modules/${module.id}`} style={{ color: '#6b6b78', textDecoration: 'none', transition: 'color 0.2s' }}
-                  onMouseEnter={e => ((e.target as HTMLElement).style.color = '#e8e4dc')}
-                  onMouseLeave={e => ((e.target as HTMLElement).style.color = '#6b6b78')}
-                  className="truncate max-w-[140px] sm:max-w-[200px]"
-                >
-                  {module.title}
-                </Link>
-              </>
-            )}
-            {/* Current video title — hidden on mobile to save space */}
-            <span className="hidden sm:inline" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>/</span>
-            <span className="hidden sm:block truncate" style={{ color: '#e8e4dc', fontWeight: 500 }}>{video.title}</span>
-          </nav>
-
-          {/* Chapter label — hidden on mobile */}
-          <div className="hidden sm:block" style={{
-            fontFamily: 'monospace',
-            fontSize: 10.5,
-            letterSpacing: '0.18em',
-            color: '#e8c97e',
-            textTransform: 'uppercase',
-            marginBottom: 10,
-            opacity: 0.85,
-          }}>
-            {module?.title ?? 'Module'}&nbsp;&nbsp;·&nbsp;&nbsp;Lesson {String(currentIndex + 1).padStart(2, '0')}
+        {/* ── MOBILE: video edge-to-edge at top, no padding ── */}
+        <div className="lg:hidden">
+          {/* Video — full bleed, no border radius, no margin */}
+          <div style={{ background: '#000', lineHeight: 0 }}>
+            <VideoPlayer
+              videoUrl={video.video_url}
+              markers={markers}
+              videoId={video.id}
+              onTimeUpdate={handleTimeUpdate}
+              onVideoEnd={handleVideoEnd}
+            />
           </div>
 
-          {/* Lesson title — smaller margin on mobile */}
-          <h1 style={{
-            fontFamily: "'Lora', Georgia, serif",
-            fontSize: 'clamp(18px, 2.5vw, 34px)',
-            fontWeight: 700,
-            lineHeight: 1.2,
-            letterSpacing: '-0.02em',
-            color: '#e8e4dc',
-            marginBottom: 'clamp(10px, 2vw, 28px)',
-            maxWidth: 640,
-            animation: 'fadeUp 0.55s ease both',
-            animationDelay: '0.05s',
-          }}>
-            {video.title}
-            {/* Description subtitle — hidden on mobile */}
-            {video.description && (
-              <span className="hidden sm:block" style={{ fontStyle: 'italic', color: '#e8c97e', marginTop: 4, fontSize: 'clamp(13px, 1.5vw, 16px)' }}>
-                {video.description.length > 80 ? video.description.slice(0, 80) + '…' : video.description}
-              </span>
-            )}
-          </h1>
-
-          {/* Video player */}
-          <div style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.12s' }}>
+          {/* Progress bar — thin strip directly below video */}
+          <div style={{ height: 3, background: '#1c1e27' }}>
             <div style={{
-              borderRadius: 8,
-              overflow: 'hidden',
-              border: '1px solid rgba(255,255,255,0.07)',
-              boxShadow: '0 40px 80px rgba(0,0,0,0.55)',
-            }}>
-              <VideoPlayer
-                videoUrl={video.video_url}
-                markers={markers}
-                videoId={video.id}
-                onTimeUpdate={handleTimeUpdate}
-                onVideoEnd={handleVideoEnd}
-              />
-            </div>
+              height: '100%',
+              width: `${progressPct}%`,
+              background: '#e8c97e',
+              transition: 'width 0.5s ease',
+            }} />
           </div>
 
-          {/* ── Action bar ── */}
-          <div
-            className="mt-3 flex items-center gap-2 overflow-x-auto scrollbar-none"
-            style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.18s' }}
-          >
-            {/* Duration + progress pill */}
-            <span style={{
-              fontFamily: 'monospace',
-              fontSize: 11,
-              color: '#6b6b78',
-              background: '#1c1e27',
-              border: '1px solid rgba(255,255,255,0.07)',
-              padding: '5px 10px',
-              borderRadius: 100,
-              letterSpacing: '0.05em',
-              whiteSpace: 'nowrap',
-              flexShrink: 0,
+          {/* Title + lesson counter row */}
+          <div style={{ padding: '12px 16px 0' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              marginBottom: 6,
             }}>
-              {fmtTime(displayDuration)} · <span style={{ color: '#e8c97e' }}>{progressPct}%</span>
-            </span>
-
-            {/* Spacer — desktop only */}
-            <div className="hidden sm:block" style={{ flex: 1 }} />
-
-            {/* Notes icon button */}
-            <div style={{ flexShrink: 0 }}>
-              <FloatingNotes videoId={video.id} onSeek={seekTo} inline />
+              <span style={{
+                fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.14em',
+                textTransform: 'uppercase', color: '#e8c97e', opacity: 0.9,
+              }}>
+                {currentIndex + 1} / {moduleVideos.length}
+              </span>
+              <span style={{
+                fontFamily: 'monospace', fontSize: 10, color: '#6b6b78',
+                letterSpacing: '0.05em',
+              }}>
+                {fmtTime(displayDuration)} · {progressPct}%
+              </span>
             </div>
+            <h1 style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: 18, fontWeight: 700, lineHeight: 1.3,
+              letterSpacing: '-0.01em', color: '#e8e4dc',
+              margin: 0,
+            }}>
+              {video.title}
+            </h1>
+          </div>
 
-            {/* Q&A toggle — mobile only */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden flex items-center gap-1.5 rounded-full"
+          {/* Action row: back · Q&A · mark done */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '10px 16px 0',
+          }}>
+            {/* Back to module */}
+            <Link
+              to={module ? `/modules/${module.id}` : '/modules'}
               style={{
-                background: sidebarOpen ? 'rgba(232,201,126,0.15)' : '#1c1e27',
-                border: sidebarOpen ? '1px solid rgba(232,201,126,0.4)' : '1px solid rgba(255,255,255,0.09)',
-                color: sidebarOpen ? '#e8c97e' : '#9ca3af',
-                fontSize: 12, fontWeight: 600,
-                padding: '9px 14px',
-                flexShrink: 0, cursor: 'pointer',
-                fontFamily: 'inherit', whiteSpace: 'nowrap',
-                minHeight: 40,
-                transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: 4,
+                fontSize: 12, color: '#6b6b78', textDecoration: 'none',
+                background: '#13141a', border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 8, padding: '8px 12px', flexShrink: 0,
               }}
             >
-              💬 Q&A
+              <ChevronLeft size={14} /> Back
+            </Link>
+
+            {/* Q&A */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 13, fontWeight: 600,
+                background: sidebarOpen ? 'rgba(232,201,126,0.15)' : '#13141a',
+                border: sidebarOpen ? '1px solid rgba(232,201,126,0.4)' : '1px solid rgba(255,255,255,0.07)',
+                color: sidebarOpen ? '#e8c97e' : '#9ca3af',
+                borderRadius: 8, padding: '8px 14px',
+                cursor: 'pointer', fontFamily: 'inherit',
+                flex: 1, justifyContent: 'center',
+                minHeight: 40, transition: 'all 0.15s',
+              }}
+            >
+              💬 Q&amp;A
             </button>
 
-            {/* Mark complete */}
+            {/* Mark complete / done */}
             {existingSubmission?.passed || (quizQuestions.length === 0 && progressPct >= 95) ? (
-              <span
-                className="flex items-center gap-1 font-semibold"
-                style={{
-                  background: 'rgba(52,211,153,0.12)',
-                  color: '#34d399',
-                  border: '1px solid rgba(52,211,153,0.25)',
-                  fontSize: 12,
-                  padding: '7px 11px',
-                  flexShrink: 0,
-                  borderRadius: 4,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <CheckCircle size={12} />
-                <span className="hidden sm:inline">Completed</span>
-                <span className="sm:hidden">Done</span>
+              <span style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(52,211,153,0.12)', color: '#34d399',
+                border: '1px solid rgba(52,211,153,0.25)',
+                fontSize: 13, fontWeight: 600,
+                borderRadius: 8, padding: '8px 14px',
+                whiteSpace: 'nowrap', flexShrink: 0,
+              }}>
+                <CheckCircle size={14} /> Done
               </span>
             ) : (
               <button
                 onClick={handleMarkComplete}
-                className="flex items-center gap-1 font-semibold transition-all hover:opacity-85 active:scale-95"
                 style={{
-                  background: '#e8c97e',
-                  color: '#0b0c0f',
-                  fontSize: 12,
-                  padding: '7px 11px',
-                  flexShrink: 0,
-                  borderRadius: 4,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  whiteSpace: 'nowrap',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: '#e8c97e', color: '#0b0c0f',
+                  fontSize: 13, fontWeight: 700,
+                  borderRadius: 8, padding: '8px 14px',
+                  border: 'none', cursor: 'pointer',
+                  fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0,
+                  minHeight: 40,
                 }}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6L9 17l-5-5"/>
-                </svg>
-                <span className="hidden sm:inline">Mark complete{quizQuestions.length > 0 ? ' & quiz' : ''}</span>
-                <span className="sm:hidden">Done</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                {quizQuestions.length > 0 ? 'Done + Quiz' : 'Mark done'}
               </button>
             )}
-
           </div>
 
-          {/* ── Tab bar: Notes | Assignments | About ── */}
-          <div className="mt-6" style={{ animation: 'fadeUp 0.6s ease both', animationDelay: '0.22s' }}>
-            {/* Tab strip — horizontally scrollable on mobile */}
-            <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', borderBottom: '1px solid rgba(255,255,255,0.07)', gap: 0 }}>
+          {/* Prev / Next lesson row — mobile */}
+          {moduleVideos.length > 1 && (
+            <div style={{
+              display: 'flex', gap: 8, padding: '10px 16px 0',
+            }}>
+              <button
+                onClick={() => prevVideo && navigate(`/video/${prevVideo.id}`)}
+                disabled={!prevVideo}
+                style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  background: '#13141a', border: '1px solid rgba(255,255,255,0.07)',
+                  color: '#9ca3af', fontSize: 13, fontWeight: 500,
+                  borderRadius: 8, padding: '10px', cursor: prevVideo ? 'pointer' : 'not-allowed',
+                  opacity: prevVideo ? 1 : 0.3, fontFamily: 'inherit',
+                  overflow: 'hidden',
+                }}
+              >
+                <ChevronLeft size={15} style={{ flexShrink: 0 }} />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {prevVideo?.title ?? 'Previous'}
+                </span>
+              </button>
+              <button
+                onClick={() => nextVideo && navigate(`/video/${nextVideo.id}`)}
+                disabled={!nextVideo}
+                style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  background: nextVideo ? '#e8c97e' : '#13141a',
+                  border: nextVideo ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                  color: nextVideo ? '#0b0c0f' : '#9ca3af',
+                  fontSize: 13, fontWeight: nextVideo ? 700 : 500,
+                  borderRadius: 8, padding: '10px', cursor: nextVideo ? 'pointer' : 'not-allowed',
+                  opacity: nextVideo ? 1 : 0.3, fontFamily: 'inherit',
+                  overflow: 'hidden',
+                }}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {nextVideo?.title ?? 'Next'}
+                </span>
+                <ChevronRight size={15} style={{ flexShrink: 0 }} />
+              </button>
+            </div>
+          )}
+
+          {/* Tab bar — mobile */}
+          <div style={{ marginTop: 16 }}>
+            <div style={{
+              display: 'flex', overflowX: 'auto', scrollbarWidth: 'none',
+              borderBottom: '1px solid rgba(255,255,255,0.07)',
+            }}>
               {tabs.map(t => (
                 <button
                   key={t.key}
@@ -453,236 +444,130 @@ export default function VideoPage() {
                 </button>
               ))}
             </div>
+            <div style={{ padding: '16px 16px 100px' }}>
+              {activeTab === 'notes' && <NotesTabContent notes={notes} noteDraft={noteDraft} setNoteDraft={setNoteDraft} notePinTime={notePinTime} setNotePinTime={setNotePinTime} currentTime={currentTime} handleNoteSave={handleNoteSave} createNote={createNote} noteEditId={noteEditId} setNoteEditId={setNoteEditId} noteEditContent={noteEditContent} setNoteEditContent={setNoteEditContent} updateNote={updateNote} deleteNote={deleteNote} seekTo={seekTo} videoId={video.id} />}
+              {activeTab === 'playlist' && <PlaylistTabContent moduleVideos={moduleVideos} videoId={videoId!} navigate={navigate} />}
+              {activeTab === 'assignments' && <AssignmentsTabContent moduleAssignments={moduleAssignments} />}
+              {activeTab === 'about' && video.description && (
+                <p style={{ fontSize: 14, color: '#9ca3af', lineHeight: 1.75 }}>{video.description}</p>
+              )}
+            </div>
+          </div>
+        </div>
 
-            {/* Tab content */}
+        {/* ── DESKTOP layout (lg+) ── */}
+        <div className="hidden lg:block px-8 py-8 max-w-5xl mx-auto w-full">
+
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 mb-6 overflow-hidden" style={{ fontSize: 12, letterSpacing: '0.04em' }}>
+            <Link to="/modules" style={{ color: '#6b6b78', textDecoration: 'none', transition: 'color 0.2s', flexShrink: 0 }}
+              onMouseEnter={e => ((e.target as HTMLElement).style.color = '#e8e4dc')}
+              onMouseLeave={e => ((e.target as HTMLElement).style.color = '#6b6b78')}
+            >Modules</Link>
+            {module && (
+              <>
+                <span style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>/</span>
+                <Link to={`/modules/${module.id}`} style={{ color: '#6b6b78', textDecoration: 'none', transition: 'color 0.2s' }}
+                  onMouseEnter={e => ((e.target as HTMLElement).style.color = '#e8e4dc')}
+                  onMouseLeave={e => ((e.target as HTMLElement).style.color = '#6b6b78')}
+                  className="truncate max-w-[200px]"
+                >{module.title}</Link>
+                <span style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>/</span>
+                <span className="truncate" style={{ color: '#e8e4dc', fontWeight: 500 }}>{video.title}</span>
+              </>
+            )}
+          </nav>
+
+          <div style={{ fontFamily: 'monospace', fontSize: 10.5, letterSpacing: '0.18em', color: '#e8c97e', textTransform: 'uppercase', marginBottom: 10, opacity: 0.85 }}>
+            {module?.title ?? 'Module'}&nbsp;&nbsp;·&nbsp;&nbsp;Lesson {String(currentIndex + 1).padStart(2, '0')}
+          </div>
+
+          <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(24px, 2.5vw, 34px)', fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.02em', color: '#e8e4dc', marginBottom: 28, maxWidth: 640 }}>
+            {video.title}
+            {video.description && (
+              <span style={{ display: 'block', fontStyle: 'italic', color: '#e8c97e', marginTop: 4, fontSize: 'clamp(13px, 1.5vw, 16px)' }}>
+                {video.description.length > 80 ? video.description.slice(0, 80) + '…' : video.description}
+              </span>
+            )}
+          </h1>
+
+          <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 40px 80px rgba(0,0,0,0.55)', marginBottom: 16 }}>
+            <VideoPlayer
+              videoUrl={video.video_url}
+              markers={markers}
+              videoId={video.id}
+              onTimeUpdate={handleTimeUpdate}
+              onVideoEnd={handleVideoEnd}
+            />
+          </div>
+
+          {/* Desktop action bar */}
+          <div className="flex items-center gap-2 mb-6">
+            <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#6b6b78', background: '#1c1e27', border: '1px solid rgba(255,255,255,0.07)', padding: '5px 10px', borderRadius: 100, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+              {fmtTime(displayDuration)} · <span style={{ color: '#e8c97e' }}>{progressPct}%</span>
+            </span>
+            <div style={{ flex: 1 }} />
+            {existingSubmission?.passed || (quizQuestions.length === 0 && progressPct >= 95) ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(52,211,153,0.12)', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, whiteSpace: 'nowrap' }}>
+                <CheckCircle size={12} /> Completed
+              </span>
+            ) : (
+              <button onClick={handleMarkComplete} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#e8c97e', color: '#0b0c0f', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, border: 'none', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                Mark complete{quizQuestions.length > 0 ? ' & quiz' : ''}
+              </button>
+            )}
+          </div>
+
+          {/* Desktop tabs */}
+          <div>
+            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              {tabs.map(t => (
+                <button key={t.key} onClick={() => setActiveTab(t.key)} style={{ background: 'none', border: 'none', borderBottom: activeTab === t.key ? '2px solid #e8c97e' : '2px solid transparent', color: activeTab === t.key ? '#e8e4dc' : '#6b6b78', fontFamily: 'inherit', fontSize: 13, fontWeight: activeTab === t.key ? 600 : 400, padding: '10px 16px', cursor: 'pointer', transition: 'color 0.15s, border-color 0.15s', marginBottom: -1, whiteSpace: 'nowrap', minHeight: 44 }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
             <div className="pt-5">
-              {activeTab === 'notes' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {/* Note input */}
-                  <div style={{ background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '14px 16px' }}>
-                    <textarea
-                      value={noteDraft}
-                      onChange={e => setNoteDraft(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleNoteSave(); }}
-                      placeholder="Write a note… (Ctrl+Enter to save)"
-                      rows={3}
-                      style={{
-                        width: '100%', background: 'transparent', border: 'none',
-                        color: '#e8e4dc', fontSize: 14, fontFamily: 'inherit',
-                        lineHeight: 1.6, resize: 'none', outline: 'none', boxSizing: 'border-box',
-                      }}
-                      className="placeholder-[#6b6b78]"
-                    />
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                      <button
-                        onClick={() => setNotePinTime(v => !v)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
-                          color: notePinTime ? '#e8c97e' : '#6b6b78',
-                          background: notePinTime ? 'rgba(232,201,126,0.1)' : 'transparent',
-                          border: notePinTime ? '1px solid rgba(232,201,126,0.25)' : '1px solid transparent',
-                          borderRadius: 4, padding: '4px 8px', cursor: 'pointer',
-                          fontFamily: 'inherit', transition: 'all 0.15s',
-                        }}
-                      >
-                        <Clock size={11} />
-                        {notePinTime ? fmtTime(currentTime) : 'Pin timestamp'}
-                      </button>
-                      <button
-                        onClick={handleNoteSave}
-                        disabled={!noteDraft.trim() || createNote.isPending}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
-                          color: '#0b0c0f',
-                          background: !noteDraft.trim() ? 'rgba(232,201,126,0.3)' : '#e8c97e',
-                          border: 'none', borderRadius: 4, padding: '6px 14px',
-                          cursor: !noteDraft.trim() ? 'not-allowed' : 'pointer',
-                          fontFamily: 'inherit', transition: 'all 0.15s',
-                        }}
-                      >
-                        <Plus size={12} /> Save
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Notes list */}
-                  {notes.length === 0 ? (
-                    <p style={{ color: '#6b6b78', fontSize: 13, fontStyle: 'italic', padding: '4px 0' }}>
-                      No notes yet. Write something above to capture insights while you learn.
-                    </p>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {notes.map(note => (
-                        <div key={note.id} style={{ background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '12px 14px' }}>
-                          {noteEditId === note.id ? (
-                            <div>
-                              <textarea
-                                value={noteEditContent}
-                                onChange={e => setNoteEditContent(e.target.value)}
-                                autoFocus rows={3}
-                                style={{
-                                  width: '100%', background: '#0b0c0f',
-                                  border: '1px solid rgba(232,201,126,0.3)', borderRadius: 4,
-                                  color: '#e8e4dc', fontSize: 13, fontFamily: 'inherit',
-                                  lineHeight: 1.6, resize: 'none', outline: 'none',
-                                  padding: '8px 10px', boxSizing: 'border-box',
-                                }}
-                              />
-                              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                                <button
-                                  onClick={() => updateNote.mutate({ id: note.id, content: noteEditContent.trim() })}
-                                  disabled={!noteEditContent.trim()}
-                                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, background: '#e8c97e', color: '#0b0c0f', border: 'none', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}
-                                >
-                                  <Check size={11} /> Save
-                                </button>
-                                <button
-                                  onClick={() => setNoteEditId(null)}
-                                  style={{ fontSize: 11, color: '#6b6b78', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div>
-                              {note.timestamp_seconds != null && (
-                                <button
-                                  onClick={() => seekTo(note.timestamp_seconds!)}
-                                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#e8c97e', fontFamily: 'monospace', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4 }}
-                                >
-                                  <Clock size={10} /> {fmtTime(note.timestamp_seconds)}
-                                </button>
-                              )}
-                              <p style={{ fontSize: 13, color: '#e8e4dc', lineHeight: 1.65, whiteSpace: 'pre-wrap', margin: 0 }}>
-                                {note.content}
-                              </p>
-                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 8 }}>
-                                <button
-                                  onClick={() => { setNoteEditId(note.id); setNoteEditContent(note.content); }}
-                                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#6b6b78', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}
-                                >
-                                  <Pencil size={11} /> Edit
-                                </button>
-                                <button
-                                  onClick={() => deleteNote.mutate(note.id)}
-                                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#6b6b78', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}
-                                >
-                                  <Trash2 size={11} /> Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === 'playlist' && (
-                <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, overflow: 'hidden' }}>
-                  {moduleVideos.map((v, idx) => {
-                    const isCurrent = v.id === videoId;
-                    return (
-                      <button
-                        key={v.id}
-                        onClick={() => !isCurrent && navigate(`/video/${v.id}`)}
-                        style={{
-                          width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                          padding: '12px 16px',
-                          background: isCurrent ? 'rgba(232,201,126,0.08)' : '#13141a',
-                          borderTop: 'none', borderRight: 'none',
-                          borderBottom: idx < moduleVideos.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                          borderLeft: `3px solid ${isCurrent ? '#e8c97e' : 'transparent'}`,
-                          cursor: isCurrent ? 'default' : 'pointer',
-                          textAlign: 'left', fontFamily: 'inherit', transition: 'background 0.15s',
-                        }}
-                      >
-                        <span style={{ fontFamily: 'monospace', fontSize: 10, color: isCurrent ? '#e8c97e' : '#6b6b78', width: 20, flexShrink: 0, letterSpacing: '0.08em' }}>
-                          {String(idx + 1).padStart(2, '0')}
-                        </span>
-                        <div style={{ width: 26, height: 26, borderRadius: 4, background: isCurrent ? 'rgba(232,201,126,0.15)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <Play size={10} fill={isCurrent ? '#e8c97e' : '#6b6b78'} style={{ color: isCurrent ? '#e8c97e' : '#6b6b78', marginLeft: 1 }} />
-                        </div>
-                        <span style={{ flex: 1, fontSize: 13, fontWeight: isCurrent ? 600 : 400, color: isCurrent ? '#e8e4dc' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {v.title}
-                        </span>
-                        {v.duration_seconds > 0 && (
-                          <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#6b6b78', flexShrink: 0 }}>
-                            {fmtDur(v.duration_seconds)}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {activeTab === 'assignments' && (
-                moduleAssignments.length === 0 ? (
-                  <p style={{ color: '#6b6b78', fontSize: 13, fontStyle: 'italic' }}>No assignments for this module yet.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {moduleAssignments.map(a => (
-                      <AssignmentCard key={a.id} a={a} />
-                    ))}
-                  </div>
-                )
-              )}
-
+              {activeTab === 'notes' && <NotesTabContent notes={notes} noteDraft={noteDraft} setNoteDraft={setNoteDraft} notePinTime={notePinTime} setNotePinTime={setNotePinTime} currentTime={currentTime} handleNoteSave={handleNoteSave} createNote={createNote} noteEditId={noteEditId} setNoteEditId={setNoteEditId} noteEditContent={noteEditContent} setNoteEditContent={setNoteEditContent} updateNote={updateNote} deleteNote={deleteNote} seekTo={seekTo} videoId={video.id} />}
+              {activeTab === 'playlist' && <PlaylistTabContent moduleVideos={moduleVideos} videoId={videoId!} navigate={navigate} />}
+              {activeTab === 'assignments' && <AssignmentsTabContent moduleAssignments={moduleAssignments} />}
               {activeTab === 'about' && video.description && (
                 <p style={{ fontSize: 14, color: '#9ca3af', lineHeight: 1.75 }}>{video.description}</p>
               )}
             </div>
           </div>
 
-          {/* Prev / Next navigation */}
+          {/* Desktop prev/next */}
           {moduleVideos.length > 1 && (
             <div className="flex items-center gap-3 mt-10 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
               <button
                 onClick={() => prevVideo && navigate(`/video/${prevVideo.id}`)}
                 disabled={!prevVideo}
-                className="flex items-center gap-2 text-sm font-medium rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed min-w-0 max-w-[40%]"
-                style={{
-                  padding: '10px 14px',
-                  background: '#13141a',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  color: '#9ca3af',
-                }}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', color: '#9ca3af', fontSize: 14, fontWeight: 500, borderRadius: 8, cursor: prevVideo ? 'pointer' : 'not-allowed', opacity: prevVideo ? 1 : 0.3, fontFamily: 'inherit', maxWidth: '40%', overflow: 'hidden' }}
                 onMouseEnter={e => { if (prevVideo) (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,201,126,0.3)'; }}
                 onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)')}
               >
-                <ChevronLeft size={16} className="flex-shrink-0" />
-                <span className="truncate hidden sm:inline">{prevVideo?.title ?? 'Previous'}</span>
-                <span className="sm:hidden">Prev</span>
+                <ChevronLeft size={16} style={{ flexShrink: 0 }} />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prevVideo?.title ?? 'Previous'}</span>
               </button>
-
-              <span className="text-xs mx-auto whitespace-nowrap" style={{ color: '#6b6b78', fontFamily: 'monospace', letterSpacing: '0.06em' }}>
+              <span style={{ color: '#6b6b78', fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.06em', margin: '0 auto', whiteSpace: 'nowrap' }}>
                 {currentIndex + 1} / {moduleVideos.length}
               </span>
-
               <button
                 onClick={() => nextVideo && navigate(`/video/${nextVideo.id}`)}
                 disabled={!nextVideo}
-                className="flex items-center gap-2 text-sm font-medium rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed min-w-0 max-w-[40%]"
-                style={{
-                  padding: '10px 14px',
-                  background: '#13141a',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  color: '#9ca3af',
-                }}
-                onMouseEnter={e => { if (nextVideo) (e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,201,126,0.3)'; }}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)')}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: nextVideo ? '#e8c97e' : '#13141a', border: nextVideo ? 'none' : '1px solid rgba(255,255,255,0.07)', color: nextVideo ? '#0b0c0f' : '#9ca3af', fontSize: 14, fontWeight: nextVideo ? 700 : 500, borderRadius: 8, cursor: nextVideo ? 'pointer' : 'not-allowed', opacity: nextVideo ? 1 : 0.3, fontFamily: 'inherit', maxWidth: '40%', overflow: 'hidden' }}
+                onMouseEnter={e => { if (nextVideo) (e.currentTarget as HTMLElement).style.opacity = '0.88'; }}
+                onMouseLeave={e => { if (nextVideo) (e.currentTarget as HTMLElement).style.opacity = '1'; }}
               >
-                <span className="truncate hidden sm:inline">{nextVideo?.title ?? 'Next'}</span>
-                <span className="sm:hidden">Next</span>
-                <ChevronRight size={16} className="flex-shrink-0" />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nextVideo?.title ?? 'Next'}</span>
+                <ChevronRight size={16} style={{ flexShrink: 0 }} />
               </button>
             </div>
           )}
 
-        </div>
+        </div>{/* end desktop */}
       </div>
 
       {/* ── Q&A Sidebar — always visible on lg+, bottom sheet on mobile ── */}
@@ -858,4 +743,117 @@ function AssignmentCard({ a }: { a: Assignment }) {
       </Link>
     </div>
   );
+}
+
+// ── Shared tab content components (used by both mobile and desktop) ───────────
+
+function NotesTabContent({ notes, noteDraft, setNoteDraft, notePinTime, setNotePinTime, currentTime, handleNoteSave, createNote, noteEditId, setNoteEditId, noteEditContent, setNoteEditContent, updateNote, deleteNote, seekTo, videoId }: {
+  notes: { id: string; content: string; timestamp_seconds: number | null; created_at: string }[];
+  noteDraft: string; setNoteDraft: (v: string) => void;
+  notePinTime: boolean; setNotePinTime: (fn: (v: boolean) => boolean) => void;
+  currentTime: number; handleNoteSave: () => void;
+  createNote: { isPending: boolean };
+  noteEditId: string | null; setNoteEditId: (v: string | null) => void;
+  noteEditContent: string; setNoteEditContent: (v: string) => void;
+  updateNote: { mutate: (v: { id: string; content: string }) => void };
+  deleteNote: { mutate: (id: string) => void };
+  seekTo: (t: number) => void;
+  videoId: string;
+}) {
+  function fmtT(s: number) { const m = Math.floor(s / 60); return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`; }
+
+  const handleExport = () => {
+    const lines = notes.map(n => `${n.timestamp_seconds != null ? `[${fmtT(n.timestamp_seconds)}] ` : ''}${n.content}`);
+    const blob = new Blob([lines.join('\n\n')], { type: 'text/plain' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `notes-${videoId}.txt` });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {notes.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#6b6b78', background: 'transparent', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+        </div>
+      )}
+      <div style={{ background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '14px 16px' }}>
+        <textarea
+          value={noteDraft} onChange={e => setNoteDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleNoteSave(); }}
+          placeholder="Write a note…" rows={3}
+          style={{ width: '100%', background: 'transparent', border: 'none', color: '#e8e4dc', fontSize: 14, fontFamily: 'inherit', lineHeight: 1.6, resize: 'none', outline: 'none', boxSizing: 'border-box' }}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <button onClick={() => setNotePinTime(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: notePinTime ? '#e8c97e' : '#6b6b78', background: notePinTime ? 'rgba(232,201,126,0.1)' : 'transparent', border: notePinTime ? '1px solid rgba(232,201,126,0.25)' : '1px solid transparent', borderRadius: 4, padding: '4px 8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <Clock size={11} /> {notePinTime ? fmtT(currentTime) : 'Pin timestamp'}
+          </button>
+          <button onClick={handleNoteSave} disabled={!noteDraft.trim() || createNote.isPending} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#0b0c0f', background: !noteDraft.trim() ? 'rgba(232,201,126,0.3)' : '#e8c97e', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: !noteDraft.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+            <Plus size={12} /> Save
+          </button>
+        </div>
+      </div>
+      {notes.length === 0 ? (
+        <p style={{ color: '#6b6b78', fontSize: 13, fontStyle: 'italic', padding: '4px 0' }}>No notes yet. Write something above.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {notes.map(note => (
+            <div key={note.id} style={{ background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '12px 14px' }}>
+              {noteEditId === note.id ? (
+                <div>
+                  <textarea value={noteEditContent} onChange={e => setNoteEditContent(e.target.value)} autoFocus rows={3} style={{ width: '100%', background: '#0b0c0f', border: '1px solid rgba(232,201,126,0.3)', borderRadius: 4, color: '#e8e4dc', fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'none', outline: 'none', padding: '8px 10px', boxSizing: 'border-box' }} />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button onClick={() => updateNote.mutate({ id: note.id, content: noteEditContent.trim() })} disabled={!noteEditContent.trim()} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, background: '#e8c97e', color: '#0b0c0f', border: 'none', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}><Check size={11} /> Save</button>
+                    <button onClick={() => setNoteEditId(null)} style={{ fontSize: 11, color: '#6b6b78', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {note.timestamp_seconds != null && (
+                    <button onClick={() => seekTo(note.timestamp_seconds!)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#e8c97e', fontFamily: 'monospace', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4 }}>
+                      <Clock size={10} /> {fmtT(note.timestamp_seconds)}
+                    </button>
+                  )}
+                  <p style={{ fontSize: 13, color: '#e8e4dc', lineHeight: 1.65, whiteSpace: 'pre-wrap', margin: 0 }}>{note.content}</p>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 8 }}>
+                    <button onClick={() => { setNoteEditId(note.id); setNoteEditContent(note.content); }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#6b6b78', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}><Pencil size={11} /> Edit</button>
+                    <button onClick={() => deleteNote.mutate(note.id)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#6b6b78', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}><Trash2 size={11} /> Delete</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlaylistTabContent({ moduleVideos, videoId, navigate }: {
+  moduleVideos: Video[]; videoId: string; navigate: (path: string) => void;
+}) {
+  return (
+    <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, overflow: 'hidden' }}>
+      {moduleVideos.map((v, idx) => {
+        const isCurrent = v.id === videoId;
+        return (
+          <button key={v.id} onClick={() => !isCurrent && navigate(`/video/${v.id}`)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: isCurrent ? 'rgba(232,201,126,0.08)' : '#13141a', borderTop: 'none', borderRight: 'none', borderBottom: idx < moduleVideos.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', borderLeft: `3px solid ${isCurrent ? '#e8c97e' : 'transparent'}`, cursor: isCurrent ? 'default' : 'pointer', textAlign: 'left', fontFamily: 'inherit', minHeight: 52 }}>
+            <span style={{ fontFamily: 'monospace', fontSize: 10, color: isCurrent ? '#e8c97e' : '#6b6b78', width: 20, flexShrink: 0, letterSpacing: '0.08em' }}>{String(idx + 1).padStart(2, '0')}</span>
+            <div style={{ width: 28, height: 28, borderRadius: 4, background: isCurrent ? 'rgba(232,201,126,0.15)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Play size={11} fill={isCurrent ? '#e8c97e' : '#6b6b78'} style={{ color: isCurrent ? '#e8c97e' : '#6b6b78', marginLeft: 1 }} />
+            </div>
+            <span style={{ flex: 1, fontSize: 14, fontWeight: isCurrent ? 600 : 400, color: isCurrent ? '#e8e4dc' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.title}</span>
+            {v.duration_seconds > 0 && <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#6b6b78', flexShrink: 0 }}>{fmtDur(v.duration_seconds)}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function AssignmentsTabContent({ moduleAssignments }: { moduleAssignments: Assignment[] }) {
+  if (moduleAssignments.length === 0) return <p style={{ color: '#6b6b78', fontSize: 13, fontStyle: 'italic' }}>No assignments for this module yet.</p>;
+  return <div className="space-y-3">{moduleAssignments.map(a => <AssignmentCard key={a.id} a={a} />)}</div>;
 }

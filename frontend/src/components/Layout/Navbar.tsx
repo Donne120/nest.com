@@ -191,8 +191,8 @@ export default function Navbar() {
             </IconButton>
           </span>
 
-          {/* ── Theme toggle ── */}
-          <div className="relative" ref={themeMenuRef}>
+          {/* ── Theme toggle — desktop only ── */}
+          <div className="relative hidden md:block" ref={themeMenuRef}>
             <IconButton
               onClick={() => setThemeOpen(o => !o)}
               aria-label="Switch theme"
