@@ -219,7 +219,7 @@ export default function App() {
             element={
               <RequireAuth>
                 <div className="min-h-screen bg-[#FAF7F2] font-sans flex flex-col">
-                  <Navbar />
+                  <div className="hidden lg:block"><Navbar /></div>
                   <VideoPage />
                 </div>
               </RequireAuth>

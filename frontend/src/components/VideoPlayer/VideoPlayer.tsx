@@ -91,6 +91,13 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   // reset intro whenever the video changes
   useEffect(() => { if (showIntro) setIntroDone(false); }, [videoId, showIntro]);
 
+  // unmute YouTube player as soon as intro is done
+  useEffect(() => {
+    if (introDone && isYouTube && ytPlayerRef.current?.unMute) {
+      ytPlayerRef.current.unMute();
+    }
+  }, [introDone, isYouTube]);
+
   const {
     isPlaying, volume, playbackRate, seekTarget, currentTime,
     setCurrentTime, setDuration, setPlaying, clearSeek,
@@ -115,6 +122,8 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
         events: {
           onReady: (e: any) => {
             if (!mounted) return;
+            // Mute until intro finishes so the iframe doesn't echo under the overlay
+            if (!introDone) e.target.mute();
             const dur = e.target.getDuration();
             if (dur > 0) setDuration(dur);
           },
@@ -347,6 +356,7 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
         ref={videoRef}
         src={videoUrl}
         className="w-full h-full object-contain"
+        muted={!introDone}
         onTimeUpdate={(e) => {
           const t = e.currentTarget.currentTime;
           setCurrentTime(t);

@@ -250,7 +250,7 @@ export default function VideoPage() {
   ).filter(t => t.show);
 
   return (
-    <div className="flex h-[calc(100vh-56px)] overflow-hidden" style={{ background: '#0b0c0f' }}>
+    <div className="flex h-screen lg:h-[calc(100vh-56px)] overflow-hidden" style={{ background: '#0b0c0f' }}>
 
       {/* ── Main content ── */}
       <div className="flex-1 overflow-y-auto">
