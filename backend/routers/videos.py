@@ -8,6 +8,7 @@ import schemas
 import auth as auth_utils
 import storage
 import plan_limits
+import access as access_utils
 
 router = APIRouter(prefix="/api/videos", tags=["videos"])
 
@@ -51,27 +52,12 @@ def _video_out(v: models.Video, db: Session) -> schemas.VideoOut:
     return schemas.VideoOut(**{**v.__dict__, "question_count": q_count, "has_transcript": has_transcript})
 
 
-def _check_learner_access(user: models.User):
-    if (
-        user.role == models.UserRole.learner
-        and not user.payment_verified
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                "Access requires an approved payment. "
-                "Submit your proof and wait for admin approval."
-            ),
-        )
-
-
 @router.get("/module/{module_id}", response_model=List[schemas.VideoOut])
 def list_videos(
     module_id: str,
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
-    _check_learner_access(current_user)
     # Verify the module belongs to this org (super_admin sees any module)
     q = db.query(models.Module).filter(models.Module.id == module_id)
     if current_user.organization_id is not None:
@@ -82,12 +68,16 @@ def list_videos(
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
 
-    videos = (
-        db.query(models.Video)
-        .filter(models.Video.module_id == module_id)
-        .order_by(models.Video.order_index)
-        .all()
+    # If the learner doesn't own the module, restrict the list to preview
+    # videos only — they exist so the learner can sample before buying.
+    has_module = access_utils.has_module_access(current_user, module_id, db)
+
+    video_q = db.query(models.Video).filter(
+        models.Video.module_id == module_id
     )
+    if not has_module:
+        video_q = video_q.filter(models.Video.is_preview.is_(True))
+    videos = video_q.order_by(models.Video.order_index).all()
     # Bulk question count and transcript status — one query each instead of one per video
     video_ids = [v.id for v in videos]
     q_counts: dict = {}
@@ -147,6 +137,7 @@ def get_video(
     db: Session = Depends(get_db),
 ):
     v = _org_video(video_id, current_user.organization_id, db)
+    access_utils.require_video_access(current_user, v, db)
     return _video_out(v, db)
 
 
@@ -159,8 +150,10 @@ def get_timeline_markers(
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Validate org ownership of the video
-    _org_video(video_id, current_user.organization_id, db)
+    # Validate org ownership of the video, then per-video access gate
+    # (preview videos are open; paid videos require module access)
+    v = _org_video(video_id, current_user.organization_id, db)
+    access_utils.require_video_access(current_user, v, db)
 
     questions = (
         db.query(models.Question)

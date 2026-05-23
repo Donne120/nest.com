@@ -10,6 +10,7 @@ from database import get_db
 import models
 import schemas
 import auth as auth_utils
+import access as access_utils
 from routers.ws import manager as ws_manager
 import storage as storage_helper
 
@@ -89,11 +90,7 @@ def list_lessons(
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
 
-    if (
-        current_user.role == models.UserRole.learner
-        and not current_user.payment_verified
-    ):
-        raise HTTPException(status_code=403, detail="Access requires approved payment")
+    access_utils.require_module_access(current_user, module_id, db)
 
     lessons = (
         db.query(models.Lesson)
@@ -140,12 +137,8 @@ def get_lesson(
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
-    if (
-        current_user.role == models.UserRole.learner
-        and not current_user.payment_verified
-    ):
-        raise HTTPException(status_code=403, detail="Access requires approved payment")
     lesson = _org_lesson(lesson_id, current_user.organization_id, db)
+    access_utils.require_module_access(current_user, lesson.module_id, db)
     return _lesson_out(lesson, db)
 
 

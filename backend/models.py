@@ -359,6 +359,7 @@ class Video(Base):
     duration_seconds = Column(Integer, nullable=False, default=0)
     order_index = Column(Integer, default=0)
     captions_url = Column(String, nullable=True)
+    is_preview = Column(Boolean, default=False, nullable=False, server_default='false')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     module = relationship("Module", back_populates="videos")

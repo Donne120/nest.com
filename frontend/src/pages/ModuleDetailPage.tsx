@@ -202,18 +202,29 @@ export default function ModuleDetailPage() {
 
           {/* CTAs */}
           <div className="module-cta-row" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <button
-              onClick={() => {
-                if (!firstItem) return;
-                navigate(firstItem.type === 'video' ? `/video/${firstItem.id}` : `/lesson/${firstItem.id}`);
-              }}
-              disabled={!firstItem}
-              style={{ background: ACCENT, color: '#fff', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, padding: '11px 26px', borderRadius: 4, border: 'none', cursor: firstItem ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '0.01em', opacity: firstItem ? 1 : 0.5, transition: 'opacity 0.2s, transform 0.15s' }}
-              onMouseEnter={e => { if (firstItem) (e.currentTarget as HTMLElement).style.opacity = '0.88'; }}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = firstItem ? '1' : '0.5')}
-            >
-              <Play size={12} fill="currentColor" /> {ctaLabel}
-            </button>
+            {module.has_access === false && module.is_for_sale && module.price ? (
+              <button
+                onClick={() => navigate(`/pay/submit?module_id=${module.id}`)}
+                style={{ background: ACCENT, color: '#fff', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, padding: '11px 26px', borderRadius: 4, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '0.01em', transition: 'opacity 0.2s' }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.88')}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+              >
+                Unlock for {Number(module.price).toLocaleString()} {module.currency ?? 'RWF'}
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  if (!firstItem) return;
+                  navigate(firstItem.type === 'video' ? `/video/${firstItem.id}` : `/lesson/${firstItem.id}`);
+                }}
+                disabled={!firstItem}
+                style={{ background: ACCENT, color: '#fff', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, padding: '11px 26px', borderRadius: 4, border: 'none', cursor: firstItem ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '0.01em', opacity: firstItem ? 1 : 0.5, transition: 'opacity 0.2s, transform 0.15s' }}
+                onMouseEnter={e => { if (firstItem) (e.currentTarget as HTMLElement).style.opacity = '0.88'; }}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = firstItem ? '1' : '0.5')}
+              >
+                <Play size={12} fill="currentColor" /> {ctaLabel}
+              </button>
+            )}
             <button
               onClick={() => setShowMeetingModal(true)}
               style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 500, padding: '10px 22px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.2s, border-color 0.2s' }}
@@ -534,6 +545,17 @@ function CurriculumItem({ video, index, isLast, onClick, INK, INK3, RULE, BG }: 
       <span style={{ flex: 1, fontSize: 15, fontWeight: 500, color: INK, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {video.title}
       </span>
+      {video.is_preview && (
+        <span style={{
+          fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em',
+          color: '#10b981', background: 'rgba(16,185,129,0.1)',
+          border: '1px solid rgba(16,185,129,0.25)',
+          padding: '2px 7px', borderRadius: 4, textTransform: 'uppercase',
+          flexShrink: 0, fontWeight: 600,
+        }}>
+          Preview
+        </span>
+      )}
       {video.question_count > 0 && (
         <span style={{ fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.04em', flexShrink: 0 }}>
           {video.question_count}Q

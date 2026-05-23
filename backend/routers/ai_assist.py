@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from database import get_db
 import models
 import auth as auth_utils
+import access as access_utils
 from config import settings
 import httpx
 import json
@@ -119,6 +120,7 @@ async def stream_ai_answer(
 
     video = question.video
     module = video.module
+    access_utils.require_video_access(current_user, video, db)
     transcript = video.transcript  # may be None
 
     # Build transcript context
@@ -490,6 +492,7 @@ async def direct_ask_stream(
         raise HTTPException(status_code=404, detail="Video not found")
 
     module = video.module
+    access_utils.require_video_access(current_user, video, db)
     transcript = video.transcript
 
     transcript_ctx = _get_transcript_context(transcript, req.timestamp)

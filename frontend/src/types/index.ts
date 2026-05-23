@@ -126,6 +126,7 @@ export interface Video {
   duration_seconds: number;
   order_index: number;
   captions_url: string | null;
+  is_preview: boolean;
   created_at: string;
   question_count: number;
   has_transcript: boolean;
@@ -156,6 +157,7 @@ export interface Module {
   price: number | null;
   is_for_sale: boolean;
   currency: string | null;
+  has_access?: boolean;
 }
 
 // ─── Notifications ────────────────────────────────────────────────────────────

@@ -254,6 +254,7 @@ class ModuleWithProgress(ModuleOut):
     status: ModuleStatus = ModuleStatus.not_started
     progress_seconds: float = 0
     last_viewed_at: Optional[datetime] = None
+    has_access: bool = True  # set per-row by the catalog endpoint
 
 
 # ─── Video ────────────────────────────────────────────────────────────────────
@@ -267,6 +268,7 @@ class VideoCreate(BaseModel):
     duration_seconds: int = 0
     order_index: int = 0
     captions_url: Optional[str] = Field(None, max_length=500)
+    is_preview: bool = False
 
 
 class VideoUpdate(BaseModel):
@@ -276,6 +278,7 @@ class VideoUpdate(BaseModel):
     thumbnail_url: Optional[str] = Field(None, max_length=500)
     duration_seconds: Optional[int] = None
     captions_url: Optional[str] = Field(None, max_length=500)
+    is_preview: Optional[bool] = None
 
 
 class VideoOut(BaseModel):
@@ -288,6 +291,7 @@ class VideoOut(BaseModel):
     duration_seconds: int
     order_index: int
     captions_url: Optional[str]
+    is_preview: bool = False
     created_at: datetime
     question_count: int = 0
     has_transcript: bool = False

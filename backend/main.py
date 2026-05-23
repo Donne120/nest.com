@@ -170,6 +170,7 @@ END $$""",
             "ALTER TABLE organizations ADD COLUMN payment_bank_holder VARCHAR",
             "ALTER TABLE organizations ADD COLUMN payment_instructions TEXT",
             "ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE NOT NULL",
+            "ALTER TABLE videos ADD COLUMN is_preview BOOLEAN DEFAULT FALSE NOT NULL",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:

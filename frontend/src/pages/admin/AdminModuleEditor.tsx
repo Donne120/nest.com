@@ -28,10 +28,11 @@ interface VideoForm {
   duration_seconds: number | string;
   order_index: number;
   captions_url: string;
+  is_preview: boolean;
 }
 
 function blankVideo(order: number): VideoForm {
-  return { title: '', description: '', video_url: '', thumbnail_url: '', duration_seconds: '', order_index: order, captions_url: '' };
+  return { title: '', description: '', video_url: '', thumbnail_url: '', duration_seconds: '', order_index: order, captions_url: '', is_preview: false };
 }
 
 // ─── Resource type icons ───────────────────────────────────────────────────────
@@ -527,7 +528,14 @@ export default function AdminModuleEditor() {
                     {idx + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{v.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{v.title}</p>
+                      {v.is_preview && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider flex-shrink-0">
+                          Preview
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-400">
                       {Math.floor(v.duration_seconds / 60)}m {v.duration_seconds % 60}s
                     </p>
@@ -573,6 +581,7 @@ export default function AdminModuleEditor() {
                           video_url: v.video_url, thumbnail_url: v.thumbnail_url || '',
                           duration_seconds: v.duration_seconds, order_index: v.order_index,
                           captions_url: v.captions_url || '',
+                          is_preview: v.is_preview ?? false,
                         });
                         setQuizVideoId(null);
                         setTranscriptVideoId(null);
@@ -927,7 +936,7 @@ interface VideoFormCardProps {
 }
 
 function VideoFormCard({ form, setForm, onSave, onCancel, saving }: VideoFormCardProps) {
-  const f = (field: keyof VideoForm, value: string | number) => setForm({ ...form, [field]: value });
+  const f = (field: keyof VideoForm, value: string | number | boolean) => setForm({ ...form, [field]: value });
 
   const inputCls = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition";
 
@@ -982,6 +991,22 @@ function VideoFormCard({ form, setForm, onSave, onCancel, saving }: VideoFormCar
         <div className="col-span-2">
           <label className="block text-xs font-semibold text-gray-600 mb-1">Captions URL <span className="text-gray-400 font-normal">(optional)</span></label>
           <input value={form.captions_url} onChange={e => f('captions_url', e.target.value)} placeholder="https://… (.vtt)" className={inputCls} />
+        </div>
+        <div className="col-span-2">
+          <label className="flex items-start gap-2.5 cursor-pointer p-3 rounded-lg border border-gray-200 hover:border-brand-300 transition-all">
+            <input
+              type="checkbox"
+              checked={form.is_preview}
+              onChange={e => f('is_preview', e.target.checked)}
+              className="mt-0.5 w-4 h-4 accent-brand-600"
+            />
+            <span className="flex-1">
+              <span className="block text-xs font-semibold text-gray-800">Free preview</span>
+              <span className="block text-[11px] text-gray-500 mt-0.5">
+                Learners who haven't purchased the module can still play this video. Use it as a sample to convert browsers into buyers.
+              </span>
+            </span>
+          </label>
         </div>
       </div>
       <div className="flex gap-2 pt-1">

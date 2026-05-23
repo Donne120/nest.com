@@ -7,22 +7,9 @@ import models
 import schemas
 import auth as auth_utils
 import plan_limits
+import access as access_utils
 
 router = APIRouter(prefix="/api/modules", tags=["modules"])
-
-
-def _check_learner_access(user: models.User):
-    if (
-        user.role == models.UserRole.learner
-        and not user.payment_verified
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                "Access requires an approved payment. "
-                "Submit your proof and wait for admin approval."
-            ),
-        )
 
 
 def _org_module(
@@ -60,6 +47,9 @@ def _module_out(m: models.Module, db: Session) -> schemas.ModuleOut:
         duration_seconds=sum(v.duration_seconds for v in m.videos),
         order_index=m.order_index, is_published=m.is_published,
         created_at=m.created_at, video_count=len(m.videos), question_count=q_count,
+        is_for_sale=bool(getattr(m, "is_for_sale", False)),
+        price=getattr(m, "price", None),
+        currency=getattr(m, "currency", None),
     )
 
 
@@ -68,7 +58,6 @@ def list_modules(
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
-    _check_learner_access(current_user)
     is_admin = current_user.role in (
         models.UserRole.educator,
         models.UserRole.owner,
@@ -116,6 +105,12 @@ def list_modules(
         )
         progress_map = {p.module_id: p for p in progress_rows}
 
+    # Bulk-compute per-module access for learners so the catalog can
+    # show locked vs unlocked badges without N+1 queries.
+    accessible = access_utils.accessible_module_ids(
+        current_user, module_ids, db,
+    )
+
     result = []
     for m in modules:
         progress = progress_map.get(m.id)
@@ -126,9 +121,13 @@ def list_modules(
             order_index=m.order_index, is_published=m.is_published,
             created_at=m.created_at, video_count=len(m.videos),
             question_count=q_counts_by_module.get(m.id, 0),
+            is_for_sale=bool(getattr(m, "is_for_sale", False)),
+            price=getattr(m, "price", None),
+            currency=getattr(m, "currency", None),
             status=progress.status if progress else models.ModuleStatus.not_started,
             progress_seconds=progress.progress_seconds if progress else 0,
             last_viewed_at=progress.last_viewed_at if progress else None,
+            has_access=m.id in accessible,
         ))
     return result
 
@@ -164,6 +163,9 @@ def create_module(
         thumbnail_url=m.thumbnail_url, duration_seconds=0,
         order_index=m.order_index, is_published=m.is_published,
         created_at=m.created_at, video_count=0, question_count=0,
+        is_for_sale=bool(getattr(m, "is_for_sale", False)),
+        price=getattr(m, "price", None),
+        currency=getattr(m, "currency", None),
     )
 
 
@@ -173,8 +175,12 @@ def get_module(
     current_user: models.User = Depends(auth_utils.get_current_user),
     db: Session = Depends(get_db),
 ):
-    _check_learner_access(current_user)
     m = _org_module(module_id, current_user.organization_id, db)
+    # Detail view is open: learners need to see metadata + preview videos
+    # to decide whether to purchase. The video list (and individual video
+    # endpoints) enforce per-video access. has_access is set below so the
+    # frontend can show a purchase CTA.
+    has_access = access_utils.has_module_access(current_user, m.id, db)
     video_ids = [v.id for v in m.videos]
     q_count = (
         db.query(func.count(models.Question.id))
@@ -191,9 +197,13 @@ def get_module(
         duration_seconds=sum(v.duration_seconds for v in m.videos),
         order_index=m.order_index, is_published=m.is_published,
         created_at=m.created_at, video_count=len(m.videos), question_count=q_count,
+        is_for_sale=bool(getattr(m, "is_for_sale", False)),
+        price=getattr(m, "price", None),
+        currency=getattr(m, "currency", None),
         status=progress.status if progress else models.ModuleStatus.not_started,
         progress_seconds=progress.progress_seconds if progress else 0,
         last_viewed_at=progress.last_viewed_at if progress else None,
+        has_access=has_access,
     )
 
 

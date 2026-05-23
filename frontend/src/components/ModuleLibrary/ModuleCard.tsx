@@ -40,7 +40,14 @@ export default function ModuleCard({ module }: Props) {
     : 0;
 
   const isPaid    = module.is_for_sale && !!module.price;
-  const isLocked  = isPaid && status === 'not_started';
+  // `has_access` is the authoritative flag from the backend (ModuleAccess +
+  // global payment_verified). Fall back to the old heuristic only if the
+  // server didn't send the field (older API).
+  const isLocked  = module.has_access === false
+    ? true
+    : module.has_access === undefined
+      ? isPaid && status === 'not_started'
+      : false;
 
   const handleClick = () => {
     if (isLocked) {
