@@ -171,6 +171,16 @@ END $$""",
             "ALTER TABLE organizations ADD COLUMN payment_instructions TEXT",
             "ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE NOT NULL",
             "ALTER TABLE videos ADD COLUMN is_preview BOOLEAN DEFAULT FALSE NOT NULL",
+            # Public directory profile
+            "ALTER TABLE organizations ADD COLUMN tagline VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN description TEXT",
+            "ALTER TABLE organizations ADD COLUMN public_email VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN public_phone VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN public_whatsapp VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN website_url VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN country VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN city VARCHAR",
+            "ALTER TABLE organizations ADD COLUMN is_listed BOOLEAN DEFAULT FALSE NOT NULL",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:

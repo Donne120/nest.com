@@ -12,6 +12,28 @@ router = APIRouter(prefix="/api/organizations", tags=["organizations"])
 _SUPER = models.UserRole.super_admin
 
 
+# ── Public directory (no auth) ────────────────────────────────────────
+
+@router.get("/public", response_model=List[schemas.OrganizationPublicOut])
+def list_public_orgs(db: Session = Depends(get_db)):
+    """Public directory of organizations that have opted in (`is_listed`).
+
+    Unauthenticated — powers the landing-page directory so visitors can
+    discover schools/tutors and contact them directly. Returns only safe
+    profile fields (see OrganizationPublicOut); never payment/plan data.
+    """
+    orgs = (
+        db.query(models.Organization)
+        .filter(
+            models.Organization.is_listed.is_(True),
+            models.Organization.is_active.is_(True),
+        )
+        .order_by(models.Organization.created_at.desc())
+        .all()
+    )
+    return orgs
+
+
 # ── Current org ───────────────────────────────────────────────────────
 
 @router.get("/mine", response_model=schemas.OrganizationOut)

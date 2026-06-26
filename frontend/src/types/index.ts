@@ -25,6 +25,32 @@ export interface Organization {
   payment_bank_account: string | null;
   payment_bank_holder: string | null;
   payment_instructions: string | null;
+  // ── Public directory profile ──────────────────────────────────────────────
+  tagline: string | null;
+  description: string | null;
+  public_email: string | null;
+  public_phone: string | null;
+  public_whatsapp: string | null;
+  website_url: string | null;
+  country: string | null;
+  city: string | null;
+  is_listed: boolean;
+}
+
+// Public, safe org profile returned by GET /organizations/public
+export interface PublicOrg {
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  brand_color: string | null;
+  tagline: string | null;
+  description: string | null;
+  public_email: string | null;
+  public_phone: string | null;
+  public_whatsapp: string | null;
+  website_url: string | null;
+  country: string | null;
+  city: string | null;
 }
 
 // ─── Per-country payment config ───────────────────────────────────────────────

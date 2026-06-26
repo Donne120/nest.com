@@ -27,6 +27,16 @@ class OrganizationUpdate(BaseModel):
     payment_bank_holder:  Optional[str] = None
     # Custom instructions shown to learners on the payment page
     payment_instructions: Optional[str] = None
+    # ── Public directory profile ──────────────────────────────────────────────
+    tagline:        Optional[str] = Field(None, max_length=140)
+    description:     Optional[str] = Field(None, max_length=600)
+    public_email:    Optional[str] = None
+    public_phone:    Optional[str] = None
+    public_whatsapp: Optional[str] = None
+    website_url:     Optional[str] = None
+    country:         Optional[str] = None
+    city:            Optional[str] = None
+    is_listed:       Optional[bool] = None
 
 
 class OrganizationOut(BaseModel):
@@ -47,11 +57,43 @@ class OrganizationOut(BaseModel):
     payment_bank_holder:  Optional[str] = None
     # Custom instructions
     payment_instructions: Optional[str] = None
+    # ── Public directory profile ──────────────────────────────────────────────
+    tagline:        Optional[str] = None
+    description:     Optional[str] = None
+    public_email:    Optional[str] = None
+    public_phone:    Optional[str] = None
+    public_whatsapp: Optional[str] = None
+    website_url:     Optional[str] = None
+    country:         Optional[str] = None
+    city:            Optional[str] = None
+    is_listed:       bool = False
     plan: Plan
     subscription_status: SubscriptionStatus
     trial_ends_at: Optional[datetime]
     is_active: bool
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class OrganizationPublicOut(BaseModel):
+    """Safe, public-facing org profile for the landing-page directory.
+
+    Deliberately excludes payment details, plan, subscription state, etc.
+    """
+    name: str
+    slug: str
+    logo_url:        Optional[str] = None
+    brand_color:     Optional[str] = None
+    tagline:         Optional[str] = None
+    description:     Optional[str] = None
+    public_email:    Optional[str] = None
+    public_phone:    Optional[str] = None
+    public_whatsapp: Optional[str] = None
+    website_url:     Optional[str] = None
+    country:         Optional[str] = None
+    city:            Optional[str] = None
 
     class Config:
         from_attributes = True

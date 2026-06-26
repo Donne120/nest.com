@@ -18,6 +18,16 @@ const DISP  = "'Cormorant Garamond', Georgia, serif";
 const UI    = "'Syne', sans-serif";
 const MONO  = "'DM Mono', monospace";
 
+// ── Curated stock imagery (Unsplash — license-free) ─────────────────────────
+// Education / learning / community photos. Sized + cropped via URL params.
+const IMG = {
+  hero:      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80', // collaborative learning
+  classroom: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1600&q=80', // student studying
+  mentor:    'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=900&q=80',  // teacher / mentor
+  learner:   'https://images.unsplash.com/photo-1610484826917-0f101a7bf7f4?auto=format&fit=crop&w=900&q=80',  // young learner with laptop
+  community: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80', // collaboration
+};
+
 // Semantic helpers (light theme) — replace former dark/gold rgba patterns
 const ACC_TINT   = 'rgba(142,45,158,';   // purple accent tint, append "0.x)"
 const INK_LINE   = 'rgba(31,31,36,';      // charcoal hairline, append "0.x)"
@@ -89,7 +99,7 @@ function LandingNav() {
       </Link>
 
       <nav className="lp-nav-links" style={{ display: 'flex', gap: 0 }}>
-        {[['#features','Features'],['#how','How it works'],['#for-who','For you']].map(([href, label]) => (
+        {[['#features','Features'],['#how','How it works'],['#directory','Find a school'],['#for-who','For you']].map(([href, label]) => (
           <a key={href} href={href} style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 14px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI, whiteSpace: 'nowrap' }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK)}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
@@ -365,6 +375,42 @@ function Ticker() {
   );
 }
 
+// ── Immersive image band ────────────────────────────────────────────────────
+function ImageBand() {
+  return (
+    <section className="lp-reveal" style={{
+      position: 'relative', minHeight: 'clamp(320px, 42vw, 520px)',
+      display: 'flex', alignItems: 'center',
+      borderTop: `1px solid ${RULE}`, overflow: 'hidden',
+      opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.8s ease, transform 0.8s ease',
+    }}>
+      <img src={IMG.community} alt="Learners collaborating" style={{
+        position: 'absolute', inset: 0, width: '100%', height: '100%',
+        objectFit: 'cover', filter: 'saturate(1.05)',
+      }} />
+      {/* Purple scrim for legibility */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `linear-gradient(105deg, rgba(31,31,36,0.82) 0%, rgba(142,45,158,0.55) 55%, rgba(142,45,158,0.15) 100%)`,
+      }} />
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)', width: '100%' }}>
+        <div style={{ maxWidth: 620 }}>
+          <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)', marginBottom: 18 }}>
+            Learning that reaches everyone
+          </div>
+          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(34px,5vw,60px)', fontWeight: 300, lineHeight: 1.08, letterSpacing: '-0.02em', color: '#fff', marginBottom: 22 }}>
+            A classroom without<br /><em style={{ fontStyle: 'italic', color: '#e9c8f2' }}>walls or borders.</em>
+          </h2>
+          <p style={{ fontFamily: UI, fontSize: 16, color: 'rgba(255,255,255,0.85)', lineHeight: 1.7, maxWidth: 480 }}>
+            From a phone in Yaoundé to a laptop in Kigali — Nest puts real schools and
+            tutors within reach of every learner who is ready to grow.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Section label ──────────────────────────────────────────────────────────
 function SLabel({ children }: { children: string }) {
   return (
@@ -548,6 +594,9 @@ function ForWho() {
         }}>
           {/* Educators */}
           <div style={{ background: CARD, padding: 'clamp(36px,5vw,56px)' }}>
+            <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 32, aspectRatio: '16 / 9', border: `1px solid ${RULE}` }}>
+              <img src={IMG.mentor} alt="Educator teaching" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
             <div style={{ width: 48, height: 48, border: `1px solid rgba(142,45,158,0.25)`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: GOLD }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
             </div>
@@ -586,6 +635,9 @@ function ForWho() {
 
           {/* Learners */}
           <div style={{ background: '#f4f8ec', padding: 'clamp(36px,5vw,56px)' }}>
+            <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 32, aspectRatio: '16 / 9', border: `1px solid ${RULE}` }}>
+              <img src={IMG.learner} alt="Learner studying online" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
             <div style={{ width: 48, height: 48, border: `1px solid rgba(90,138,106,0.3)`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: SAGE }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
             </div>
@@ -623,6 +675,171 @@ function ForWho() {
             >Start learning →</Link>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Directory of schools & tutors ───────────────────────────────────────────
+type PublicOrg = {
+  name: string; slug: string;
+  logo_url: string | null; brand_color: string | null;
+  tagline: string | null; description: string | null;
+  public_email: string | null; public_phone: string | null;
+  public_whatsapp: string | null; website_url: string | null;
+  country: string | null; city: string | null;
+};
+
+const API_BASE = (import.meta as any).env?.VITE_API_URL
+  ? `${(import.meta as any).env.VITE_API_URL}/api`
+  : '/api';
+
+// Normalise a phone number into a wa.me link (digits only)
+function waLink(num: string) {
+  const digits = num.replace(/[^\d]/g, '');
+  return `https://wa.me/${digits}`;
+}
+
+function OrgCard({ org }: { org: PublicOrg }) {
+  const accent = org.brand_color || GOLD;
+  const initials = org.name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  const place = [org.city, org.country].filter(Boolean).join(', ');
+
+  return (
+    <div style={{
+      background: CARD, padding: '32px 30px 28px',
+      display: 'flex', flexDirection: 'column', gap: 0,
+      transition: 'background 0.2s', position: 'relative', overflow: 'hidden',
+    }}
+      onMouseEnter={e => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.background = '#faf7fb';
+        const bar = el.querySelector<HTMLElement>('.org-bar');
+        if (bar) bar.style.transform = 'scaleX(1)';
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.background = CARD;
+        const bar = el.querySelector<HTMLElement>('.org-bar');
+        if (bar) bar.style.transform = 'scaleX(0)';
+      }}
+    >
+      <div className="org-bar" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${accent}, transparent)`, transform: 'scaleX(0)', transformOrigin: 'left', transition: 'transform 0.3s ease' }} />
+
+      {/* Header: logo + name + place */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
+        <div style={{
+          width: 52, height: 52, borderRadius: 12, flexShrink: 0,
+          border: `1px solid ${accent}33`, background: `${accent}0f`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden',
+        }}>
+          {org.logo_url
+            ? <img src={org.logo_url} alt={org.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            : <span style={{ fontFamily: UI, fontSize: 18, fontWeight: 800, color: accent }}>{initials}</span>}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontFamily: DISP, fontSize: 21, fontWeight: 600, color: INK, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{org.name}</div>
+          {place && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={INK3} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span style={{ fontFamily: MONO, fontSize: 10, color: INK3, letterSpacing: '0.06em' }}>{place}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Tagline / description */}
+      {(org.tagline || org.description) && (
+        <p style={{ fontFamily: UI, fontSize: 13.5, color: INK2, lineHeight: 1.6, marginBottom: 22, flex: 1 }}>
+          {org.tagline || org.description}
+        </p>
+      )}
+
+      {/* Contact actions */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, borderTop: `1px solid ${RULE}`, paddingTop: 18 }}>
+        {org.public_whatsapp && (
+          <a href={waLink(org.public_whatsapp)} target="_blank" rel="noreferrer"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 700, color: BG, background: SAGE, padding: '8px 14px', borderRadius: 6, textDecoration: 'none' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.3A8 8 0 004 12a7.9 7.9 0 001.1 4L4 20l4.1-1.1A8 8 0 1017.6 6.3zM12 18.5a6.5 6.5 0 01-3.3-.9l-.24-.14-2.45.64.65-2.38-.16-.25A6.5 6.5 0 1112 18.5zm3.6-4.87c-.2-.1-1.17-.58-1.35-.64s-.31-.1-.44.1-.5.64-.62.77-.23.15-.43.05a5.3 5.3 0 01-1.56-.96 5.9 5.9 0 01-1.08-1.34c-.11-.2 0-.3.09-.4l.3-.35a1.36 1.36 0 00.2-.33.37.37 0 000-.35c0-.1-.44-1.07-.6-1.46s-.32-.33-.44-.34h-.38a.72.72 0 00-.52.24 2.2 2.2 0 00-.68 1.63 3.82 3.82 0 00.8 2.03 8.75 8.75 0 003.35 2.96c.47.2.83.32 1.11.41a2.68 2.68 0 001.23.08 2 2 0 001.31-.93 1.65 1.65 0 00.11-.92c-.05-.08-.18-.13-.38-.23z"/></svg>
+            WhatsApp
+          </a>
+        )}
+        {org.public_phone && (
+          <a href={`tel:${org.public_phone.replace(/\s+/g, '')}`}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: INK2, border: `1px solid ${RULE}`, padding: '7px 13px', borderRadius: 6, textDecoration: 'none' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
+            Call
+          </a>
+        )}
+        {org.public_email && (
+          <a href={`mailto:${org.public_email}`}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: INK2, border: `1px solid ${RULE}`, padding: '7px 13px', borderRadius: 6, textDecoration: 'none' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+            Email
+          </a>
+        )}
+        {org.website_url && (
+          <a href={org.website_url} target="_blank" rel="noreferrer"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: INK2, border: `1px solid ${RULE}`, padding: '7px 13px', borderRadius: 6, textDecoration: 'none' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20 15.3 15.3 0 010-20z"/></svg>
+            Visit
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Directory() {
+  const [orgs, setOrgs] = useState<PublicOrg[] | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`${API_BASE}/organizations/public`)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then((data: PublicOrg[]) => { if (alive) setOrgs(data); })
+      .catch(() => { if (alive) setFailed(true); });
+    return () => { alive = false; };
+  }, []);
+
+  // Hide the whole section if there's nothing to show (or it failed to load)
+  if (failed || (orgs && orgs.length === 0)) return null;
+
+  return (
+    <section id="directory" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
+        <div className="lp-reveal" style={{ textAlign: 'center', marginBottom: 'clamp(40px,5vw,64px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><SLabel>Find a school</SLabel></div>
+          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, lineHeight: 1.1, letterSpacing: '-0.02em', color: INK }}>
+            Schools &amp; tutors<br /><em style={{ fontStyle: 'italic', color: GOLD }}>ready to teach you.</em>
+          </h2>
+          <p style={{ fontFamily: UI, fontSize: 16, color: INK2, maxWidth: 520, lineHeight: 1.7, margin: '20px auto 0' }}>
+            Real institutions and educators building on Nest. Reach out directly and join their programs.
+          </p>
+        </div>
+
+        {!orgs ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: MONO, fontSize: 12, color: INK3, letterSpacing: '0.1em' }}>
+            Loading directory…
+          </div>
+        ) : (
+          <div className="lp-reveal lp-three-col" style={{
+            gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 10, overflow: 'hidden',
+            opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
+          }}>
+            {orgs.map(org => <OrgCard key={org.slug} org={org} />)}
+          </div>
+        )}
+
+        <p className="lp-reveal" style={{ marginTop: 32, textAlign: 'center', fontFamily: UI, fontSize: 14, color: INK2, opacity: 0, transform: 'translateY(12px)', transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s' }}>
+          Run a school or teach online?{' '}
+          <Link to="/signup" style={{ color: GOLD, textDecoration: 'none', fontWeight: 700 }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.textDecoration = 'underline')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.textDecoration = 'none')}
+          >List your organization →</Link>
+        </p>
       </div>
     </section>
   );
@@ -1416,8 +1633,10 @@ export default function LandingPage() {
       <Hero />
       <Ticker />
       <HowItWorks />
+      <ImageBand />
       <Features />
       <ForWho />
+      <Directory />
       <Testimonials />
       <Pricing />
       <CtaBand />

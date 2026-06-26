@@ -143,6 +143,16 @@ class Organization(Base):
     slug = Column(String, unique=True, nullable=False, index=True)  # URL-safe identifier
     logo_url = Column(String, nullable=True)
     brand_color = Column(String, nullable=True, default="#6366f1")  # hex
+    # ── Public directory profile (shown on the landing page) ──────────────────
+    tagline        = Column(String, nullable=True)   # short one-liner
+    description    = Column(String, nullable=True)   # longer blurb
+    public_email   = Column(String, nullable=True)   # contact email shown publicly
+    public_phone   = Column(String, nullable=True)   # phone / call line
+    public_whatsapp = Column(String, nullable=True)  # WhatsApp number (intl format)
+    website_url    = Column(String, nullable=True)   # external site / social link
+    country        = Column(String, nullable=True)   # e.g. "Cameroon"
+    city           = Column(String, nullable=True)   # e.g. "Yaoundé"
+    is_listed      = Column(Boolean, default=False, nullable=False)  # opt-in to public directory
     plan = Column(SAEnum(Plan), default=Plan.trial, nullable=False)
     subscription_status = Column(SAEnum(SubscriptionStatus), default=SubscriptionStatus.active, nullable=False)
     trial_ends_at = Column(DateTime(timezone=True), nullable=True)

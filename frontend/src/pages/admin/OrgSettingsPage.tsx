@@ -336,6 +336,16 @@ function OrgTab() {
   const [bankHolder, setBankHolder]   = useState(organization?.payment_bank_holder ?? '');
   // Custom instructions
   const [instructions, setInstructions] = useState(organization?.payment_instructions ?? '');
+  // ── Public directory profile ──────────────────────────────────────────────
+  const [isListed, setIsListed]   = useState(organization?.is_listed ?? false);
+  const [tagline, setTagline]     = useState(organization?.tagline ?? '');
+  const [description, setDescription] = useState(organization?.description ?? '');
+  const [pubEmail, setPubEmail]   = useState(organization?.public_email ?? '');
+  const [pubPhone, setPubPhone]   = useState(organization?.public_phone ?? '');
+  const [pubWhats, setPubWhats]   = useState(organization?.public_whatsapp ?? '');
+  const [website, setWebsite]     = useState(organization?.website_url ?? '');
+  const [country, setCountry]     = useState(organization?.country ?? '');
+  const [city, setCity]           = useState(organization?.city ?? '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -353,6 +363,16 @@ function OrgTab() {
         payment_bank_account:    bankAccount.trim()  || null,
         payment_bank_holder:     bankHolder.trim()   || null,
         payment_instructions:    instructions.trim() || null,
+        // Public directory profile
+        is_listed:       isListed,
+        tagline:         tagline.trim()     || null,
+        description:     description.trim() || null,
+        public_email:    pubEmail.trim()    || null,
+        public_phone:    pubPhone.trim()    || null,
+        public_whatsapp: pubWhats.trim()    || null,
+        website_url:     website.trim()     || null,
+        country:         country.trim()     || null,
+        city:            city.trim()        || null,
       });
       if (user) {
         const token = localStorage.getItem('nest_token') ?? '';
@@ -453,6 +473,89 @@ function OrgTab() {
           />
         </div>
       </Field>
+
+      {/* ── Public directory profile ─────────────────────────────────── */}
+      <div className="border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <p className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <Globe size={15} className="text-brand-600" /> Public profile
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Appear in the public directory on the Nest landing page so visitors can discover you and reach out to join your programs.
+          </p>
+        </div>
+
+        {/* Listing toggle */}
+        <div className="px-4 py-4 border-b border-gray-100">
+          <button
+            type="button"
+            onClick={() => setIsListed(v => !v)}
+            className="flex items-center gap-3 w-full text-left"
+          >
+            {isListed
+              ? <ToggleRight size={32} className="text-brand-600 flex-shrink-0" />
+              : <ToggleLeft size={32} className="text-gray-300 flex-shrink-0" />}
+            <span>
+              <span className="block text-sm font-semibold text-gray-800">
+                {isListed ? 'Listed in the public directory' : 'Not listed'}
+              </span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                {isListed
+                  ? 'Visitors can see your profile and contact details on the landing page.'
+                  : 'Turn on to be discoverable by new learners on the landing page.'}
+              </span>
+            </span>
+          </button>
+        </div>
+
+        {/* Profile fields */}
+        <div className="px-4 py-4 border-b border-gray-100 space-y-4">
+          <Field label="Tagline" hint="A short one-liner shown under your name (max 140 chars)">
+            <input type="text" value={tagline} maxLength={140}
+              onChange={e => setTagline(e.target.value)}
+              placeholder="e.g. Practical coding bootcamp for African builders" className={inputCls} />
+          </Field>
+          <Field label="About" hint="A short description of what you teach and who it's for">
+            <textarea value={description} rows={3} maxLength={600}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Tell visitors what your school or program offers…"
+              className={inputCls + ' resize-none leading-relaxed'} />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Country">
+              <input type="text" value={country} onChange={e => setCountry(e.target.value)}
+                placeholder="e.g. Cameroon" className={inputCls} />
+            </Field>
+            <Field label="City">
+              <input type="text" value={city} onChange={e => setCity(e.target.value)}
+                placeholder="e.g. Yaoundé" className={inputCls} />
+            </Field>
+          </div>
+        </div>
+
+        {/* Contact fields */}
+        <div className="px-4 py-4 space-y-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">How visitors reach you</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="WhatsApp number" hint="Include country code, e.g. +237…">
+              <input type="tel" value={pubWhats} onChange={e => setPubWhats(e.target.value)}
+                placeholder="+237 6XX XXX XXX" className={inputCls} />
+            </Field>
+            <Field label="Phone number">
+              <input type="tel" value={pubPhone} onChange={e => setPubPhone(e.target.value)}
+                placeholder="+237 6XX XXX XXX" className={inputCls} />
+            </Field>
+          </div>
+          <Field label="Public email">
+            <input type="email" value={pubEmail} onChange={e => setPubEmail(e.target.value)}
+              placeholder="hello@yourschool.com" className={inputCls} />
+          </Field>
+          <Field label="Website or social link">
+            <input type="url" value={website} onChange={e => setWebsite(e.target.value)}
+              placeholder="https://yourschool.com" className={inputCls} />
+          </Field>
+        </div>
+      </div>
 
       {/* ── Payment methods ──────────────────────────────────────────── */}
       <div className="border border-gray-200 rounded-2xl overflow-hidden">
