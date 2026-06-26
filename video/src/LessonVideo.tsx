@@ -27,7 +27,15 @@ export interface Caption {
 }
 
 export interface SlideData {
-  type: 'title' | 'hook' | 'content' | 'walkthrough' | 'example' | 'practice' | 'summary' | 'worked_example' | 'quiz';
+  // v1 types
+  type: 'title' | 'hook' | 'content' | 'walkthrough' | 'example' | 'practice' | 'summary'
+      | 'worked_example' | 'quiz' | 'common_mistakes'
+  // v2 types from nest-gen engine
+      | 'provocative_question' | 'story_hook' | 'revelation' | 'concept' | 'why_it_works'
+      | 'example_result' | 'level_up' | 'scenario' | 'analysis' | 'perspective'
+      | 'reflection' | 'character_intro' | 'decision_point' | 'comparison'
+      | 'multi_exercise' | 'worked_problem' | 'graph'
+      | string; // allow unknown types to fall back gracefully
   heading: string;
   subheading?: string;
   bullets?: string[];
@@ -48,10 +56,37 @@ export interface SlideData {
   scene_caption?:  string;
   scene_era?:      string;
   scene_location?: string;
-  audio_key: string;
+  // v1 audio/timing (optional — v2 uses audio_path)
+  audio_key?: string;
+  audio_path?: string;
   image_key?: string;
-  start_frame: number;
-  duration_frames: number;
+  image_path?: string;
+  start_frame?: number;
+  duration_frames?: number;
+  // v2-only fields
+  narration?: string;
+  subtext?: string;          // provocative_question
+  explanation?: string;      // revelation
+  scenario_text?: string;    // scenario
+  question?: string;         // scenario / reflection / quiz
+  argument?: string;         // perspective
+  evidence?: string;         // perspective
+  weakness?: string;         // perspective
+  prompts?: string[];        // reflection
+  background?: string;       // character_intro
+  stakes?: string;           // character_intro
+  context?: string;          // decision_point
+  options?: string[];        // decision_point
+  chosen?: string;           // decision_point
+  option_a?: { name: string; points: string[] }; // comparison
+  option_b?: { name: string; points: string[] }; // comparison
+  verdict?: string;          // comparison
+  instruction?: string;      // multi_exercise
+  example_input?: string;    // multi_exercise
+  expected_output?: string;  // multi_exercise
+  tip?: string;              // multi_exercise
+  achievement?: string;      // level_up
+  stats?: { skills_learned?: number; lessons_completed?: number; next_module?: string }; // level_up
 }
 
 export interface LessonVideoProps {
@@ -66,15 +101,15 @@ export interface LessonVideoProps {
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 
-const BG    = '#080a0e';
-const GOLD  = '#e8c97e';
-const GOLD2 = '#f5e0a0';
-const WHITE = '#f0ece4';
-const GRAY  = '#9ca3af';
-const DARK  = '#1c1e27';
-const GREEN = '#34d399';
-const TERRA = '#c45c3c';
-const BLUE  = '#60a5fa';
+const BG    = '#ffffff';
+const GOLD  = '#c07820';   // amber — readable on white
+const GOLD2 = '#e09030';
+const WHITE = '#1f2937';   // main text
+const GRAY  = '#4b5563';   // secondary text
+const DARK  = '#f3f4f6';   // card / panel background
+const GREEN = '#16a34a';   // darker green for white bg
+const TERRA = '#dc2626';
+const BLUE  = '#2563eb';
 
 // ── Animation helpers ──────────────────────────────────────────────────────
 
@@ -95,7 +130,7 @@ function Vignette() {
   return (
     <div style={{
       position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 50,
-      background: 'radial-gradient(ellipse 110% 110% at 50% 50%, transparent 42%, rgba(0,0,0,0.55) 78%, rgba(0,0,0,0.82) 100%)',
+      background: 'radial-gradient(ellipse 110% 110% at 50% 50%, transparent 55%, rgba(0,0,0,0.06) 82%, rgba(0,0,0,0.12) 100%)',
     }} />
   );
 }
@@ -528,18 +563,18 @@ function MathGraphViz({ data }: { data: GraphData }) {
 
         {/* X axis — draws left → right */}
         <line x1={PL} y1={originY} x2={PL + GW * axisXP} y2={originY}
-          stroke="rgba(232,228,220,0.55)" strokeWidth={2} strokeLinecap="round" />
+          stroke="rgba(31,41,55,0.55)" strokeWidth={2} strokeLinecap="round" />
         {axisXP > 0.94 && (
           <DrawPath d={`M ${PL + GW - 10},${originY - 6} L ${PL + GW},${originY} L ${PL + GW - 10},${originY + 6}`}
-            stroke="rgba(232,228,220,0.55)" strokeWidth={1.8} delay={AXES_DUR - 3} duration={6} />
+            stroke="rgba(31,41,55,0.55)" strokeWidth={1.8} delay={AXES_DUR - 3} duration={6} />
         )}
 
         {/* Y axis — draws bottom → top */}
         <line x1={originX} y1={PT + GH} x2={originX} y2={PT + GH - GH * axisYP}
-          stroke="rgba(232,228,220,0.55)" strokeWidth={2} strokeLinecap="round" />
+          stroke="rgba(31,41,55,0.55)" strokeWidth={2} strokeLinecap="round" />
         {axisYP > 0.94 && (
           <DrawPath d={`M ${originX - 6},${PT + 10} L ${originX},${PT} L ${originX + 6},${PT + 10}`}
-            stroke="rgba(232,228,220,0.55)" strokeWidth={1.8} delay={AXES_DUR - 1} duration={6} />
+            stroke="rgba(31,41,55,0.55)" strokeWidth={1.8} delay={AXES_DUR - 1} duration={6} />
         )}
 
         {/* Tick marks + numbers */}
@@ -814,10 +849,10 @@ function TransformCurve() {
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <svg width={380} height={360} viewBox="0 0 380 360" style={{ overflow: 'visible' }}>
         {/* Axes */}
-        <DrawPath d="M 40,310 L 358,310" stroke={`rgba(232,228,220,0.28)`} strokeWidth={2} delay={0} duration={10} />
-        <DrawPath d="M 40,22 L 40,310"  stroke={`rgba(232,228,220,0.28)`} strokeWidth={2} delay={0} duration={10} />
-        <DrawPath d="M 348,303 L 358,310 L 348,317" stroke={`rgba(232,228,220,0.28)`} strokeWidth={1.5} delay={9}  duration={5} />
-        <DrawPath d="M 33,32 L 40,22 L 47,32"       stroke={`rgba(232,228,220,0.28)`} strokeWidth={1.5} delay={9}  duration={5} />
+        <DrawPath d="M 40,310 L 358,310" stroke={`rgba(31,41,55,0.35)`} strokeWidth={2} delay={0} duration={10} />
+        <DrawPath d="M 40,22 L 40,310"  stroke={`rgba(31,41,55,0.35)`} strokeWidth={2} delay={0} duration={10} />
+        <DrawPath d="M 348,303 L 358,310 L 348,317" stroke={`rgba(31,41,55,0.35)`} strokeWidth={1.5} delay={9}  duration={5} />
+        <DrawPath d="M 33,32 L 40,22 L 47,32"       stroke={`rgba(31,41,55,0.35)`} strokeWidth={1.5} delay={9}  duration={5} />
 
         {/* Subtle grid */}
         <DrawPath d="M 40,250 L 358,250" stroke={`rgba(255,255,255,0.05)`} strokeWidth={1} delay={5} duration={8} />
@@ -967,7 +1002,7 @@ function Chrome({ label }: { label?: string }) {
       <div style={{
         position: 'absolute', bottom: 28, right: 52,
         fontFamily: 'Georgia, serif', fontSize: 18,
-        color: 'rgba(232,201,126,0.15)', fontWeight: 700, letterSpacing: '0.1em',
+        color: 'rgba(192,120,32,0.25)', fontWeight: 700, letterSpacing: '0.1em',
       }}>
         N  NEST
       </div>
@@ -986,7 +1021,7 @@ function LessonProgress({ current, total }: { current: number; total: number }) 
       {Array.from({ length: total }, (_, i) => (
         <div key={i} style={{
           width: i === current ? 28 : 8, height: 8, borderRadius: 4,
-          background: i <= current ? GOLD : 'rgba(255,255,255,0.14)',
+          background: i <= current ? GOLD : 'rgba(0,0,0,0.14)',
           opacity: i === current ? 1 : i < current ? 0.55 : 0.28,
         }} />
       ))}
@@ -1018,8 +1053,8 @@ function Grid() {
     <div style={{
       position: 'absolute', inset: 0,
       backgroundImage: `
-        repeating-linear-gradient(90deg, rgba(255,255,255,0.010) 0 1px, transparent 1px 80px),
-        repeating-linear-gradient(0deg,  rgba(255,255,255,0.010) 0 1px, transparent 1px 80px)
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 80px),
+        repeating-linear-gradient(0deg,  rgba(0,0,0,0.03) 0 1px, transparent 1px 80px)
       `,
     }} />
   );
@@ -1185,7 +1220,7 @@ function ContentSlide({ slide }: { slide: SlideData }) {
 
   const textBlock = (
     <div style={{ display: 'flex', flexDirection: 'column', width: '54%' }}>
-      <div style={{ fontFamily: 'monospace', fontSize: 15, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(232,201,126,0.45)', marginBottom: 18, opacity: eyebrow.opacity }}>
+      <div style={{ fontFamily: 'monospace', fontSize: 15, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(192,120,32,0.85)', marginBottom: 18, opacity: eyebrow.opacity }}>
         Nest · Lesson
       </div>
       <h2 style={{
@@ -1269,7 +1304,7 @@ function StepVisual({ slide, activeStep, totalSteps, frame, framesPerStep }: {
           <div style={{ width: 44, height: 44, borderRadius: '50%', background: GOLD, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: DARK }}>{activeStep + 1}</span>
           </div>
-          <span style={{ fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(232,201,126,0.55)' }}>
+          <span style={{ fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(192,120,32,0.85)' }}>
             Doing now
           </span>
         </div>
@@ -1284,7 +1319,7 @@ function StepVisual({ slide, activeStep, totalSteps, frame, framesPerStep }: {
           padding: '22px 28px', flex: showResponse ? '0 0 auto' : 1,
           opacity: interpolate(frame, [promptStep * framesPerStep, promptStep * framesPerStep + 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
         }}>
-          <div style={{ fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(232,201,126,0.5)', marginBottom: 10 }}>
+          <div style={{ fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(192,120,32,0.85)', marginBottom: 10 }}>
             USE THIS  ↓
           </div>
           <p style={{ fontFamily: 'system-ui', fontSize: 22, color: GOLD, margin: 0, lineHeight: 1.55 }}>
@@ -1302,10 +1337,10 @@ function StepVisual({ slide, activeStep, totalSteps, frame, framesPerStep }: {
           padding: '22px 28px', flex: 1,
           opacity: interpolate(frame, [responseStep * framesPerStep, responseStep * framesPerStep + 12], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
         }}>
-          <div style={{ fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: `rgba(52,211,153,0.6)`, marginBottom: 10 }}>
+          <div style={{ fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: GREEN, marginBottom: 10 }}>
             RESULT  ✓
           </div>
-          <p style={{ fontFamily: 'system-ui', fontSize: 21, color: 'rgba(232,228,220,0.9)', margin: 0, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: 'system-ui', fontSize: 21, color: 'rgba(31,41,55,0.9)', margin: 0, lineHeight: 1.6 }}>
             {responseText.slice(0, responseChars)}
             {responseChars < responseText.length && cursorBlink && (
               <span style={{ borderRight: `2px solid ${GREEN}`, marginLeft: 2 }}>&nbsp;</span>
@@ -1365,13 +1400,13 @@ function StepFlowchart({ steps, activeStep, frame, framesPerStep }: {
                 width: isActive ? 48 : 38, height: isActive ? 48 : 38,
                 borderRadius: '50%', flexShrink: 0,
                 background: isDone ? GREEN : isActive ? GOLD : 'rgba(255,255,255,0.06)',
-                border: `2px solid ${isDone ? GREEN : isActive ? GOLD : 'rgba(255,255,255,0.1)'}`,
+                border: `2px solid ${isDone ? GREEN : isActive ? GOLD : 'rgba(0,0,0,0.15)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: isActive ? `0 0 24px rgba(232,201,126,${glowPulse * 0.8})` : 'none',
               }}>
                 {isDone
                   ? <span style={{ fontSize: 18, color: DARK, fontWeight: 700 }}>✓</span>
-                  : <span style={{ fontFamily: 'monospace', fontSize: isActive ? 20 : 15, fontWeight: 700, color: isActive ? DARK : 'rgba(255,255,255,0.3)' }}>{i + 1}</span>
+                  : <span style={{ fontFamily: 'monospace', fontSize: isActive ? 20 : 15, fontWeight: 700, color: isActive ? '#ffffff' : 'rgba(0,0,0,0.3)' }}>{i + 1}</span>
                 }
               </div>
               {/* Text */}
@@ -1410,7 +1445,7 @@ function WalkthroughSlide({ slide }: { slide: SlideData }) {
   const steps = slide.steps ?? slide.bullets ?? [];
   // Reserve 20 frames for heading entrance, then divide remaining frames evenly
   const HEADING_FRAMES = 20;
-  const usableFrames  = Math.max(1, slide.duration_frames - HEADING_FRAMES);
+  const usableFrames  = Math.max(1, (slide.duration_frames ?? 300) - HEADING_FRAMES);
   const framesPerStep = Math.max(1, usableFrames / Math.max(steps.length, 1));
   const rawStep       = Math.floor(Math.max(0, frame - HEADING_FRAMES) / framesPerStep);
   const activeStep    = Math.min(steps.length - 1, rawStep);
@@ -1495,7 +1530,7 @@ function BeforeAfterPanel({ bullets }: { bullets: string[] }) {
               <DrawPath d="M10 10 L42 42" stroke={TERRA} strokeWidth={4} delay={4}  duration={14} />
               <DrawPath d="M42 10 L10 42" stroke={TERRA} strokeWidth={4} delay={10} duration={14} />
             </svg>
-            <p style={{ fontFamily: 'system-ui', fontSize: 24, color: 'rgba(232,228,220,0.72)', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ fontFamily: 'system-ui', fontSize: 24, color: 'rgba(31,41,55,0.65)', lineHeight: 1.5, margin: 0 }}>
               {bullets[0] ?? ''}
             </p>
           </div>
@@ -1526,7 +1561,7 @@ function BeforeAfterPanel({ bullets }: { bullets: string[] }) {
               <DrawCircle cx={26} cy={26} r={20} stroke={GREEN} strokeWidth={2.5} delay={28} duration={18} />
               <DrawPath d="M14 26 L22 34 L38 16" stroke={GREEN} strokeWidth={3} delay={38} duration={14} />
             </svg>
-            <p style={{ fontFamily: 'system-ui', fontSize: 24, color: 'rgba(232,228,220,0.92)', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ fontFamily: 'system-ui', fontSize: 24, color: 'rgba(31,41,55,0.9)', lineHeight: 1.5, margin: 0 }}>
               {bullets[1] ?? ''}
             </p>
           </div>
@@ -1586,10 +1621,10 @@ function ExampleSlide({ slide }: { slide: SlideData }) {
         {slide.heading}
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-        {bullets[0] && <Bullet text={bullets[0]} delay={22} color="rgba(232,228,220,0.85)" prefix={arrowPrefix} />}
-        {bullets[1] && <Bullet text={bullets[1]} delay={34} color="rgba(232,228,220,0.85)" prefix={arrowPrefix} />}
-        {bullets[2] && <Bullet text={bullets[2]} delay={46} color="rgba(232,228,220,0.85)" prefix={arrowPrefix} />}
-        {bullets[3] && <Bullet text={bullets[3]} delay={58} color="rgba(232,228,220,0.85)" prefix={arrowPrefix} />}
+        {bullets[0] && <Bullet text={bullets[0]} delay={22} color="rgba(31,41,55,0.85)" prefix={arrowPrefix} />}
+        {bullets[1] && <Bullet text={bullets[1]} delay={34} color="rgba(31,41,55,0.85)" prefix={arrowPrefix} />}
+        {bullets[2] && <Bullet text={bullets[2]} delay={46} color="rgba(31,41,55,0.85)" prefix={arrowPrefix} />}
+        {bullets[3] && <Bullet text={bullets[3]} delay={58} color="rgba(31,41,55,0.85)" prefix={arrowPrefix} />}
       </div>
     </div>
   );
@@ -1666,7 +1701,7 @@ function PracticeSlide({ slide }: { slide: SlideData }) {
           opacity: box.opacity, transform: `translateY(${box.y}px)`,
           position: 'relative',
         }}>
-          <div style={{ fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(232,201,126,0.5)', marginBottom: 14 }}>
+          <div style={{ fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(192,120,32,0.85)', marginBottom: 14 }}>
             COPY THIS  ↓
           </div>
           <p style={{ fontFamily: 'system-ui, sans-serif', fontSize: 30, color: WHITE, margin: 0, lineHeight: 1.55 }}>
@@ -1700,7 +1735,7 @@ function PracticeSlide({ slide }: { slide: SlideData }) {
         </div>
         <div style={{ flexShrink: 0, position: 'relative', width: 132, height: 132 }}>
           <svg width={132} height={132} style={{ transform: 'rotate(-90deg)', position: 'absolute', top: 0, left: 0 }}>
-            <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={8} />
+            <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth={8} />
             <circle cx={CX} cy={CY} r={R} fill="none"
               stroke={timerPct > 0.3 ? GOLD : TERRA} strokeWidth={8}
               strokeDasharray={`${timerPct * circumference} ${circumference}`}
@@ -1726,7 +1761,7 @@ function QuizSlide({ slide }: { slide: SlideData }) {
   const { fps } = useVideoConfig();
 
   const options     = slide.quiz_options ?? [];
-  const REVEAL      = Math.floor(slide.duration_frames * 0.60);
+  const REVEAL      = Math.floor((slide.duration_frames ?? 300) * 0.60);
   const isRevealed  = frame >= REVEAL;
   const correctIdx  = options.findIndex(o => o.correct);
 
@@ -1862,6 +1897,109 @@ function QuizSlide({ slide }: { slide: SlideData }) {
       {/* Aha burst on correct card + centre */}
       <ParticleBurst triggerFrame={REVEAL}     cx={burstX}  cy={burstY}  count={40} />
       <ParticleBurst triggerFrame={REVEAL + 5} cx={960}     cy={540}     count={22} />
+    </AbsoluteFill>
+  );
+}
+
+// ── Common Mistakes Slide — mistake + fix pairs, staggered entrance ──────────
+// Each bullet is "Mistake: X → Fix: Y". Mistake shown in red, fix in green.
+
+function CommonMistakesSlide({ slide }: { slide: SlideData }) {
+  const frame   = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const badge   = useSpringEnter(0);
+  const heading = useSpringEnter(10);
+  const rule    = useSpringEnter(20);
+  const bullets = slide.bullets ?? [];
+
+  return (
+    <AbsoluteFill style={{ padding: '72px 110px', display: 'flex', flexDirection: 'column' }}>
+      {/* Subtle red ambient glow */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 60% 40% at 50% 38%, rgba(220,38,38,0.04) 0%, transparent 70%)',
+      }} />
+
+      {/* Badge */}
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: 12, alignSelf: 'flex-start',
+        border: `1.5px solid ${TERRA}`, borderRadius: 10, padding: '8px 22px',
+        background: 'rgba(220,38,38,0.05)', marginBottom: 28,
+        opacity: badge.opacity, transform: `translateY(${badge.y}px)`,
+      }}>
+        <div style={{ width: 10, height: 10, borderRadius: '50%', background: TERRA }} />
+        <span style={{ fontFamily: 'monospace', fontSize: 14, letterSpacing: '0.2em', textTransform: 'uppercase', color: TERRA, fontWeight: 700 }}>
+          Common Mistakes
+        </span>
+      </div>
+
+      {/* Heading */}
+      <h2 style={{
+        fontFamily: 'Georgia, serif', fontSize: 58, fontWeight: 700,
+        color: WHITE, margin: '0 0 14px', lineHeight: 1.15,
+        opacity: heading.opacity, transform: `translateY(${heading.y}px)`,
+      }}>
+        {slide.heading}
+      </h2>
+      <div style={{ width: 100, height: 3, background: TERRA, borderRadius: 2, marginBottom: 40, opacity: rule.opacity }} />
+
+      {/* Mistake / Fix pairs */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 22, flex: 1, justifyContent: 'center' }}>
+        {bullets.slice(0, 4).map((bullet, i) => {
+          const delay = 28 + i * 18;
+          const p = spring({ frame: frame - delay, fps, config: { damping: 18, stiffness: 100 } });
+          const opacity = interpolate(frame - delay, [0, 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+          const y = interpolate(p, [0, 1], [24, 0]);
+
+          // Split "Mistake: X → Fix: Y"
+          const arrowIdx  = bullet.indexOf('→');
+          const mistakePart = arrowIdx > -1 ? bullet.slice(0, arrowIdx).trim() : bullet;
+          const fixPart     = arrowIdx > -1 ? bullet.slice(arrowIdx + 1).trim() : '';
+          const mistakeText = mistakePart.replace(/^Mistake:\s*/i, '');
+          const fixText     = fixPart.replace(/^Fix:\s*/i, '');
+
+          return (
+            <div key={i} style={{
+              display: 'flex', gap: 0, borderRadius: 14, overflow: 'hidden',
+              border: `1px solid rgba(0,0,0,0.07)`,
+              opacity, transform: `translateY(${y}px)`,
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+            }}>
+              {/* Mistake half */}
+              <div style={{
+                flex: 1, padding: '18px 24px', background: 'rgba(220,38,38,0.06)',
+                borderRight: '1px solid rgba(220,38,38,0.15)',
+                display: 'flex', alignItems: 'flex-start', gap: 14,
+              }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0, marginTop: 2,
+                  background: TERRA, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ color: '#fff', fontSize: 16, fontWeight: 700, lineHeight: 1 }}>✕</span>
+                </div>
+                <p style={{ fontFamily: 'system-ui', fontSize: 26, color: WHITE, margin: 0, lineHeight: 1.4 }}>
+                  {mistakeText}
+                </p>
+              </div>
+              {/* Fix half */}
+              <div style={{
+                flex: 1, padding: '18px 24px', background: 'rgba(22,163,74,0.05)',
+                display: 'flex', alignItems: 'flex-start', gap: 14,
+              }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0, marginTop: 2,
+                  background: GREEN, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ color: '#fff', fontSize: 16, fontWeight: 700, lineHeight: 1 }}>✓</span>
+                </div>
+                <p style={{ fontFamily: 'system-ui', fontSize: 26, color: WHITE, margin: 0, lineHeight: 1.4 }}>
+                  {fixText}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </AbsoluteFill>
   );
 }
@@ -2004,7 +2142,7 @@ function WorkedExampleSlide({ slide }: { slide: SlideData }) {
   const heading = useSpringEnter(8);
 
   const mathSteps = slide.math_steps ?? [];
-  const framesPerStep = Math.max(1, slide.duration_frames / Math.max(mathSteps.length, 1));
+  const framesPerStep = Math.max(1, (slide.duration_frames ?? 300) / Math.max(mathSteps.length, 1));
   const activeStep    = Math.min(mathSteps.length - 1, Math.floor(frame / framesPerStep));
 
   // Subtle glow that pulses on the active step
@@ -2109,7 +2247,7 @@ function CaptionBar({ captions, frame, fps }: {
     <div style={{
       position: 'absolute', bottom: 0, left: 0, right: 0,
       padding: '60px 100px 36px',
-      background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.6) 55%, transparent 100%)',
+      background: 'linear-gradient(to top, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.82) 55%, transparent 100%)',
       display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
       zIndex: 200, pointerEvents: 'none',
     }}>
@@ -2125,10 +2263,10 @@ function CaptionBar({ captions, frame, fps }: {
           const popScale   = isActive ? interpolate(popT, [0, 1], [0.82, 1]) : 1;
           const opacity    = isActive ? 1 : dist === 1 ? 0.5 : dist === 2 ? 0.28 : 0.14;
           const fontSize   = isActive ? 56 : dist === 1 ? 46 : 38;
-          const color      = isActive ? '#ffffff' : WHITE;
+          const color      = isActive ? '#111827' : WHITE;
           const shadow     = isActive
-            ? `0 0 32px rgba(232,201,126,0.9), 0 0 64px rgba(232,201,126,0.45), 0 4px 12px rgba(0,0,0,0.95)`
-            : '0 2px 6px rgba(0,0,0,0.85)';
+            ? `0 0 18px rgba(192,120,32,0.4), 0 2px 4px rgba(0,0,0,0.15)`
+            : '0 1px 3px rgba(0,0,0,0.12)';
           return (
             <span key={winStart + i} style={{
               fontFamily: '"Helvetica Neue", "Arial", sans-serif',
@@ -2185,6 +2323,114 @@ function ParticleBurst({ triggerFrame, cx = 960, cy = 480, count = 28 }: {
   );
 }
 
+// ── Ambient Particles — 28 drifting dots that give the background life ───────
+// Deterministic positions (golden-ratio spread) so renders are consistent.
+
+function AmbientParticles() {
+  const frame = useCurrentFrame();
+  const PHI = 0.618033988749895;
+  const particles = Array.from({ length: 28 }, (_, i) => ({
+    x:     (i * PHI * 1920) % 1920,
+    baseY: ((i * PHI * 0.7 + i * 0.13) % 1) * 1080,
+    size:  1.2 + (i % 5) * 0.7,
+    speed: 0.22 + (i % 7) * 0.08,
+    phase: i * 47.3,
+    isGold: i % 5 === 0,
+  }));
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 1 }}>
+      {particles.map((p, i) => {
+        const y = ((p.baseY - p.speed * frame) % 1080 + 1080) % 1080;
+        const opacity = 0.12 + Math.sin(frame * 0.04 + p.phase) * 0.06;
+        return (
+          <div key={i} style={{
+            position: 'absolute', left: p.x, top: y,
+            width: p.size, height: p.size, borderRadius: '50%',
+            background: p.isGold ? GOLD : 'rgba(240,236,228,0.9)',
+            opacity,
+            transform: 'translate(-50%,-50%)',
+            boxShadow: p.isGold ? `0 0 ${p.size * 3}px rgba(232,201,126,0.6)` : 'none',
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Ambient Orbs — soft drifting glow blobs ────────────────────────────────
+
+function AmbientOrbs() {
+  const frame = useCurrentFrame();
+  const t = frame * 0.007;
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }}>
+      <div style={{
+        position: 'absolute',
+        left: 960 + Math.sin(t * 1.1) * 140, top: 480 + Math.cos(t * 0.8) * 90,
+        width: 700, height: 700, borderRadius: '50%',
+        background: 'radial-gradient(ellipse, rgba(232,201,126,0.055) 0%, transparent 68%)',
+        transform: 'translate(-50%,-50%)',
+      }} />
+      <div style={{
+        position: 'absolute',
+        left: 180 + Math.cos(t * 0.9) * 70, top: 820 + Math.sin(t * 1.2) * 55,
+        width: 480, height: 480, borderRadius: '50%',
+        background: 'radial-gradient(ellipse, rgba(96,165,250,0.04) 0%, transparent 68%)',
+        transform: 'translate(-50%,-50%)',
+      }} />
+      <div style={{
+        position: 'absolute',
+        left: 1740 + Math.sin(t * 0.7) * 60, top: 160 + Math.cos(t) * 50,
+        width: 360, height: 360, borderRadius: '50%',
+        background: 'radial-gradient(ellipse, rgba(52,211,153,0.03) 0%, transparent 68%)',
+        transform: 'translate(-50%,-50%)',
+      }} />
+    </div>
+  );
+}
+
+// ── Scan line — gold sweep that flashes downward on every slide entry ─────
+
+function ScanLine() {
+  const frame = useCurrentFrame();
+  const SCAN = 20;
+  const y = interpolate(frame, [0, SCAN], [-8, 1100], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const opacity = frame < SCAN
+    ? interpolate(frame, [0, 3, Math.floor(SCAN * 0.65), SCAN], [0, 0.4, 0.4, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+    : 0;
+  if (opacity <= 0.01) return null;
+  return (
+    <div style={{
+      position: 'absolute', left: 0, right: 0, top: y, height: 2,
+      background: `linear-gradient(90deg, transparent 0%, ${GOLD} 30%, rgba(255,255,255,0.6) 50%, ${GOLD} 70%, transparent 100%)`,
+      opacity, pointerEvents: 'none', zIndex: 100,
+      boxShadow: `0 0 14px rgba(232,201,126,0.5)`,
+    }} />
+  );
+}
+
+// ── Video-length progress bar — glowing line at the very bottom ───────────
+
+function VideoProgressBar({ totalFrames }: { totalFrames: number }) {
+  const frame = useCurrentFrame();
+  const pct = Math.min(1, frame / Math.max(1, totalFrames - 1));
+  return (
+    <div style={{
+      position: 'absolute', bottom: 0, left: 0, right: 0,
+      height: 3, zIndex: 500, pointerEvents: 'none',
+      background: 'rgba(255,255,255,0.05)',
+    }}>
+      <div style={{
+        height: '100%', width: `${pct * 100}%`,
+        background: `linear-gradient(90deg, ${GOLD}, rgba(232,201,126,0.55))`,
+        boxShadow: `0 0 10px rgba(232,201,126,0.55)`,
+        borderRadius: '0 2px 2px 0',
+      }} />
+    </div>
+  );
+}
+
 // ── Neural theme object ────────────────────────────────────────────────────
 
 function NeuralBackground() {
@@ -2209,6 +2455,269 @@ const NeuralTheme: ThemeComponents = {
   CaptionBar,
   LessonIntro,
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// V2 SLIDE COMPONENTS — one for each new slide type in nest-gen v2
+// ═══════════════════════════════════════════════════════════════════════════
+
+function ProvocativeQuestionSlide({ slide }: { slide: SlideData }) {
+  const heading = useSpringEnter(0);
+  const sub     = useSpringEnter(14);
+  return (
+    <AbsoluteFill style={{ background: '#0a0e27', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '80px', textAlign: 'center' }}>
+      <div style={{ opacity: heading.opacity, transform: `translateY(${heading.y}px)` }}>
+        <div style={{ fontFamily: 'monospace', fontSize: 14, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#00ff88', marginBottom: 32 }}>Question</div>
+        <h1 style={{ fontSize: 64, fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.2 }}>{slide.heading}</h1>
+      </div>
+      {slide.subtext && (
+        <p style={{ opacity: sub.opacity, transform: `translateY(${sub.y}px)`, fontSize: 28, color: 'rgba(255,255,255,0.6)', marginTop: 40, maxWidth: 900 }}>
+          {slide.subtext}
+        </p>
+      )}
+    </AbsoluteFill>
+  );
+}
+
+function RevelationSlide({ slide }: { slide: SlideData }) {
+  const heading = useSpringEnter(0);
+  const body    = useSpringEnter(18);
+  return (
+    <AbsoluteFill style={{ background: '#0a0e27', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '80px', textAlign: 'center' }}>
+      <div style={{ opacity: heading.opacity, transform: `translateY(${heading.y}px)` }}>
+        <div style={{ fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#00ff88', marginBottom: 28 }}>Key Insight</div>
+        <h1 style={{ fontSize: 58, fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.25, maxWidth: 1100 }}>{slide.heading}</h1>
+      </div>
+      {(slide.explanation || slide.story) && (
+        <p style={{ opacity: body.opacity, transform: `translateY(${body.y}px)`, fontSize: 26, color: 'rgba(255,255,255,0.65)', marginTop: 44, maxWidth: 960, lineHeight: 1.6 }}>
+          {slide.explanation ?? slide.story}
+        </p>
+      )}
+    </AbsoluteFill>
+  );
+}
+
+function LevelUpSlide({ slide }: { slide: SlideData }) {
+  const heading     = useSpringEnter(0);
+  const achievement = useSpringEnter(18);
+  const stats       = useSpringEnter(32);
+  const s = slide.stats ?? {};
+  return (
+    <AbsoluteFill style={{ background: 'linear-gradient(135deg, #0a0e27 0%, #1a2550 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 80, textAlign: 'center' }}>
+      <div style={{ opacity: heading.opacity, transform: `translateY(${heading.y}px)` }}>
+        <div style={{ fontSize: 72, marginBottom: 24 }}>🎉</div>
+        <h1 style={{ fontSize: 56, fontWeight: 800, color: '#00ff88', margin: 0, lineHeight: 1.2 }}>{slide.heading}</h1>
+      </div>
+      {slide.achievement && (
+        <p style={{ opacity: achievement.opacity, transform: `translateY(${achievement.y}px)`, fontSize: 28, color: '#ffffff', marginTop: 36, maxWidth: 900 }}>
+          {slide.achievement}
+        </p>
+      )}
+      {(s.skills_learned || s.lessons_completed) && (
+        <div style={{ opacity: stats.opacity, transform: `translateY(${stats.y}px)`, display: 'flex', gap: 48, marginTop: 48 }}>
+          {s.skills_learned != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: 48, fontWeight: 800, color: '#00ff88' }}>{s.skills_learned}</div><div style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Skills</div></div>}
+          {s.lessons_completed != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: 48, fontWeight: 800, color: '#00ff88' }}>{s.lessons_completed}</div><div style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Lessons</div></div>}
+        </div>
+      )}
+      {s.next_module && (
+        <div style={{ opacity: stats.opacity, marginTop: 40, fontSize: 20, color: 'rgba(255,255,255,0.5)' }}>
+          Next → {s.next_module}
+        </div>
+      )}
+    </AbsoluteFill>
+  );
+}
+
+function ScenarioSlide({ slide }: { slide: SlideData }) {
+  const label    = useSpringEnter(0);
+  const heading  = useSpringEnter(6);
+  const scenario = useSpringEnter(12);
+  const question = useSpringEnter(26);
+  return (
+    <AbsoluteFill style={{ background: BG, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 80px' }}>
+      <div style={{ opacity: label.opacity, transform: `translateY(${label.y}px)`, fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLD, marginBottom: 24 }}>Scenario</div>
+      <h2 style={{ opacity: heading.opacity, transform: `translateY(${heading.y}px)`, fontSize: 44, fontWeight: 700, color: WHITE, margin: '0 0 36px' }}>{slide.heading}</h2>
+      {(slide.scenario_text ?? slide.story) && (
+        <div style={{ opacity: scenario.opacity, transform: `translateY(${scenario.y}px)`, background: DARK, borderRadius: 16, padding: '32px 40px', fontSize: 24, color: WHITE, lineHeight: 1.6, marginBottom: 36 }}>
+          {slide.scenario_text ?? slide.story}
+        </div>
+      )}
+      {(slide.question ?? slide.nest_question) && (
+        <div style={{ opacity: question.opacity, transform: `translateY(${question.y}px)`, borderLeft: `4px solid ${GOLD}`, paddingLeft: 28, fontSize: 24, color: GOLD, fontWeight: 600 }}>
+          {slide.question ?? slide.nest_question}
+        </div>
+      )}
+    </AbsoluteFill>
+  );
+}
+
+function PerspectiveSlide({ slide }: { slide: SlideData }) {
+  const label    = useSpringEnter(0);
+  const argument = useSpringEnter(12);
+  const evidence = useSpringEnter(24);
+  const weakness = useSpringEnter(36);
+  return (
+    <AbsoluteFill style={{ background: BG, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 80px' }}>
+      <div style={{ opacity: label.opacity, fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.22em', textTransform: 'uppercase', color: BLUE, marginBottom: 20 }}>Perspective</div>
+      <h2 style={{ fontSize: 42, fontWeight: 700, color: WHITE, margin: '0 0 36px' }}>{slide.heading}</h2>
+      {slide.argument && (
+        <div style={{ opacity: argument.opacity, transform: `translateY(${argument.y}px)`, background: DARK, borderRadius: 12, padding: '24px 32px', marginBottom: 20 }}>
+          <div style={{ fontSize: 13, fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase', color: BLUE, marginBottom: 10 }}>Argument</div>
+          <p style={{ fontSize: 22, color: WHITE, margin: 0, lineHeight: 1.55 }}>{slide.argument}</p>
+        </div>
+      )}
+      {slide.evidence && (
+        <div style={{ opacity: evidence.opacity, transform: `translateY(${evidence.y}px)`, background: DARK, borderRadius: 12, padding: '24px 32px', marginBottom: 20 }}>
+          <div style={{ fontSize: 13, fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase', color: GREEN, marginBottom: 10 }}>Evidence</div>
+          <p style={{ fontSize: 22, color: WHITE, margin: 0, lineHeight: 1.55 }}>{slide.evidence}</p>
+        </div>
+      )}
+      {slide.weakness && (
+        <div style={{ opacity: weakness.opacity, transform: `translateY(${weakness.y}px)`, borderLeft: `4px solid ${TERRA}`, paddingLeft: 24, fontSize: 20, color: GRAY, fontStyle: 'italic', lineHeight: 1.5 }}>
+          Limitation: {slide.weakness}
+        </div>
+      )}
+    </AbsoluteFill>
+  );
+}
+
+function ReflectionSlide({ slide }: { slide: SlideData }) {
+  const label    = useSpringEnter(0);
+  const question = useSpringEnter(12);
+  const prompts  = useSpringEnter(26);
+  const ps       = slide.prompts ?? [];
+  return (
+    <AbsoluteFill style={{ background: BG, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 80px' }}>
+      <div style={{ opacity: label.opacity, fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLD, marginBottom: 24 }}>Think About This</div>
+      <h2 style={{ fontSize: 44, fontWeight: 700, color: WHITE, margin: '0 0 40px' }}>{slide.question ?? slide.heading}</h2>
+      <div style={{ opacity: prompts.opacity, transform: `translateY(${prompts.y}px)`, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {ps.map((p, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: DARK, border: `2px solid ${GOLD}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: GOLD, flexShrink: 0, marginTop: 4 }}>{i + 1}</div>
+            <p style={{ fontSize: 22, color: WHITE, margin: 0, lineHeight: 1.55 }}>{p}</p>
+          </div>
+        ))}
+      </div>
+    </AbsoluteFill>
+  );
+}
+
+function CharacterIntroSlide({ slide }: { slide: SlideData }) {
+  const label      = useSpringEnter(0);
+  const heading    = useSpringEnter(10);
+  const background = useSpringEnter(22);
+  const stakes     = useSpringEnter(36);
+  return (
+    <AbsoluteFill style={{ background: BG, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 80px' }}>
+      <div style={{ opacity: label.opacity, fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.22em', textTransform: 'uppercase', color: BLUE, marginBottom: 20 }}>Meet</div>
+      <h1 style={{ opacity: heading.opacity, transform: `translateY(${heading.y}px)`, fontSize: 52, fontWeight: 700, color: WHITE, margin: '0 0 36px' }}>{slide.heading}</h1>
+      {(slide.background ?? slide.story) && (
+        <p style={{ opacity: background.opacity, transform: `translateY(${background.y}px)`, fontSize: 24, color: GRAY, lineHeight: 1.65, margin: '0 0 36px' }}>
+          {slide.background ?? slide.story}
+        </p>
+      )}
+      {slide.stakes && (
+        <div style={{ opacity: stakes.opacity, transform: `translateY(${stakes.y}px)`, borderLeft: `4px solid ${TERRA}`, paddingLeft: 28, fontSize: 22, color: TERRA, fontWeight: 600 }}>
+          At stake: {slide.stakes}
+        </div>
+      )}
+    </AbsoluteFill>
+  );
+}
+
+function DecisionPointSlide({ slide }: { slide: SlideData }) {
+  const label   = useSpringEnter(0);
+  const context = useSpringEnter(12);
+  const opts    = useSpringEnter(26);
+  const chosen  = useSpringEnter(40);
+  const options = slide.options ?? [];
+  return (
+    <AbsoluteFill style={{ background: BG, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 80px' }}>
+      <div style={{ opacity: label.opacity, fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLD, marginBottom: 20 }}>Decision Point</div>
+      <h2 style={{ fontSize: 44, fontWeight: 700, color: WHITE, margin: '0 0 28px' }}>{slide.heading}</h2>
+      {(slide.context ?? slide.story) && (
+        <p style={{ opacity: context.opacity, transform: `translateY(${context.y}px)`, fontSize: 22, color: GRAY, margin: '0 0 32px', lineHeight: 1.6 }}>{slide.context ?? slide.story}</p>
+      )}
+      <div style={{ opacity: opts.opacity, transform: `translateY(${opts.y}px)`, display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
+        {options.map((opt, i) => (
+          <div key={i} style={{ background: DARK, borderRadius: 12, padding: '18px 28px', fontSize: 20, color: WHITE, borderLeft: `4px solid ${GRAY}` }}>{opt}</div>
+        ))}
+      </div>
+      {slide.chosen && (
+        <div style={{ opacity: chosen.opacity, transform: `translateY(${chosen.y}px)`, background: DARK, borderRadius: 12, padding: '18px 28px', borderLeft: `4px solid ${GREEN}`, fontSize: 20, color: GREEN }}>
+          ✓ Chosen: {slide.chosen}
+        </div>
+      )}
+    </AbsoluteFill>
+  );
+}
+
+function ComparisonSlide({ slide }: { slide: SlideData }) {
+  const label   = useSpringEnter(0);
+  const cols    = useSpringEnter(14);
+  const verdict = useSpringEnter(30);
+  const a = slide.option_a ?? { name: 'Option A', points: [] };
+  const b = slide.option_b ?? { name: 'Option B', points: [] };
+  return (
+    <AbsoluteFill style={{ background: BG, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 80px' }}>
+      <div style={{ opacity: label.opacity, fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLD, marginBottom: 20 }}>Comparison</div>
+      <h2 style={{ fontSize: 42, fontWeight: 700, color: WHITE, margin: '0 0 36px' }}>{slide.heading}</h2>
+      <div style={{ opacity: cols.opacity, transform: `translateY(${cols.y}px)`, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, marginBottom: 36 }}>
+        {[a, b].map((opt, idx) => (
+          <div key={idx} style={{ background: DARK, borderRadius: 16, padding: '28px 32px' }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: idx === 0 ? BLUE : GREEN, marginBottom: 20 }}>{opt.name}</div>
+            {opt.points.map((p, i) => (
+              <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 14 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: idx === 0 ? BLUE : GREEN, marginTop: 10, flexShrink: 0 }} />
+                <p style={{ fontSize: 19, color: WHITE, margin: 0, lineHeight: 1.45 }}>{p}</p>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      {slide.verdict && (
+        <div style={{ opacity: verdict.opacity, transform: `translateY(${verdict.y}px)`, borderLeft: `4px solid ${GOLD}`, paddingLeft: 28, fontSize: 22, color: GOLD, fontWeight: 600 }}>
+          {slide.verdict}
+        </div>
+      )}
+    </AbsoluteFill>
+  );
+}
+
+function MultiExerciseSlide({ slide }: { slide: SlideData }) {
+  const label    = useSpringEnter(0);
+  const heading  = useSpringEnter(10);
+  const body     = useSpringEnter(22);
+  const tip      = useSpringEnter(36);
+  return (
+    <AbsoluteFill style={{ background: BG, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 80px' }}>
+      <div style={{ opacity: label.opacity, fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.22em', textTransform: 'uppercase', color: GREEN, marginBottom: 20 }}>Exercise</div>
+      <h2 style={{ opacity: heading.opacity, transform: `translateY(${heading.y}px)`, fontSize: 44, fontWeight: 700, color: WHITE, margin: '0 0 36px' }}>{slide.heading}</h2>
+      <div style={{ opacity: body.opacity, transform: `translateY(${body.y}px)`, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {(slide.instruction ?? slide.task) && (
+          <div style={{ background: DARK, borderRadius: 12, padding: '22px 28px', fontSize: 22, color: WHITE, lineHeight: 1.55 }}>
+            <div style={{ fontSize: 12, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.14em', color: GOLD, marginBottom: 10 }}>Your task</div>
+            {slide.instruction ?? slide.task}
+          </div>
+        )}
+        {(slide.example_input ?? slide.example_prompt) && (
+          <div style={{ background: '#1e293b', borderRadius: 12, padding: '20px 28px', fontFamily: 'monospace', fontSize: 18, color: '#00ff88', lineHeight: 1.5 }}>
+            {slide.example_input ?? slide.example_prompt}
+          </div>
+        )}
+        {slide.expected_output && (
+          <div style={{ borderLeft: `4px solid ${GREEN}`, paddingLeft: 24, fontSize: 20, color: GRAY, lineHeight: 1.5 }}>
+            Expected: {slide.expected_output}
+          </div>
+        )}
+      </div>
+      {(slide.tip ?? slide.ai_response) && (
+        <div style={{ opacity: tip.opacity, transform: `translateY(${tip.y}px)`, marginTop: 28, fontSize: 18, color: GOLD, fontStyle: 'italic' }}>
+          💡 {slide.tip ?? slide.ai_response}
+        </div>
+      )}
+    </AbsoluteFill>
+  );
+}
 
 // ── Theme registry ─────────────────────────────────────────────────────────
 
@@ -2236,7 +2745,8 @@ function SlideWrapper({ slide, slideIndex, totalSlides, isLast, theme }: {
   const DIST  = 72;  // pixels of lateral push
 
   const fadeIn  = interpolate(frame, [0, FADE], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const fadeOut = isLast ? 1 : interpolate(frame, [slide.duration_frames - FADE, slide.duration_frames], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const dur = slide.duration_frames ?? 300;
+  const fadeOut = isLast ? 1 : interpolate(frame, [dur - FADE, dur], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
   // Incoming: spring from right
   const enterSpring = spring({ frame, fps, config: { damping: 22, stiffness: 110, mass: 0.9 } });
@@ -2244,20 +2754,42 @@ function SlideWrapper({ slide, slideIndex, totalSlides, isLast, theme }: {
 
   // Outgoing: linear slide to left
   const exitX = isLast ? 0 : interpolate(
-    frame, [slide.duration_frames - PUSH, slide.duration_frames],
+    frame, [dur - PUSH, dur],
     [0, -DIST * 0.55], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
 
-  const SLIDE_MAP: Record<string, React.FC<{ slide: SlideData }>> = {
-    title:          theme.TitleSlide,
-    hook:           theme.HookSlide,
-    content:        theme.ContentSlide,
-    walkthrough:    theme.WalkthroughSlide,
-    example:        theme.ExampleSlide,
-    practice:       theme.PracticeSlide,
-    summary:        theme.SummarySlide,
-    worked_example: theme.WorkedExampleSlide,
-    quiz:           QuizSlide,
+  type AnySlideFC = React.FC<{ slide: SlideData }>;
+  const SLIDE_MAP: Record<string, AnySlideFC> = {
+    // v1 types
+    title:               theme.TitleSlide as AnySlideFC,
+    hook:                theme.HookSlide as AnySlideFC,
+    content:             theme.ContentSlide as AnySlideFC,
+    walkthrough:         theme.WalkthroughSlide as AnySlideFC,
+    example:             theme.ExampleSlide as AnySlideFC,
+    practice:            theme.PracticeSlide as AnySlideFC,
+    summary:             theme.SummarySlide as AnySlideFC,
+    worked_example:      theme.WorkedExampleSlide as AnySlideFC,
+    common_mistakes:     CommonMistakesSlide as AnySlideFC,
+    quiz:                QuizSlide as AnySlideFC,
+    // v2 aliases to existing components
+    story_hook:          theme.HookSlide as AnySlideFC,
+    concept:             theme.ContentSlide as AnySlideFC,
+    why_it_works:        theme.ContentSlide as AnySlideFC,
+    example_result:      theme.ExampleSlide as AnySlideFC,
+    analysis:            theme.ContentSlide as AnySlideFC,
+    worked_problem:      theme.WorkedExampleSlide as AnySlideFC,
+    graph:               theme.ContentSlide as AnySlideFC,
+    // v2 new components
+    provocative_question: ProvocativeQuestionSlide,
+    revelation:          RevelationSlide,
+    level_up:            LevelUpSlide,
+    scenario:            ScenarioSlide,
+    perspective:         PerspectiveSlide,
+    reflection:          ReflectionSlide,
+    character_intro:     CharacterIntroSlide,
+    decision_point:      DecisionPointSlide,
+    comparison:          ComparisonSlide,
+    multi_exercise:      MultiExerciseSlide,
   };
 
   const Component = SLIDE_MAP[slide.type] ?? theme.ContentSlide;
@@ -2313,7 +2845,7 @@ function LessonIntro({ moduleTitle, lessonTitle, lessonNumber }: {
       {/* Background radial */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 60% 45% at 50% 50%, rgba(232,201,126,0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse 60% 45% at 50% 50%, rgba(192,120,32,0.07) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
@@ -2361,7 +2893,7 @@ function LessonIntro({ moduleTitle, lessonTitle, lessonNumber }: {
 // ── Main composition ───────────────────────────────────────────────────────
 
 export const LessonVideo: React.FC<LessonVideoProps> = ({
-  slides, module_title, lesson_title, lesson_number, theme: themeName,
+  slides, module_title, lesson_title, lesson_number, theme: themeName, total_frames,
 }) => {
   const theme = THEMES[themeName ?? 'neural'] ?? NeuralTheme;
 
@@ -2380,9 +2912,9 @@ export const LessonVideo: React.FC<LessonVideoProps> = ({
       {slides.map((slide, i) => (
         <Sequence
           key={i}
-          from={slide.start_frame}
-          durationInFrames={slide.duration_frames}
-          name={`${slide.type}: ${slide.heading.slice(0, 40)}`}
+          from={slide.start_frame ?? 0}
+          durationInFrames={slide.duration_frames ?? 300}
+          name={`${slide.type}: ${(slide.heading ?? '').slice(0, 40)}`}
         >
           <SlideWrapper
             slide={slide} slideIndex={i}
@@ -2392,6 +2924,9 @@ export const LessonVideo: React.FC<LessonVideoProps> = ({
           />
         </Sequence>
       ))}
+
+      {/* Global progress bar — visible across all slides */}
+      {total_frames > 0 && <VideoProgressBar totalFrames={total_frames} />}
     </AbsoluteFill>
   );
 };

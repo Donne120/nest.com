@@ -6,16 +6,22 @@ import { useAuthStore } from '../store';
 import type { Token } from '../types';
 import toast from 'react-hot-toast';
 
-// ── Tokens ─────────────────────────────────────────────────────────────────
-const BG    = '#0a0907';
-const CARD  = '#161410';
-const INK   = '#f0ebe2';
-const INK2  = '#8a8070';
-const INK3  = '#4a4238';
-const RULE  = 'rgba(255,255,255,0.07)';
-const GOLD  = '#c8a96e';
-const GOLD2 = '#e8d4a0';
-const ACC   = '#c45c2c';
+// ── Tokens — white form + purple brand panel ────────────────────────────────
+const BG     = '#ffffff';   // page + form background
+const CARD   = '#ffffff';
+const INK    = '#1f1f24';   // form primary text (dark)
+const INK2   = '#5c5764';   // form secondary text
+const INK3   = '#9b96a3';   // form muted text
+const RULE   = 'rgba(31,31,36,0.10)';
+const GOLD   = '#8e2d9e';   // purple — primary accent (was gold)
+const GOLD2  = '#7b2d8e';   // deep purple
+const ACC    = '#7cb342';   // lime green — secondary (was terracotta)
+// Left brand panel (purple splash) — its own light-on-dark tokens
+const PANEL   = '#1a1320';
+const PANEL_INK  = '#f3eef6';
+const PANEL_INK2 = '#bcaecb';
+const PANEL_INK3 = '#7d6f8c';
+const PANEL_ACC  = '#ce92dc';
 const DISP  = "'Cormorant Garamond', Georgia, serif";
 const UI    = "'Syne', 'Inter', sans-serif";
 const MONO  = "'DM Mono', monospace";
@@ -42,8 +48,9 @@ function Field({
           onBlur={() => setFocused(false)}
           style={{
             width: '100%', padding: '11px 14px', paddingRight: children ? 42 : 14,
-            background: 'rgba(255,255,255,0.04)',
-            border: `1px solid ${focused ? `rgba(200,169,110,0.45)` : RULE}`,
+            background: focused ? '#ffffff' : '#f7f6f8',
+            border: `1px solid ${focused ? `rgba(142,45,158,0.55)` : RULE}`,
+            boxShadow: focused ? '0 0 0 3px rgba(142,45,158,0.12)' : 'none',
             borderRadius: 4, outline: 'none',
             color: INK, fontFamily: UI, fontSize: 14,
             transition: 'border-color 0.2s',
@@ -107,7 +114,7 @@ export default function LoginPage() {
       {/* Left decorative panel */}
       <div style={{
         width: 440, flexShrink: 0, minHeight: '100vh',
-        borderRight: `1px solid ${RULE}`,
+        background: `linear-gradient(160deg, #241830 0%, ${PANEL} 55%, #14101a 100%)`,
         position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         padding: '56px 56px',
@@ -115,7 +122,7 @@ export default function LoginPage() {
         className="login-left-panel"
       >
         {/* Ambient glow */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 40% 60%, rgba(200,169,110,0.06) 0%, transparent 65%)' }} />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 40% 60%, rgba(178,89,196,0.16) 0%, transparent 65%), radial-gradient(ellipse at 80% 15%, rgba(124,179,66,0.08) 0%, transparent 50%)' }} />
         {/* Grid */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -125,31 +132,31 @@ export default function LoginPage() {
         {/* Logo */}
         <div style={{ position: 'relative', zIndex: 1 }}>
           <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 30, height: 30, border: `1.5px solid rgba(200,169,110,0.4)`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: GOLD, fontFamily: UI }}>N</div>
-            <span style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: GOLD2, letterSpacing: '0.01em' }}>Nest</span>
+            <div style={{ width: 30, height: 30, border: `1.5px solid rgba(206,146,220,0.5)`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: PANEL_ACC, fontFamily: UI }}>N</div>
+            <span style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: PANEL_INK, letterSpacing: '0.01em' }}>Nest</span>
           </Link>
         </div>
 
         {/* Hero copy */}
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLD, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 20, height: 1, background: GOLD, display: 'inline-block', opacity: 0.6 }} />
+          <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: PANEL_ACC, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 20, height: 1, background: PANEL_ACC, display: 'inline-block', opacity: 0.6 }} />
             Welcome back
           </div>
-          <h1 style={{ fontFamily: DISP, fontSize: 'clamp(40px, 4vw, 62px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK, marginBottom: 20 }}>
-            <em style={{ fontStyle: 'italic', color: GOLD }}>Continue</em><br />your flight path.
+          <h1 style={{ fontFamily: DISP, fontSize: 'clamp(40px, 4vw, 62px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: PANEL_INK, marginBottom: 20 }}>
+            <em style={{ fontStyle: 'italic', color: PANEL_ACC }}>Continue</em><br />where you left off.
           </h1>
-          <p style={{ fontSize: 15, color: INK2, lineHeight: 1.75, maxWidth: 340 }}>
-            Your team's knowledge is waiting. Sign in to pick up where you left off.
+          <p style={{ fontSize: 15, color: PANEL_INK2, lineHeight: 1.75, maxWidth: 340 }}>
+            Your courses are waiting. Sign in to keep learning.
           </p>
         </div>
 
         {/* Bottom quote */}
-        <div style={{ position: 'relative', zIndex: 1, borderTop: `1px solid ${RULE}`, paddingTop: 24 }}>
-          <p style={{ fontFamily: DISP, fontStyle: 'italic', fontSize: 16, fontWeight: 300, color: INK2, lineHeight: 1.7, marginBottom: 12 }}>
-            "Great onboarding is the difference between a hire who stays and one who leaves."
+        <div style={{ position: 'relative', zIndex: 1, borderTop: `1px solid rgba(255,255,255,0.10)`, paddingTop: 24 }}>
+          <p style={{ fontFamily: DISP, fontStyle: 'italic', fontSize: 16, fontWeight: 300, color: PANEL_INK2, lineHeight: 1.7, marginBottom: 12 }}>
+            "The best time to learn something new is always now."
           </p>
-          <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3 }}>— Nest Fledge</div>
+          <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: PANEL_INK3 }}>— Nest</div>
         </div>
       </div>
 
@@ -160,7 +167,7 @@ export default function LoginPage() {
           {/* Mobile-only logo */}
           <div className="login-mobile-logo" style={{ display: 'none', marginBottom: 32, textAlign: 'center' }}>
             <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, border: `1.5px solid rgba(200,169,110,0.4)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: GOLD, fontFamily: UI }}>N</div>
+              <div style={{ width: 36, height: 36, border: `1.5px solid rgba(142,45,158,0.4)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: GOLD, fontFamily: UI }}>N</div>
               <span style={{ fontFamily: DISP, fontSize: 26, fontWeight: 600, color: GOLD2, letterSpacing: '0.01em' }}>Nest</span>
             </Link>
           </div>
@@ -193,7 +200,7 @@ export default function LoginPage() {
             <button type="submit" disabled={loading} style={{
               fontFamily: UI, fontSize: 15, fontWeight: 700,
               letterSpacing: '0.04em',
-              color: BG, background: loading ? 'rgba(200,169,110,0.6)' : GOLD,
+              color: BG, background: loading ? 'rgba(142,45,158,0.6)' : GOLD,
               padding: '15px 24px', borderRadius: 6, border: 'none',
               cursor: loading ? 'not-allowed' : 'pointer',
               minHeight: 52,
@@ -203,7 +210,7 @@ export default function LoginPage() {
             }}>
               {loading ? (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 14, height: 14, border: `2px solid rgba(10,9,7,0.3)`, borderTopColor: BG, borderRadius: '50%', display: 'inline-block', animation: 'lp-spin 0.7s linear infinite' }} />
+                  <span style={{ width: 14, height: 14, border: `2px solid rgba(255,255,255,0.4)`, borderTopColor: '#ffffff', borderRadius: '50%', display: 'inline-block', animation: 'lp-spin 0.7s linear infinite' }} />
                   Signing in…
                 </span>
               ) : 'Sign In'}

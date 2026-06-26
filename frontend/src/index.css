@@ -8,44 +8,44 @@
 /* These are consumed by inline styles via var(--c-xxx) across all pages.    */
 /* Toggling .dark on <html> is all that's needed to switch every page.       */
 :root {
-  --c-bg:   #f2ede8;   /* page background  */
-  --c-bg2:  #e8e2db;   /* slightly deeper  */
-  --c-surf: #fffcf8;   /* card / surface   */
-  --c-rule: #d4cdc6;   /* border / divider */
-  --c-ink:  #1a1714;   /* primary text     */
-  --c-ink2: #6b6460;   /* secondary text   */
-  --c-ink3: #a09990;   /* muted text       */
-  --c-acc:  #c94f2c;   /* terracotta       */
-  --c-acc2: #2c6bc9;   /* blue             */
-  --c-go:   #2a7a4b;   /* green            */
+  --c-bg:   #ffffff;   /* page background — clean white  */
+  --c-bg2:  #f5f3f7;   /* slightly deeper, faint purple tint */
+  --c-surf: #ffffff;   /* card / surface   */
+  --c-rule: #e6e3ea;   /* border / divider */
+  --c-ink:  #1f1f24;   /* primary text — charcoal   */
+  --c-ink2: #5c5764;   /* secondary text   */
+  --c-ink3: #9b96a3;   /* muted text       */
+  --c-acc:  #7b2d8e;   /* purple — brand primary  */
+  --c-acc2: #6a2a8a;   /* deep purple — links */
+  --c-go:   #7cb342;   /* lime green — secondary  */
 }
 
 html.dark {
-  --c-bg:   #0f1014;
-  --c-bg2:  #0b0c0f;
-  --c-surf: #1a1d24;
+  --c-bg:   #15101a;
+  --c-bg2:  #0f0b13;
+  --c-surf: #1d1722;
   --c-rule: rgba(255,255,255,0.08);
-  --c-ink:  #e8e4dc;
-  --c-ink2: #9ca3af;
-  --c-ink3: #6b7280;
-  --c-acc:  #e0613a;   /* slightly brighter on dark */
-  --c-acc2: #60a5fa;
-  --c-go:   #34d399;
+  --c-ink:  #ece8f0;
+  --c-ink2: #a79fb0;
+  --c-ink3: #756d80;
+  --c-acc:  #b259c4;   /* brighter purple on dark */
+  --c-acc2: #c06fd0;
+  --c-go:   #9ccc5a;   /* brighter lime on dark */
 }
 
 /* ─── Brand palette CSS vars (overridden at runtime per org) ─────────────── */
-/* Default: Nest warm terracotta — feels grounded, warm, human */
+/* Default: Nest vivid purple — confident, friendly, professional */
 :root {
-  --brand-50:  255 245 237;
-  --brand-100: 255 234 217;
-  --brand-200: 253 208 176;
-  --brand-300: 250 180 130;
-  --brand-400: 245 145 86;
-  --brand-500: 232 115 46;
-  --brand-600: 196 98  45;
-  --brand-700: 160 78  36;
-  --brand-800: 125 62  29;
-  --brand-900: 90  45  20;
+  --brand-50:  248 240 250;
+  --brand-100: 240 222 245;
+  --brand-200: 226 188 235;
+  --brand-300: 206 146 220;
+  --brand-400: 178 100 198;
+  --brand-500: 142 56  168;
+  --brand-600: 123 45  142;
+  --brand-700: 102 37  118;
+  --brand-800: 80  30  93;
+  --brand-900: 58  22  68;
 }
 
 @layer base {
@@ -77,7 +77,7 @@ html.dark {
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Lora', Georgia, serif;
     letter-spacing: -0.02em;
-    color: #1C1A17;
+    color: #18211f;
   }
 
   .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
@@ -138,7 +138,7 @@ html.dark {
     background-clip: text;
   }
   .text-gradient-warm {
-    background: linear-gradient(135deg, #f97316, rgb(var(--brand-500)));
+    background: linear-gradient(135deg, rgb(var(--brand-400)), rgb(var(--brand-600)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -194,18 +194,18 @@ html.dark {
 
   /* Mesh gradient for hero sections */
   .bg-mesh {
-    background-color: #FAF7F2;
+    background-color: #f5f4f1;
     background-image:
-      radial-gradient(at 20% 30%, rgb(var(--brand-100) / 0.5) 0%, transparent 50%),
-      radial-gradient(at 80% 10%, rgb(var(--brand-50) / 0.8) 0%, transparent 40%),
-      radial-gradient(at 60% 80%, rgba(196,98,45,0.04) 0%, transparent 50%);
+      radial-gradient(at 20% 30%, rgb(var(--brand-100) / 0.6) 0%, transparent 50%),
+      radial-gradient(at 80% 10%, rgb(var(--brand-50) / 0.9) 0%, transparent 40%),
+      radial-gradient(at 60% 80%, rgba(90,138,92,0.05) 0%, transparent 50%);
   }
   .dark .bg-mesh {
-    background-color: rgb(2 6 23);
+    background-color: #0a0f0e;
     background-image:
-      radial-gradient(at 20% 30%, rgb(var(--brand-900) / 0.4) 0%, transparent 50%),
-      radial-gradient(at 80% 10%, rgb(var(--brand-900) / 0.2) 0%, transparent 40%),
-      radial-gradient(at 60% 80%, rgba(139,92,246,0.08) 0%, transparent 50%);
+      radial-gradient(at 20% 30%, rgb(var(--brand-900) / 0.45) 0%, transparent 50%),
+      radial-gradient(at 80% 10%, rgb(var(--brand-800) / 0.25) 0%, transparent 40%),
+      radial-gradient(at 60% 80%, rgba(90,138,92,0.08) 0%, transparent 50%);
   }
 
   /* Noise texture overlay (very subtle) */
@@ -273,7 +273,7 @@ html {
 
 /* Ensure tap highlight is subtle on mobile */
 * {
-  -webkit-tap-highlight-color: rgba(232, 201, 126, 0.15);
+  -webkit-tap-highlight-color: rgba(47, 128, 133, 0.15);
 }
 
 /* PaySubmit country grid: 2 cols on small phones */
@@ -284,9 +284,9 @@ html {
 }
 
 /* ─── Rich text editor (Tiptap / prose) ─────────────────────────────────── */
-.prose h1 { @apply text-2xl font-bold mt-4 mb-2; font-family: 'Lora', Georgia, serif; color: #1C1A17; letter-spacing: -0.02em; }
-.prose h2 { @apply text-xl font-bold mt-4 mb-2; font-family: 'Lora', Georgia, serif; color: #1C1A17; letter-spacing: -0.02em; }
-.prose h3 { @apply text-lg font-semibold mt-3 mb-1.5; color: #2E2A25; }
+.prose h1 { @apply text-2xl font-bold mt-4 mb-2; font-family: 'Lora', Georgia, serif; color: #18211f; letter-spacing: -0.02em; }
+.prose h2 { @apply text-xl font-bold mt-4 mb-2; font-family: 'Lora', Georgia, serif; color: #18211f; letter-spacing: -0.02em; }
+.prose h3 { @apply text-lg font-semibold mt-3 mb-1.5; color: #243029; }
 .prose p  { @apply text-gray-700 text-sm leading-relaxed my-1.5; }
 .prose ul { @apply list-disc pl-5 my-2 space-y-1; }
 .prose ol { @apply list-decimal pl-5 my-2 space-y-1; }

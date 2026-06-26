@@ -176,7 +176,7 @@ export default function NestIntroOverlay({ orgName, orgLogoUrl, onComplete }: Pr
             <span style={{
               fontFamily: "'Lora', Georgia, serif",
               fontSize: 48, fontWeight: 700,
-              color: '#c8a96e', letterSpacing: '-0.02em',
+              color: '#b259c4', letterSpacing: '-0.02em',
             }}>N</span>
           </div>
 
@@ -196,7 +196,7 @@ export default function NestIntroOverlay({ orgName, orgLogoUrl, onComplete }: Pr
           opacity: tagOpacity,
           fontFamily: 'Inter, system-ui, sans-serif',
           fontSize: 11, letterSpacing: '0.24em',
-          textTransform: 'uppercase', color: '#e8d4a0',
+          textTransform: 'uppercase', color: '#ce92dc',
           fontWeight: 400, minHeight: 18,
         }}>
           {TAGLINE.slice(0, typeLen)}
@@ -225,8 +225,8 @@ export default function NestIntroOverlay({ orgName, orgLogoUrl, onComplete }: Pr
         }}>
           <div style={{
             width: 5, height: 5, borderRadius: '50%',
-            background: '#e8d4a0',
-            boxShadow: '0 0 7px #e8d4a0',
+            background: '#ce92dc',
+            boxShadow: '0 0 7px #ce92dc',
           }} />
           {orgLogoUrl ? (
             <img src={orgLogoUrl} alt={orgName ?? 'Org'} style={{ height: 16, objectFit: 'contain', maxWidth: 80 }} />
@@ -274,7 +274,7 @@ export default function NestIntroOverlay({ orgName, orgLogoUrl, onComplete }: Pr
           }}
           onMouseEnter={e => {
             (e.currentTarget as HTMLElement).style.background = 'rgba(200,169,110,0.12)';
-            (e.currentTarget as HTMLElement).style.color = '#e8d4a0';
+            (e.currentTarget as HTMLElement).style.color = '#ce92dc';
             (e.currentTarget as HTMLElement).style.borderColor = 'rgba(200,169,110,0.3)';
           }}
           onMouseLeave={e => {

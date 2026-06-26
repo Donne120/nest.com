@@ -8,16 +8,16 @@ import { Skeleton } from '../components/UI/Skeleton';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store';
 
-// ── Design tokens ──────────────────────────────────────────────────────────
-const GOLD    = '#e8c97e';
-const TERRA   = '#c45c3c';
-const DARK    = '#0b0c0f';
-const DARK2   = '#13141a';
-const DARK3   = '#1c1e27';
-const INK     = '#e8e4dc';
-const INK2    = '#9ca3af';
-const INK3    = '#6b6b78';
-const BORDER  = 'rgba(255,255,255,0.07)';
+// ── Design tokens — purple + lime, clean white ──────────────────────────────
+const GOLD    = '#8e2d9e';   // purple — primary accent (was gold)
+const TERRA   = '#7cb342';   // lime green — secondary (was terracotta)
+const DARK    = '#ffffff';   // page background (was near-black)
+const DARK2   = '#faf9fb';   // raised surface
+const DARK3   = '#f5eef7';   // pills / hover (faint purple)
+const INK     = '#1f1f24';   // primary text (was light)
+const INK2    = '#5c5764';   // secondary text
+const INK3    = '#9b96a3';   // muted text
+const BORDER  = 'rgba(31,31,36,0.10)';
 
 type FilterKey = 'all' | 'in_progress' | 'completed' | 'not_started';
 
@@ -126,7 +126,7 @@ export default function ModulesPage() {
                   const filled = (overallPct / 100) * C;
                   return (
                     <svg width="44" height="44" style={{ transform: 'rotate(-90deg)' }}>
-                      <circle cx="22" cy="22" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
+                      <circle cx="22" cy="22" r={R} fill="none" stroke="rgba(31,31,36,0.10)" strokeWidth="4" />
                       <circle cx="22" cy="22" r={R} fill="none" stroke={GOLD} strokeWidth="4"
                         strokeLinecap="round" strokeDasharray={`${filled} ${C}`}
                         style={{ transition: 'stroke-dasharray 1.2s ease' }}
@@ -154,7 +154,7 @@ export default function ModulesPage() {
       </div>
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
-      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(11,12,15,0.88)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 20 }}>
+      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 20 }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '8px 16px' }}>
 
           {/* Row 1: filter tabs */}
@@ -168,10 +168,10 @@ export default function ModulesPage() {
                   fontSize: 11, fontWeight: filter === f.key ? 700 : 500,
                   letterSpacing: '0.06em', textTransform: 'uppercase',
                   padding: '8px 16px', borderRadius: 100,
-                  border: filter === f.key ? `1px solid rgba(232,201,126,0.25)` : `1px solid ${BORDER}`,
+                  border: filter === f.key ? `1px solid rgba(142,45,158,0.25)` : `1px solid ${BORDER}`,
                   cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
                   minHeight: 36,
-                  background: filter === f.key ? 'rgba(232,201,126,0.1)' : 'transparent',
+                  background: filter === f.key ? 'rgba(142,45,158,0.1)' : 'transparent',
                   color: filter === f.key ? f.color : INK3,
                   whiteSpace: 'nowrap',
                 }}
@@ -196,7 +196,7 @@ export default function ModulesPage() {
                 borderRadius: 10, color: INK, outline: 'none',
                 fontFamily: 'inherit', transition: 'border-color 0.15s',
               }}
-              onFocus={e => (e.target.style.borderColor = `rgba(232,201,126,0.4)`)}
+              onFocus={e => (e.target.style.borderColor = `rgba(142,45,158,0.4)`)}
               onBlur={e => (e.target.style.borderColor = BORDER)}
             />
             {search && (
@@ -205,7 +205,7 @@ export default function ModulesPage() {
                 style={{
                   position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
                   width: 22, height: 22, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer',
+                  background: 'rgba(31,31,36,0.05)', border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', color: INK3,
                 }}
               >
@@ -258,11 +258,11 @@ export default function ModulesPage() {
                     style={{
                       position: 'absolute', top: 14, right: 14,
                       display: 'flex', alignItems: 'center', gap: 5,
-                      background: GOLD, color: '#0b0c0f',
+                      background: GOLD, color: '#ffffff',
                       fontSize: 10.5, fontWeight: 700, fontFamily: 'monospace',
                       letterSpacing: '0.06em', textTransform: 'uppercase',
                       padding: '4px 10px', borderRadius: 100,
-                      textDecoration: 'none', boxShadow: '0 2px 12px rgba(232,201,126,0.4)',
+                      textDecoration: 'none', boxShadow: '0 2px 12px rgba(142,45,158,0.4)',
                       transition: 'opacity 0.2s',
                     }}
                     title="View your certificate"
@@ -299,25 +299,25 @@ export default function ModulesPage() {
         }
         .orb-gold {
           width: 520px; height: 520px;
-          background: radial-gradient(circle, rgba(232,201,126,0.13) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(142,45,158,0.08) 0%, transparent 70%);
           top: -160px; left: -80px;
           animation: orbFloat1 18s ease-in-out infinite;
         }
         .orb-terra {
           width: 400px; height: 400px;
-          background: radial-gradient(circle, rgba(196,92,60,0.1) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(124,179,66,0.09) 0%, transparent 70%);
           top: 40px; right: -60px;
           animation: orbFloat2 22s ease-in-out infinite;
         }
         .orb-blue {
           width: 360px; height: 360px;
-          background: radial-gradient(circle, rgba(44,107,201,0.07) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(142,45,158,0.05) 0%, transparent 70%);
           bottom: -100px; left: 40%;
           animation: orbFloat3 26s ease-in-out infinite;
         }
         .orb-gold2 {
           width: 260px; height: 260px;
-          background: radial-gradient(circle, rgba(232,201,126,0.08) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(124,179,66,0.06) 0%, transparent 70%);
           top: 30%; right: 20%;
           animation: orbFloat4 20s ease-in-out infinite;
         }
@@ -345,8 +345,8 @@ export default function ModulesPage() {
         /* ── Animated grid ── */
         .hero-grid {
           background-image:
-            repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 80px),
-            repeating-linear-gradient(0deg,  rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 80px);
+            repeating-linear-gradient(90deg, rgba(31,31,36,0.035) 0, rgba(31,31,36,0.035) 1px, transparent 1px, transparent 80px),
+            repeating-linear-gradient(0deg,  rgba(31,31,36,0.035) 0, rgba(31,31,36,0.035) 1px, transparent 1px, transparent 80px);
           animation: gridDrift 30s linear infinite;
         }
         @keyframes gridDrift {
@@ -403,8 +403,8 @@ function ParticleCanvas() {
             ctx.lineTo(particles[j].x, particles[j].y);
             const fade = (1 - dist / 110) * 0.08;
             ctx.strokeStyle = particles[i].gold || particles[j].gold
-              ? `rgba(232,201,126,${fade})`
-              : `rgba(255,255,255,${fade * 0.5})`;
+              ? `rgba(142,45,158,${fade})`
+              : `rgba(31,31,36,${fade * 0.6})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
@@ -416,8 +416,8 @@ function ParticleCanvas() {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fillStyle = p.gold
-          ? `rgba(232,201,126,${p.alpha})`
-          : `rgba(255,255,255,${p.alpha * 0.6})`;
+          ? `rgba(142,45,158,${p.alpha})`
+          : `rgba(124,179,66,${p.alpha * 0.7})`;
         ctx.fill();
 
         // Move

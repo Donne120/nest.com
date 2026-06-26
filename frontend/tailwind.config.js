@@ -37,9 +37,9 @@ export default {
       },
       boxShadow: {
         // Layered, realistic shadows
-        'card':     '0 1px 2px rgba(80,40,10,0.07), 0 1px 3px rgba(80,40,10,0.1)',
-        'card-md':  '0 2px 4px rgba(80,40,10,0.06), 0 4px 12px rgba(80,40,10,0.08)',
-        'elevated': '0 4px 6px rgba(80,40,10,0.05), 0 10px 20px rgba(80,40,10,0.08)',
+        'card':     '0 1px 2px rgba(20,40,40,0.07), 0 1px 3px rgba(20,40,40,0.1)',
+        'card-md':  '0 2px 4px rgba(20,40,40,0.06), 0 4px 12px rgba(20,40,40,0.08)',
+        'elevated': '0 4px 6px rgba(20,40,40,0.05), 0 10px 20px rgba(20,40,40,0.08)',
         'float':    '0 8px 16px rgba(0,0,0,0.08), 0 24px 48px rgba(0,0,0,0.06)',
         'modal':    '0 0 0 1px rgba(0,0,0,0.04), 0 8px 20px rgba(0,0,0,0.1), 0 24px 60px rgba(0,0,0,0.12)',
         'glow':     '0 0 0 3px rgb(var(--brand-500) / 0.15)',

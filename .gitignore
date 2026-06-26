@@ -18,3 +18,10 @@ frontend/.env
 .vscode/
 .idea/
 tools/nest-gen/.env
+
+# Generated media (nest-gen output + remotion temp)
+tools/nest-gen/output/*.mp3
+tools/nest-gen/output/*.png
+tools/nest-gen/output/*.jpg
+tools/nest-gen/output/*.mp4
+video/public/temp/

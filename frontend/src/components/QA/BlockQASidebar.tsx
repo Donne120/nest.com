@@ -119,7 +119,7 @@ export default function BlockQASidebar({
               {pendingCount > 0 && (
                 <span
                   className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold"
-                  style={{ background: '#c45c3c', color: '#fff' }}
+                  style={{ background: '#b259c4', color: '#fff' }}
                 >
                   {pendingCount}
                 </span>
@@ -142,11 +142,11 @@ export default function BlockQASidebar({
         <div
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-4"
           style={{
-            background: 'rgba(232,201,126,0.08)',
-            border: '1px solid rgba(232,201,126,0.2)',
+            background: 'rgba(178,89,196,0.08)',
+            border: '1px solid rgba(178,89,196,0.2)',
             fontFamily: 'monospace',
             fontSize: 10.5,
-            color: '#e8c97e',
+            color: '#b259c4',
             letterSpacing: '0.08em',
           }}
         >
@@ -175,7 +175,7 @@ export default function BlockQASidebar({
               minHeight: 44,
             }}
             onFocus={(e) =>
-              (e.target.style.borderColor = 'rgba(232,201,126,0.35)')
+              (e.target.style.borderColor = 'rgba(178,89,196,0.35)')
             }
             onBlur={(e) =>
               (e.target.style.borderColor = 'rgba(255,255,255,0.07)')
@@ -266,10 +266,10 @@ export default function BlockQASidebar({
                     padding: '14px 16px',
                     borderRadius: 8,
                     border: isActive
-                      ? '1px solid rgba(232,201,126,0.35)'
+                      ? '1px solid rgba(178,89,196,0.35)'
                       : '1px solid rgba(255,255,255,0.07)',
                     background: isActive
-                      ? 'rgba(232,201,126,0.04)'
+                      ? 'rgba(178,89,196,0.04)'
                       : '#1c1e27',
                     cursor: 'pointer',
                     transition: 'border-color 0.2s',
@@ -283,11 +283,11 @@ export default function BlockQASidebar({
                       gap: 4,
                       padding: '2px 8px',
                       borderRadius: 100,
-                      background: 'rgba(232,201,126,0.1)',
-                      border: '1px solid rgba(232,201,126,0.2)',
+                      background: 'rgba(178,89,196,0.1)',
+                      border: '1px solid rgba(178,89,196,0.2)',
                       fontFamily: 'monospace',
                       fontSize: 9.5,
-                      color: '#e8c97e',
+                      color: '#b259c4',
                       letterSpacing: '0.08em',
                       marginBottom: 8,
                     }}
@@ -334,7 +334,7 @@ export default function BlockQASidebar({
                               ? 'rgba(74,222,128,0.1)'
                               : 'rgba(196,92,60,0.12)',
                           color:
-                            q.status === 'answered' ? '#4ade80' : '#c45c3c',
+                            q.status === 'answered' ? '#4ade80' : '#b259c4',
                         }}
                       >
                         {q.status}
@@ -366,7 +366,7 @@ export default function BlockQASidebar({
                               color: '#6b6b78',
                             }}
                           >
-                            <span style={{ fontWeight: 600, color: a.is_official ? '#e8c97e' : '#9ca3af' }}>
+                            <span style={{ fontWeight: 600, color: a.is_official ? '#b259c4' : '#9ca3af' }}>
                               {a.answered_by_user.full_name}
                             </span>
                             {a.is_official && (
@@ -375,8 +375,8 @@ export default function BlockQASidebar({
                                   fontSize: 9,
                                   padding: '1px 5px',
                                   borderRadius: 100,
-                                  background: 'rgba(232,201,126,0.15)',
-                                  color: '#e8c97e',
+                                  background: 'rgba(178,89,196,0.15)',
+                                  color: '#b259c4',
                                   fontWeight: 600,
                                   letterSpacing: '0.06em',
                                 }}

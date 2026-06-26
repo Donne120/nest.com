@@ -15,7 +15,7 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center">
           <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">📬</span>
@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
             If <strong>{email}</strong> is registered, you'll receive a reset link shortly.
             The link expires in 1 hour.
           </p>
-          <Link to="/login" className="text-indigo-600 font-medium hover:underline text-sm">
+          <Link to="/login" className="text-brand-600 font-medium hover:underline text-sm">
             Back to login
           </Link>
         </div>
@@ -34,10 +34,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-white flex items-center justify-center p-6">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-xl">N</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Forgot your password?</h1>
@@ -64,20 +64,20 @@ export default function ForgotPasswordPage() {
               onChange={e => setEmail(e.target.value)}
               required
               placeholder="you@company.com"
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
 
           <button
             type="submit"
             disabled={isPending}
-            className="w-full bg-indigo-600 text-white rounded-xl py-2.5 font-semibold text-sm hover:bg-indigo-700 transition-colors disabled:opacity-60"
+            className="w-full bg-brand-600 text-white rounded-xl py-2.5 font-semibold text-sm hover:bg-brand-700 transition-colors disabled:opacity-60"
           >
             {isPending ? 'Sending...' : 'Send reset link'}
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            <Link to="/login" className="text-indigo-600 hover:underline">Back to login</Link>
+            <Link to="/login" className="text-brand-600 hover:underline">Back to login</Link>
           </p>
         </form>
       </div>

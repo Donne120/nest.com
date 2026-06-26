@@ -76,7 +76,7 @@ function loadYouTubeAPI(callback: () => void) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, onVideoEnd, showIntro = true }: Props) {
+export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, onVideoEnd, showIntro = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const ytPlayerRef = useRef<any>(null);

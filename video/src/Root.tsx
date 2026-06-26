@@ -29,6 +29,8 @@ import { T09_Meetings }     from './tutorial/videos/T09_Meetings';
 import { T10_Analytics }    from './tutorial/videos/T10_Analytics';
 import { T11_Certificates } from './tutorial/videos/T11_Certificates';
 import { T12_Payments }     from './tutorial/videos/T12_Payments';
+import { CourseVideoV2 } from './CourseVideoV2';
+import type { CourseVideoV2Props } from './CourseVideoV2';
 
 const ONBOARDING_TITLES = [
   'Welcome to Nest',
@@ -1025,6 +1027,36 @@ export const Root: React.FC = () => (
         height={720}
       />
     ))}
+
+    {/* ── V2 Generated Course Videos — one composition per lesson (4 modules × 6 lessons) ── */}
+    {/* Module 1 */}
+    <Composition id="CourseV2-M1-L1" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 0, lessonIndex: 0 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M1-L2" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 0, lessonIndex: 1 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M1-L3" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 0, lessonIndex: 2 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M1-L4" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 0, lessonIndex: 3 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M1-L5" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 0, lessonIndex: 4 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M1-L6" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 0, lessonIndex: 5 } satisfies CourseVideoV2Props} />
+    {/* Module 2 */}
+    <Composition id="CourseV2-M2-L1" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 1, lessonIndex: 0 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M2-L2" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 1, lessonIndex: 1 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M2-L3" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 1, lessonIndex: 2 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M2-L4" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 1, lessonIndex: 3 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M2-L5" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 1, lessonIndex: 4 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M2-L6" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 1, lessonIndex: 5 } satisfies CourseVideoV2Props} />
+    {/* Module 3 */}
+    <Composition id="CourseV2-M3-L1" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 2, lessonIndex: 0 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M3-L2" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 2, lessonIndex: 1 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M3-L3" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 2, lessonIndex: 2 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M3-L4" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 2, lessonIndex: 3 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M3-L5" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 2, lessonIndex: 4 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M3-L6" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 2, lessonIndex: 5 } satisfies CourseVideoV2Props} />
+    {/* Module 4 */}
+    <Composition id="CourseV2-M4-L1" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 3, lessonIndex: 0 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M4-L2" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 3, lessonIndex: 1 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M4-L3" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 3, lessonIndex: 2 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M4-L4" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 3, lessonIndex: 3 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M4-L5" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 3, lessonIndex: 4 } satisfies CourseVideoV2Props} />
+    <Composition id="CourseV2-M4-L6" component={CourseVideoV2} durationInFrames={3600} fps={30} width={1920} height={1080} defaultProps={{ courseDataPath: 'course_complete.json', moduleIndex: 3, lessonIndex: 5 } satisfies CourseVideoV2Props} />
 
     {/* Tutorial thumbnails — 1280×720 PNG stills */}
     <Still id="Thumb-T01-Welcome"            component={TutorialThumbnail} width={1280} height={720} defaultProps={{ lessonNumber: 1,  title: 'Welcome to Nest',                steps: ['The Learner Dashboard', 'Navigating to My Courses', 'Opening a Course'],          icon: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z' }} />

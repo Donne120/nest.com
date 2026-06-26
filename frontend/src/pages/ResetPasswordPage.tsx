@@ -33,10 +33,10 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-white flex items-center justify-center p-6">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-xl">N</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Set a new password</h1>
@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
               required
               minLength={8}
               placeholder="At least 8 characters"
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
 
@@ -74,20 +74,20 @@ export default function ResetPasswordPage() {
               onChange={e => setConfirm(e.target.value)}
               required
               placeholder="Same as above"
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
 
           <button
             type="submit"
             disabled={isPending}
-            className="w-full bg-indigo-600 text-white rounded-xl py-2.5 font-semibold text-sm hover:bg-indigo-700 transition-colors disabled:opacity-60"
+            className="w-full bg-brand-600 text-white rounded-xl py-2.5 font-semibold text-sm hover:bg-brand-700 transition-colors disabled:opacity-60"
           >
             {isPending ? 'Updating...' : 'Update password'}
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            <Link to="/login" className="text-indigo-600 hover:underline">Back to login</Link>
+            <Link to="/login" className="text-brand-600 hover:underline">Back to login</Link>
           </p>
         </form>
       </div>

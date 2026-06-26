@@ -1,22 +1,27 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-// ── Tokens ─────────────────────────────────────────────────────────────────
-const BG      = '#0a0907';
-const SURFACE = '#111009';
-const CARD    = '#161410';
-const INK     = '#f0ebe2';
-const INK2    = '#8a8070';
-const INK3    = '#4a4238';
-const RULE    = 'rgba(255,255,255,0.07)';
-const GOLD    = '#c8a96e';
-const GOLD2   = '#e8d4a0';
-const RUST    = '#c45c2c';
-const SAGE    = '#5a8a6a';
+// ── Tokens — purple + lime, clean white canvas ──────────────────────────────
+const BG      = '#ffffff';
+const SURFACE = '#faf9fb';
+const CARD    = '#ffffff';
+const INK     = '#1f1f24';
+const INK2    = '#5c5764';
+const INK3    = '#9b96a3';
+const RULE    = 'rgba(31,31,36,0.10)';
+const GOLD    = '#8e2d9e';   // purple — primary accent (was gold)
+const GOLD2   = '#7b2d8e';   // deep purple — bright accent (was gold2)
+const RUST    = '#8e2d9e';   // purple — replaces rust (no orange)
+const SAGE    = '#7cb342';   // lime green — secondary
 
 const DISP  = "'Cormorant Garamond', Georgia, serif";
 const UI    = "'Syne', sans-serif";
 const MONO  = "'DM Mono', monospace";
+
+// Semantic helpers (light theme) — replace former dark/gold rgba patterns
+const ACC_TINT   = 'rgba(142,45,158,';   // purple accent tint, append "0.x)"
+const INK_LINE   = 'rgba(31,31,36,';      // charcoal hairline, append "0.x)"
+const OVERLAY    = 'rgba(31,31,36,0.55)'; // image scrim on light
 
 // ── Scroll reveal ──────────────────────────────────────────────────────────
 function useReveal() {
@@ -68,14 +73,14 @@ function LandingNav() {
       height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '0 clamp(16px, 4vw, 48px)',
       borderBottom: `1px solid ${RULE}`,
-      background: 'rgba(10,9,7,0.92)',
+      background: 'rgba(255,255,255,0.85)',
       backdropFilter: 'blur(20px)',
       fontFamily: UI, gap: 12,
     }}>
       <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
         <div style={{
           width: 32, height: 32,
-          border: `1.5px solid rgba(200,169,110,0.4)`,
+          border: `1.5px solid rgba(142,45,158,0.4)`,
           borderRadius: 6,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 13, fontWeight: 800, color: GOLD, fontFamily: UI,
@@ -138,8 +143,8 @@ function HeroVideo() {
         flex: '1 1 460px', maxWidth: 620,
         width: '100%',
         borderRadius: 12, overflow: 'hidden',
-        border: `1px solid rgba(200,169,110,0.18)`,
-        boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
+        border: `1px solid rgba(142,45,158,0.18)`,
+        boxShadow: '0 30px 60px rgba(31,31,36,0.14)',
         cursor: 'pointer', position: 'relative',
         background: '#000',
       }}
@@ -155,15 +160,15 @@ function HeroVideo() {
         <div style={{
           position: 'absolute', inset: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(10,9,7,0.4)',
+          background: OVERLAY,
         }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
             background: GOLD,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 32px rgba(200,169,110,0.45)',
+            boxShadow: '0 8px 32px rgba(142,45,158,0.45)',
           }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#0a0907">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#120d17">
               <polygon points="6,4 22,12 6,20" />
             </svg>
           </div>
@@ -186,17 +191,17 @@ function Hero() {
       <div style={{
         position: 'absolute', width: 1000, height: 700,
         top: '50%', left: '50%', transform: 'translate(-50%,-55%)',
-        background: `radial-gradient(ellipse, rgba(200,169,110,0.07) 0%, transparent 70%)`,
+        background: `radial-gradient(ellipse, rgba(142,45,158,0.07) 0%, transparent 70%)`,
         pointerEvents: 'none',
       }} />
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
-        backgroundImage: `linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px)`,
+        backgroundImage: `linear-gradient(rgba(31,31,36,0.03) 1px, transparent 1px)`,
         backgroundSize: '100% 80px',
       }} />
       <div style={{
         position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1,
-        background: `linear-gradient(to bottom, transparent, rgba(200,169,110,0.08) 30%, rgba(200,169,110,0.08) 70%, transparent)`,
+        background: `linear-gradient(to bottom, transparent, rgba(142,45,158,0.08) 30%, rgba(142,45,158,0.08) 70%, transparent)`,
         pointerEvents: 'none',
       }} />
 
@@ -211,7 +216,7 @@ function Hero() {
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 10,
             fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.2em', textTransform: 'uppercase',
-            color: GOLD, border: `1px solid rgba(200,169,110,0.2)`,
+            color: GOLD, border: `1px solid rgba(142,45,158,0.2)`,
             padding: '7px 16px', borderRadius: 100, marginBottom: 40,
             animation: 'lpRise 0.8s ease forwards',
           }}>
@@ -259,7 +264,7 @@ function Hero() {
               textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10,
               transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
             }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 16px 40px rgba(200,169,110,0.25)'; }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 16px 40px rgba(142,45,158,0.25)'; }}
               onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none'; }}
             >
               Start for free
@@ -272,7 +277,7 @@ function Hero() {
               textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8,
               transition: 'color 0.2s, border-color 0.2s',
             }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = INK; el.style.borderColor = 'rgba(255,255,255,0.18)'; }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = INK; el.style.borderColor = 'rgba(31,31,36,0.22)'; }}
               onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = INK2; el.style.borderColor = RULE; }}
             >
               <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="10" cy="10" r="8"/><path d="M7.5 8.5l5 1.5-5 1.5"/></svg>
@@ -431,11 +436,11 @@ function HowItWorks() {
 function StepCard({ num, icon, title, body }: { num: string; icon: React.ReactNode; title: string; body: string }) {
   return (
     <div style={{ background: CARD, padding: '40px 36px', position: 'relative', transition: 'background 0.25s', cursor: 'default' }}
-      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#1c1a14')}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#f5eef7')}
       onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = CARD)}
     >
-      <div style={{ fontFamily: DISP, fontSize: 72, fontWeight: 300, color: 'rgba(200,169,110,0.12)', lineHeight: 1, position: 'absolute', top: 24, right: 28, letterSpacing: '-0.04em' }}>{num}</div>
-      <div style={{ width: 44, height: 44, border: `1px solid rgba(200,169,110,0.2)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: GOLD }}>{icon}</div>
+      <div style={{ fontFamily: DISP, fontSize: 72, fontWeight: 300, color: 'rgba(142,45,158,0.12)', lineHeight: 1, position: 'absolute', top: 24, right: 28, letterSpacing: '-0.04em' }}>{num}</div>
+      <div style={{ width: 44, height: 44, border: `1px solid rgba(142,45,158,0.2)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: GOLD }}>{icon}</div>
       <div style={{ fontSize: 17, fontWeight: 700, color: INK, marginBottom: 12, lineHeight: 1.3, fontFamily: UI }}>{title}</div>
       <div style={{ fontSize: 14, color: INK2, lineHeight: 1.7, fontFamily: UI }}>{body}</div>
     </div>
@@ -506,7 +511,7 @@ function FeatCard({ icon, title, body }: { icon: React.ReactNode; title: string;
     <div style={{ background: CARD, padding: '36px 32px 40px', transition: 'background 0.2s', position: 'relative', overflow: 'hidden', cursor: 'default' }}
       onMouseEnter={e => {
         const el = e.currentTarget as HTMLElement;
-        el.style.background = '#1c1a14';
+        el.style.background = '#f5eef7';
         const bar = el.querySelector<HTMLElement>('.feat-bar');
         if (bar) bar.style.transform = 'scaleX(1)';
       }}
@@ -543,7 +548,7 @@ function ForWho() {
         }}>
           {/* Educators */}
           <div style={{ background: CARD, padding: 'clamp(36px,5vw,56px)' }}>
-            <div style={{ width: 48, height: 48, border: `1px solid rgba(200,169,110,0.25)`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: GOLD }}>
+            <div style={{ width: 48, height: 48, border: `1px solid rgba(142,45,158,0.25)`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: GOLD }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
             </div>
             <div style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 }}>For Educators &amp; Creators</div>
@@ -580,7 +585,7 @@ function ForWho() {
           </div>
 
           {/* Learners */}
-          <div style={{ background: '#131210', padding: 'clamp(36px,5vw,56px)' }}>
+          <div style={{ background: '#f4f8ec', padding: 'clamp(36px,5vw,56px)' }}>
             <div style={{ width: 48, height: 48, border: `1px solid rgba(90,138,106,0.3)`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: SAGE }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
             </div>
@@ -743,9 +748,9 @@ function Pricing() {
         }}>
           {PLANS.map(p => (
             <div key={p.tier} style={{
-              background: p.featured ? '#1e1b12' : CARD,
+              background: p.featured ? '#f5eef7' : CARD,
               padding: '44px 36px', position: 'relative', display: 'flex', flexDirection: 'column',
-              border: p.featured ? `1px solid rgba(200,169,110,0.18)` : 'none',
+              border: p.featured ? `1px solid rgba(142,45,158,0.18)` : 'none',
               margin: p.featured ? -1 : 0, zIndex: p.featured ? 1 : 0,
             }}>
               {p.featured && (
@@ -796,7 +801,7 @@ function Pricing() {
 function CtaBand() {
   return (
     <section style={{ padding: 'clamp(64px,10vw,140px) 0', borderTop: `1px solid ${RULE}`, position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 60%, rgba(200,169,110,0.06) 0%, transparent 65%)` }} />
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 60%, rgba(142,45,158,0.06) 0%, transparent 65%)` }} />
       <div className="lp-reveal" style={{
         maxWidth: 700, margin: '0 auto', textAlign: 'center',
         position: 'relative', zIndex: 1, padding: '0 clamp(16px,4vw,48px)',
@@ -819,7 +824,7 @@ function CtaBand() {
             textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10,
             transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
           }}
-            onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 16px 40px rgba(200,169,110,0.25)'; }}
+            onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 16px 40px rgba(142,45,158,0.25)'; }}
             onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none'; }}
           >
             Create your free workspace
@@ -868,7 +873,7 @@ function CodeGateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 2000,
-      background: 'rgba(10,9,7,0.92)', backdropFilter: 'blur(20px)',
+      background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24, animation: 'lpRise 0.25s ease',
     }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -900,13 +905,13 @@ function CodeGateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
               autoComplete="off"
               style={{
                 width: '100%', background: SURFACE, boxSizing: 'border-box',
-                border: `1px solid ${error ? RUST : 'rgba(255,255,255,0.1)'}`,
+                border: `1px solid ${error ? RUST : 'rgba(31,31,36,0.12)'}`,
                 borderRadius: 8, padding: '12px 16px',
                 fontFamily: MONO, fontSize: 15, letterSpacing: '0.18em',
                 color: INK, outline: 'none',
               }}
               onFocus={e => { if (!error) e.currentTarget.style.borderColor = `${GOLD}66`; }}
-              onBlur={e => { if (!error) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              onBlur={e => { if (!error) e.currentTarget.style.borderColor = 'rgba(31,31,36,0.12)'; }}
             />
             {error && <div style={{ fontFamily: MONO, fontSize: 10.5, color: RUST, letterSpacing: '0.08em', marginTop: 8 }}>Incorrect code. Try again.</div>}
             <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
@@ -950,7 +955,7 @@ function LandingFooter() {
         {/* Brand */}
         <div style={{ maxWidth: 240 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-            <div style={{ width: 28, height: 28, border: `1.5px solid rgba(200,169,110,0.4)`, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: GOLD }}>N</div>
+            <div style={{ width: 28, height: 28, border: `1.5px solid rgba(142,45,158,0.4)`, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: GOLD }}>N</div>
             <span style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: GOLD2 }}>Nest</span>
           </div>
           <p style={{ fontSize: 13, color: INK3, lineHeight: 1.6 }}>
@@ -1003,7 +1008,7 @@ function LandingFooter() {
 
       {/* Docs overlay */}
       {showDocs && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(10,9,7,0.97)', overflowY: 'auto' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(255,255,255,0.98)', overflowY: 'auto' }}>
           <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(40px,6vw,80px) clamp(16px,4vw,48px)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 48 }}>
               <div>
@@ -1181,7 +1186,7 @@ function CodeGate({ doc, onClose }: { doc: typeof DOCS[0]; onClose: () => void }
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 2000,
-      background: 'rgba(10,9,7,0.92)', backdropFilter: 'blur(20px)',
+      background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24,
       animation: 'lpRise 0.25s ease',
@@ -1190,7 +1195,7 @@ function CodeGate({ doc, onClose }: { doc: typeof DOCS[0]; onClose: () => void }
         background: CARD, border: `1px solid ${error ? RUST : success ? SAGE : GOLD}44`,
         borderRadius: 16, padding: 'clamp(32px,5vw,52px)',
         maxWidth: 440, width: '100%',
-        boxShadow: `0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px ${error ? RUST : success ? SAGE : GOLD}22`,
+        boxShadow: `0 30px 60px rgba(31,31,36,0.14), 0 0 0 1px ${error ? RUST : success ? SAGE : GOLD}22`,
         animation: shake ? 'lpShake 0.55s ease' : 'none',
         transition: 'border-color 0.3s, box-shadow 0.3s',
       }}>
@@ -1229,7 +1234,7 @@ function CodeGate({ doc, onClose }: { doc: typeof DOCS[0]; onClose: () => void }
               autoComplete="off"
               style={{
                 width: '100%', background: SURFACE,
-                border: `1px solid ${error ? RUST : 'rgba(255,255,255,0.1)'}`,
+                border: `1px solid ${error ? RUST : 'rgba(31,31,36,0.12)'}`,
                 borderRadius: 8, padding: '13px 16px',
                 fontFamily: MONO, fontSize: 15, letterSpacing: '0.18em',
                 color: INK, outline: 'none',
@@ -1237,7 +1242,7 @@ function CodeGate({ doc, onClose }: { doc: typeof DOCS[0]; onClose: () => void }
                 boxSizing: 'border-box',
               }}
               onFocus={e => { if (!error) e.currentTarget.style.borderColor = `${GOLD}66`; }}
-              onBlur={e => { if (!error) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              onBlur={e => { if (!error) e.currentTarget.style.borderColor = 'rgba(31,31,36,0.12)'; }}
             />
             {error && (
               <div style={{ fontFamily: MONO, fontSize: 10.5, color: RUST, letterSpacing: '0.1em', marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1334,7 +1339,7 @@ function Documents() {
               }}
                 onMouseEnter={e => {
                   const el = e.currentTarget;
-                  el.style.background = '#1c1a14';
+                  el.style.background = '#f5eef7';
                   const bar = el.querySelector<HTMLElement>('.doc-bar');
                   if (bar) bar.style.transform = 'scaleX(1)';
                   const arrow = el.querySelector<HTMLElement>('.doc-arrow');

@@ -35,7 +35,7 @@ function tokens(isDark: boolean) {
     navHoverBg:      isDark ? '#1c1e27'                   : 'rgba(0,0,0,0.05)',
     navActiveColor:  isDark ? '#e8e4dc'                   : '#18181b',
     navInactiveColor:isDark ? '#6b6b78'                   : '#52525b',
-    orgNameColor:    isDark ? '#e8c97e'                   : '#b8901e',
+    orgNameColor:    isDark ? '#5bb0b5'                   : '#2f8085',
     unreadDot:       '#0b0c0f',
   };
 }

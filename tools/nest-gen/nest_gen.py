@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 """
 nest-gen — One-click AI course generator for Nest.
-Uses NVIDIA LLM + edge-tts + Remotion to build full 3-5 min lesson videos.
+Uses NVIDIA LLM + Stability AI + edge-tts + Remotion to build full lesson videos.
 
 Usage:
+  # Generate from scratch (LLM invents the curriculum)
   python nest_gen.py "AI For Everyday Life"
   python nest_gen.py "AI For Everyday Life" --modules 4 --lessons 4 --dry-run
+
+  # Generate from your own documents (each file = one module, 1 lesson)
+  python nest_gen.py "Basic AI Skills for Everyday Life" --from-files ./my_course/
+  python nest_gen.py "Basic AI Skills" --from-files ./docs/ --dry-run --no-upload
+
+  Supported file types: .pdf  .docx  .txt  .md
+  Required extras:  pip install pypdf python-docx
 """
 
 import argparse
@@ -23,7 +31,6 @@ from pathlib import Path
 if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-import base64
 
 import requests
 from dotenv import load_dotenv
@@ -32,8 +39,9 @@ from tqdm import tqdm
 # ── Load config ────────────────────────────────────────────────────────────
 load_dotenv()
 
-NVIDIA_API_KEY    = os.getenv("NVIDIA_API_KEY", "")
-NVIDIA_IMAGE_KEY  = os.getenv("NVIDIA_IMAGE_KEY", "")
+NVIDIA_API_KEY      = os.getenv("NVIDIA_API_KEY", "")
+NVIDIA_IMAGE_KEY    = os.getenv("NVIDIA_IMAGE_KEY", "")
+STABILITY_API_KEY   = os.getenv("STABILITY_API_KEY", "")
 LLM_CALL_INTERVAL = float(os.getenv("LLM_CALL_INTERVAL", "3"))
 EDGE_VOICE        = os.getenv("EDGE_VOICE", "en-GB-RyanNeural")
 NEST_API_URL      = os.getenv("NEST_API_URL", "http://localhost:8000")
@@ -315,52 +323,70 @@ RULE 2 — CONTENT RULES
 • ai_response / result: what the learner sees or gets — realistic, 2–4 sentences, genuinely useful
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SLIDE STRUCTURE — exactly 7 slides per lesson
+SLIDE STRUCTURE — exactly 8 slides per lesson
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Slide 1 · type "title"
-  heading: lesson title
-  subheading: "Module {module_num} · Lesson N"
-  narration: 120–150 words — welcome + what they will achieve + why it matters today
+Slide 1 · type "hook"
+  heading: the exact real-world situation this lesson solves — phrased as a frustrated question
+    e.g. "Still spending an hour writing the same message to every customer?"
+  story: one vivid sentence — a specific person, their exact daily struggle, and the cost
+    e.g. "Every evening, a small business owner types 40 individual WhatsApp messages by hand."
+  narration: 120–150 words — paint the struggle in detail, make the learner say "that is me",
+             then promise a clear solution is coming in this lesson
 
-Slide 2 · type "hook"
-  heading: the exact problem this lesson solves, phrased as a frustrated question
-  story: one sentence — a relatable person, their specific struggle, and what it costs them
-  narration: 120–150 words — tell their story fully, build empathy, promise the solution
+Slide 2 · type "content"
+  heading: "The One Idea Behind This" (or name the concept simply)
+  bullets: 4 short plain-English statements explaining WHAT the skill/concept IS
+  visual_hint: pick ONE — match the shape of the idea:
+    "timeline"  — ordered steps or historical sequence
+    "cycle"     — repeating process or loop
+    "stats"     — when bullets contain numbers or percentages
+    "default"   — ideas, concepts, benefits (mind map)
+  narration: 120–150 words — explain the concept with one simple analogy. No jargon.
+             Make it feel obvious and achievable. End with excitement for the next slide.
 
 Slide 3 · type "content"
-  heading: "What [Skill / Concept] Does For You"
-  bullets: 4 short benefit statements, verb-first, max 10 words each
-  visual_hint: pick ONE — the visual shape must match the idea shape:
-    "timeline"  — sequential steps, ordered events, historical progression
-    "cycle"     — circular/repeating process (seasons, feedback loops, business cycles)
-    "stats"     — key numbers, percentages, measurable results (use when bullets contain digits)
-    "default"   — concepts, ideas, benefits, comparisons (mind map)
-  narration: 120–150 words — explain the concept with a clear analogy, no jargon
+  heading: "Why This Works — The Logic Behind It"
+  bullets: 4 bullets explaining the REASONING — why this approach is effective, not just what it does
+  visual_hint: "default" or "stats" if numbers are present
+  narration: 120–150 words — explain the logic in plain language. Use a real-world comparison.
+             Help learners understand WHY so they can adapt it to their own situations.
 
 Slide 4 · type "walkthrough"
   heading: "Step By Step — Let us Do It Together"
   steps: exactly 5 numbered strings — plain English, action-first, specific
   example_prompt: the exact thing the learner types, clicks, or does — specific to this topic
   ai_response: what they get back — realistic 2–4 sentence result
-  narration: 200–260 words — this is the most important slide. Walk through EACH of the 5 steps one by one. For every step: say what to do, describe exactly what the learner sees on screen, and tell them what to expect next before moving on. Speak slowly and clearly as if guiding someone who has never done this before. Do not rush — each step deserves its own moment.
+  narration: 200–260 words — the most important slide. Walk through EACH of the 5 steps one by one.
+             For every step: say what to do, describe what the learner sees, tell them what comes next.
+             Slow down — each step deserves its own moment. This is where skills are built.
 
 Slide 5 · type "example"
-  heading: "A Real Example"
-  bullets: 4 bullets — before situation, after result, specific improvement, what to do next
-  narration: 120–150 words — concrete story of someone using this skill and what changed
+  heading: "Watch It Work — A Real Situation"
+  bullets: 4 bullets — the starting situation, the exact action taken, the result, and what changed
+  narration: 120–150 words — narrate a real person doing this. Be specific. Show the before and after
+             in concrete detail. End with: "You can get the exact same result."
 
-Slide 6 · type "practice"
+Slide 6 · type "common_mistakes"
+  heading: "What Goes Wrong — And How to Avoid It"
+  bullets: 4 bullets — each is a specific mistake followed by the fix, format: "Mistake: [what] → Fix: [how]"
+    e.g. "Mistake: Asking too broadly → Fix: Always include your specific situation"
+  narration: 120–150 words — walk through each mistake conversationally. Describe exactly how it happens
+             and what the learner should do instead. Be reassuring — everyone makes these at first.
+
+Slide 7 · type "practice"
   heading: "Your Turn — Do It Right Now"
-  task: one clear instruction — what to open, what to do
-  example_prompt: a ready-to-use prompt or task the learner can do right now with their own situation
+  task: one clear instruction — exactly what to open and do, right now
+  example_prompt: a ready-to-use prompt or task with [placeholders] the learner fills in
   timer_seconds: 120
-  narration: 120–150 words — encourage them to pause, try it, and come back with a result
+  narration: 120–150 words — tell them to pause right now. Be direct. Walk through exactly what
+             to do step by step. Reassure them imperfect attempts are fine. Build urgency.
 
-Slide 7 · type "summary"
-  heading: "What You Learned Today"
+Slide 8 · type "summary"
+  heading: "What You Can Do Now"
   bullets: 4 complete sentences starting with "You can now..."
-  narration: 120–150 words — recap the skill, celebrate progress, give one action for today
+  narration: 120–150 words — celebrate what they just learned. Name the skill specifically.
+             Give one action to take today. Hint at what is coming next. End warmly.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 JSON FORMAT
@@ -375,67 +401,79 @@ JSON FORMAT
       "order_index": 0,
       "slides": [
         {{
-          "type": "title",
-          "heading": "Lesson title",
-          "subheading": "Module {module_num} · Lesson 1",
-          "narration": "WRITE 120–150 WORDS HERE. Welcome the learner warmly. Tell them exactly what they will be able to do by the end of this lesson. Explain why this matters in their daily life or work. Tell them what the lesson covers: the concept, a step-by-step demonstration, a real example, and a hands-on exercise. Build anticipation. End with energy."
-        }},
-        {{
           "type": "hook",
-          "heading": "Still doing [specific task] the slow, frustrating way?",
-          "story": "Picture someone who [vivid specific struggle — what they do manually, how long it takes, what it costs them].",
-          "narration": "WRITE 120–150 WORDS HERE. Open by painting the picture of that struggle in detail — what does their day look like, what does it feel like, what are they missing out on because of this problem? Make the learner nod and say 'that is me.' Then shift — tell them there is a better way, a clear method, and they are about to learn it. End with: 'That is exactly what this lesson is about.'"
+          "heading": "Still doing [specific frustrating thing] the hard way?",
+          "story": "Picture [a specific person] who [exact daily struggle — what they do, how long it takes, what it costs].",
+          "narration": "WRITE 120–150 WORDS HERE. Open with their daily frustration in vivid detail. Make the learner feel it. Then shift the energy — tell them there is a clear method and they are about to learn it. End with: 'That is exactly what this lesson is about.'"
         }},
         {{
           "type": "content",
-          "heading": "What [Skill or Concept] Does For You",
-          "bullets": ["Specific benefit 1", "Specific benefit 2", "Specific benefit 3", "Specific benefit 4"],
+          "heading": "The One Idea: [Name the concept simply]",
+          "bullets": ["What it is — plain language", "What it does", "Who uses it", "What becomes possible"],
           "visual_hint": "default",
-          "narration": "WRITE 120–150 WORDS HERE. Explain the skill or concept clearly using a simple analogy that anyone can picture. Describe what it does, why it works, and what becomes possible when you use it. Connect each bullet point to something the learner cares about. Do not use jargon. Speak conversationally as if explaining to a friend. End with a sentence that creates excitement for the next slide."
+          "narration": "WRITE 120–150 WORDS HERE. Introduce the concept with one memorable analogy. Keep it conversational. Connect to something the learner already knows. End with a line that makes the next slide feel essential."
+        }},
+        {{
+          "type": "content",
+          "heading": "Why This Works",
+          "bullets": ["The core reason it works", "The logic behind step 1", "The logic behind step 2", "Why most people get results fast"],
+          "visual_hint": "default",
+          "narration": "WRITE 120–150 WORDS HERE. Explain the reasoning clearly. Use a comparison or real-world parallel. Help the learner feel confident — not just told what to do but understanding why. End with energy going into the step-by-step."
         }},
         {{
           "type": "walkthrough",
           "heading": "Step By Step — Let us Do It Together",
           "steps": [
-            "Step 1: [specific first action]",
+            "Step 1: [specific first action — what to open or start]",
             "Step 2: [specific second action]",
-            "Step 3: [specific third action — the key input or decision]",
-            "Step 4: [specific fourth action — where the result happens]",
-            "Step 5: [specific fifth action — reading, saving, applying the result]"
+            "Step 3: [the key input or decision — most important step]",
+            "Step 4: [where the result appears]",
+            "Step 5: [what to do with the result]"
           ],
-          "example_prompt": "The exact text, question, or instruction the learner uses — specific to this lesson topic.",
-          "ai_response": "The realistic result they get — specific, useful, 2–4 sentences.",
-          "narration": "WRITE 120–150 WORDS HERE. Walk through each step as if you are right next to the learner watching their screen. Describe what they see at each step, what to look for, what to do when something appears. Make it feel live and immediate. For steps 3 and 4, slow down and be extra clear — this is where people usually get confused. Describe the result they will see. End with encouragement."
+          "example_prompt": "The exact text or action — specific to this lesson topic.",
+          "ai_response": "The realistic result — specific, useful, 2–4 sentences.",
+          "narration": "WRITE 200–260 WORDS HERE. Guide every step as if sitting next to the learner. Describe exactly what they see at each moment. Slow down at steps 3 and 4 — that is where most people get stuck. Describe the result they will see. End with encouragement."
         }},
         {{
           "type": "example",
-          "heading": "A Real Example — See It Working",
+          "heading": "Watch It Work — A Real Situation",
           "bullets": [
-            "Before: [the starting situation — specific]",
-            "After: [the result — specific and measurable]",
-            "Improvement: [what changed — time, quality, confidence, money]",
-            "Next step: [what they did with the result]"
+            "Situation: [who they are and what they needed]",
+            "Action: [exactly what they did using this lesson's skill]",
+            "Result: [specific outcome — time, money, quality]",
+            "What changed: [how their work or life improved]"
           ],
-          "narration": "WRITE 120–150 WORDS HERE. Tell a concrete story of a real person using this skill. Be specific about their situation before and after. Describe the moment it clicked for them. Show the actual result in detail — what they got, how long it took, what they did with it. Connect this back to the learner: 'You can get the exact same result.' End by transitioning to the practice slide."
+          "narration": "WRITE 120–150 WORDS HERE. Tell a concrete story. Be specific about the before and after. Show the result in real detail. End with: 'You can get the exact same result — and you are about to.'"
+        }},
+        {{
+          "type": "common_mistakes",
+          "heading": "What Goes Wrong — And How to Fix It",
+          "bullets": [
+            "Mistake: [specific wrong thing people do] → Fix: [exact correction]",
+            "Mistake: [second common error] → Fix: [exact correction]",
+            "Mistake: [third common error] → Fix: [exact correction]",
+            "Mistake: [fourth common error] → Fix: [exact correction]"
+          ],
+          "narration": "WRITE 120–150 WORDS HERE. Walk through each mistake in a friendly, non-judgmental way. Describe exactly how it happens and why. Then give the clear fix. Reassure the learner — these mistakes are normal and now they know how to avoid them."
         }},
         {{
           "type": "practice",
           "heading": "Your Turn — Do It Right Now",
-          "task": "Pause this video, [open / go to / take out] [specific resource], and [specific action]",
-          "example_prompt": "A ready-to-use prompt or task — personalised with placeholders like [your topic] or [your goal] so any learner can adapt it.",
+          "task": "Pause this video, open [specific tool or resource], and [specific action to take]",
+          "example_prompt": "A ready-to-use prompt or task with [your situation] placeholders.",
           "timer_seconds": 120,
-          "narration": "WRITE 120–150 WORDS HERE. Tell the learner to pause the video right now — be direct about it. Explain exactly what to do: open this, copy that, type this, see what happens. Tell them the timer gives them two minutes but they can take more. Reassure them that it is okay if the first attempt is imperfect — the point is to try. Build up the importance of doing it now rather than later. End by telling them you will be right here when they come back and you will recap everything they just did."
+          "narration": "WRITE 120–150 WORDS HERE. Tell them to pause right now — be direct and encouraging. Walk through exactly what to do. Remind them the timer is a guide not a pressure. Reassure them that trying imperfectly is better than not trying. Tell them you will recap everything when they return."
         }},
         {{
           "type": "summary",
-          "heading": "What You Learned Today",
+          "heading": "What You Can Do Now",
           "bullets": [
-            "You can now [specific skill from this lesson].",
-            "You know [the key concept or method taught].",
-            "You have [what they created or practiced].",
+            "You can now [the core skill from this lesson].",
+            "You understand [the key concept and why it works].",
+            "You know [the common mistakes and how to avoid them].",
             "Your next step: [one specific action to take today]."
           ],
-          "narration": "WRITE 120–150 WORDS HERE. Celebrate what the learner just accomplished — name the specific skill they learned. Walk through the 4 bullet points and explain why each one matters. Remind them that most people never learn this — they now have an advantage. Give them one specific thing to do before the end of today to reinforce this skill. Build excitement for the next lesson by hinting at what is coming. End warmly and encouragingly."
+          "narration": "WRITE 120–150 WORDS HERE. Celebrate the skill they just learned — name it specifically. Walk through the bullets and explain why each one matters. Remind them most people never learn this properly. Give one action to take before the end of today. Build excitement for the next lesson. End warmly."
         }}
       ]
     }}
@@ -629,6 +667,198 @@ IMPORTANT: Include scene_type, scene_caption, scene_era, and scene_location on E
 """
 
 
+# ── File extraction (--from-files mode) ───────────────────────────────────
+
+def _extract_text(file_path: Path) -> str:
+    """Extract plain text from PDF, DOCX, TXT, or MD files."""
+    ext = file_path.suffix.lower()
+
+    if ext in (".txt", ".md"):
+        return file_path.read_text(encoding="utf-8", errors="ignore").strip()
+
+    if ext == ".pdf":
+        try:
+            import pypdf
+            reader = pypdf.PdfReader(str(file_path))
+            return "\n\n".join(
+                page.extract_text() or "" for page in reader.pages
+            ).strip()
+        except ImportError:
+            raise RuntimeError(
+                "pypdf is required for PDF files — run: pip install pypdf"
+            )
+
+    if ext in (".docx", ".doc"):
+        try:
+            import docx
+            doc = docx.Document(str(file_path))
+            return "\n\n".join(p.text for p in doc.paragraphs if p.text.strip()).strip()
+        except ImportError:
+            raise RuntimeError(
+                "python-docx is required for Word files — run: pip install python-docx"
+            )
+
+    raise ValueError(f"Unsupported file type: {ext}  (supported: .pdf .docx .txt .md)")
+
+
+def _collect_source_files(folder: Path) -> list[Path]:
+    """Return all supported files in the folder, sorted by name."""
+    supported = {".pdf", ".docx", ".doc", ".txt", ".md"}
+    files = sorted(
+        f for f in folder.iterdir()
+        if f.is_file() and f.suffix.lower() in supported
+    )
+    if not files:
+        raise RuntimeError(f"No supported files found in {folder}")
+    return files
+
+
+FROM_FILES_MODULE_PROMPT = """\
+You are building one module of a professional video course called "{course_title}".
+
+Below is the SOURCE CONTENT for this module, written by the course author.
+Your job is to package this content into a perfect, professional lesson video — using the author's
+words, examples, tools, and exercises as your primary source. Do not invent topics not in the source.
+Do expand narrations to the required length using the ideas already present.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SOURCE CONTENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{source_content}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Return ONLY valid JSON — no markdown fences, no explanation, no extra text.
+
+The module has exactly ONE lesson with exactly 8 slides in this order:
+
+Slide 1 · type "hook"
+  heading: the exact real-world frustration this module solves — a direct question
+  story: one vivid sentence — a specific person, their struggle, the cost of not knowing this
+  narration: 120–150 words — open with the learner's pain in vivid detail, promise a solution,
+             end with "That is exactly what this lesson is about."
+
+Slide 2 · type "content"
+  heading: name the core concept or skill simply
+  bullets: 4 short plain-English statements — WHAT it is, what it does, who uses it, what becomes possible
+  visual_hint: "default" | "timeline" | "cycle" | "stats"
+  narration: 120–150 words — one memorable analogy, conversational, end with excitement for the next slide
+
+Slide 3 · type "content"
+  heading: "Why This Works"
+  bullets: 4 bullets — the reasoning, the logic, why this approach beats alternatives
+  visual_hint: "default" or "stats"
+  narration: 120–150 words — explain the logic with a real-world comparison
+
+Slide 4 · type "walkthrough"
+  heading: "Step By Step — Let us Do It Together"
+  steps: exactly 5 numbered strings — action-first, specific, pulled from the source content
+  example_prompt: the exact thing the learner types or does — use the real example from source if present
+  ai_response: realistic 2–4 sentence result — what the learner sees
+  narration: 200–260 words — walk through EACH step one by one, slow down at steps 3 and 4,
+             describe what the learner sees at every moment
+
+Slide 5 · type "example"
+  heading: "Watch It Work — A Real Situation"
+  bullets: 4 bullets — Situation / Action / Result / What changed
+  narration: 120–150 words — tell the story concretely, end with "You can get the exact same result."
+
+Slide 6 · type "common_mistakes"
+  heading: "What Goes Wrong — And How to Fix It"
+  bullets: 4 bullets — format: "Mistake: [what] → Fix: [how]"
+  narration: 120–150 words — friendly, non-judgmental, walk through each mistake and its fix
+
+Slide 7 · type "practice"
+  heading: "Your Turn — Do It Right Now"
+  task: one clear instruction — what to open and do right now (use the source exercise if present)
+  example_prompt: a ready-to-use prompt with [placeholders] the learner fills in
+  timer_seconds: 120
+  narration: 120–150 words — direct, encouraging, tell them to pause now
+
+Slide 8 · type "summary"
+  heading: "What You Can Do Now"
+  bullets: 4 complete sentences starting with "You can now..."
+  narration: 120–150 words — celebrate the skill, give one action to take today, hint at what is next
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUALITY RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Every narration MUST be 120–150 words minimum (walkthrough: 200–260 words)
+• Use real tool names from the source (ChatGPT, Claude, Gemini, Perplexity, etc.)
+• Use the real exercises from the source in the practice slide
+• Plain language — no jargon unless the source uses it
+• Module order_index: {module_index}
+
+JSON structure:
+{{
+  "title": "Module title from source",
+  "description": "One sentence about this module.",
+  "order_index": {module_index},
+  "lessons": [
+    {{
+      "title": "Lesson title",
+      "order_index": 0,
+      "slides": [ ...8 slides... ]
+    }}
+  ]
+}}
+"""
+
+
+def generate_curriculum_from_files(title: str, folder: Path) -> dict:
+    """Build a curriculum from source documents. Each file becomes one module (1 lesson)."""
+    files = _collect_source_files(folder)
+    print(f"   📂 Found {len(files)} source file(s):")
+    for f in files:
+        print(f"      · {f.name}")
+
+    modules = []
+    for m_idx, file_path in enumerate(files):
+        print(f"\n  Reading {file_path.name}...")
+        try:
+            content = _extract_text(file_path)
+        except Exception as e:
+            raise RuntimeError(f"Could not read {file_path.name}: {e}") from e
+
+        if len(content) < 100:
+            print(f"    ⚠ File too short — skipping {file_path.name}")
+            continue
+
+        print(f"  Structuring module {m_idx + 1}/{len(files)} via LLM...")
+        prompt = FROM_FILES_MODULE_PROMPT.format(
+            course_title=title,
+            source_content=content[:12000],  # stay within context limits
+            module_index=m_idx,
+        )
+
+        for attempt in range(3):
+            try:
+                text = _llm_call(prompt, max_tokens=8000)
+                module = _parse_json(text)
+                module = _validate_and_fix_narrations(module)
+                modules.append(module)
+                break
+            except Exception as e:
+                if attempt == 2:
+                    raise RuntimeError(
+                        f"Module {m_idx + 1} ({file_path.name}) failed after 3 attempts: {e}"
+                    ) from e
+                print(f"    Retrying ({attempt + 2}/3)...")
+                time.sleep(3)
+
+        time.sleep(LLM_CALL_INTERVAL)
+
+    if not modules:
+        raise RuntimeError("No modules were generated — check your source files.")
+
+    return {
+        "course_title":       title,
+        "course_description": f"A practical video course on {title}.",
+        "modules":            modules,
+    }
+
+
 def generate_curriculum(title: str, n_modules: int, n_lessons: int) -> dict:
     is_math      = _is_math_course(title)
     is_cinematic = detect_theme(title) == "cinematic"
@@ -738,54 +968,160 @@ def _validate_and_fix_narrations(module: dict) -> dict:
 # ── Thumbnail generation ───────────────────────────────────────────────────
 
 THUMB_PROMPTS = [
-    "A person smiling and using a laptop or smartphone, learning online, warm natural light, "
-    "photo-realistic, soft background bokeh, professional educational feel",
-    "Friendly instructor explaining something on a whiteboard or tablet, warm lighting, "
-    "realistic photo, professional setting, engaging and approachable",
-    "A student or professional working on a computer with a focused happy expression, "
-    "modern office or cafe, natural light, photorealistic",
+    "photorealistic wide shot of a modern bright learning environment, laptop on desk, "
+    "warm natural window light, shallow depth of field, no people, no text, clean",
+    "cinematic overhead shot of a clean workspace with notebook, pen and laptop, "
+    "soft warm bokeh, professional educational feel, no text, no logos",
+    "modern minimalist classroom or coworking space, golden hour sunlight streaming in, "
+    "empty chairs, whiteboard in background, photorealistic, no text",
+    "close-up of hands typing on a keyboard with a blurred bright office background, "
+    "warm tone, photorealistic, no text, no logos",
+    "wide shot of a bright modern library or study room, bookshelves, warm lighting, "
+    "inviting academic atmosphere, photorealistic, no text",
 ]
 
+
+def _overlay_captions(bg_path: str, lesson_title: str, module_title: str, out_path: str) -> bool:
+    """Composite professional text captions over an AI-generated background image."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+
+        W, H = 1280, 720
+        bg = Image.open(bg_path).convert("RGB").resize((W, H), Image.LANCZOS)
+        overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+
+        # Dark vignette gradient over bottom half so text always readable
+        for y in range(H // 2, H):
+            t = (y - H // 2) / (H // 2)
+            alpha = int(t * 210)
+            draw.line([(0, y), (W, y)], fill=(0, 0, 0, alpha))
+
+        # Lighter scrim over top-left for module badge
+        draw.rectangle([0, 0, W, 120], fill=(0, 0, 0, 80))
+
+        bg.paste(Image.alpha_composite(Image.new("RGBA", (W, H), (0, 0, 0, 0)), overlay).convert("RGB"),
+                 mask=overlay.split()[3])
+
+        draw2 = ImageDraw.Draw(bg)
+
+        def _font(size: int, bold: bool = False):
+            candidates = (
+                ["arialbd.ttf", "Arial Bold.ttf", "DejaVuSans-Bold.ttf"] if bold
+                else ["arial.ttf", "Arial.ttf", "DejaVuSans.ttf"]
+            )
+            for name in candidates:
+                try:
+                    return ImageFont.truetype(name, size)
+                except Exception:
+                    pass
+            return ImageFont.load_default()
+
+        font_badge   = _font(22)
+        font_title   = _font(62, bold=True)
+        font_caption = _font(26)
+
+        # — MODULE BADGE ————————————————————————————————————————
+        badge_text = module_title[:48].upper()
+        bbox = draw2.textbbox((0, 0), badge_text, font=font_badge)
+        bw = bbox[2] - bbox[0] + 32
+        # Solid accent-blue pill so text is always legible over any background
+        draw2.rounded_rectangle([52, 48, 52 + bw, 48 + 40], radius=8,
+                                 fill=(80, 120, 255))
+        draw2.text((52 + 16, 56), badge_text, font=font_badge, fill=(255, 255, 255))
+
+        # — LESSON TITLE ————————————————————————————————————————
+        MARGIN = 64
+        max_w = W - MARGIN * 2
+
+        def wrap(text: str, font, max_px: int) -> list[str]:
+            words = text.split()
+            lines, cur = [], ""
+            for w in words:
+                test = (cur + " " + w).strip()
+                if draw2.textlength(test, font=font) > max_px and cur:
+                    lines.append(cur)
+                    cur = w
+                else:
+                    cur = test
+            if cur:
+                lines.append(cur)
+            return lines
+
+        title_lines = wrap(lesson_title, font_title, max_w)
+        line_h = 76
+        block_h = len(title_lines) * line_h
+        # Place title in lower-centre zone
+        y0 = H - 110 - block_h
+        for line in title_lines:
+            # Shadow
+            draw2.text((MARGIN + 2, y0 + 2), line, font=font_title, fill=(0, 0, 0, 160))
+            draw2.text((MARGIN, y0), line, font=font_title, fill=(255, 255, 255))
+            y0 += line_h
+
+        # — BOTTOM CAPTION BAR ——————————————————————————————————
+        bar_h = 56
+        bar_y = H - bar_h
+        bar_bg = Image.new("RGBA", (W, bar_h), (0, 0, 0, 190))
+        bg.paste(bar_bg.convert("RGB"), (0, bar_y), mask=bar_bg.split()[3])
+
+        draw3 = ImageDraw.Draw(bg)
+        # Accent line above bar
+        draw3.line([(0, bar_y), (W, bar_y)], fill=(100, 140, 255), width=2)
+
+        # Nest brand
+        draw3.ellipse([52, bar_y + 16, 66, bar_y + 30], fill=(100, 140, 255))
+        draw3.text((76, bar_y + 12), "Nest", font=_font(26, bold=True), fill=(255, 255, 255))
+
+        # Right: module · lesson
+        caption_text = f"{module_title}  ·  {lesson_title[:55]}"
+        cw = draw3.textlength(caption_text, font=font_caption)
+        draw3.text((W - cw - 52, bar_y + 14), caption_text, font=font_caption,
+                   fill=(180, 200, 240))
+
+        bg.save(out_path, "JPEG", quality=95)
+        return True
+    except Exception as e:
+        print(f"    ⚠ Caption overlay error: {e}")
+        return False
+
+
 def generate_thumbnail(lesson_title: str, module_title: str, out_path: str) -> bool:
-    """Generate a photorealistic instructor-style thumbnail via NVIDIA Image API.
-    Falls back to a Pillow-generated card if API fails or key is missing.
-    Returns True on success."""
-    if NVIDIA_IMAGE_KEY:
+    """Generate thumbnail: Stability AI background + Pillow caption overlay.
+    Falls back to pure Pillow card if API fails or key is missing."""
+    if STABILITY_API_KEY:
         try:
-            import random
-            base_prompt = random.choice(THUMB_PROMPTS)
-            prompt = f"{base_prompt}. Topic: {lesson_title}."
-            negative = "logo, watermark, brand, dark theme, cartoon, Nest, letter N, text overlay"
+            import random, tempfile
+            prompt = (
+                f"{random.choice(THUMB_PROMPTS)} "
+                f"Subject theme: {lesson_title}."
+            )
             resp = requests.post(
-                "https://ai.api.nvidia.com/v1/genai/stabilityai/stable-diffusion-xl",
+                "https://api.stability.ai/v2beta/stable-image/generate/core",
                 headers={
-                    "Authorization": f"Bearer {NVIDIA_IMAGE_KEY}",
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {STABILITY_API_KEY}",
+                    "Accept": "image/*",
                 },
-                json={
-                    "text_prompts": [
-                        {"text": prompt, "weight": 1.0},
-                        {"text": negative, "weight": -1.0},
-                    ],
-                    "cfg_scale": 7.0,
-                    "seed": 0,
-                    "sampler": "K_DPM_2_ANCESTRAL",
-                    "steps": 25,
+                files={"none": ""},
+                data={
+                    "prompt":        prompt,
+                    "output_format": "jpeg",
+                    "aspect_ratio":  "16:9",
                 },
                 timeout=90,
             )
             if resp.status_code == 200:
-                data = resp.json()
-                img_b64 = data["artifacts"][0]["base64"]
-                img_bytes = base64.b64decode(img_b64)
-                with open(out_path, "wb") as f:
-                    f.write(img_bytes)
-                return True
+                with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+                    tmp.write(resp.content)
+                    tmp_path = tmp.name
+                if _overlay_captions(tmp_path, lesson_title, module_title, out_path):
+                    import os; os.unlink(tmp_path)
+                    return True
+                import os; os.unlink(tmp_path)
             else:
-                print(f"    ⚠ Image API {resp.status_code}: {resp.text[:120]} — using Pillow fallback")
+                print(f"    ⚠ Stability API {resp.status_code}: {resp.text[:120]} — using Pillow fallback")
         except Exception as e:
-            print(f"    ⚠ Image API error ({e}) — using Pillow fallback")
+            print(f"    ⚠ Stability thumbnail error ({e}) — using Pillow fallback")
 
     return _pillow_thumbnail(lesson_title, module_title, out_path)
 
@@ -793,62 +1129,123 @@ def generate_thumbnail(lesson_title: str, module_title: str, out_path: str) -> b
 def _pillow_thumbnail(lesson_title: str, module_title: str, out_path: str) -> bool:
     try:
         from PIL import Image, ImageDraw, ImageFont
-
         W, H = 1280, 720
-        # Warm gradient background (not Nest dark)
         img = Image.new("RGB", (W, H))
-        draw = ImageDraw.Draw(img)
+        draw = ImageDraw.Draw(img, "RGBA")
 
-        # Warm gradient: deep teal → warm amber
+        # Deep navy → rich indigo gradient
         for y in range(H):
             t = y / H
-            r = int(20  + t * 180)
-            g = int(80  + t * 100)
-            b = int(120 - t * 60)
+            r = int(10  + t * 30)
+            g = int(12  + t * 20)
+            b = int(40  + t * 60)
             draw.line([(0, y), (W, y)], fill=(r, g, b))
 
-        # Decorative circles (organic, human feel)
-        draw.ellipse([W - 300, -100, W + 100, 300], fill=(255, 180, 60, 80))
-        draw.ellipse([-80, H - 200, 220, H + 80], fill=(60, 200, 180, 60))
+        # Subtle grid lines (tech/professional feel)
+        grid_color = (255, 255, 255, 12)
+        for x in range(0, W, 80):
+            draw.line([(x, 0), (x, H)], fill=grid_color)
+        for y in range(0, H, 80):
+            draw.line([(0, y), (W, y)], fill=grid_color)
 
-        # Module label
-        try:
-            font_lg = ImageFont.truetype("arial.ttf", 44)
-            font_sm = ImageFont.truetype("arial.ttf", 32)
-        except Exception:
-            font_lg = ImageFont.load_default()
-            font_sm = font_lg
+        # Glowing accent orbs
+        orb = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        orb_draw = ImageDraw.Draw(orb)
+        orb_draw.ellipse([W - 420, -180, W + 80, 320], fill=(80, 120, 255, 35))
+        orb_draw.ellipse([-120, H - 260, 280, H + 120], fill=(120, 80, 255, 25))
+        orb_draw.ellipse([W // 2 - 200, H // 2 - 200, W // 2 + 200, H // 2 + 200],
+                         fill=(60, 200, 255, 10))
+        img.paste(Image.alpha_composite(Image.new("RGBA", (W, H), (0, 0, 0, 0)), orb).convert("RGB"),
+                  mask=orb.split()[3])
 
-        # Module tag
-        tag_pad = 18
-        tag_text = module_title[:50]
-        bbox = draw.textbbox((0, 0), tag_text, font=font_sm)
-        tag_w = bbox[2] - bbox[0] + tag_pad * 2
-        draw.rounded_rectangle([60, 60, 60 + tag_w, 60 + 50], radius=10, fill=(255, 255, 255, 40))
-        draw.text((60 + tag_pad, 68), tag_text, font=font_sm, fill=(255, 255, 255))
+        # Accent top bar (gradient stripe)
+        for x in range(W):
+            t = x / W
+            r = int(80 + t * 120)
+            g = int(60 + t * 60)
+            b = int(255 - t * 60)
+            draw.line([(x, 0), (x, 5)], fill=(r, g, b))
 
-        # Main title (word-wrap at ~28 chars per line)
-        words = lesson_title.split()
-        lines, cur = [], ""
-        for w in words:
-            test = (cur + " " + w).strip()
-            if len(test) > 28 and cur:
+        # Fonts — try system fonts, fall back to default
+        def _font(size: int, bold: bool = False):
+            candidates = (
+                ["arialbd.ttf", "Arial Bold.ttf", "DejaVuSans-Bold.ttf"] if bold
+                else ["arial.ttf", "Arial.ttf", "DejaVuSans.ttf"]
+            )
+            for name in candidates:
+                try:
+                    return ImageFont.truetype(name, size)
+                except Exception:
+                    pass
+            return ImageFont.load_default()
+
+        font_module  = _font(24)
+        font_title   = _font(58, bold=True)
+        font_caption = _font(26)
+
+        # — MODULE BADGE (top-left pill) ———————————————————————
+        badge_text = module_title[:48].upper()
+        bbox = draw.textbbox((0, 0), badge_text, font=font_module)
+        bw = bbox[2] - bbox[0] + 32
+        bh = 40
+        bx, by = 56, 52
+        draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=8,
+                                fill=(255, 255, 255, 22))
+        draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=8,
+                                outline=(255, 255, 255, 60), width=1)
+        draw.text((bx + 16, by + 8), badge_text, font=font_module, fill=(200, 210, 255))
+
+        # — LESSON TITLE (centred vertically in main area) ————————
+        MARGIN = 80
+        max_w = W - MARGIN * 2
+
+        def wrap_text(text: str, font, max_px: int) -> list[str]:
+            words = text.split()
+            lines, cur = [], ""
+            for w in words:
+                test = (cur + " " + w).strip()
+                if draw.textlength(test, font=font) > max_px and cur:
+                    lines.append(cur)
+                    cur = w
+                else:
+                    cur = test
+            if cur:
                 lines.append(cur)
-                cur = w
-            else:
-                cur = test
-        if cur:
-            lines.append(cur)
+            return lines
 
-        y_start = H // 2 - len(lines) * 56 // 2
-        for line in lines:
-            draw.text((60, y_start), line, font=font_lg, fill=(255, 255, 255))
-            y_start += 62
+        title_lines = wrap_text(lesson_title, font_title, max_w)
+        line_h = 72
+        block_h = len(title_lines) * line_h
+        # Centre vertically between badge and caption bar
+        y0 = (H - 100) // 2 - block_h // 2 + 20
+        for line in title_lines:
+            # Soft shadow
+            draw.text((MARGIN + 3, y0 + 3), line, font=font_title, fill=(0, 0, 0, 120))
+            draw.text((MARGIN, y0), line, font=font_title, fill=(255, 255, 255))
+            y0 += line_h
 
-        # Bottom bar
-        draw.rectangle([0, H - 8, W, H], fill=(255, 180, 60))
+        # — BOTTOM CAPTION BAR ————————————————————————————————
+        bar_h = 80
+        bar_y = H - bar_h
+        # Semi-transparent dark bar
+        bar_overlay = Image.new("RGBA", (W, bar_h), (0, 0, 0, 170))
+        img.paste(bar_overlay.convert("RGB"), (0, bar_y), mask=bar_overlay.split()[3])
 
-        img.save(out_path, "JPEG", quality=92)
+        # Left: "Nest" brand mark with accent dot
+        draw.ellipse([56, bar_y + 28, 70, bar_y + 42], fill=(100, 140, 255))
+        draw.text((80, bar_y + 22), "Nest", font=_font(28, bold=True), fill=(255, 255, 255))
+
+        # Separator
+        draw.line([(140, bar_y + 20), (140, bar_y + 60)], fill=(255, 255, 255, 50), width=1)
+
+        # Right: lesson caption (module · lesson title snippet)
+        caption_text = f"{module_title}  ·  {lesson_title[:60]}"
+        cw = draw.textlength(caption_text, font=font_caption)
+        draw.text((W - cw - 56, bar_y + 24), caption_text, font=font_caption,
+                  fill=(180, 190, 220))
+
+        img = img.convert("RGB")
+        img.save(out_path, "JPEG", quality=95)
         return True
     except ImportError:
         print("    ⚠ Pillow not installed — skipping thumbnail")
@@ -957,6 +1354,7 @@ async def _tts_async(text: str, output_path: str, voice: str, rate: str, pitch: 
                 "start_ms":    chunk["offset"] // 10000,
                 "duration_ms": chunk["duration"] // 10000,
             })
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "wb") as f:
         for data in audio_chunks:
             f.write(data)
@@ -994,9 +1392,8 @@ def generate_tts(narration: str, output_path: str, voice: str = EDGE_VOICE,
     return captions
 
 
-# ── Per-slide contextual image (NVIDIA) ───────────────────────────────────
+# ── Per-slide contextual image (Stability AI) ─────────────────────────────
 
-# Slide types that benefit from a contextual image (right-panel or background)
 IMAGE_SLIDE_TYPES = {"content", "example", "hook"}
 
 SLIDE_IMAGE_STYLE = (
@@ -1006,8 +1403,8 @@ SLIDE_IMAGE_STYLE = (
 )
 
 def generate_slide_image(heading: str, slide_type: str, out_path: str) -> bool:
-    """Generate a contextual image for a single slide. Returns True on success."""
-    if not NVIDIA_IMAGE_KEY:
+    """Generate a contextual image for a single slide using Stability AI. Returns True on success."""
+    if not STABILITY_API_KEY:
         return False
     try:
         style_map = {
@@ -1015,32 +1412,24 @@ def generate_slide_image(heading: str, slide_type: str, out_path: str) -> bool:
             "content": f"person learning or working, topic: {heading}, {SLIDE_IMAGE_STYLE}",
             "example": f"person successfully completing a task, happy result, topic: {heading}, {SLIDE_IMAGE_STYLE}",
         }
-        prompt   = style_map.get(slide_type, f"{heading}, {SLIDE_IMAGE_STYLE}")
-        negative = "text, logo, watermark, cartoon, dark background, brand, ugly, blurry"
+        prompt = style_map.get(slide_type, f"{heading}, {SLIDE_IMAGE_STYLE}")
 
         resp = requests.post(
-            "https://ai.api.nvidia.com/v1/genai/stabilityai/stable-diffusion-xl",
+            "https://api.stability.ai/v2beta/stable-image/generate/core",
             headers={
-                "Authorization": f"Bearer {NVIDIA_IMAGE_KEY}",
-                "Accept":        "application/json",
-                "Content-Type":  "application/json",
+                "Authorization": f"Bearer {STABILITY_API_KEY}",
+                "Accept": "image/*",
             },
-            json={
-                "text_prompts": [
-                    {"text": prompt,   "weight": 1.0},
-                    {"text": negative, "weight": -1.0},
-                ],
-                "cfg_scale": 7.0,
-                "seed":      0,
-                "sampler":   "K_DPM_2_ANCESTRAL",
-                "steps":     25,
+            files={"none": ""},
+            data={
+                "prompt": prompt,
+                "output_format": "jpeg",
             },
             timeout=90,
         )
         if resp.status_code == 200:
-            img_bytes = base64.b64decode(resp.json()["artifacts"][0]["base64"])
             with open(out_path, "wb") as f:
-                f.write(img_bytes)
+                f.write(resp.content)
             return True
         print(f"    ⚠ Slide image API {resp.status_code}: {resp.text[:80]}")
     except Exception as e:
@@ -1256,19 +1645,34 @@ def api_upload_video(file_path: str) -> str:
     return resp.json()["url"]
 
 
+def api_upload_thumbnail(file_path: str) -> str:
+    """Upload a thumbnail image to Supabase via the backend API. Returns public URL."""
+    with open(file_path, "rb") as f:
+        resp = requests.post(
+            f"{NEST_API_URL}/api/videos/upload/thumbnail",
+            files={"file": (Path(file_path).name, f, "image/jpeg")},
+            headers={"Authorization": f"Bearer {NEST_TOKEN}"},
+            timeout=60,
+        )
+    resp.raise_for_status()
+    return resp.json()["url"]
+
+
 def api_create_video(
     module_id: str, title: str, video_url: str,
     duration: int, order_index: int,
+    thumbnail_url: str | None = None,
 ) -> str:
     resp = requests.post(
         f"{NEST_API_URL}/api/videos",
         json={
-            "module_id":       module_id,
-            "title":           title,
-            "video_url":       video_url,
+            "module_id":        module_id,
+            "title":            title,
+            "video_url":        video_url,
             "duration_seconds": duration,
-            "order_index":     order_index,
-            "description":     "",
+            "order_index":      order_index,
+            "description":      "",
+            "thumbnail_url":    thumbnail_url,
         },
         headers=HEADERS,
     )
@@ -1280,22 +1684,35 @@ def api_create_video(
 
 def main():
     parser = argparse.ArgumentParser(description="nest-gen: auto-generate courses for Nest")
-    parser.add_argument("title",        help='Course title, e.g. "AI For Everyday Life"')
-    parser.add_argument("--modules",    type=int, default=4,  help="Number of modules (default: 4)")
-    parser.add_argument("--lessons",    type=int, default=4,  help="Lessons per module (default: 4)")
-    parser.add_argument("--voice",      default=EDGE_VOICE,   help="edge-tts voice")
-    parser.add_argument("--dry-run",    action="store_true",  help="Generate curriculum only, skip video rendering")
-    parser.add_argument("--no-upload",  action="store_true",  help="Render videos but skip Nest API upload")
-    parser.add_argument("--output",     default=str(OUT_DIR), help="Output directory")
+    parser.add_argument("title",         help='Course title, e.g. "AI For Everyday Life"')
+    parser.add_argument("--modules",     type=int, default=4,   help="Number of modules (default: 4)")
+    parser.add_argument("--lessons",     type=int, default=4,   help="Lessons per module (default: 4)")
+    parser.add_argument("--voice",       default=EDGE_VOICE,    help="edge-tts voice")
+    parser.add_argument("--dry-run",     action="store_true",   help="Generate curriculum only, skip video rendering")
+    parser.add_argument("--no-upload",   action="store_true",   help="Render videos but skip Nest API upload")
+    parser.add_argument("--output",      default=str(OUT_DIR),  help="Output directory")
+    parser.add_argument(
+        "--from-files", metavar="FOLDER",
+        help="Path to a folder of source documents (.pdf .docx .txt .md). "
+             "Each file becomes one module (1 lesson). Ignores --modules and --lessons.",
+    )
     args = parser.parse_args()
 
     out_dir = Path(args.output)
     out_dir.mkdir(parents=True, exist_ok=True)
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
+    from_files = Path(args.from_files) if args.from_files else None
+    if from_files and not from_files.is_dir():
+        print(f"❌ --from-files path is not a directory: {from_files}")
+        sys.exit(1)
+
     print(f"\n🎓 nest-gen")
     print(f"   Course : {args.title}")
-    print(f"   Modules: {args.modules}  ·  Lessons/module: {args.lessons}")
+    if from_files:
+        print(f"   Mode   : from-files  ({from_files})")
+    else:
+        print(f"   Modules: {args.modules}  ·  Lessons/module: {args.lessons}")
     print(f"   Voice  : {args.voice}\n")
 
     # ── Step 1: Curriculum ────────────────────────────────────────────────
@@ -1304,8 +1721,12 @@ def main():
         print("📋 Using cached curriculum.json")
         curriculum = json.loads(curriculum_path.read_text())
     else:
-        print("📋 Generating curriculum...")
-        curriculum = generate_curriculum(args.title, args.modules, args.lessons)
+        if from_files:
+            print("📋 Building curriculum from source files...")
+            curriculum = generate_curriculum_from_files(args.title, from_files)
+        else:
+            print("📋 Generating curriculum...")
+            curriculum = generate_curriculum(args.title, args.modules, args.lessons)
         curriculum_path.write_text(json.dumps(curriculum, indent=2))
         print(f"   ✓ {len(curriculum['modules'])} modules · {sum(len(m['lessons']) for m in curriculum['modules'])} total lessons")
 
@@ -1393,12 +1814,20 @@ def main():
             if not args.no_upload and module_id:
                 print(f"    Uploading...")
                 video_url = api_upload_video(str(video_path))
+                thumb_url = None
+                if thumb_path.exists():
+                    try:
+                        thumb_url = api_upload_thumbnail(str(thumb_path))
+                        print(f"    ✓ Thumbnail uploaded")
+                    except Exception as e:
+                        print(f"    ⚠ Thumbnail upload failed ({e}) — continuing without")
                 api_create_video(
                     module_id=module_id,
                     title=lesson["title"],
                     video_url=video_url,
                     duration=duration_sec,
                     order_index=l_idx,
+                    thumbnail_url=thumb_url,
                 )
                 print(f"    ✓ Live on Nest")
 

@@ -84,7 +84,7 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
             <p className="mt-0.5 flex items-center gap-1.5" style={{ fontFamily: 'monospace', fontSize: 11, color: '#6b6b78', letterSpacing: '0.06em' }}>
               {questions.length} QUESTION{questions.length !== 1 ? 'S' : ''}
               {pendingCount > 0 && (
-                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold" style={{ background: '#c45c3c', color: '#fff' }}>
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold" style={{ background: '#b259c4', color: '#fff' }}>
                   {pendingCount}
                 </span>
               )}
@@ -92,9 +92,10 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => openQuestionForm(currentTime)}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded transition-opacity hover:opacity-80"
-              style={{ background: '#e8c97e', color: '#0b0c0f', fontFamily: 'inherit' }}
+              type="button"
+              onClick={() => { console.log('[QA] Ask clicked, opening form at', currentTime); openQuestionForm(currentTime); }}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded transition-opacity hover:opacity-80 cursor-pointer"
+              style={{ background: '#b259c4', color: '#ffffff', fontFamily: 'inherit', position: 'relative', zIndex: 1 }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
               Ask
@@ -116,17 +117,17 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
         <div
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-4"
           style={{
-            background: 'rgba(232,201,126,0.08)',
-            border: '1px solid rgba(232,201,126,0.2)',
+            background: 'rgba(178,89,196,0.08)',
+            border: '1px solid rgba(178,89,196,0.2)',
             fontFamily: 'monospace',
             fontSize: 10.5,
-            color: '#e8c97e',
+            color: '#b259c4',
             letterSpacing: '0.1em',
           }}
         >
           <span
             className="w-1.5 h-1.5 rounded-full"
-            style={{ background: '#e8c97e', animation: 'pulse 2s infinite' }}
+            style={{ background: '#b259c4', animation: 'pulse 2s infinite' }}
           />
           AT {formatTime(currentTime)}
         </div>
@@ -148,7 +149,7 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
               color: '#e8e4dc',
               fontFamily: 'inherit',
             }}
-            onFocus={e => (e.target.style.borderColor = 'rgba(232,201,126,0.35)')}
+            onFocus={e => (e.target.style.borderColor = 'rgba(178,89,196,0.35)')}
             onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.07)')}
           />
           {search && (

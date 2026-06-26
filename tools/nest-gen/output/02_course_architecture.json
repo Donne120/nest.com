@@ -1,0 +1,257 @@
+{
+  "course_title": "Basic GPT skills to make money with",
+  "course_description": "Unlock the potential of GPT to transform your career or business. This course will teach you the fundamental skills to create high-quality content, develop a personal brand, and monetize your skills through various online platforms. By the end of this course, you'll be equipped with the knowledge and confidence to succeed in the digital landscape.",
+  "n_modules": 4,
+  "n_lessons_per_module": 6,
+  "modules": [
+    {
+      "title": "Introduction to GPT",
+      "description": "Learners will understand the basics of GPT, its applications, and how it can be used to enhance their career or business.",
+      "order_index": 0,
+      "emotional_tone": "Curious and reassured \u2014 AI is not scary, I can do this",
+      "lessons": [
+        {
+          "title": "Unlocking the Power of GPT",
+          "order_index": 0,
+          "lesson_type": "awakening",
+          "difficulty": 2,
+          "key_concept": "Introduction to GPT and its potential",
+          "connects_to_next": "Sets the stage for understanding GPT's capabilities",
+          "example_context": "Everyday examples of AI in business"
+        },
+        {
+          "title": "GPT Fundamentals",
+          "order_index": 1,
+          "lesson_type": "foundation",
+          "difficulty": 3,
+          "key_concept": "Understanding how GPT works",
+          "connects_to_next": "Builds on the introduction to dive deeper into GPT's mechanics",
+          "example_context": "Technical examples of GPT in action"
+        },
+        {
+          "title": "Creating Content with GPT",
+          "order_index": 2,
+          "lesson_type": "skill_build",
+          "difficulty": 4,
+          "key_concept": "Step-by-step guide to creating content with GPT",
+          "connects_to_next": "Applies foundational knowledge to practical content creation",
+          "example_context": "Real-world content creation scenarios"
+        },
+        {
+          "title": "GPT for Business: Case Study",
+          "order_index": 3,
+          "lesson_type": "case_study",
+          "difficulty": 5,
+          "key_concept": "Real-world application of GPT in business",
+          "connects_to_next": "Shows the practical application of GPT in a business context",
+          "example_context": "Successful business stories using GPT"
+        },
+        {
+          "title": "Overcoming GPT Challenges",
+          "order_index": 4,
+          "lesson_type": "deep_dive",
+          "difficulty": 6,
+          "key_concept": "Addressing common challenges and nuances of using GPT",
+          "connects_to_next": "Delves into the complexities of working with GPT",
+          "example_context": "Advanced scenarios and edge cases"
+        },
+        {
+          "title": "Module 1 Milestone: GPT Foundations",
+          "order_index": 5,
+          "lesson_type": "milestone",
+          "difficulty": 5,
+          "key_concept": "Consolidating knowledge and celebrating progress",
+          "connects_to_next": "Prepares learners for the next module by reinforcing key concepts",
+          "example_context": "Review of key takeaways from Module 1"
+        }
+      ]
+    },
+    {
+      "title": "Developing Your GPT Skills",
+      "description": "Learners will develop their skills in using GPT for content creation, understand how to develop a personal brand, and start exploring monetization strategies.",
+      "order_index": 1,
+      "emotional_tone": "Engaged and motivated \u2014 I'm learning new skills and seeing results",
+      "lessons": [
+        {
+          "title": "Advanced GPT Techniques",
+          "order_index": 0,
+          "lesson_type": "skill_build",
+          "difficulty": 6,
+          "key_concept": "Advanced step-by-step guide to mastering GPT",
+          "connects_to_next": "Builds on foundational skills to enhance proficiency",
+          "example_context": "Advanced content creation techniques"
+        },
+        {
+          "title": "GPT and Personal Branding",
+          "order_index": 1,
+          "lesson_type": "foundation",
+          "difficulty": 5,
+          "key_concept": "Understanding the role of GPT in personal branding",
+          "connects_to_next": "Explains how GPT can be leveraged for personal branding",
+          "example_context": "Examples of successful personal branding using GPT"
+        },
+        {
+          "title": "Monetizing Your GPT Skills",
+          "order_index": 2,
+          "lesson_type": "case_study",
+          "difficulty": 6,
+          "key_concept": "Real-world examples of monetizing GPT skills",
+          "connects_to_next": "Shows how learners can apply their skills for financial gain",
+          "example_context": "Stories of individuals successfully monetizing their GPT skills"
+        },
+        {
+          "title": "GPT Lab: Practical Exercises",
+          "order_index": 3,
+          "lesson_type": "lab",
+          "difficulty": 7,
+          "key_concept": "Hands-on practice with GPT through various exercises",
+          "connects_to_next": "Provides learners with extensive practice to reinforce their skills",
+          "example_context": "Multiple exercises for learners to practice their GPT skills"
+        },
+        {
+          "title": "Debating GPT Ethics",
+          "order_index": 4,
+          "lesson_type": "debate",
+          "difficulty": 6,
+          "key_concept": "Critical thinking about the ethical implications of GPT",
+          "connects_to_next": "Encourages learners to think critically about GPT's impact",
+          "example_context": "Ethical considerations and debates around GPT"
+        },
+        {
+          "title": "Module 2 Milestone: GPT Skills Development",
+          "order_index": 5,
+          "lesson_type": "milestone",
+          "difficulty": 6,
+          "key_concept": "Celebrating progress and reinforcing key skills",
+          "connects_to_next": "Prepares learners for the next module by highlighting achievements",
+          "example_context": "Review of key takeaways from Module 2"
+        }
+      ]
+    },
+    {
+      "title": "Mastering GPT for Business Success",
+      "description": "Learners will dive deeper into advanced GPT applications, learn how to overcome challenges, and develop strategies for long-term success.",
+      "order_index": 2,
+      "emotional_tone": "Challenged but confident \u2014 I'm pushing my limits and achieving more",
+      "lessons": [
+        {
+          "title": "Advanced GPT Applications",
+          "order_index": 0,
+          "lesson_type": "deep_dive",
+          "difficulty": 7,
+          "key_concept": "Exploring advanced and complex applications of GPT",
+          "connects_to_next": "Challenges learners to think about innovative uses of GPT",
+          "example_context": "Cutting-edge applications and future directions of GPT"
+        },
+        {
+          "title": "GPT Challenge: Solving Real-World Problems",
+          "order_index": 1,
+          "lesson_type": "challenge",
+          "difficulty": 8,
+          "key_concept": "Applying GPT skills to solve real-world problems with minimal guidance",
+          "connects_to_next": "Tests learners' ability to apply their skills in practical scenarios",
+          "example_context": "Real-world problems that require GPT solutions"
+        },
+        {
+          "title": "Worked Example: GPT for Content Strategy",
+          "order_index": 2,
+          "lesson_type": "worked_example",
+          "difficulty": 7,
+          "key_concept": "Step-by-step solution to a complex GPT problem",
+          "connects_to_next": "Provides a detailed example of applying GPT to content strategy",
+          "example_context": "Detailed walkthrough of using GPT for content strategy"
+        },
+        {
+          "title": "GPT and Team Collaboration",
+          "order_index": 3,
+          "lesson_type": "foundation",
+          "difficulty": 6,
+          "key_concept": "Understanding how GPT can be used in team collaboration",
+          "connects_to_next": "Explains the role of GPT in enhancing team productivity",
+          "example_context": "Examples of successful team collaboration using GPT"
+        },
+        {
+          "title": "GPT Lab: Advanced Exercises",
+          "order_index": 4,
+          "lesson_type": "lab",
+          "difficulty": 8,
+          "key_concept": "Advanced hands-on practice with complex GPT exercises",
+          "connects_to_next": "Provides extensive practice to reinforce advanced GPT skills",
+          "example_context": "Multiple advanced exercises for learners to practice their GPT skills"
+        },
+        {
+          "title": "Module 3 Milestone: Mastering GPT",
+          "order_index": 5,
+          "lesson_type": "milestone",
+          "difficulty": 7,
+          "key_concept": "Consolidating advanced knowledge and celebrating mastery",
+          "connects_to_next": "Prepares learners for the final module by reinforcing advanced concepts",
+          "example_context": "Review of key takeaways from Module 3"
+        }
+      ]
+    },
+    {
+      "title": "Launching Your GPT-Powered Career",
+      "description": "Learners will finalize their preparation to launch their GPT-powered career, develop a personal brand, and create a strategy for long-term success.",
+      "order_index": 3,
+      "emotional_tone": "Empowered and enthusiastic \u2014 I have the skills and knowledge to succeed",
+      "lessons": [
+        {
+          "title": "Finalizing Your GPT Strategy",
+          "order_index": 0,
+          "lesson_type": "skill_build",
+          "difficulty": 7,
+          "key_concept": "Step-by-step guide to finalizing a GPT strategy for career launch",
+          "connects_to_next": "Helps learners to apply their knowledge to create a personalized strategy",
+          "example_context": "Real-world examples of successful GPT strategies"
+        },
+        {
+          "title": "GPT and Personal Branding: Advanced Techniques",
+          "order_index": 1,
+          "lesson_type": "deep_dive",
+          "difficulty": 7,
+          "key_concept": "Advanced techniques for leveraging GPT in personal branding",
+          "connects_to_next": "Delves into nuanced applications of GPT for personal branding",
+          "example_context": "Advanced personal branding strategies using GPT"
+        },
+        {
+          "title": "Case Study: Successful GPT-Powered Careers",
+          "order_index": 2,
+          "lesson_type": "case_study",
+          "difficulty": 6,
+          "key_concept": "Real-world stories of individuals with successful GPT-powered careers",
+          "connects_to_next": "Inspires learners with examples of successful careers",
+          "example_context": "Stories of success and lessons learned from GPT-powered careers"
+        },
+        {
+          "title": "GPT Challenge: Launching Your Career",
+          "order_index": 3,
+          "lesson_type": "challenge",
+          "difficulty": 8,
+          "key_concept": "Applying GPT skills to launch a career with minimal guidance",
+          "connects_to_next": "Tests learners' ability to apply their skills in a real-world scenario",
+          "example_context": "Real-world scenario of launching a GPT-powered career"
+        },
+        {
+          "title": "Worked Example: GPT for Career Development",
+          "order_index": 4,
+          "lesson_type": "worked_example",
+          "difficulty": 7,
+          "key_concept": "Step-by-step solution to a complex GPT problem for career development",
+          "connects_to_next": "Provides a detailed example of applying GPT to career development",
+          "example_context": "Detailed walkthrough of using GPT for career development"
+        },
+        {
+          "title": "Module 4 Milestone: Launching Your GPT-Powered Career",
+          "order_index": 5,
+          "lesson_type": "milestone",
+          "difficulty": 7,
+          "key_concept": "Celebrating completion and preparing for a successful GPT-powered career",
+          "connects_to_next": "Finalizes the course by reinforcing key takeaways and encouraging further learning",
+          "example_context": "Review of key takeaways from the entire course"
+        }
+      ]
+    }
+  ],
+  "generated_at": "2026-04-21T03:07:59.215844"
+}

@@ -30,7 +30,7 @@ function DonutRing({ pct }: { pct: number }) {
         <circle cx="46" cy="46" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
         <circle
           cx="46" cy="46" r={R} fill="none"
-          stroke="#e8c97e" strokeWidth="6" strokeLinecap="round"
+          stroke="#b259c4" strokeWidth="6" strokeLinecap="round"
           strokeDasharray={`${filled} ${C}`}
           style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1)' }}
         />
@@ -49,8 +49,8 @@ const RESOURCE_ICON: Record<ModuleResource['type'], typeof Globe> = {
 
 function LoadingSkeleton() {
   return (
-    <div style={{ background: '#f2ede8', minHeight: '100vh' }}>
-      <div style={{ background: '#0f0d0b', height: 280 }} className="animate-pulse" />
+    <div style={{ background: '#ffffff', minHeight: '100vh' }}>
+      <div style={{ background: '#1a1320', height: 280 }} className="animate-pulse" />
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 40px' }} className="grid gap-7 animate-pulse" >
         <Skeleton className="h-48 rounded-md" />
         <Skeleton className="h-64 rounded-md" />
@@ -128,11 +128,11 @@ export default function ModuleDetailPage() {
     <div style={{ background: BG, minHeight: '100vh', fontFamily: "'DM Sans', 'Inter', sans-serif" }}>
 
       {/* ══ HERO (dark) ══════════════════════════════════════════════════ */}
-      <section style={{ background: '#0f0d0b', position: 'relative', padding: 'clamp(28px,5vw,56px) 0 clamp(40px,6vw,72px)', overflow: 'hidden' }}>
+      <section style={{ background: '#1a1320', position: 'relative', padding: 'clamp(28px,5vw,56px) 0 clamp(40px,6vw,72px)', overflow: 'hidden' }}>
         {/* Ambient glow */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at 70% 50%, rgba(201,79,44,0.08) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(44,95,201,0.06) 0%, transparent 55%)',
+          background: 'radial-gradient(ellipse at 70% 50%, rgba(178,89,196,0.14) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(124,179,66,0.08) 0%, transparent 55%)',
         }} />
         {/* Grid lines */}
         <div style={{
@@ -160,7 +160,7 @@ export default function ModuleDetailPage() {
 
           {/* Status chip */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: status === 'completed' ? '#34d399' : status === 'in_progress' ? '#e8c97e' : 'rgba(255,255,255,0.25)', display: 'inline-block' }} />
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: status === 'completed' ? '#7cb342' : status === 'in_progress' ? '#b259c4' : 'rgba(255,255,255,0.25)', display: 'inline-block' }} />
             {status === 'not_started' ? 'Not Started' : status === 'in_progress' ? 'In Progress' : 'Completed'}
           </div>
 
@@ -354,7 +354,7 @@ export default function ModuleDetailPage() {
                   { icon: '◎', name: 'Certificate', desc: 'on completion' },
                 ].map(({ icon, name, desc }, i, arr) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                    <span style={{ fontSize: 13, width: 18, textAlign: 'center', flexShrink: 0, opacity: 0.65, color: '#e8c97e' }}>{icon}</span>
+                    <span style={{ fontSize: 13, width: 18, textAlign: 'center', flexShrink: 0, opacity: 0.85, color: '#b259c4' }}>{icon}</span>
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{name}</span>
                     <span style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{desc}</span>
                   </div>
@@ -416,9 +416,9 @@ export default function ModuleDetailPage() {
       <style>{`
         .about-prose p { margin-bottom: 12px; }
         .about-prose p:last-child { margin-bottom: 0; }
-        .about-prose strong { color: #1a1714; font-weight: 600; }
+        .about-prose strong { color: #1f1f24; font-weight: 600; }
         .about-prose ul { padding-left: 20px; margin-bottom: 12px; }
-        .about-prose li { margin-bottom: 4px; font-size: 14px; color: #6b6460; }
+        .about-prose li { margin-bottom: 4px; font-size: 14px; color: #5c5764; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
         /* Desktop: 2-column */
@@ -455,10 +455,10 @@ function SectionCard({
   title: string; meta?: string; children: ReactNode; noPadding?: boolean; style?: React.CSSProperties;
 }) {
   return (
-    <div style={{ background: '#fffcf8', border: '1px solid #d4cdc6', borderRadius: 8, overflow: 'hidden', animation: 'fadeUp 0.5s ease both', ...style }}>
-      <div style={{ padding: '20px 28px', borderBottom: '1px solid #d4cdc6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.01em', color: '#1a1714' }}>{title}</span>
-        {meta && <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#a09990', letterSpacing: '0.08em' }}>{meta}</span>}
+    <div style={{ background: '#ffffff', border: '1px solid #e6e3ea', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 2px rgba(31,31,36,0.04), 0 4px 14px rgba(31,31,36,0.05)', animation: 'fadeUp 0.5s ease both', ...style }}>
+      <div style={{ padding: '20px 28px', borderBottom: '1px solid #e6e3ea', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.01em', color: '#1f1f24' }}>{title}</span>
+        {meta && <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#9b96a3', letterSpacing: '0.08em' }}>{meta}</span>}
       </div>
       <div style={noPadding ? {} : { padding: '24px 28px' }}>{children}</div>
     </div>

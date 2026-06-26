@@ -25,8 +25,8 @@ function renderMarkdown(text: string) {
   // Inline code
   html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px;font-size:12px;font-family:monospace">$1</code>');
   // Headers
-  html = html.replace(/^### (.+)$/gm, '<p style="font-weight:700;color:#e8c97e;font-size:13px;margin:10px 0 4px">$1</p>');
-  html = html.replace(/^## (.+)$/gm, '<p style="font-weight:700;color:#e8c97e;font-size:14px;margin:12px 0 4px">$1</p>');
+  html = html.replace(/^### (.+)$/gm, '<p style="font-weight:700;color:#b259c4;font-size:13px;margin:10px 0 4px">$1</p>');
+  html = html.replace(/^## (.+)$/gm, '<p style="font-weight:700;color:#b259c4;font-size:14px;margin:12px 0 4px">$1</p>');
   // Bullet points
   html = html.replace(/^[-•] (.+)$/gm, '<li style="margin:2px 0;padding-left:4px">$1</li>');
   html = html.replace(/(<li[^>]*>.*<\/li>\n?)+/g, (m) => `<ul style="margin:4px 0 4px 12px;list-style:disc">${m}</ul>`);
@@ -157,12 +157,12 @@ export default function NestAssistant() {
       >
         <span style={{
           width: 28, height: 28, borderRadius: 8,
-          background: 'linear-gradient(135deg,#e8c97e22,#c45c3c22)',
-          border: '1px solid rgba(232,201,126,0.3)',
+          background: 'linear-gradient(135deg,#b259c422,#7cb34222)',
+          border: '1px solid rgba(178,89,196,0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <Sparkles size={14} style={{ color: '#e8c97e' }} />
+          <Sparkles size={14} style={{ color: '#b259c4' }} />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#e8e4dc', margin: 0 }}>Nest Assistant</p>
@@ -204,7 +204,7 @@ export default function NestAssistant() {
               background: 'transparent', border: 'none', cursor: 'pointer',
               color: '#6b6b78', padding: 4, borderRadius: 6,
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#c45c3c')}
+            onMouseEnter={e => (e.currentTarget.style.color = '#b259c4')}
             onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
           >
             <X size={14} />
@@ -220,11 +220,11 @@ export default function NestAssistant() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', paddingTop: 16 }}>
                 <div style={{
                   width: 48, height: 48, borderRadius: 14,
-                  background: 'linear-gradient(135deg,#e8c97e22,#c45c3c22)',
-                  border: '1px solid rgba(232,201,126,0.25)',
+                  background: 'linear-gradient(135deg,#b259c422,#7cb34222)',
+                  border: '1px solid rgba(178,89,196,0.25)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <Sparkles size={22} style={{ color: '#e8c97e' }} />
+                  <Sparkles size={22} style={{ color: '#b259c4' }} />
                 </div>
                 <p style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', lineHeight: 1.5, maxWidth: 260 }}>
                   Hi! Ask me anything about using Nest — features, how-to, or troubleshooting.
@@ -247,9 +247,9 @@ export default function NestAssistant() {
                         fontFamily: 'inherit',
                       }}
                       onMouseEnter={e => {
-                        e.currentTarget.style.background = 'rgba(232,201,126,0.08)';
-                        e.currentTarget.style.borderColor = 'rgba(232,201,126,0.2)';
-                        e.currentTarget.style.color = '#e8c97e';
+                        e.currentTarget.style.background = 'rgba(178,89,196,0.08)';
+                        e.currentTarget.style.borderColor = 'rgba(178,89,196,0.2)';
+                        e.currentTarget.style.color = '#b259c4';
                       }}
                       onMouseLeave={e => {
                         e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
@@ -276,12 +276,12 @@ export default function NestAssistant() {
                   {msg.role === 'assistant' && (
                     <span style={{
                       width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-                      background: 'linear-gradient(135deg,#e8c97e22,#c45c3c22)',
-                      border: '1px solid rgba(232,201,126,0.2)',
+                      background: 'linear-gradient(135deg,#b259c422,#7cb34222)',
+                      border: '1px solid rgba(178,89,196,0.2)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       marginTop: 2,
                     }}>
-                      <Sparkles size={11} style={{ color: '#e8c97e' }} />
+                      <Sparkles size={11} style={{ color: '#b259c4' }} />
                     </span>
                   )}
                   <div
@@ -292,10 +292,10 @@ export default function NestAssistant() {
                       fontSize: 13,
                       lineHeight: 1.55,
                       background: msg.role === 'user'
-                        ? 'rgba(232,201,126,0.12)'
+                        ? 'rgba(178,89,196,0.12)'
                         : 'rgba(255,255,255,0.05)',
                       border: msg.role === 'user'
-                        ? '1px solid rgba(232,201,126,0.2)'
+                        ? '1px solid rgba(178,89,196,0.2)'
                         : '1px solid rgba(255,255,255,0.07)',
                       color: msg.role === 'user' ? '#e8e4dc' : '#c8c4bc',
                     }}
@@ -358,7 +358,7 @@ export default function NestAssistant() {
               disabled={!input.trim() || streaming}
               style={{
                 width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                background: input.trim() && !streaming ? '#e8c97e' : 'rgba(255,255,255,0.06)',
+                background: input.trim() && !streaming ? '#b259c4' : 'rgba(255,255,255,0.06)',
                 border: 'none', cursor: input.trim() && !streaming ? 'pointer' : 'default',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'background 0.15s',

@@ -1,0 +1,49 @@
+{
+  "course_title": "Basic GPT skills to make money with",
+  "learner_profile": "This course is designed for individuals aged 25-45, with a background in writing, marketing, or entrepreneurship, who have a basic understanding of technology and are looking to leverage GPT to enhance their career or business.",
+  "transformation": {
+    "before": "The learner is unable to effectively utilize GPT for content creation, struggles with understanding how to monetize their skills, and lacks confidence in their ability to produce high-quality content.",
+    "after": "The learner can confidently create high-quality content using GPT, develop a personal brand, and monetize their skills through various online platforms."
+  },
+  "skill_mix": {
+    "conceptual": 6,
+    "procedural": 8,
+    "analytical": 7,
+    "creative": 9,
+    "physical": 0,
+    "interpersonal": 4,
+    "metacognitive": 5
+  },
+  "primary_skill_types": [
+    "creative",
+    "procedural"
+  ],
+  "difficulty": {
+    "overall": 6,
+    "progression": "steady_climb",
+    "description": "The course starts with foundational concepts and gradually builds up to more complex and creative applications of GPT, allowing learners to develop their skills at a consistent pace."
+  },
+  "visual_theme": "kinetic",
+  "emotional_arc": [
+    {
+      "module": 1,
+      "feeling": "Curious and reassured \u2014 AI is not scary, I can do this"
+    },
+    {
+      "module": 2,
+      "feeling": "Engaged and motivated \u2014 I'm learning new skills and seeing results"
+    },
+    {
+      "module": 3,
+      "feeling": "Challenged but confident \u2014 I'm pushing my limits and achieving more"
+    },
+    {
+      "module": 4,
+      "feeling": "Empowered and enthusiastic \u2014 I have the skills and knowledge to succeed"
+    }
+  ],
+  "example_style": "everyday",
+  "prerequisites": [],
+  "course_description": "Unlock the potential of GPT to transform your career or business. This course will teach you the fundamental skills to create high-quality content, develop a personal brand, and monetize your skills through various online platforms. By the end of this course, you'll be equipped with the knowledge and confidence to succeed in the digital landscape.",
+  "generated_at": "2026-04-21T03:07:13.883933"
+}

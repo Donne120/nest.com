@@ -92,7 +92,7 @@ function RequireManager({ children }: { children: ReactNode }) {
 
 function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#FAF7F2] dark:bg-slate-950 font-sans">
+    <div className="min-h-screen bg-white dark:bg-slate-950 font-sans">
       <Navbar />
       <main className="md:pb-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)' }}>
         <style>{`@media (min-width: 768px) { main { padding-bottom: 0 !important; } }`}</style>
@@ -114,7 +114,7 @@ export default function App() {
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <BrandColorApplier />
         <ErrorBoundary>
-        <Suspense fallback={<div className="min-h-screen bg-[#FAF7F2] dark:bg-slate-950" />}>
+        <Suspense fallback={<div className="min-h-screen bg-white dark:bg-slate-950" />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />

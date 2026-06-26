@@ -2,16 +2,16 @@ import { useNavigate } from 'react-router-dom';
 import { Play, Clock, MessageSquare, CheckCircle2, BookOpen, Lock, ShoppingCart } from 'lucide-react';
 import type { Module } from '../../types';
 
-// ── Design tokens ──────────────────────────────────────────────────────────
-const GOLD   = '#e8c97e';
-const TERRA  = '#c45c3c';
-const GREEN  = '#34d399';
-const DARK2  = '#13141a';
-const DARK3  = '#1c1e27';
-const INK    = '#e8e4dc';
-const INK2   = '#9ca3af';
-const INK3   = '#6b6b78';
-const BORDER = 'rgba(255,255,255,0.07)';
+// ── Design tokens — light, purple + lime ────────────────────────────────────
+const GOLD   = '#8e2d9e';   // purple — primary accent (was gold)
+const TERRA  = '#7cb342';   // lime green — secondary (was terracotta)
+const GREEN  = '#3a9d5d';   // success green
+const DARK2  = '#ffffff';   // card surface
+const DARK3  = '#f1eef4';   // thumbnail placeholder
+const INK    = '#1f1f24';   // primary text
+const INK2   = '#5c5764';   // secondary text
+const INK3   = '#9b96a3';   // muted text
+const BORDER = 'rgba(31,31,36,0.10)';
 
 function formatDuration(seconds: number) {
   if (seconds < 60) return `${seconds}s`;
@@ -71,6 +71,7 @@ export default function ModuleCard({ module }: Props) {
         borderRadius: 14,
         overflow: 'hidden',
         cursor: 'pointer',
+        boxShadow: '0 1px 2px rgba(31,31,36,0.04), 0 4px 14px rgba(31,31,36,0.05)',
         transition: 'transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease',
         display: 'flex',
         flexDirection: 'column',
@@ -78,13 +79,13 @@ export default function ModuleCard({ module }: Props) {
       onMouseEnter={e => {
         const el = e.currentTarget as HTMLElement;
         el.style.transform = 'translateY(-3px)';
-        el.style.boxShadow = '0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,201,126,0.12)';
-        el.style.borderColor = 'rgba(232,201,126,0.18)';
+        el.style.boxShadow = '0 16px 40px rgba(31,31,36,0.12), 0 0 0 1px rgba(142,45,158,0.14)';
+        el.style.borderColor = 'rgba(142,45,158,0.22)';
       }}
       onMouseLeave={e => {
         const el = e.currentTarget as HTMLElement;
         el.style.transform = 'translateY(0)';
-        el.style.boxShadow = 'none';
+        el.style.boxShadow = '0 1px 2px rgba(31,31,36,0.04), 0 4px 14px rgba(31,31,36,0.05)';
         el.style.borderColor = BORDER;
       }}
     >
@@ -99,8 +100,8 @@ export default function ModuleCard({ module }: Props) {
             onMouseLeave={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1)')}
           />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1c1e27 0%, #13141a 100%)' }}>
-            <BookOpen size={28} style={{ color: 'rgba(255,255,255,0.12)' }} />
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f3edf6 0%, #eef4e6 100%)' }}>
+            <BookOpen size={28} style={{ color: 'rgba(142,45,158,0.30)' }} />
           </div>
         )}
 
@@ -176,7 +177,7 @@ export default function ModuleCard({ module }: Props) {
           <div style={{
             position: 'absolute', top: 12, right: 12,
             display: 'flex', alignItems: 'center', gap: 5,
-            background: isLocked ? 'rgba(196,92,60,0.85)' : 'rgba(52,211,153,0.85)',
+            background: isLocked ? 'rgba(142,45,158,0.88)' : 'rgba(58,157,93,0.9)',
             backdropFilter: 'blur(8px)',
             borderRadius: 100, padding: '3px 10px 3px 8px',
           }}>
@@ -238,13 +239,13 @@ export default function ModuleCard({ module }: Props) {
             style={{
               marginTop: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: 'rgba(196,92,60,0.08)', border: '1px solid rgba(196,92,60,0.2)',
+              background: 'rgba(142,45,158,0.07)', border: '1px solid rgba(142,45,158,0.2)',
               borderRadius: 8, padding: '10px 14px',
             }}
             onClick={e => { e.stopPropagation(); navigate(`/pay/submit?module_id=${module.id}`); }}
           >
             <div>
-              <p style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: TERRA, marginBottom: 2 }}>
+              <p style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: GOLD, marginBottom: 2 }}>
                 Purchase to unlock
               </p>
               <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 15, fontWeight: 600, color: INK, letterSpacing: '-0.01em' }}>
@@ -253,7 +254,7 @@ export default function ModuleCard({ module }: Props) {
             </div>
             <div style={{
               width: 32, height: 32, borderRadius: '50%',
-              background: TERRA, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,
             }}>
               <ShoppingCart size={14} style={{ color: '#fff' }} />
@@ -270,15 +271,12 @@ export default function ModuleCard({ module }: Props) {
                 {progress}%
               </span>
             </div>
-            <div style={{ height: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 100, overflow: 'hidden' }}>
+            <div style={{ height: 3, background: 'rgba(31,31,36,0.08)', borderRadius: 100, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 100,
                 background: status === 'completed' ? GREEN : GOLD,
                 width: `${progress}%`,
                 transition: 'width 0.8s ease',
-                boxShadow: status === 'completed'
-                  ? '0 0 8px rgba(52,211,153,0.5)'
-                  : '0 0 8px rgba(232,201,126,0.5)',
               }} />
             </div>
           </div>

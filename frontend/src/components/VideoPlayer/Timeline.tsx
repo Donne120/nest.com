@@ -70,7 +70,7 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
         {/* Gold fill */}
         <div
           className="absolute left-0 top-0 h-full rounded-full transition-[width] duration-100"
-          style={{ width: `${progress}%`, background: '#e8c97e' }}
+          style={{ width: `${progress}%`, background: '#b259c4' }}
         />
 
         {/* Glowing gold scrubber dot */}
@@ -78,8 +78,8 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
           className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full opacity-0 group-hover/bar:opacity-100 transition-opacity"
           style={{
             left: `calc(${progress}% - 5px)`,
-            background: '#e8c97e',
-            boxShadow: '0 0 0 3px rgba(232,201,126,0.2), 0 0 10px rgba(232,201,126,0.55)',
+            background: '#b259c4',
+            boxShadow: '0 0 0 3px rgba(178,89,196,0.2), 0 0 10px rgba(178,89,196,0.55)',
           }}
         />
 
@@ -95,9 +95,9 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
                 className="absolute bottom-full mb-2 -translate-x-1/2 flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded transition-colors z-30 whitespace-nowrap"
                 style={{
                   left: `${(hoveredTs / duration) * 100}%`,
-                  background: 'rgba(232,201,126,0.12)',
-                  border: '1px solid rgba(232,201,126,0.28)',
-                  color: '#e8c97e',
+                  background: 'rgba(178,89,196,0.12)',
+                  border: '1px solid rgba(178,89,196,0.28)',
+                  color: '#b259c4',
                   fontFamily: 'monospace',
                   letterSpacing: '0.06em',
                 }}
@@ -119,7 +119,7 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-2 transition-transform hover:scale-150 z-10 focus:outline-none"
               style={{
                 left: `${pct}%`,
-                background: isAnswered ? '#34d399' : '#e8c97e',
+                background: isAnswered ? '#34d399' : '#b259c4',
                 borderColor: '#0b0c0f',
               }}
               onClick={(e) => { e.stopPropagation(); onMarkerClick(m); }}
@@ -142,7 +142,7 @@ export default function Timeline({ markers, onSeek, onMarkerClick, onAskAt }: Pr
             }}
           >
             <div className="flex items-center gap-1.5 mb-1">
-              <span style={{ fontFamily: 'monospace', color: '#e8c97e', fontSize: 11 }}>
+              <span style={{ fontFamily: 'monospace', color: '#b259c4', fontSize: 11 }}>
                 {formatTime(tooltipMarker.timestamp_seconds)}
               </span>
               <span className={clsx(

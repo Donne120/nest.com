@@ -6,15 +6,21 @@ import { useAuthStore } from '../store';
 import type { Token } from '../types';
 import toast from 'react-hot-toast';
 
-// ── Tokens ─────────────────────────────────────────────────────────────────
-const BG    = '#0a0907';
-const INK   = '#f0ebe2';
-const INK2  = '#8a8070';
-const INK3  = '#4a4238';
-const RULE  = 'rgba(255,255,255,0.07)';
-const GOLD  = '#c8a96e';
-const GOLD2 = '#e8d4a0';
-const GO    = '#5a8a6a';
+// ── Tokens — white form + purple brand panel ────────────────────────────────
+const BG    = '#ffffff';
+const INK   = '#1f1f24';
+const INK2  = '#5c5764';
+const INK3  = '#9b96a3';
+const RULE  = 'rgba(31,31,36,0.10)';
+const GOLD  = '#8e2d9e';   // purple — primary accent
+const GOLD2 = '#7b2d8e';   // deep purple
+const GO    = '#7cb342';   // lime green — secondary
+// Left brand panel (purple splash)
+const PANEL   = '#1a1320';
+const PANEL_INK  = '#f3eef6';
+const PANEL_INK2 = '#bcaecb';
+const PANEL_INK3 = '#7d6f8c';
+const PANEL_ACC  = '#ce92dc';
 const DISP  = "'Cormorant Garamond', Georgia, serif";
 const UI    = "'Syne', 'Inter', sans-serif";
 const MONO  = "'DM Mono', monospace";
@@ -28,13 +34,13 @@ function PasswordStrength({ password }: { password: string }) {
   if (!password) return null;
   const checks = [password.length >= 8, /[A-Z]/.test(password), /[0-9]/.test(password), /[^a-zA-Z0-9]/.test(password)];
   const score = checks.filter(Boolean).length;
-  const colors = ['', '#c45c2c', '#c97a2c', GOLD, GO];
+  const colors = ['', '#d9534f', '#b88bc4', GOLD, GO];
   const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
   return (
     <div style={{ marginTop: 10 }}>
       <div style={{ display: 'flex', gap: 4, marginBottom: 5 }}>
         {[1, 2, 3, 4].map(i => (
-          <div key={i} style={{ height: 2, flex: 1, borderRadius: 100, background: i <= score ? colors[score] : 'rgba(255,255,255,0.08)', transition: 'background 0.3s' }} />
+          <div key={i} style={{ height: 2, flex: 1, borderRadius: 100, background: i <= score ? colors[score] : 'rgba(31,31,36,0.10)', transition: 'background 0.3s' }} />
         ))}
       </div>
       <p style={{ fontFamily: MONO, fontSize: 10, color: colors[score] || INK3, letterSpacing: '0.08em' }}>{labels[score]}</p>
@@ -59,8 +65,9 @@ function Field({ label, id, type = 'text', value, onChange, placeholder, require
         onBlur={() => setFocused(false)}
         style={{
           width: '100%', padding: '11px 14px',
-          background: 'rgba(255,255,255,0.04)',
-          border: `1px solid ${focused ? 'rgba(200,169,110,0.45)' : RULE}`,
+          background: focused ? '#ffffff' : '#f7f6f8',
+          border: `1px solid ${focused ? 'rgba(142,45,158,0.55)' : RULE}`,
+          boxShadow: focused ? '0 0 0 3px rgba(142,45,158,0.12)' : 'none',
           borderRadius: 4, outline: 'none',
           color: INK, fontFamily: UI, fontSize: 14,
           transition: 'border-color 0.2s', boxSizing: 'border-box',
@@ -78,11 +85,11 @@ function StepDots({ step }: { step: number }) {
         <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
             width: 6, height: 6, borderRadius: '50%',
-            background: step >= s ? GOLD : 'rgba(255,255,255,0.12)',
+            background: step >= s ? GOLD : 'rgba(31,31,36,0.14)',
             boxShadow: step >= s ? `0 0 8px ${GOLD}66` : 'none',
             transition: 'background 0.3s, box-shadow 0.3s',
           }} />
-          {i === 0 && <div style={{ width: 32, height: 1, background: step > 1 ? `rgba(200,169,110,0.4)` : RULE, transition: 'background 0.3s' }} />}
+          {i === 0 && <div style={{ width: 32, height: 1, background: step > 1 ? `rgba(142,45,158,0.4)` : RULE, transition: 'background 0.3s' }} />}
         </div>
       ))}
       <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3, marginLeft: 4 }}>Step {step} of 2</span>
@@ -149,14 +156,14 @@ export default function SignupPage() {
       {/* Left panel */}
       <div style={{
         width: 440, flexShrink: 0, minHeight: '100vh',
-        borderRight: `1px solid ${RULE}`,
+        background: `linear-gradient(160deg, #241830 0%, ${PANEL} 55%, #14101a 100%)`,
         position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         padding: '56px 56px',
       }}
         className="su-left-panel"
       >
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 60% 40%, rgba(200,169,110,0.055) 0%, transparent 65%)' }} />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 60% 40%, rgba(178,89,196,0.16) 0%, transparent 65%), radial-gradient(ellipse at 85% 80%, rgba(124,179,66,0.08) 0%, transparent 50%)' }} />
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           backgroundImage: 'repeating-linear-gradient(90deg,rgba(255,255,255,0.018) 0,rgba(255,255,255,0.018) 1px,transparent 1px,transparent 80px),repeating-linear-gradient(0deg,rgba(255,255,255,0.018) 0,rgba(255,255,255,0.018) 1px,transparent 1px,transparent 80px)',
@@ -165,21 +172,21 @@ export default function SignupPage() {
         {/* Logo */}
         <div style={{ position: 'relative', zIndex: 1 }}>
           <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 30, height: 30, border: `1.5px solid rgba(200,169,110,0.4)`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: GOLD, fontFamily: UI }}>N</div>
-            <span style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: GOLD2, letterSpacing: '0.01em' }}>Nest</span>
+            <div style={{ width: 30, height: 30, border: `1.5px solid rgba(206,146,220,0.5)`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: PANEL_ACC, fontFamily: UI }}>N</div>
+            <span style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: PANEL_INK, letterSpacing: '0.01em' }}>Nest</span>
           </Link>
         </div>
 
         {/* Copy */}
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLD, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 20, height: 1, background: GOLD, display: 'inline-block', opacity: 0.6 }} />
+          <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: PANEL_ACC, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 20, height: 1, background: PANEL_ACC, display: 'inline-block', opacity: 0.6 }} />
             Free 14-day trial
           </div>
-          <h1 style={{ fontFamily: DISP, fontSize: 'clamp(40px, 4vw, 62px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK, marginBottom: 20 }}>
-            Your team's<br /><em style={{ fontStyle: 'italic', color: GOLD }}>flight path</em><br />starts here.
+          <h1 style={{ fontFamily: DISP, fontSize: 'clamp(40px, 4vw, 62px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: PANEL_INK, marginBottom: 20 }}>
+            Your learning<br /><em style={{ fontStyle: 'italic', color: PANEL_ACC }}>starts here.</em>
           </h1>
-          <p style={{ fontSize: 15, color: INK2, lineHeight: 1.75, maxWidth: 340 }}>
+          <p style={{ fontSize: 15, color: PANEL_INK2, lineHeight: 1.75, maxWidth: 340 }}>
             Set up your workspace in two minutes. No credit card. Cancel anytime.
           </p>
 
@@ -187,21 +194,21 @@ export default function SignupPage() {
           <div style={{ marginTop: 36, display: 'flex', flexDirection: 'column', gap: 12 }}>
             {['Unlimited video modules', 'Built-in quiz engine', 'Live Q&A on every lesson', 'Real-time progress tracking'].map(f => (
               <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ width: 16, height: 16, borderRadius: '50%', border: `1px solid rgba(90,138,106,0.4)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ width: 16, height: 16, borderRadius: '50%', border: `1px solid rgba(124,179,66,0.5)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <span style={{ width: 5, height: 5, borderRadius: '50%', background: GO, display: 'inline-block' }} />
                 </span>
-                <span style={{ fontFamily: MONO, fontSize: 11, color: INK2, letterSpacing: '0.04em' }}>{f}</span>
+                <span style={{ fontFamily: MONO, fontSize: 11, color: PANEL_INK2, letterSpacing: '0.04em' }}>{f}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Footer stat */}
-        <div style={{ position: 'relative', zIndex: 1, borderTop: `1px solid ${RULE}`, paddingTop: 24, display: 'flex', gap: 32 }}>
+        <div style={{ position: 'relative', zIndex: 1, borderTop: `1px solid rgba(255,255,255,0.10)`, paddingTop: 24, display: 'flex', gap: 32 }}>
           {[['14d', 'Free trial'], ['∞', 'Modules'], ['1', 'Click setup']].map(([val, lbl]) => (
             <div key={lbl}>
-              <div style={{ fontFamily: DISP, fontSize: 26, fontWeight: 300, color: GOLD2, lineHeight: 1, letterSpacing: '-0.02em' }}>{val}</div>
-              <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3, marginTop: 3 }}>{lbl}</div>
+              <div style={{ fontFamily: DISP, fontSize: 26, fontWeight: 300, color: PANEL_INK, lineHeight: 1, letterSpacing: '-0.02em' }}>{val}</div>
+              <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: PANEL_INK3, marginTop: 3 }}>{lbl}</div>
             </div>
           ))}
         </div>
@@ -242,7 +249,7 @@ export default function SignupPage() {
                 <form onSubmit={handleStep1} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   <Field label="Company Name" id="orgName" value={orgName} onChange={setOrgName} placeholder="Acme Corp" required autoFocus />
                   {orgName.length >= 2 && (
-                    <div style={{ fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.06em', background: 'rgba(255,255,255,0.04)', border: `1px solid ${RULE}`, borderRadius: 4, padding: '8px 12px' }}>
+                    <div style={{ fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.06em', background: '#f7f6f8', border: `1px solid ${RULE}`, borderRadius: 4, padding: '8px 12px' }}>
                       workspace: <span style={{ color: GOLD }}>{slug}.nestapp.com</span>
                     </div>
                   )}
@@ -312,19 +319,19 @@ function GoldButton({ loading, label }: { loading: boolean; label: string }) {
       width: '100%',
       fontFamily: UI, fontSize: 13, fontWeight: 700,
       letterSpacing: '0.06em', textTransform: 'uppercase',
-      color: '#0a0907',
-      background: loading ? 'rgba(200,169,110,0.6)' : '#c8a96e',
+      color: '#ffffff',
+      background: loading ? 'rgba(142,45,158,0.6)' : '#8e2d9e',
       padding: '13px 24px', borderRadius: 4, border: 'none',
       cursor: loading ? 'not-allowed' : 'pointer',
       transition: 'background 0.2s',
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     }}
-      onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#e8d4a0'; }}
-      onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#c8a96e'; }}
+      onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#7b2d8e'; }}
+      onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#8e2d9e'; }}
     >
       {loading ? (
         <>
-          <span style={{ width: 12, height: 12, border: '2px solid rgba(10,9,7,0.3)', borderTopColor: '#0a0907', borderRadius: '50%', display: 'inline-block', animation: 'lp-spin 0.7s linear infinite' }} />
+          <span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#ffffff', borderRadius: '50%', display: 'inline-block', animation: 'lp-spin 0.7s linear infinite' }} />
           {label}
         </>
       ) : label}
