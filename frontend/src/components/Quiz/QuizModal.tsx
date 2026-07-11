@@ -175,7 +175,7 @@ export default function QuizModal({ videoId, questions, onClose, existingResult 
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                   <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                    <AlignLeft size={11} /> Your answer will be reviewed by a manager
+                    <AlignLeft size={11} /> Your answer will be reviewed by your instructor
                   </p>
                 </div>
               )}
@@ -276,7 +276,7 @@ function AnswerReview({ ans, questions }: { ans: QuizAnswerResult; questions: Qu
                 <p className="bg-white rounded-lg px-3 py-2 border border-gray-200 mt-1.5 italic">{ans.explanation}</p>
               )}
               {ans.is_correct === null && (
-                <p className="text-amber-600">Free-text answer — awaiting manager review</p>
+                <p className="text-amber-600">Free-text answer — awaiting instructor review</p>
               )}
             </div>
           )}

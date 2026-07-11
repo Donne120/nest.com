@@ -8,7 +8,7 @@ import {
   CheckCircle2, Calendar, BookOpen, Pin,
 } from 'lucide-react';
 import api from '../api/client';
-import type { Module, Video, Lesson, ModuleResource } from '../types';
+import type { Module, Video, Lesson, ModuleResource, QuizQuestion, QuizSubmissionResult } from '../types';
 import { BG, SURF, RULE, INK, INK2, INK3, ACC, ACC2 } from '../lib/colors';
 import { Skeleton } from '../components/UI/Skeleton';
 import BookMeetingModal from '../components/Meetings/BookMeetingModal';
@@ -84,6 +84,41 @@ export default function ModuleDetailPage() {
     enabled: !!moduleId,
   });
 
+  const videoIds = videos.map(v => v.id);
+
+  // Total quiz questions across all videos in this module
+  const { data: quizCount = 0 } = useQuery<number>({
+    queryKey: ['module-quiz-count', moduleId, videoIds],
+    enabled: videoIds.length > 0,
+    queryFn: async () => {
+      const lists = await Promise.all(
+        videoIds.map(id =>
+          api.get<QuizQuestion[]>(`/quiz/video/${id}`).then(r => r.data).catch(() => []),
+        ),
+      );
+      return lists.reduce((sum, qs) => sum + qs.length, 0);
+    },
+  });
+
+  // Learner's best quiz score across the module's videos
+  const { data: bestScore = null } = useQuery<number | null>({
+    queryKey: ['module-quiz-best', moduleId, videoIds],
+    enabled: videoIds.length > 0,
+    queryFn: async () => {
+      const subs = await Promise.all(
+        videoIds.map(id =>
+          api.get<QuizSubmissionResult | null>(`/quiz/video/${id}/my-submission`)
+            .then(r => r.data)
+            .catch(() => null),
+        ),
+      );
+      const scores = subs
+        .map(s => s?.score)
+        .filter((s): s is number => typeof s === 'number');
+      return scores.length > 0 ? Math.max(...scores) : null;
+    },
+  });
+
   const learnItems = useMemo(() => {
     if (!module?.description) return [];
     const parser = new DOMParser();
@@ -117,7 +152,8 @@ export default function ModuleDetailPage() {
     ...videos.map((v) => ({ kind: 'video' as const, item: v })),
     ...lessons.map((l) => ({ kind: 'lesson' as const, item: l })),
   ].sort((a, b) => a.item.order_index - b.item.order_index);
-  const totalQuizzes = 31;
+  const totalQuizzes = quizCount;
+  const PASS_MARK = 70; // matches backend: passed = score >= 70
 
   // Aliases used in this component
   const SURFACE = SURF;
@@ -183,7 +219,7 @@ export default function ModuleDetailPage() {
             {[
               { icon: '▷', val: fmt(module.duration_seconds) },
               { icon: '▷', val: `${module.video_count} lessons` },
-              { icon: '⚡', val: `${totalQuizzes} quiz questions` },
+              ...(totalQuizzes > 0 ? [{ icon: '⚡', val: `${totalQuizzes} quiz questions` }] : []),
               { icon: '◎', val: 'Certificate included' },
             ].map((m, i, arr) => (
               <div key={i} style={{
@@ -303,12 +339,13 @@ export default function ModuleDetailPage() {
           </SectionCard>
 
           {/* Quiz Overview */}
+          {totalQuizzes > 0 && (
           <SectionCard title="Quiz Overview" meta={`${totalQuizzes} QUESTIONS`} style={{ marginBottom: 0 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 4, overflow: 'hidden' }}>
               {[
                 { label: 'Questions', val: String(totalQuizzes) },
-                { label: 'Your Best', val: pct > 0 ? `${pct}%` : '—' },
-                { label: 'Pass Mark', val: '—' },
+                { label: 'Your Best', val: bestScore !== null ? `${Math.round(bestScore)}%` : '—' },
+                { label: 'Pass Mark', val: `${PASS_MARK}%` },
               ].map(({ label, val }) => (
                 <div key={label} style={{ background: BG, padding: '14px 16px', textAlign: 'center' }}>
                   <div style={{ fontFamily: 'monospace', fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: INK3, marginBottom: 6 }}>{label}</div>
@@ -317,6 +354,7 @@ export default function ModuleDetailPage() {
               ))}
             </div>
           </SectionCard>
+          )}
         </div>
 
         {/* ── RIGHT ── */}
@@ -350,7 +388,7 @@ export default function ModuleDetailPage() {
                 {[
                   { icon: '▷', name: fmt(module.duration_seconds), desc: 'total watch time' },
                   { icon: '▶', name: `${module.video_count} lessons`, desc: 'video content' },
-                  { icon: '⚡', name: `${totalQuizzes} quiz questions`, desc: 'test your knowledge' },
+                  ...(totalQuizzes > 0 ? [{ icon: '⚡', name: `${totalQuizzes} quiz questions`, desc: 'test your knowledge' }] : []),
                   { icon: '◎', name: 'Certificate', desc: 'on completion' },
                 ].map(({ icon, name, desc }, i, arr) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>

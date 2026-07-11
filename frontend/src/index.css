@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap');
+/* Fonts loaded in index.html <head>: Cormorant Garamond (display) · Inter Tight (UI) · DM Mono (labels) */
 
 @tailwind base;
 @tailwind components;
@@ -17,7 +17,12 @@
   --c-ink3: #9b96a3;   /* muted text       */
   --c-acc:  #7b2d8e;   /* purple — brand primary  */
   --c-acc2: #6a2a8a;   /* deep purple — links */
-  --c-go:   #7cb342;   /* lime green — secondary  */
+  --c-go:   #6ea23a;   /* lime green — secondary (readable on white) */
+  /* Semantic + brand-signature tokens (one source of truth) */
+  --c-gold: #C98A2E;   /* warm gold — the landing-page signature, readable on light */
+  --c-warn: #b8842a;   /* single amber for "pending/attention" */
+  --c-danger: #c2492e; /* single red for destructive/error */
+  --c-ok:   #4f8a2e;   /* success green (distinct from lime brand accent) */
 }
 
 html.dark {
@@ -31,6 +36,10 @@ html.dark {
   --c-acc:  #b259c4;   /* brighter purple on dark */
   --c-acc2: #c06fd0;
   --c-go:   #9ccc5a;   /* brighter lime on dark */
+  --c-gold: #E8B04B;   /* the full landing gold glows on dark */
+  --c-warn: #d6a24a;
+  --c-danger: #e0765a;
+  --c-ok:   #8bd450;
 }
 
 /* ─── Brand palette CSS vars (overridden at runtime per org) ─────────────── */
@@ -64,24 +73,25 @@ html.dark {
     background-color: var(--c-bg);
     color: var(--c-ink);
     @apply antialiased;
-    font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+    font-family: 'Inter Tight', 'Inter', 'SF Pro Display', system-ui, sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     letter-spacing: -0.01em;
   }
 
   /* ── Dark mode body ── */
   .dark body {
-    @apply text-slate-100 bg-slate-950;
+    color: var(--c-ink);
+    background-color: var(--c-bg);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Lora', Georgia, serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;
     letter-spacing: -0.02em;
-    color: #18211f;
+    color: var(--c-ink);
   }
 
   .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-    color: #f1ede8;
+    color: var(--c-ink);
   }
 
   /* Custom scrollbar */
@@ -93,7 +103,7 @@ html.dark {
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #DDD4C8;
+    background: #d8d2df;
     border-radius: 9999px;
     border: 1px solid transparent;
   }
@@ -198,14 +208,14 @@ html.dark {
     background-image:
       radial-gradient(at 20% 30%, rgb(var(--brand-100) / 0.6) 0%, transparent 50%),
       radial-gradient(at 80% 10%, rgb(var(--brand-50) / 0.9) 0%, transparent 40%),
-      radial-gradient(at 60% 80%, rgba(90,138,92,0.05) 0%, transparent 50%);
+      radial-gradient(at 60% 80%, rgba(124,179,66,0.06) 0%, transparent 50%);
   }
   .dark .bg-mesh {
-    background-color: #0a0f0e;
+    background-color: #0b0a0f;
     background-image:
       radial-gradient(at 20% 30%, rgb(var(--brand-900) / 0.45) 0%, transparent 50%),
       radial-gradient(at 80% 10%, rgb(var(--brand-800) / 0.25) 0%, transparent 40%),
-      radial-gradient(at 60% 80%, rgba(90,138,92,0.08) 0%, transparent 50%);
+      radial-gradient(at 60% 80%, rgba(124,179,66,0.08) 0%, transparent 50%);
   }
 
   /* Noise texture overlay (very subtle) */
@@ -273,7 +283,7 @@ html {
 
 /* Ensure tap highlight is subtle on mobile */
 * {
-  -webkit-tap-highlight-color: rgba(47, 128, 133, 0.15);
+  -webkit-tap-highlight-color: rgba(123, 45, 142, 0.15);
 }
 
 /* PaySubmit country grid: 2 cols on small phones */
@@ -284,9 +294,9 @@ html {
 }
 
 /* ─── Rich text editor (Tiptap / prose) ─────────────────────────────────── */
-.prose h1 { @apply text-2xl font-bold mt-4 mb-2; font-family: 'Lora', Georgia, serif; color: #18211f; letter-spacing: -0.02em; }
-.prose h2 { @apply text-xl font-bold mt-4 mb-2; font-family: 'Lora', Georgia, serif; color: #18211f; letter-spacing: -0.02em; }
-.prose h3 { @apply text-lg font-semibold mt-3 mb-1.5; color: #243029; }
+.prose h1 { @apply text-2xl font-bold mt-4 mb-2; font-family: 'Cormorant Garamond', Georgia, serif; color: var(--c-ink); letter-spacing: -0.02em; }
+.prose h2 { @apply text-xl font-bold mt-4 mb-2; font-family: 'Cormorant Garamond', Georgia, serif; color: var(--c-ink); letter-spacing: -0.02em; }
+.prose h3 { @apply text-lg font-semibold mt-3 mb-1.5; color: var(--c-ink); }
 .prose p  { @apply text-gray-700 text-sm leading-relaxed my-1.5; }
 .prose ul { @apply list-disc pl-5 my-2 space-y-1; }
 .prose ol { @apply list-decimal pl-5 my-2 space-y-1; }

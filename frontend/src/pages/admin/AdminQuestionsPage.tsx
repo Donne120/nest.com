@@ -105,7 +105,7 @@ export default function AdminQuestionsPage() {
         <div className="flex items-start justify-between mb-8">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center">
                 <Inbox size={17} className="text-white" />
               </div>
               <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Question Queue</h1>
@@ -144,9 +144,9 @@ export default function AdminQuestionsPage() {
               color="emerald"
             />
             <StatPill
-              icon={<Clock size={13} className="text-indigo-400" />}
+              icon={<Clock size={13} className="text-brand-400" />}
               label="Refreshes every 15s"
-              color="indigo"
+              color="brand"
             />
           </div>
         )}
@@ -158,7 +158,7 @@ export default function AdminQuestionsPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search questions or learners…"
-            className="w-full pl-9 pr-4 py-3 text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-gray-300 transition"
+            className="w-full pl-9 pr-4 py-3 text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent placeholder:text-gray-300 transition"
           />
         </div>
 
@@ -259,7 +259,7 @@ export default function AdminQuestionsPage() {
                         <Sep />
 
                         {/* Timestamp */}
-                        <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded-md">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-brand-700 bg-brand-50 border border-brand-100 px-1.5 py-0.5 rounded-md">
                           @{formatTime(q.timestamp_seconds)}
                         </span>
 
@@ -327,12 +327,12 @@ function StatPill({
 }: {
   icon: ReactNode;
   label: string;
-  color: 'amber' | 'emerald' | 'indigo';
+  color: 'amber' | 'emerald' | 'brand';
 }) {
   const cls = {
     amber:   'bg-amber-50 border-amber-200 text-amber-700',
     emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
-    indigo:  'bg-indigo-50 border-indigo-200 text-indigo-600',
+    brand:   'bg-brand-50 border-brand-200 text-brand-700',
   }[color];
 
   return (

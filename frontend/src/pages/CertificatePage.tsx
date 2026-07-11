@@ -1,14 +1,26 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Award, ExternalLink, Shield, BookOpen } from 'lucide-react';
+import { Award, ExternalLink, Shield, Link2, Printer } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../api/client';
 import type { Certificate } from '../types';
+
+// Nest certificate palette
+const INK    = '#0B0A0F';
+const PAPER  = '#F7F3EC';   // warm cream card
+const CHAR   = '#1f1f24';
+const MUTE   = '#5c5764';
+const FAINT  = '#9b96a3';
+const ACC    = '#7b2d8e';   // brand purple
+const GOLD   = '#C98A2E';   // seal gold
+const DISP   = "'Cormorant Garamond', Georgia, serif";
+const UI     = "'Inter Tight','Inter',system-ui,sans-serif";
+const MONO   = "'DM Mono',ui-monospace,monospace";
 
 function LinkedInShareButton({ cert }: { cert: Certificate }) {
   const certUrl = `${window.location.origin}/certificate/${cert.id}`;
   const year = new Date(cert.issued_at).getFullYear();
   const month = new Date(cert.issued_at).getMonth() + 1;
-
   const params = new URLSearchParams({
     startTask: 'CERTIFICATION_NAME',
     name: cert.module.title,
@@ -18,27 +30,34 @@ function LinkedInShareButton({ cert }: { cert: Certificate }) {
     certUrl,
     certId: cert.cert_number,
   });
-
   return (
     <a
       href={`https://www.linkedin.com/profile/add?${params}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-2.5 bg-[#0077b5] hover:bg-[#006097] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+      target="_blank" rel="noopener noreferrer"
+      className="inline-flex items-center gap-2.5 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+      style={{ fontFamily: UI, background: '#0077b5' }}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#006097')}
+      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '#0077b5')}
     >
-      {/* LinkedIn logo */}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
         <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
       </svg>
-      Add to LinkedIn Profile
+      Add to LinkedIn
       <ExternalLink size={12} />
     </a>
   );
 }
 
+const pageBg = `radial-gradient(ellipse 900px 600px at 50% 0%, rgba(74,29,84,0.5), transparent 65%), radial-gradient(ellipse 700px 500px at 50% 100%, rgba(123,45,142,0.25), transparent 60%), ${INK}`;
+const ghostBtn: React.CSSProperties = {
+  fontFamily: UI, fontSize: 14, color: '#ECE8F0',
+  border: '1px solid rgba(255,255,255,0.18)', background: 'transparent',
+  padding: '10px 18px', borderRadius: 12, cursor: 'pointer',
+  display: 'inline-flex', alignItems: 'center', gap: 8, transition: 'border-color 0.2s',
+};
+
 export default function CertificatePage() {
   const { certId } = useParams<{ certId: string }>();
-
   const { data: cert, isLoading, isError } = useQuery<Certificate>({
     queryKey: ['certificate', certId],
     queryFn: () => api.get(`/certificates/${certId}`).then(r => r.data),
@@ -47,126 +66,126 @@ export default function CertificatePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 32, height: 32, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
   }
 
   if (isError || !cert) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shield size={28} className="text-white/50" />
+      <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: 64, height: 64, background: 'rgba(255,255,255,0.08)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Shield size={28} style={{ color: 'rgba(255,255,255,0.5)' }} />
           </div>
-          <h1 className="text-xl font-bold text-white mb-2">Certificate not found</h1>
-          <p className="text-white/50 text-sm mb-6">This certificate may have been removed or the link is invalid.</p>
-          <Link to="/" className="text-blue-400 hover:text-blue-300 text-sm">← Back to Nest</Link>
+          <h1 style={{ fontFamily: DISP, fontSize: 28, color: '#fff', marginBottom: 8 }}>Certificate not found</h1>
+          <p style={{ fontFamily: UI, color: 'rgba(255,255,255,0.55)', fontSize: 14, marginBottom: 24 }}>This certificate may have been removed or the link is invalid.</p>
+          <Link to="/" style={{ fontFamily: UI, color: GOLD, textDecoration: 'none', fontSize: 14 }}>← Back to Nest</Link>
         </div>
       </div>
     );
   }
 
-  const issuedDate = new Date(cert.issued_at).toLocaleDateString('en-US', {
-    year: 'numeric', month: 'long', day: 'numeric',
-  });
+  const issuedDate = new Date(cert.issued_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
+    <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 680 }}>
 
         {/* Certificate card */}
-        <div className="bg-white rounded-3xl overflow-hidden shadow-2xl">
+        <div style={{ background: PAPER, borderRadius: 20, overflow: 'hidden', boxShadow: '0 40px 100px -30px rgba(0,0,0,0.8)', border: '1px solid rgba(201,138,46,0.25)' }}>
+          {/* Gold top band */}
+          <div style={{ height: 6, background: `linear-gradient(90deg, ${GOLD}, #E8B04B, ${GOLD})` }} />
 
-          {/* Gold header band */}
-          <div className="h-2 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
-
-          <div className="px-10 py-12 text-center relative">
+          <div style={{ padding: 'clamp(32px,6vw,56px) clamp(24px,5vw,48px)', textAlign: 'center', position: 'relative' }}>
             {/* Watermark */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-[0.07] pointer-events-none select-none">
-              <Award size={320} className="text-slate-900" />
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.05, pointerEvents: 'none', userSelect: 'none' }}>
+              <Award size={340} style={{ color: ACC }} />
             </div>
 
-            {/* Org logo / brand */}
-            <div className="flex justify-center mb-6">
+            {/* Org brand */}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
               {cert.organization.logo_url ? (
-                <img src={cert.organization.logo_url} alt={cert.organization.name} className="h-10 object-contain" />
+                <img src={cert.organization.logo_url} alt={cert.organization.name} style={{ height: 40, objectFit: 'contain' }} />
               ) : (
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">{cert.organization.name[0]}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: ACC, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: '#fff', fontWeight: 800, fontSize: 18, fontFamily: UI }}>{cert.organization.name[0]}</span>
                   </div>
-                  <span className="font-bold text-gray-800 text-lg">{cert.organization.name}</span>
+                  <span style={{ fontFamily: DISP, fontWeight: 600, color: CHAR, fontSize: 22 }}>{cert.organization.name}</span>
                 </div>
               )}
             </div>
 
-            {/* Certificate of completion */}
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-amber-500 mb-3">
+            <p style={{ position: 'relative', fontFamily: MONO, fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.24em', color: GOLD, marginBottom: 18 }}>
               Certificate of Completion
             </p>
 
-            <p className="text-sm text-gray-500 mb-3">This is to certify that</p>
+            <p style={{ position: 'relative', fontFamily: UI, fontSize: 14, color: MUTE, marginBottom: 12 }}>This is to certify that</p>
 
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
+            <h1 style={{ position: 'relative', fontFamily: DISP, fontSize: 'clamp(38px,7vw,58px)', fontWeight: 600, color: CHAR, marginBottom: 14, letterSpacing: '-0.02em', lineHeight: 1.05 }}>
               {cert.user.full_name}
             </h1>
 
-            <p className="text-sm text-gray-500 mb-4">has successfully completed</p>
+            <p style={{ position: 'relative', fontFamily: UI, fontSize: 14, color: MUTE, marginBottom: 18 }}>has successfully completed</p>
 
-            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-3 mb-6">
-              <BookOpen size={16} className="text-blue-500 flex-shrink-0" />
-              <span className="text-base font-bold text-blue-900">{cert.module.title}</span>
+            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 9, background: 'rgba(123,45,142,0.07)', border: '1px solid rgba(123,45,142,0.2)', borderRadius: 100, padding: '10px 20px', marginBottom: 28 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: ACC }} />
+              <span style={{ fontFamily: UI, fontSize: 16, fontWeight: 700, color: ACC }}>{cert.module.title}</span>
             </div>
 
-            <p className="text-sm text-gray-500 mb-8">
-              Issued on <strong className="text-gray-800">{issuedDate}</strong>
+            <p style={{ position: 'relative', fontFamily: UI, fontSize: 14, color: MUTE, marginBottom: 32 }}>
+              Issued on <strong style={{ color: CHAR }}>{issuedDate}</strong>
             </p>
 
-            {/* Divider */}
-            <div className="flex items-center gap-4 mb-8">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent to-gray-200" />
-              <Award size={20} className="text-amber-400" />
-              <div className="flex-1 h-px bg-gradient-to-l from-transparent to-gray-200" />
+            {/* Gold seal divider */}
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(31,31,36,0.14))' }} />
+              <div style={{ width: 44, height: 44, borderRadius: '50%', border: `1.5px solid ${GOLD}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: GOLD, flexShrink: 0 }}>
+                <Award size={20} />
+              </div>
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(270deg, transparent, rgba(31,31,36,0.14))' }} />
             </div>
 
             {/* Footer: cert number + verify */}
-            <div className="flex items-center justify-between text-xs text-gray-400">
-              <div className="flex items-center gap-1.5">
-                <Shield size={11} className="text-emerald-500" />
-                <span className="font-mono">{cert.cert_number}</span>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Shield size={12} style={{ color: '#4f8a2e' }} />
+                <span style={{ fontFamily: MONO, fontSize: 11, color: FAINT }}>{cert.cert_number}</span>
               </div>
-              <span>Verified · Nest Fledge</span>
+              <span style={{ fontFamily: MONO, fontSize: 11, color: FAINT }}>Verified · Nest</span>
             </div>
           </div>
 
-          {/* Gold footer band */}
-          <div className="h-2 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
+          <div style={{ height: 6, background: `linear-gradient(90deg, ${GOLD}, #E8B04B, ${GOLD})` }} />
         </div>
 
         {/* Action bar */}
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="cert-actions" style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
           <LinkedInShareButton cert={cert} />
           <button
-            onClick={() => navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!'))}
-            className="inline-flex items-center gap-2 border border-white/20 text-white hover:text-white hover:border-white/40 text-sm px-5 py-2.5 rounded-xl transition-colors"
-            aria-label="Copy certificate link"
+            onClick={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Certificate link copied'))}
+            style={ghostBtn} aria-label="Copy certificate link"
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.4)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.18)')}
           >
-            Copy Link
+            <Link2 size={15} /> Copy link
           </button>
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 border border-white/20 text-white hover:text-white hover:border-white/40 text-sm px-5 py-2.5 rounded-xl transition-colors"
-            aria-label="Print or save certificate as PDF"
+            style={ghostBtn} aria-label="Print or save certificate as PDF"
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.4)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.18)')}
           >
-            Print / Save as PDF
+            <Printer size={15} /> Save as PDF
           </button>
         </div>
 
-        <p className="text-center text-slate-400 text-xs mt-5">
+        <p style={{ textAlign: 'center', fontFamily: MONO, fontSize: 11, color: FAINT, marginTop: 20, letterSpacing: '0.04em' }}>
           Powered by{' '}
-          <a href="/" className="text-slate-300 hover:text-white transition-colors">Nest Fledge</a>
+          <a href="/" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>Nest</a>
         </p>
       </div>
     </div>

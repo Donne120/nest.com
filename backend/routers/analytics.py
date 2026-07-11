@@ -220,7 +220,7 @@ def get_people_analytics(
             last_progress.last_viewed_at if last_progress and last_progress.last_viewed_at else None
         )
         days_since_active = (
-            (now - last_active_at.replace(tzinfo=None)).days if last_active_at else None
+            (now.replace(tzinfo=None) - last_active_at.replace(tzinfo=None)).days if last_active_at else None
         )
 
         # Completion

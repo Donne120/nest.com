@@ -7,10 +7,10 @@ const variants: Record<Variant, string> = {
   answered:    'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50',
   archived:    'bg-gray-50 text-gray-500 border-gray-200/80 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
   not_started: 'bg-gray-50 text-gray-500 border-gray-200/80 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
-  in_progress: 'bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50',
+  in_progress: 'bg-brand-50 text-brand-700 border-brand-200/80 dark:bg-brand-900/25 dark:text-brand-300 dark:border-brand-800/50',
   completed:   'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50',
-  educator:    'bg-violet-50 text-violet-700 border-violet-200/80 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800/50',
-  owner:       'bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800/50',
+  educator:    'bg-brand-50 text-brand-700 border-brand-200/80 dark:bg-brand-900/25 dark:text-brand-300 dark:border-brand-800/50',
+  owner:       'bg-brand-100 text-brand-800 border-brand-300/80 dark:bg-brand-800/40 dark:text-brand-200 dark:border-brand-700/60',
   learner:     'bg-gray-50 text-gray-600 border-gray-200/80 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
 };
 
@@ -19,10 +19,10 @@ const dots: Record<Variant, string> = {
   answered:    'bg-emerald-400',
   archived:    'bg-gray-300',
   not_started: 'bg-gray-300',
-  in_progress: 'bg-blue-400 animate-pulse',
+  in_progress: 'bg-brand-500 animate-pulse',
   completed:   'bg-emerald-400',
-  educator:    'bg-violet-400',
-  owner:       'bg-rose-400',
+  educator:    'bg-brand-400',
+  owner:       'bg-brand-600',
   learner:     'bg-gray-400',
 };
 

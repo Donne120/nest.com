@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, X } from 'lucide-react';
-import { useUIStore, useAuthStore, usePlayerStore } from '../../store';
+import { useAuthStore, usePlayerStore } from '../../store';
 import api from '../../api/client';
 import type { Question } from '../../types';
 import QuestionCard from './QuestionCard';
@@ -25,7 +25,6 @@ function formatTime(s: number) {
 }
 
 export default function QASidebar({ videoId, activeQuestionId, onClose }: Props) {
-  const { openQuestionForm } = useUIStore();
   const { user } = useAuthStore();
   const { currentTime } = usePlayerStore();
   const queryClient = useQueryClient();
@@ -91,15 +90,6 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => { console.log('[QA] Ask clicked, opening form at', currentTime); openQuestionForm(currentTime); }}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded transition-opacity hover:opacity-80 cursor-pointer"
-              style={{ background: '#b259c4', color: '#ffffff', fontFamily: 'inherit', position: 'relative', zIndex: 1 }}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-              Ask
-            </button>
             {onClose && (
               <button
                 onClick={onClose}

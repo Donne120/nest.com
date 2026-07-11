@@ -9,8 +9,8 @@ function TypeBadge({ type }: { type: Assignment['type'] }) {
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full ${
       type === 'group'
-        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
-        : 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
+        ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300'
+        : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
     }`}>
       {type === 'group' ? <Users size={10} /> : <BookOpen size={10} />}
       {type === 'group' ? 'Group' : 'Individual'}
@@ -130,12 +130,12 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
   );
 }
 
-function StatPill({ label, color }: { label: string; color: 'gray' | 'green' | 'amber' | 'blue' }) {
+function StatPill({ label, color }: { label: string; color: 'gray' | 'green' | 'amber' | 'brand' }) {
   const cls = {
     gray:   'bg-gray-50 border-gray-200 text-gray-700',
     green:  'bg-green-50 border-green-200 text-green-700',
     amber:  'bg-amber-50 border-amber-200 text-amber-700',
-    blue:   'bg-blue-50 border-blue-200 text-blue-700',
+    brand:  'bg-brand-50 border-brand-200 text-brand-700',
   }[color];
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-medium border rounded-full px-3 py-1 ${cls}`}>
@@ -185,7 +185,7 @@ export default function AdminAssignmentsPage() {
             <StatPill label={`${assignments.length} total`} color="gray" />
             <StatPill label={`${active.length} active`} color="green" />
             <StatPill label={`${draft.length} draft`} color="amber" />
-            <StatPill label={`${totalSubmissions} submitted`} color="blue" />
+            <StatPill label={`${totalSubmissions} submitted`} color="brand" />
           </div>
         )}
 

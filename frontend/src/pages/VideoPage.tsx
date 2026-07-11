@@ -40,8 +40,8 @@ export default function VideoPage() {
   const { videoId } = useParams<{ videoId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { showQuestionForm, activeQuestionId, sidebarOpen, setSidebarOpen, whiteboardQuestionId, whiteboardQuestionText, aiAskOpen, openAIAsk } = useUIStore();
-  const { seekTo, currentTime, duration: playerDuration } = usePlayerStore();
+  const { showQuestionForm, activeQuestionId, sidebarOpen, setSidebarOpen, whiteboardQuestionId, whiteboardQuestionText, aiAskOpen, openAIAsk, openQuestionForm } = useUIStore();
+  const { seekTo, currentTime, duration: playerDuration, setPlaying } = usePlayerStore();
   const getPlayerDuration = () => usePlayerStore.getState().duration;
   const [showQuiz, setShowQuiz] = useState(false);
   const [noteDraft, setNoteDraft] = useState('');
@@ -334,22 +334,22 @@ export default function VideoPage() {
               <ChevronLeft size={14} /> Back
             </Link>
 
-            {/* Q&A */}
+            {/* Ask a question — pauses the video, opens the ask form pinned to the moment */}
             <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={() => { setPlaying(false); setSidebarOpen(true); openQuestionForm(currentTime); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 13, fontWeight: 600,
-                background: sidebarOpen ? 'rgba(178,89,196,0.15)' : '#13141a',
-                border: sidebarOpen ? '1px solid rgba(178,89,196,0.4)' : '1px solid rgba(255,255,255,0.07)',
-                color: sidebarOpen ? '#b259c4' : '#9ca3af',
+                fontSize: 13, fontWeight: 700,
+                background: '#b259c4', color: '#ffffff',
+                border: '1px solid rgba(178,89,196,0.4)',
                 borderRadius: 8, padding: '8px 14px',
                 cursor: 'pointer', fontFamily: 'inherit',
                 flex: 1, justifyContent: 'center',
                 minHeight: 40, transition: 'all 0.15s',
               }}
             >
-              💬 Q&amp;A
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              Ask a question
             </button>
 
             {/* Mark complete / done */}
@@ -520,8 +520,8 @@ export default function VideoPage() {
             </span>
             <div style={{ flex: 1 }} />
             <button
-              onClick={() => setSidebarOpen(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: sidebarOpen ? 'rgba(178,89,196,0.15)' : '#1c1e27', color: sidebarOpen ? '#b259c4' : '#e8e4dc', border: sidebarOpen ? '1px solid rgba(178,89,196,0.4)' : '1px solid rgba(255,255,255,0.1)', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
+              onClick={() => { setPlaying(false); setSidebarOpen(true); openQuestionForm(currentTime); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#b259c4', color: '#ffffff', border: '1px solid rgba(178,89,196,0.4)', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
             >
               <MessageSquare size={12} /> Ask a question
             </button>

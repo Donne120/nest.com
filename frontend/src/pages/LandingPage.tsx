@@ -1,58 +1,63 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 
-// ── Tokens — purple + lime, clean white canvas ──────────────────────────────
-const BG      = '#ffffff';
-const SURFACE = '#faf9fb';
-const CARD    = '#ffffff';
-const INK     = '#1f1f24';
-const INK2    = '#5c5764';
-const INK3    = '#9b96a3';
-const RULE    = 'rgba(31,31,36,0.10)';
-const GOLD    = '#8e2d9e';   // purple — primary accent (was gold)
-const GOLD2   = '#7b2d8e';   // deep purple — bright accent (was gold2)
-const RUST    = '#8e2d9e';   // purple — replaces rust (no orange)
-const SAGE    = '#7cb342';   // lime green — secondary
+// ═══════════════════════════════════════════════════════════════════════════
+//  NEST — "The Answer"  ·  dark, cinematic, gold-soul landing page
+//  Concept: the page behaves like the product — it answers you.
+//  6 sections: Hero · Promise · Three moves · Manifesto · (Schools) · Close
+// ═══════════════════════════════════════════════════════════════════════════
 
-const DISP  = "'Cormorant Garamond', Georgia, serif";
-const UI    = "'Syne', sans-serif";
-const MONO  = "'DM Mono', monospace";
+// ── Color system — warm near-black canvas, gold soul, orchid atmosphere ──────
+const INK    = '#0B0A0F';   // near-black canvas (warm)
+const INK2   = '#141019';   // raised surface
+const HAIR   = 'rgba(255,255,255,0.09)';   // hairlines
+const PLUM   = '#4A1D54';   // deep purple — gradients / glow
+const ORCHID = '#B06CC6';   // the one bright purple — accents/links
+const GOLD   = '#E8B04B';   // warm gold — CTAs, key numbers, the "answer" glow
+const GOLDD  = '#C98A2E';   // gold hover
+const LIME   = '#8BD450';   // rare — "live" pulse + success only
+const PAPER  = '#F4F0E9';   // the one warm light break
+const TEXT   = '#F2EEF6';   // primary text on dark
+const MUTE   = '#9A93A6';   // secondary text
+const FAINT  = '#5C5568';   // mono labels / captions
 
-// ── Curated stock imagery (Unsplash — license-free) ─────────────────────────
-// Education / learning / community photos. Sized + cropped via URL params.
+const DISP = "'Cormorant Garamond', Georgia, serif";
+const UI   = "'Inter Tight', 'Inter', system-ui, sans-serif";
+const MONO = "'DM Mono', ui-monospace, monospace";
+
+const u = (id: string, w = 900) =>
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
+
+// Verified African learning imagery
 const IMG = {
-  hero:      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80', // collaborative learning
-  classroom: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1600&q=80', // student studying
-  mentor:    'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=900&q=80',  // teacher / mentor
-  learner:   'https://images.unsplash.com/photo-1610484826917-0f101a7bf7f4?auto=format&fit=crop&w=900&q=80',  // young learner with laptop
-  community: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80', // collaboration
+  teacher: u('photo-1531123897727-8f129e1688ce', 800), // confident young African woman
+  demo:    u('photo-1573164713988-8665fc963095', 900), // African woman w/ tablet
+  manifesto: u('photo-1531482615713-2afd69097998', 1200), // two Africans collaborating
 };
 
-// Semantic helpers (light theme) — replace former dark/gold rgba patterns
-const ACC_TINT   = 'rgba(142,45,158,';   // purple accent tint, append "0.x)"
-const INK_LINE   = 'rgba(31,31,36,';      // charcoal hairline, append "0.x)"
-const OVERLAY    = 'rgba(31,31,36,0.55)'; // image scrim on light
-
-// ── Scroll reveal ──────────────────────────────────────────────────────────
+// ── Scroll reveal ───────────────────────────────────────────────────────────
 function useReveal() {
   useEffect(() => {
-    const els = document.querySelectorAll<HTMLElement>('.lp-reveal');
+    const els = Array.from(document.querySelectorAll<HTMLElement>('.rv'));
+    const show = (el: HTMLElement) => { el.style.opacity = '1'; el.style.transform = 'none'; };
+
+    // Fallback: no IO support → just show everything.
+    if (typeof IntersectionObserver === 'undefined') { els.forEach(show); return; }
+
     const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          (e.target as HTMLElement).style.opacity = '1';
-          (e.target as HTMLElement).style.transform = 'translateY(0)';
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.08 });
+      entries.forEach(e => { if (e.isIntersecting) { show(e.target as HTMLElement); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
     els.forEach(el => io.observe(el));
-    return () => io.disconnect();
+
+    // Safety net: anything still hidden after 2.5s (e.g. observer never fired) gets shown.
+    const t = setTimeout(() => els.forEach(el => { if (el.style.opacity !== '1') show(el); }), 1200);
+
+    return () => { io.disconnect(); clearTimeout(t); };
   }, []);
 }
 
-// ── Animated counter ───────────────────────────────────────────────────────
-function useCounter(target: number, duration = 1800) {
+// ── Count-up (once, on view) ─────────────────────────────────────────────────
+function useCounter(target: number, duration = 1400) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -61,282 +66,351 @@ function useCounter(target: number, duration = 1800) {
     const io = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting) return;
       io.disconnect();
+      if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { setCount(target); return; }
       let start = 0;
       const step = target / (duration / 16);
       const timer = setInterval(() => {
         start = Math.min(start + step, target);
-        setCount(Math.floor(start));
+        setCount(Math.round(start));
         if (start >= target) clearInterval(timer);
       }, 16);
-    }, { threshold: 0.5 });
+    }, { threshold: 0.6 });
     io.observe(el);
     return () => io.disconnect();
   }, [target, duration]);
   return { count, ref };
 }
 
-// ── Nav ────────────────────────────────────────────────────────────────────
-function LandingNav() {
+// ── Primary + ghost buttons ──────────────────────────────────────────────────
+function GoldBtn({ to, children, big }: { to: string; children: React.ReactNode; big?: boolean }) {
+  return (
+    <Link to={to} style={{
+      fontFamily: UI, fontSize: big ? 14 : 13, fontWeight: 600, letterSpacing: '0.01em',
+      color: INK, background: GOLD,
+      padding: big ? '15px 34px' : '12px 26px', borderRadius: 6,
+      textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 9,
+      transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
+      boxShadow: '0 8px 30px -8px rgba(232,176,75,0.5)',
+    }}
+      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLDD; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 16px 44px -8px rgba(232,176,75,0.6)'; }}
+      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; el.style.boxShadow = '0 8px 30px -8px rgba(232,176,75,0.5)'; }}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function GhostBtn({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a href={href} style={{
+      fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '0.01em',
+      color: TEXT, background: 'transparent', border: `1px solid ${HAIR}`,
+      padding: '14px 26px', borderRadius: 6,
+      textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8,
+      transition: 'border-color 0.2s, background 0.2s',
+    }}
+      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.28)'; el.style.background = 'rgba(255,255,255,0.03)'; }}
+      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = HAIR; el.style.background = 'transparent'; }}
+    >
+      {children}
+    </a>
+  );
+}
+
+// ── Eyebrow label ────────────────────────────────────────────────────────────
+function Eyebrow({ children, dot = ORCHID }: { children: React.ReactNode; dot?: string }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9, fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.22em', textTransform: 'uppercase', color: MUTE }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, animation: 'nBlink 2s infinite' }} />
+      {children}
+    </span>
+  );
+}
+
+// ── Woven gold "kente thread" divider ────────────────────────────────────────
+function Thread({ width = 60 }: { width?: number }) {
+  return (
+    <svg width={width} height="6" viewBox={`0 0 ${width} 6`} style={{ display: 'block' }} aria-hidden>
+      <path d={`M0 3 ${Array.from({ length: Math.ceil(width / 12) }).map((_, i) => `Q ${i * 12 + 3} 0 ${i * 12 + 6} 3 Q ${i * 12 + 9} 6 ${i * 12 + 12} 3`).join(' ')}`}
+        fill="none" stroke="rgba(232,176,75,0.45)" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+// ═══ NAV ════════════════════════════════════════════════════════════════════
+function Nav() {
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 500,
       height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 clamp(16px, 4vw, 48px)',
-      borderBottom: `1px solid ${RULE}`,
-      background: 'rgba(255,255,255,0.85)',
-      backdropFilter: 'blur(20px)',
+      padding: '0 clamp(16px,4vw,44px)',
+      borderBottom: `1px solid ${HAIR}`,
+      background: 'rgba(11,10,15,0.72)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
       fontFamily: UI, gap: 12,
     }}>
-      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 11, flexShrink: 0 }}>
         <div style={{
-          width: 32, height: 32,
-          border: `1.5px solid rgba(142,45,158,0.4)`,
-          borderRadius: 6,
+          width: 30, height: 30, borderRadius: 8,
+          background: `linear-gradient(135deg, ${GOLD}, ${GOLDD})`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 13, fontWeight: 800, color: GOLD, fontFamily: UI,
+          fontSize: 14, fontWeight: 800, color: INK, fontFamily: DISP,
+          boxShadow: '0 0 0 1px rgba(232,176,75,0.3), 0 4px 14px rgba(232,176,75,0.35)',
         }}>N</div>
-        <span style={{ fontFamily: DISP, fontSize: 24, fontWeight: 600, color: GOLD2, letterSpacing: '0.01em' }}>Nest</span>
+        <span style={{ fontFamily: DISP, fontSize: 25, fontWeight: 600, color: TEXT, letterSpacing: '0.01em' }}>Nest</span>
       </Link>
 
-      <nav className="lp-nav-links" style={{ display: 'flex', gap: 0 }}>
-        {[['#features','Features'],['#how','How it works'],['#directory','Find a school'],['#for-who','For you']].map(([href, label]) => (
-          <a key={href} href={href} style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 14px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI, whiteSpace: 'nowrap' }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK)}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
-          >{label}</a>
-        ))}
-        <Link to="/pricing" style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 14px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI, whiteSpace: 'nowrap' }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK)}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
-        >Pricing</Link>
-        <Link to="/login" style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '8px 14px', letterSpacing: '0.02em', transition: 'color 0.2s', fontFamily: UI }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK)}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
-        >Sign in</Link>
+      <nav className="nav-links" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        <a href="#how" style={navLink}>Explore</a>
+        <Link to="/pricing" style={navLink}>Pricing</Link>
+        <Link to="/login" style={navLink}>Sign in</Link>
       </nav>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <Link to="/login" className="lp-signin-mobile" style={{ fontSize: 13, fontWeight: 500, color: INK2, textDecoration: 'none', padding: '7px 12px', display: 'none' }}>Sign in</Link>
-        <Link to="/signup" style={{
-          fontFamily: UI, fontSize: 12.5, fontWeight: 700,
-          letterSpacing: '0.04em', textTransform: 'uppercase',
-          color: BG, background: GOLD,
-          padding: '9px 16px', borderRadius: 4,
-          textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap',
-          transition: 'background 0.2s, transform 0.15s',
-        }}
-          onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-1px)'; }}
-          onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; }}
-        >Start for free</Link>
+        <Link to="/login" className="signin-mobile" style={{ ...navLink, display: 'none' }}>Sign in</Link>
+        <GoldBtn to="/signup">Start free →</GoldBtn>
       </div>
     </header>
   );
 }
+const navLink: React.CSSProperties = {
+  fontSize: 13, fontWeight: 500, color: MUTE, textDecoration: 'none',
+  padding: '8px 14px', letterSpacing: '0.01em', fontFamily: UI, whiteSpace: 'nowrap',
+  transition: 'color 0.2s',
+};
 
-// ── Hero course card mockup ─────────────────────────────────────────────────
-function HeroVideo() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(false);
+// ═══ LIVE PRODUCT DEMO — the centerpiece (self-animating AI answer) ══════════
+const SCRIPT = [
+  { q: 'Wait — why does this step actually work?',
+    a: 'Great question. At 2:14 the instructor factors out the common term first — that\'s the key move. It turns the whole equation into one line you can solve.' },
+  { q: 'Can you say that in simpler words?',
+    a: 'Of course. Think of splitting a bill: find what everyone shares, set it aside, then handle the rest. Same idea here.' },
+  { q: 'What should I review before the quiz?',
+    a: 'Focus on lessons 3 and 5 — that\'s where most learners slip. You\'ve already nailed the rest. You\'ve got this.' },
+];
 
-  const toggle = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); }
-    else          { v.pause(); setPlaying(false); }
-  };
+function ProductDemo() {
+  const [step, setStep]   = useState(0);
+  const [phase, setPhase] = useState<'q' | 'think' | 'a'>('q');
+  const [typed, setTyped] = useState('');
+  const [bloom, setBloom] = useState(false);
+  const reduce = useRef(false);
+  const { a } = SCRIPT[step];
+
+  useEffect(() => {
+    reduce.current = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  }, []);
+
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    if (reduce.current) { setPhase('a'); setTyped(a); return; }
+    if (phase === 'q') {
+      t = setTimeout(() => setPhase('think'), 1500);
+    } else if (phase === 'think') {
+      t = setTimeout(() => { setTyped(''); setPhase('a'); }, 1000);
+    } else {
+      if (typed.length < a.length) {
+        t = setTimeout(() => setTyped(a.slice(0, typed.length + 1)), 17);
+      } else {
+        setBloom(true);
+        t = setTimeout(() => {
+          setBloom(false);
+          setStep(s => (s + 1) % SCRIPT.length);
+          setPhase('q'); setTyped('');
+        }, 3400);
+      }
+    }
+    return () => clearTimeout(t);
+  }, [phase, typed, a]);
 
   return (
-    <div
-      className="lp-hero-card"
-      onClick={toggle}
-      style={{
-        flex: '1 1 460px', maxWidth: 620,
-        width: '100%',
-        borderRadius: 12, overflow: 'hidden',
-        border: `1px solid rgba(142,45,158,0.18)`,
-        boxShadow: '0 30px 60px rgba(31,31,36,0.14)',
-        cursor: 'pointer', position: 'relative',
-        background: '#000',
-      }}
-    >
-      <video
-        ref={videoRef}
-        src="/nest-promo.mp4"
-        style={{ width: '100%', display: 'block', maxHeight: 500, objectFit: 'cover' }}
-        onEnded={() => setPlaying(false)}
-        playsInline
-      />
-      {!playing && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: OVERLAY,
-        }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: GOLD,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 32px rgba(142,45,158,0.45)',
-          }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#120d17">
-              <polygon points="6,4 22,12 6,20" />
-            </svg>
+    <div className="demo-wrap" style={{ position: 'relative', width: '100%', maxWidth: 680, margin: '0 auto' }}>
+      {/* Under-glow — the "floating, lit" effect */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: '18% 8% -8% 8%', zIndex: 0,
+        background: `radial-gradient(ellipse at 50% 60%, rgba(176,108,198,0.35), rgba(232,176,75,0.18) 45%, transparent 72%)`,
+        filter: 'blur(46px)', opacity: 0.9,
+      }} />
+
+      {/* Floating feature chips */}
+      <FloatChip cls="chip-a" label="AI answers" sub="instantly"       accent={GOLD}   top={-24} left={-30} delay={0} />
+      <FloatChip cls="chip-b" label="MoMo pay"   sub="you keep 100%"   accent={LIME}   top={'42%'} right={-40} delay={1.2} />
+      <FloatChip cls="chip-c" label="Certificate" sub="auto-issued"    accent={ORCHID} bottom={-20} left={'20%'} delay={0.6} />
+
+      {/* App window */}
+      <div className="demo-window" style={{
+        position: 'relative', zIndex: 2, width: '100%',
+        borderRadius: 18, overflow: 'hidden',
+        background: INK2, border: `1px solid ${HAIR}`,
+        boxShadow: '0 50px 100px -30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04) inset',
+      }}>
+        {/* Chrome */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderBottom: `1px solid ${HAIR}`, background: 'rgba(255,255,255,0.02)' }}>
+          {['#3a3340','#3a3340','#3a3340'].map((c, i) => <span key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
+          <span style={{ marginLeft: 10, fontFamily: MONO, fontSize: 11, color: FAINT, letterSpacing: '0.03em' }}>nest.app / algebra · lesson 4</span>
+          <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 10, color: LIME }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: LIME, animation: 'nBlink 1.5s infinite' }} /> LIVE
+          </span>
+        </div>
+
+        {/* Video frame */}
+        <div style={{ position: 'relative', aspectRatio: '16/8', background: `linear-gradient(135deg, #2A1330, ${PLUM})`, overflow: 'hidden' }}>
+          <img src={IMG.demo} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.42 }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(11,10,15,0.15), rgba(11,10,15,0.75))' }} />
+          <div style={{ position: 'absolute', left: 16, right: 16, bottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 18px rgba(232,176,75,0.6)' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill={INK}><polygon points="6,4 22,12 6,20" /></svg>
+            </div>
+            <div style={{ flex: 1, height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.2)', overflow: 'hidden' }}>
+              <div className="demo-prog" style={{ height: '100%', width: '46%', background: GOLD, borderRadius: 4 }} />
+            </div>
+            <span style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(255,255,255,0.85)', flexShrink: 0 }}>2:14</span>
           </div>
         </div>
-      )}
+
+        {/* AI Q&A panel */}
+        <div style={{ position: 'relative', padding: '18px 18px 20px', minHeight: 176, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Answer bloom */}
+          <div aria-hidden style={{
+            position: 'absolute', left: '10%', right: '10%', bottom: 8, height: 90, zIndex: 0,
+            background: 'radial-gradient(ellipse at 30% 60%, rgba(232,176,75,0.28), transparent 70%)',
+            filter: 'blur(24px)', opacity: bloom ? 1 : 0, transition: 'opacity 0.6s ease', pointerEvents: 'none',
+          }} />
+
+          {/* Question */}
+          <div key={`q-${step}`} style={{ position: 'relative', zIndex: 1, alignSelf: 'flex-end', maxWidth: '82%', animation: 'nPop 0.4s cubic-bezier(0.16,1,0.3,1) both' }}>
+            <div style={{ background: `linear-gradient(135deg, ${ORCHID}, #8b4a9e)`, color: '#fff', padding: '10px 14px', borderRadius: '14px 14px 4px 14px', fontFamily: UI, fontSize: 13.5, lineHeight: 1.5 }}>
+              {SCRIPT[step].q}
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 9.5, color: FAINT, textAlign: 'right', marginTop: 4, letterSpacing: '0.03em' }}>YOU · asked at 2:14</div>
+          </div>
+
+          {/* AI answer */}
+          <div style={{ position: 'relative', zIndex: 1, alignSelf: 'flex-start', maxWidth: '92%', display: 'flex', gap: 10 }}>
+            <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(232,176,75,0.12)', border: `1px solid rgba(232,176,75,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: GOLD }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3"/><circle cx="12" cy="12" r="3.2"/></svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: MONO, fontSize: 9.5, color: GOLD, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 5, fontWeight: 600 }}>Nest AI</div>
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${HAIR}`, borderLeft: `2px solid ${GOLD}`, padding: '11px 14px', borderRadius: '4px 12px 12px 4px', fontFamily: UI, fontSize: 13.5, lineHeight: 1.6, color: TEXT, minHeight: 44 }}>
+                {phase === 'think' ? (
+                  <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', padding: '3px 0' }}>
+                    <Dot d={0} /><Dot d={0.18} /><Dot d={0.36} />
+                  </span>
+                ) : phase === 'a' ? (
+                  <>{typed}{typed.length < a.length && <span className="caret" style={{ color: GOLD }}>▍</span>}</>
+                ) : (
+                  <span style={{ color: FAINT }}>Ask anything, right here on the video…</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-// ── Hero ───────────────────────────────────────────────────────────────────
+function Dot({ d }: { d: number }) {
+  return <span style={{ width: 6, height: 6, borderRadius: '50%', background: GOLD, display: 'inline-block', animation: `nBounce 1.2s ease-in-out ${d}s infinite` }} />;
+}
+
+function FloatChip({ cls, label, sub, accent, top, bottom, left, right, delay }: {
+  cls: string; label: string; sub: string; accent: string;
+  top?: number | string; bottom?: number | string; left?: number | string; right?: number | string; delay: number;
+}) {
+  return (
+    <div className={`float-chip ${cls}`} style={{
+      position: 'absolute', top, bottom, left, right, zIndex: 4,
+      background: INK2, borderRadius: 12, padding: '10px 14px',
+      boxShadow: '0 18px 44px -10px rgba(0,0,0,0.7)',
+      border: `1px solid ${HAIR}`, display: 'flex', alignItems: 'center', gap: 10,
+      animation: `nFloat ${7 + delay}s ease-in-out ${delay}s infinite`,
+    }}>
+      <span style={{ width: 30, height: 30, borderRadius: 9, background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <span style={{ width: 9, height: 9, borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}` }} />
+      </span>
+      <div>
+        <div style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: TEXT, lineHeight: 1.1 }}>{label}</div>
+        <div style={{ fontFamily: MONO, fontSize: 9.5, color: MUTE, letterSpacing: '0.02em', marginTop: 1 }}>{sub}</div>
+      </div>
+    </div>
+  );
+}
+
+// ═══ § 1 HERO — "The Stage" ══════════════════════════════════════════════════
 function Hero() {
   return (
     <section style={{
       minHeight: '100vh', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: 'clamp(80px,10vw,100px) clamp(16px,5vw,48px) clamp(48px,6vw,80px)',
+      alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+      padding: 'clamp(96px,12vw,120px) clamp(16px,5vw,48px) clamp(48px,6vw,72px)',
       position: 'relative', overflow: 'hidden',
     }}>
-      {/* Ambient glow */}
-      <div style={{
-        position: 'absolute', width: 1000, height: 700,
-        top: '50%', left: '50%', transform: 'translate(-50%,-55%)',
-        background: `radial-gradient(ellipse, rgba(142,45,158,0.07) 0%, transparent 70%)`,
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        backgroundImage: `linear-gradient(rgba(31,31,36,0.03) 1px, transparent 1px)`,
-        backgroundSize: '100% 80px',
-      }} />
-      <div style={{
-        position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1,
-        background: `linear-gradient(to bottom, transparent, rgba(142,45,158,0.08) 30%, rgba(142,45,158,0.08) 70%, transparent)`,
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{
-        position: 'relative', zIndex: 1, width: '100%', maxWidth: 1200,
-        display: 'flex', alignItems: 'center', gap: 'clamp(40px,6vw,80px)',
-        flexWrap: 'wrap', justifyContent: 'center',
-      }}>
-        {/* Left — text */}
-        <div style={{ flex: '1 1 480px', maxWidth: 620 }}>
-          {/* Eyebrow */}
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 10,
-            fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.2em', textTransform: 'uppercase',
-            color: GOLD, border: `1px solid rgba(142,45,158,0.2)`,
-            padding: '7px 16px', borderRadius: 100, marginBottom: 40,
-            animation: 'lpRise 0.8s ease forwards',
-          }}>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: GOLD, animation: 'lpBlink 2s infinite', display: 'inline-block' }} />
-            The future of learning is here
-          </div>
-
-          {/* Headline */}
-          <h1 style={{
-            fontFamily: DISP,
-            fontSize: 'clamp(52px, 7vw, 96px)',
-            fontWeight: 300, lineHeight: 0.95,
-            letterSpacing: '-0.02em', color: INK,
-            marginBottom: 32,
-            animation: 'lpRise 0.9s ease 0.1s both',
-          }}>
-            <em style={{ fontStyle: 'italic', color: GOLD, fontWeight: 300 }}>Knowledge</em>
-            <br />
-            <span style={{ fontWeight: 600 }}>that moves</span>
-            <br />
-            <span style={{ color: INK2, fontWeight: 300, fontSize: 'clamp(36px,5vw,68px)' }}>the world forward.</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p style={{
-            maxWidth: 480, marginBottom: 48,
-            fontSize: 17, fontWeight: 400, color: INK2, lineHeight: 1.75,
-            fontFamily: UI, animation: 'lpRise 0.9s ease 0.2s both',
-          }}>
-            Nest is the education platform built for the next generation of creators and learners.
-            Create courses, sell them globally, and transform lives — with AI at every step.
-          </p>
-
-          {/* CTAs */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 16,
-            marginBottom: 56, flexWrap: 'wrap',
-            animation: 'lpRise 0.9s ease 0.3s both',
-          }}>
-            <Link to="/signup" style={{
-              fontFamily: UI, fontSize: 13, fontWeight: 700,
-              letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: BG, background: GOLD,
-              padding: '15px 36px', borderRadius: 4,
-              textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10,
-              transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
-            }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 16px 40px rgba(142,45,158,0.25)'; }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none'; }}
-            >
-              Start for free
-              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
-            </Link>
-            <a href="#how" style={{
-              fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '0.04em',
-              color: INK2, background: 'none', border: `1px solid ${RULE}`,
-              padding: '14px 28px', borderRadius: 4,
-              textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8,
-              transition: 'color 0.2s, border-color 0.2s',
-            }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = INK; el.style.borderColor = 'rgba(31,31,36,0.22)'; }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = INK2; el.style.borderColor = RULE; }}
-            >
-              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="10" cy="10" r="8"/><path d="M7.5 8.5l5 1.5-5 1.5"/></svg>
-              Watch how it works
-            </a>
-          </div>
-
-          {/* Trust line */}
-          <div style={{ animation: 'lpRise 0.9s ease 0.4s both' }}>
-            <p style={{ fontFamily: MONO, fontSize: 10, color: INK3, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 12 }}>
-              Trusted by educators &amp; institutions
-            </p>
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
-              {['Universities','Bootcamps','Coaching Schools','Professional Trainers','NGOs'].map(l => (
-                <span key={l} style={{ fontFamily: UI, fontSize: 11.5, color: INK3, borderLeft: `1px solid ${RULE}`, paddingLeft: 12 }}>{l}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right — hero video */}
-        <HeroVideo />
+      {/* Stage lighting */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', left: '50%', top: '38%', width: 1000, height: 700, transform: 'translate(-50%,-50%)', background: `radial-gradient(ellipse, rgba(176,108,198,0.16), transparent 70%)` }} />
+        <div style={{ position: 'absolute', left: '50%', top: '62%', width: 900, height: 500, transform: 'translate(-50%,-50%)', background: `radial-gradient(ellipse, rgba(232,176,75,0.07), transparent 70%)` }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px)`, backgroundSize: '100% 84px', maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 100%)', WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 100%)' }} />
       </div>
 
-      {/* Stats strip */}
-      <div style={{
-        position: 'relative', zIndex: 1, width: '100%', maxWidth: 900,
-        marginTop: 'clamp(48px,8vw,80px)',
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))',
-        borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`,
-        animation: 'lpRise 0.9s ease 0.5s both',
-      }}>
-        {[
-          { val: 13, suffix: '+', label: 'Courses live' },
-          { val: 100, suffix: '%', label: 'AI-transcribed' },
-          { val: 14, suffix: 'd', label: 'Free trial' },
-          { val: 24, suffix: 'h', label: 'Support response' },
-        ].map((s, i) => {
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'clamp(28px,4vw,40px)' }}>
+        <div style={{ animation: 'nRise 0.8s ease both' }}><Eyebrow dot={LIME}>The platform that answers back</Eyebrow></div>
+
+        <h1 style={{
+          fontFamily: DISP, fontSize: 'clamp(56px,9vw,120px)', fontWeight: 300,
+          lineHeight: 0.95, letterSpacing: '-0.02em', color: TEXT, margin: 0,
+          animation: 'nRise 0.9s ease 0.08s both',
+        }}>
+          Ask the video.<br />
+          It <em style={{ fontStyle: 'italic', color: GOLD }}>answers.</em>
+        </h1>
+
+        {/* THE DEMO — centerpiece */}
+        <div style={{ width: '100%', animation: 'nRise 1s ease 0.18s both', marginTop: 4 }}>
+          <ProductDemo />
+        </div>
+
+        <p style={{ maxWidth: 540, fontFamily: UI, fontSize: 'clamp(16px,2vw,18px)', color: MUTE, lineHeight: 1.65, margin: 0, animation: 'nRise 0.9s ease 0.28s both' }}>
+          Africa's learning platform where every lesson talks back —
+          and every creator gets paid in mobile money.
+        </p>
+
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', animation: 'nRise 0.9s ease 0.36s both' }}>
+          <GoldBtn to="/signup" big>Start free
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
+          </GoldBtn>
+          <GhostBtn href="#how">See how it works
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 4v12M5 11l5 5 5-5"/></svg>
+          </GhostBtn>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═══ § 2 PROMISE STRIP — three numbers, stated once ══════════════════════════
+function PromiseStrip() {
+  const stats = [
+    { val: 0,   suffix: '',  label: 'to start' },
+    { val: 100, suffix: '%', label: 'yours to keep' },
+    { val: 24,  suffix: 'h', label: "and you're live" },
+  ];
+  return (
+    <section style={{ borderTop: `1px solid ${HAIR}`, borderBottom: `1px solid ${HAIR}`, background: 'rgba(255,255,255,0.015)' }}>
+      <div className="promise-grid" style={{ maxWidth: 960, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)' }}>
+        {stats.map((s, i) => {
           const { count, ref } = useCounter(s.val);
           return (
-            <div key={s.label} style={{
-              textAlign: 'center', padding: '20px 16px',
-              borderRight: i < 3 ? `1px solid ${RULE}` : 'none',
+            <div key={s.label} className="rv" style={{
+              textAlign: 'center', padding: 'clamp(32px,5vw,52px) 20px',
+              borderRight: i < 2 ? `1px solid ${HAIR}` : 'none',
+              opacity: 0, transform: 'translateY(16px)', transition: `opacity 0.6s ease ${i * 0.08}s, transform 0.6s ease ${i * 0.08}s`,
             }}>
-              <div style={{ fontFamily: DISP, fontSize: 34, fontWeight: 300, color: GOLD2, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 4 }}>
-                <span ref={ref}>{count}</span>
-                <em style={{ fontFamily: DISP, fontStyle: 'italic', color: GOLD, fontSize: 22 }}>{s.suffix}</em>
+              <div style={{ fontFamily: DISP, fontSize: 'clamp(48px,7vw,76px)', fontWeight: 300, color: GOLD, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                {s.val === 0 && i === 0 ? <span style={{ fontSize: '0.7em', verticalAlign: '0.1em', opacity: 0.7 }}>$</span> : null}
+                <span ref={ref}>{count}</span>{s.suffix}
               </div>
-              <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3 }}>{s.label}</div>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: MUTE, marginTop: 12 }}>{s.label}</div>
             </div>
           );
         })}
@@ -345,65 +419,84 @@ function Hero() {
   );
 }
 
-// ── Marquee ticker ─────────────────────────────────────────────────────────
-const TICKER_ITEMS = [
-  'AI-Powered Q&A', 'Video Transcription', 'Live Quizzes', 'Progress Tracking',
-  'Certificates', 'Mobile Payments', 'Multi-tenant', 'Analytics Dashboard',
-  'Assignments', '1-on-1 Meetings', 'Course Marketplace', 'AI Tutor',
+// ═══ § 3 THREE MOVES — Teach · Learn · Earn (the ONE explanation) ════════════
+const MOVES = [
+  { n: '01', tag: 'Teach', title: 'Upload your lessons.',
+    body: 'Drop in your videos and hit publish. Nest AI writes the transcript, the quizzes, and the answers — automatically.',
+    proof: 'No editing. No tech team. One afternoon.' },
+  { n: '02', tag: 'Learn', title: 'Learners ask the video.',
+    body: 'They ask questions right on the timeline and get answers in seconds — grounded in your actual lesson, in your voice.',
+    proof: 'Instant answers · quizzes · certificates.' },
+  { n: '03', tag: 'Earn', title: 'You get paid.',
+    body: 'Set your price. Money lands via mobile money or card — no middleman, no card required for learners.',
+    proof: 'You keep 100%. Paid the way Africa pays.' },
 ];
 
-function Ticker() {
-  const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
+function ThreeMoves() {
   return (
-    <div style={{
-      borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`,
-      overflow: 'hidden', padding: '14px 0',
-      background: SURFACE, position: 'relative',
-    }}>
-      <div style={{ display: 'flex', animation: 'lpTicker 28s linear infinite', gap: 0 }}>
-        {items.map((item, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: 20,
-            padding: '0 28px', whiteSpace: 'nowrap', flexShrink: 0,
-          }}>
-            <span style={{ width: 4, height: 4, borderRadius: '50%', background: GOLD, opacity: 0.5, flexShrink: 0 }} />
-            <span style={{ fontFamily: MONO, fontSize: 11, color: INK2, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{item}</span>
-          </div>
-        ))}
+    <section id="how" style={{ background: PAPER, color: INK, padding: 'clamp(72px,9vw,130px) 0', position: 'relative' }}>
+      <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
+        <div className="rv" style={{ maxWidth: 640, marginBottom: 'clamp(48px,6vw,72px)', opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+          <div style={{ marginBottom: 18 }}><Thread /></div>
+          <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLDD }}>How Nest works</span>
+          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(40px,6vw,72px)', fontWeight: 300, lineHeight: 1.02, letterSpacing: '-0.02em', color: INK, margin: '16px 0 0' }}>
+            Idea to income,<br /><em style={{ fontStyle: 'italic', color: '#7b2d8e' }}>in three moves.</em>
+          </h2>
+        </div>
+
+        <div className="moves-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'clamp(24px,3vw,48px)' }}>
+          {MOVES.map((m, i) => (
+            <div key={m.n} className="rv" style={{ position: 'relative', opacity: 0, transform: 'translateY(24px)', transition: `opacity 0.7s ease ${0.1 + i * 0.1}s, transform 0.7s ease ${0.1 + i * 0.1}s` }}>
+              <div style={{ fontFamily: DISP, fontSize: 'clamp(64px,8vw,104px)', fontWeight: 300, color: 'rgba(123,45,142,0.14)', lineHeight: 0.8, letterSpacing: '-0.04em', marginBottom: 8 }}>{m.n}</div>
+              <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLDD }}>{m.tag}</span>
+              <h3 style={{ fontFamily: UI, fontSize: 'clamp(20px,2.4vw,26px)', fontWeight: 700, color: INK, lineHeight: 1.15, margin: '8px 0 12px', letterSpacing: '-0.01em' }}>{m.title}</h3>
+              <p style={{ fontFamily: UI, fontSize: 15, color: '#5c5764', lineHeight: 1.65, marginBottom: 16 }}>{m.body}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: MONO, fontSize: 11, color: '#7b2d8e', letterSpacing: '0.02em', borderTop: '1px solid rgba(31,31,36,0.1)', paddingTop: 14 }}>
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10l4 4 8-9"/></svg>
+                {m.proof}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="rv" style={{ marginTop: 'clamp(40px,5vw,60px)', opacity: 0, transform: 'translateY(12px)', transition: 'opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s' }}>
+          <GoldBtn to="/signup" big>Claim your space
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
+          </GoldBtn>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-// ── Immersive image band ────────────────────────────────────────────────────
-function ImageBand() {
+// ═══ § 4 MANIFESTO — the gut-punch ═══════════════════════════════════════════
+function Manifesto() {
   return (
-    <section className="lp-reveal" style={{
-      position: 'relative', minHeight: 'clamp(320px, 42vw, 520px)',
+    <section className="rv" style={{
+      position: 'relative', overflow: 'hidden', background: INK,
+      borderTop: `1px solid ${HAIR}`, minHeight: 'clamp(440px,60vw,640px)',
       display: 'flex', alignItems: 'center',
-      borderTop: `1px solid ${RULE}`, overflow: 'hidden',
-      opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.8s ease, transform 0.8s ease',
+      opacity: 0, transition: 'opacity 0.9s ease',
     }}>
-      <img src={IMG.community} alt="Learners collaborating" style={{
-        position: 'absolute', inset: 0, width: '100%', height: '100%',
-        objectFit: 'cover', filter: 'saturate(1.05)',
-      }} />
-      {/* Purple scrim for legibility */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: `linear-gradient(105deg, rgba(31,31,36,0.82) 0%, rgba(142,45,158,0.55) 55%, rgba(142,45,158,0.15) 100%)`,
-      }} />
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)', width: '100%' }}>
-        <div style={{ maxWidth: 620 }}>
-          <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)', marginBottom: 18 }}>
-            Learning that reaches everyone
-          </div>
-          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(34px,5vw,60px)', fontWeight: 300, lineHeight: 1.08, letterSpacing: '-0.02em', color: '#fff', marginBottom: 22 }}>
-            A classroom without<br /><em style={{ fontStyle: 'italic', color: '#e9c8f2' }}>walls or borders.</em>
+      {/* Photo slab bleeding from the right */}
+      <div className="manifesto-photo" style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '42%', overflow: 'hidden' }}>
+        <img src={IMG.manifesto} alt="African learners collaborating" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.3) contrast(1.05)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${INK} 0%, rgba(11,10,15,0.4) 40%, rgba(74,29,84,0.35) 100%)`, mixBlendMode: 'multiply' }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${INK}, transparent 30%)` }} />
+      </div>
+
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1120, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)', width: '100%' }}>
+        <div style={{ maxWidth: 720 }}>
+          <div style={{ marginBottom: 22 }}><Eyebrow dot={GOLD}>For every learner, everywhere</Eyebrow></div>
+          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(44px,8vw,104px)', fontWeight: 300, lineHeight: 1.0, letterSpacing: '-0.025em', color: TEXT, margin: 0 }}>
+            A classroom with<br />
+            <span className="man-word">no walls,</span>{' '}
+            <span className="man-word" style={{ animationDelay: '0.15s' }}>no borders,</span><br />
+            <span className="man-word" style={{ animationDelay: '0.3s' }}>no gatekeepers.</span>
           </h2>
-          <p style={{ fontFamily: UI, fontSize: 16, color: 'rgba(255,255,255,0.85)', lineHeight: 1.7, maxWidth: 480 }}>
-            From a phone in Yaoundé to a laptop in Kigali — Nest puts real schools and
-            tutors within reach of every learner who is ready to grow.
+          <p style={{ fontFamily: UI, fontSize: 'clamp(15px,1.8vw,18px)', color: MUTE, lineHeight: 1.7, maxWidth: 440, marginTop: 26 }}>
+            From a phone in Yaoundé to a laptop in Kigali — the same lesson,
+            the same chance. Knowledge shouldn't depend on where you were born.
           </p>
         </div>
       </div>
@@ -411,276 +504,7 @@ function ImageBand() {
   );
 }
 
-// ── Section label ──────────────────────────────────────────────────────────
-function SLabel({ children }: { children: string }) {
-  return (
-    <div style={{
-      fontFamily: MONO, fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase',
-      color: GOLD, marginBottom: 16,
-      display: 'flex', alignItems: 'center', gap: 10,
-    }}>
-      <span style={{ width: 28, height: 1, background: GOLD, opacity: 0.5, display: 'inline-block' }} />
-      {children}
-    </div>
-  );
-}
-
-// ── How it works ───────────────────────────────────────────────────────────
-function HowItWorks() {
-  const steps = [
-    {
-      num: '01',
-      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>,
-      title: 'Create your course',
-      body: 'Upload videos, add descriptions, set quizzes and assignments. Nest AI transcribes everything and builds a searchable knowledge base automatically.',
-    },
-    {
-      num: '02',
-      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2zM8 12l3 3 5-5"/></svg>,
-      title: 'Learners join and grow',
-      body: 'Students follow structured learning paths at their own pace. AI answers questions in the video timeline. Engagement goes through the roof.',
-    },
-    {
-      num: '03',
-      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>,
-      title: 'Track, certify, and earn',
-      body: 'Real-time analytics for every learner. Issue completion certificates. Get paid via mobile money or bank transfer — wherever your students are.',
-    },
-  ];
-
-  return (
-    <section id="how" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
-        <div className="lp-reveal lp-two-col" style={{
-          marginBottom: 'clamp(40px,6vw,80px)',
-          opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease',
-        }}>
-          <div>
-            <SLabel>How it works</SLabel>
-            <h2 style={{ fontFamily: DISP, fontSize: 'clamp(36px,5vw,64px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK }}>
-              From idea to<br /><em style={{ fontStyle: 'italic', color: GOLD }}>impact</em> — in minutes.
-            </h2>
-          </div>
-          <p style={{ fontSize: 16, color: INK2, lineHeight: 1.75, fontFamily: UI, paddingBottom: 4 }}>
-            No complex setup. No technical skills required. Build your course today,
-            share the link, and your learners are growing — while you track every step.
-          </p>
-        </div>
-
-        <div className="lp-reveal lp-three-col" style={{
-          gap: 1, background: RULE,
-          border: `1px solid ${RULE}`, borderRadius: 8, overflow: 'hidden',
-          opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
-        }}>
-          {steps.map(s => <StepCard key={s.num} {...s} />)}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function StepCard({ num, icon, title, body }: { num: string; icon: React.ReactNode; title: string; body: string }) {
-  return (
-    <div style={{ background: CARD, padding: '40px 36px', position: 'relative', transition: 'background 0.25s', cursor: 'default' }}
-      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#f5eef7')}
-      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = CARD)}
-    >
-      <div style={{ fontFamily: DISP, fontSize: 72, fontWeight: 300, color: 'rgba(142,45,158,0.12)', lineHeight: 1, position: 'absolute', top: 24, right: 28, letterSpacing: '-0.04em' }}>{num}</div>
-      <div style={{ width: 44, height: 44, border: `1px solid rgba(142,45,158,0.2)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: GOLD }}>{icon}</div>
-      <div style={{ fontSize: 17, fontWeight: 700, color: INK, marginBottom: 12, lineHeight: 1.3, fontFamily: UI }}>{title}</div>
-      <div style={{ fontSize: 14, color: INK2, lineHeight: 1.7, fontFamily: UI }}>{body}</div>
-    </div>
-  );
-}
-
-// ── Features ───────────────────────────────────────────────────────────────
-const FEATURES = [
-  {
-    icon: <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>,
-    title: 'Interactive video courses',
-    body: 'Upload your own videos or embed from anywhere. Add timestamped questions so learners stay engaged — not just watching, but thinking.',
-  },
-  {
-    icon: <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2z"/><path d="M9.5 9a2.5 2.5 0 015 0c0 2.5-2.5 3-2.5 5M12 18h.01"/></svg>,
-    title: 'AI Q&A on every video',
-    body: 'Learners ask questions at any timestamp. Our AI answers instantly using the actual video transcript — no waiting, no unanswered doubts.',
-  },
-  {
-    icon: <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>,
-    title: 'Quizzes &amp; assessments',
-    body: 'Auto-generated quizzes after every lesson. Multiple choice, true/false, short-answer. Set pass thresholds and track mastery over time.',
-  },
-  {
-    icon: <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
-    title: 'Deep analytics',
-    body: 'See exactly where learners struggle, which videos get rewatched, quiz score trends. Data that makes you a better educator.',
-  },
-  {
-    icon: <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>,
-    title: 'Sell with mobile payments',
-    body: 'Accept payments via MoMo, bank transfer, or other local methods. No credit card dependency. Learners pay how they live.',
-  },
-  {
-    icon: <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 3.5A4 4 0 0120 7"/></svg>,
-    title: 'Certificates of completion',
-    body: 'Issue professional certificates automatically when learners finish. Shareable, verifiable, and something they will actually be proud of.',
-  },
-];
-
-function Features() {
-  return (
-    <section id="features" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
-        <div className="lp-reveal" style={{ marginBottom: 'clamp(40px,5vw,70px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-          <SLabel>Platform features</SLabel>
-          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(42px,5vw,64px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK, marginBottom: 16 }}>
-            Everything you need<br /><strong style={{ fontWeight: 600 }}>to teach at scale.</strong>
-          </h2>
-          <p style={{ fontSize: 16, color: INK2, maxWidth: 520, lineHeight: 1.7, fontFamily: UI }}>
-            Built for educators who want real learning outcomes — not just another video hosting tool that nobody finishes.
-          </p>
-        </div>
-
-        <div className="lp-reveal lp-three-col" style={{
-          gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 8, overflow: 'hidden',
-          opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
-        }}>
-          {FEATURES.map(f => <FeatCard key={f.title} {...f} />)}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FeatCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
-  return (
-    <div style={{ background: CARD, padding: '36px 32px 40px', transition: 'background 0.2s', position: 'relative', overflow: 'hidden', cursor: 'default' }}
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.background = '#f5eef7';
-        const bar = el.querySelector<HTMLElement>('.feat-bar');
-        if (bar) bar.style.transform = 'scaleX(1)';
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.background = CARD;
-        const bar = el.querySelector<HTMLElement>('.feat-bar');
-        if (bar) bar.style.transform = 'scaleX(0)';
-      }}
-    >
-      <div className="feat-bar" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${GOLD}, transparent)`, transform: 'scaleX(0)', transformOrigin: 'left', transition: 'transform 0.3s ease' }} />
-      <div style={{ width: 40, height: 40, marginBottom: 24, color: GOLD, opacity: 0.8 }}>{icon}</div>
-      <div style={{ fontSize: 15.5, fontWeight: 700, color: INK, marginBottom: 10, letterSpacing: '0.01em', fontFamily: UI }} dangerouslySetInnerHTML={{ __html: title }} />
-      <div style={{ fontSize: 13.5, color: INK2, lineHeight: 1.7, fontFamily: UI }}>{body}</div>
-    </div>
-  );
-}
-
-// ── For who ────────────────────────────────────────────────────────────────
-function ForWho() {
-  return (
-    <section id="for-who" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
-        <div className="lp-reveal" style={{ textAlign: 'center', marginBottom: 'clamp(40px,5vw,64px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-          <SLabel>Built for everyone</SLabel>
-          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, lineHeight: 1.1, letterSpacing: '-0.02em', color: INK }}>
-            Whether you teach or<br /><em style={{ fontStyle: 'italic', color: GOLD }}>hunger to learn.</em>
-          </h2>
-        </div>
-
-        <div className="lp-reveal lp-two-col" style={{
-          gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 8, overflow: 'hidden',
-          opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
-        }}>
-          {/* Educators */}
-          <div style={{ background: CARD, padding: 'clamp(36px,5vw,56px)' }}>
-            <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 32, aspectRatio: '16 / 9', border: `1px solid ${RULE}` }}>
-              <img src={IMG.mentor} alt="Educator teaching" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-            <div style={{ width: 48, height: 48, border: `1px solid rgba(142,45,158,0.25)`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: GOLD }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-            </div>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 }}>For Educators &amp; Creators</div>
-            <h3 style={{ fontFamily: DISP, fontSize: 'clamp(28px,3.5vw,42px)', fontWeight: 300, color: INK, lineHeight: 1.1, marginBottom: 20, letterSpacing: '-0.01em' }}>
-              Turn your expertise<br />into a business.
-            </h3>
-            <p style={{ fontSize: 15, color: INK2, lineHeight: 1.75, fontFamily: UI, marginBottom: 32 }}>
-              Professors, coaches, trainers, and institutions — build courses once
-              and teach thousands. Full analytics, payment collection, and AI tools included.
-            </p>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 36 }}>
-              {[
-                'Unlimited video uploads',
-                'Sell courses with local payment methods',
-                'AI transcription &amp; Q&A built in',
-                'Issue verified certificates',
-                'Full learner analytics',
-              ].map(f => (
-                <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: INK2, lineHeight: 1.4, fontFamily: UI }}>
-                  <span style={{ color: GOLD, fontSize: 8, marginTop: 4, flexShrink: 0 }}>✦</span>
-                  <span dangerouslySetInnerHTML={{ __html: f }} />
-                </li>
-              ))}
-            </ul>
-            <Link to="/signup" style={{
-              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: BG, background: GOLD, padding: '12px 24px', borderRadius: 4,
-              textDecoration: 'none', display: 'inline-block',
-              transition: 'background 0.2s, transform 0.15s',
-            }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; }}
-            >Start teaching →</Link>
-          </div>
-
-          {/* Learners */}
-          <div style={{ background: '#f4f8ec', padding: 'clamp(36px,5vw,56px)' }}>
-            <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 32, aspectRatio: '16 / 9', border: `1px solid ${RULE}` }}>
-              <img src={IMG.learner} alt="Learner studying online" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-            <div style={{ width: 48, height: 48, border: `1px solid rgba(90,138,106,0.3)`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, color: SAGE }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-            </div>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: SAGE, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 }}>For Learners &amp; Students</div>
-            <h3 style={{ fontFamily: DISP, fontSize: 'clamp(28px,3.5vw,42px)', fontWeight: 300, color: INK, lineHeight: 1.1, marginBottom: 20, letterSpacing: '-0.01em' }}>
-              Learn anything.<br />Become unstoppable.
-            </h3>
-            <p style={{ fontSize: 15, color: INK2, lineHeight: 1.75, fontFamily: UI, marginBottom: 32 }}>
-              Access world-class courses, ask questions directly on the video,
-              earn certificates, and track your own growth — all in one place.
-            </p>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 36 }}>
-              {[
-                'Learn at your own pace, anytime',
-                'AI answers your questions instantly',
-                'Quizzes that actually test understanding',
-                'Earn shareable certificates',
-                'Pay with mobile money — no credit card',
-              ].map(f => (
-                <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: INK2, lineHeight: 1.4, fontFamily: UI }}>
-                  <span style={{ color: SAGE, fontSize: 8, marginTop: 4, flexShrink: 0 }}>✦</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <Link to="/signup" style={{
-              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: INK, background: 'transparent', padding: '11px 24px', borderRadius: 4,
-              textDecoration: 'none', display: 'inline-block',
-              border: `1px solid rgba(90,138,106,0.35)`,
-              transition: 'border-color 0.2s, transform 0.15s',
-            }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = SAGE; el.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(90,138,106,0.35)'; el.style.transform = 'translateY(0)'; }}
-            >Start learning →</Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ── Directory of schools & tutors ───────────────────────────────────────────
+// ═══ § 5 SCHOOLS DIRECTORY (auto-hides if empty) ═════════════════════════════
 type PublicOrg = {
   name: string; slug: string;
   logo_url: string | null; brand_color: string | null;
@@ -689,103 +513,34 @@ type PublicOrg = {
   public_whatsapp: string | null; website_url: string | null;
   country: string | null; city: string | null;
 };
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL
-  ? `${(import.meta as any).env.VITE_API_URL}/api`
-  : '/api';
-
-// Normalise a phone number into a wa.me link (digits only)
-function waLink(num: string) {
-  const digits = num.replace(/[^\d]/g, '');
-  return `https://wa.me/${digits}`;
-}
+const API_BASE = (import.meta as any).env?.VITE_API_URL ? `${(import.meta as any).env.VITE_API_URL}/api` : '/api';
+function waLink(num: string) { return `https://wa.me/${num.replace(/[^\d]/g, '')}`; }
 
 function OrgCard({ org }: { org: PublicOrg }) {
   const accent = org.brand_color || GOLD;
   const initials = org.name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   const place = [org.city, org.country].filter(Boolean).join(', ');
-
+  const contactStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: MUTE, border: `1px solid ${HAIR}`, padding: '7px 13px', borderRadius: 6, textDecoration: 'none' };
   return (
-    <div style={{
-      background: CARD, padding: '32px 30px 28px',
-      display: 'flex', flexDirection: 'column', gap: 0,
-      transition: 'background 0.2s', position: 'relative', overflow: 'hidden',
-    }}
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.background = '#faf7fb';
-        const bar = el.querySelector<HTMLElement>('.org-bar');
-        if (bar) bar.style.transform = 'scaleX(1)';
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.background = CARD;
-        const bar = el.querySelector<HTMLElement>('.org-bar');
-        if (bar) bar.style.transform = 'scaleX(0)';
-      }}
+    <div style={{ background: INK2, border: `1px solid ${HAIR}`, borderRadius: 14, padding: '28px 26px 24px', display: 'flex', flexDirection: 'column', transition: 'border-color 0.2s' }}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,176,75,0.35)')}
+      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = HAIR)}
     >
-      <div className="org-bar" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${accent}, transparent)`, transform: 'scaleX(0)', transformOrigin: 'left', transition: 'transform 0.3s ease' }} />
-
-      {/* Header: logo + name + place */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
-        <div style={{
-          width: 52, height: 52, borderRadius: 12, flexShrink: 0,
-          border: `1px solid ${accent}33`, background: `${accent}0f`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          overflow: 'hidden',
-        }}>
-          {org.logo_url
-            ? <img src={org.logo_url} alt={org.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-            : <span style={{ fontFamily: UI, fontSize: 18, fontWeight: 800, color: accent }}>{initials}</span>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+        <div style={{ width: 48, height: 48, borderRadius: 12, flexShrink: 0, border: `1px solid ${accent}44`, background: `${accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          {org.logo_url ? <img src={org.logo_url} alt={org.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} /> : <span style={{ fontFamily: UI, fontSize: 17, fontWeight: 800, color: accent }}>{initials}</span>}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontFamily: DISP, fontSize: 21, fontWeight: 600, color: INK, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{org.name}</div>
-          {place && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={INK3} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span style={{ fontFamily: MONO, fontSize: 10, color: INK3, letterSpacing: '0.06em' }}>{place}</span>
-            </div>
-          )}
+          <div style={{ fontFamily: DISP, fontSize: 21, fontWeight: 600, color: TEXT, lineHeight: 1.2 }}>{org.name}</div>
+          {place && <div style={{ fontFamily: MONO, fontSize: 10, color: FAINT, marginTop: 3 }}>{place}</div>}
         </div>
       </div>
-
-      {/* Tagline / description */}
-      {(org.tagline || org.description) && (
-        <p style={{ fontFamily: UI, fontSize: 13.5, color: INK2, lineHeight: 1.6, marginBottom: 22, flex: 1 }}>
-          {org.tagline || org.description}
-        </p>
-      )}
-
-      {/* Contact actions */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, borderTop: `1px solid ${RULE}`, paddingTop: 18 }}>
-        {org.public_whatsapp && (
-          <a href={waLink(org.public_whatsapp)} target="_blank" rel="noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 700, color: BG, background: SAGE, padding: '8px 14px', borderRadius: 6, textDecoration: 'none' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.3A8 8 0 004 12a7.9 7.9 0 001.1 4L4 20l4.1-1.1A8 8 0 1017.6 6.3zM12 18.5a6.5 6.5 0 01-3.3-.9l-.24-.14-2.45.64.65-2.38-.16-.25A6.5 6.5 0 1112 18.5zm3.6-4.87c-.2-.1-1.17-.58-1.35-.64s-.31-.1-.44.1-.5.64-.62.77-.23.15-.43.05a5.3 5.3 0 01-1.56-.96 5.9 5.9 0 01-1.08-1.34c-.11-.2 0-.3.09-.4l.3-.35a1.36 1.36 0 00.2-.33.37.37 0 000-.35c0-.1-.44-1.07-.6-1.46s-.32-.33-.44-.34h-.38a.72.72 0 00-.52.24 2.2 2.2 0 00-.68 1.63 3.82 3.82 0 00.8 2.03 8.75 8.75 0 003.35 2.96c.47.2.83.32 1.11.41a2.68 2.68 0 001.23.08 2 2 0 001.31-.93 1.65 1.65 0 00.11-.92c-.05-.08-.18-.13-.38-.23z"/></svg>
-            WhatsApp
-          </a>
-        )}
-        {org.public_phone && (
-          <a href={`tel:${org.public_phone.replace(/\s+/g, '')}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: INK2, border: `1px solid ${RULE}`, padding: '7px 13px', borderRadius: 6, textDecoration: 'none' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
-            Call
-          </a>
-        )}
-        {org.public_email && (
-          <a href={`mailto:${org.public_email}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: INK2, border: `1px solid ${RULE}`, padding: '7px 13px', borderRadius: 6, textDecoration: 'none' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
-            Email
-          </a>
-        )}
-        {org.website_url && (
-          <a href={org.website_url} target="_blank" rel="noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: INK2, border: `1px solid ${RULE}`, padding: '7px 13px', borderRadius: 6, textDecoration: 'none' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20 15.3 15.3 0 010-20z"/></svg>
-            Visit
-          </a>
-        )}
+      {(org.tagline || org.description) && <p style={{ fontFamily: UI, fontSize: 13.5, color: MUTE, lineHeight: 1.6, marginBottom: 20, flex: 1 }}>{org.tagline || org.description}</p>}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, borderTop: `1px solid ${HAIR}`, paddingTop: 16 }}>
+        {org.public_whatsapp && <a href={waLink(org.public_whatsapp)} target="_blank" rel="noreferrer" style={{ ...contactStyle, color: INK, background: LIME, border: 'none', fontWeight: 700 }}>WhatsApp</a>}
+        {org.public_phone && <a href={`tel:${org.public_phone.replace(/\s+/g, '')}`} style={contactStyle}>Call</a>}
+        {org.public_email && <a href={`mailto:${org.public_email}`} style={contactStyle}>Email</a>}
+        {org.website_url && <a href={org.website_url} target="_blank" rel="noreferrer" style={contactStyle}>Visit</a>}
       </div>
     </div>
   );
@@ -794,7 +549,6 @@ function OrgCard({ org }: { org: PublicOrg }) {
 function Directory() {
   const [orgs, setOrgs] = useState<PublicOrg[] | null>(null);
   const [failed, setFailed] = useState(false);
-
   useEffect(() => {
     let alive = true;
     fetch(`${API_BASE}/organizations/public`)
@@ -803,871 +557,132 @@ function Directory() {
       .catch(() => { if (alive) setFailed(true); });
     return () => { alive = false; };
   }, []);
-
-  // Hide the whole section if there's nothing to show (or it failed to load)
-  if (failed || (orgs && orgs.length === 0)) return null;
-
+  if (failed || !orgs || orgs.length === 0) return null;   // silent unless there's real proof
   return (
-    <section id="directory" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
-        <div className="lp-reveal" style={{ textAlign: 'center', marginBottom: 'clamp(40px,5vw,64px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><SLabel>Find a school</SLabel></div>
-          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, lineHeight: 1.1, letterSpacing: '-0.02em', color: INK }}>
-            Schools &amp; tutors<br /><em style={{ fontStyle: 'italic', color: GOLD }}>ready to teach you.</em>
-          </h2>
-          <p style={{ fontFamily: UI, fontSize: 16, color: INK2, maxWidth: 520, lineHeight: 1.7, margin: '20px auto 0' }}>
-            Real institutions and educators building on Nest. Reach out directly and join their programs.
-          </p>
-        </div>
-
-        {!orgs ? (
-          <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: MONO, fontSize: 12, color: INK3, letterSpacing: '0.1em' }}>
-            Loading directory…
-          </div>
-        ) : (
-          <div className="lp-reveal lp-three-col" style={{
-            gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 10, overflow: 'hidden',
-            opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
-          }}>
-            {orgs.map(org => <OrgCard key={org.slug} org={org} />)}
-          </div>
-        )}
-
-        <p className="lp-reveal" style={{ marginTop: 32, textAlign: 'center', fontFamily: UI, fontSize: 14, color: INK2, opacity: 0, transform: 'translateY(12px)', transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s' }}>
-          Run a school or teach online?{' '}
-          <Link to="/signup" style={{ color: GOLD, textDecoration: 'none', fontWeight: 700 }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.textDecoration = 'underline')}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.textDecoration = 'none')}
-          >List your organization →</Link>
-        </p>
-      </div>
-    </section>
-  );
-}
-
-// ── Testimonials ───────────────────────────────────────────────────────────
-const TESTIMONIALS = [
-  {
-    quote: "Nest changed how I run my coding bootcamp. Learners finish 3× more content and I can actually see where they're stuck.",
-    name: 'Amara K.',
-    role: 'Founder, TechBridge Academy',
-    initials: 'AK',
-    color: GOLD,
-  },
-  {
-    quote: "I built my first course in one afternoon and had paying students by the next morning. The mobile payment integration is a game changer.",
-    name: 'Emmanuel T.',
-    role: 'Independent Educator',
-    initials: 'ET',
-    color: SAGE,
-  },
-  {
-    quote: "The AI Q&A feature alone is worth it. My students no longer wait 2 days for answers — they get them instantly from the lecture itself.",
-    name: 'Dr. Fatima M.',
-    role: 'University Lecturer',
-    initials: 'FM',
-    color: RUST,
-  },
-];
-
-function Testimonials() {
-  return (
-    <section style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
-        <div className="lp-reveal" style={{ textAlign: 'center', marginBottom: 'clamp(40px,5vw,64px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-          <SLabel>Educators love Nest</SLabel>
-          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, lineHeight: 1.1, letterSpacing: '-0.02em', color: INK }}>
-            Real results from<br /><em style={{ fontStyle: 'italic', color: GOLD }}>real educators.</em>
+    <section id="schools" style={{ padding: 'clamp(72px,9vw,120px) 0', borderTop: `1px solid ${HAIR}` }}>
+      <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
+        <div className="rv" style={{ textAlign: 'center', marginBottom: 'clamp(40px,5vw,60px)', opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><Thread /></div>
+          <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.22em', textTransform: 'uppercase', color: MUTE }}>Already teaching here</span>
+          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: TEXT, margin: '14px 0 0' }}>
+            Real schools, <em style={{ fontStyle: 'italic', color: GOLD }}>real people.</em>
           </h2>
         </div>
-
-        <div className="lp-reveal lp-three-col" style={{
-          gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 8, overflow: 'hidden',
-          opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
-        }}>
-          {TESTIMONIALS.map(t => (
-            <div key={t.name} style={{ background: CARD, padding: '40px 36px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-              {/* Stars */}
-              <div style={{ display: 'flex', gap: 4 }}>
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} width="13" height="13" viewBox="0 0 20 20" fill={GOLD}><path d="M10 1l2.4 7.4H20l-6.2 4.5 2.4 7.4L10 16l-6.2 4.3 2.4-7.4L0 8.4h7.6z"/></svg>
-                ))}
-              </div>
-              {/* Quote */}
-              <p style={{ fontFamily: DISP, fontSize: 'clamp(17px,2vw,21px)', fontWeight: 300, color: INK, lineHeight: 1.55, fontStyle: 'italic', flex: 1 }}>
-                "{t.quote}"
-              </p>
-              {/* Author */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderTop: `1px solid ${RULE}`, paddingTop: 20 }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: '50%',
-                  background: `rgba(${t.color === GOLD ? '200,169,110' : t.color === SAGE ? '90,138,106' : '196,92,44'},0.15)`,
-                  border: `1px solid rgba(${t.color === GOLD ? '200,169,110' : t.color === SAGE ? '90,138,106' : '196,92,44'},0.3)`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: UI, fontSize: 12, fontWeight: 700, color: t.color, flexShrink: 0,
-                }}>{t.initials}</div>
-                <div>
-                  <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: INK }}>{t.name}</div>
-                  <div style={{ fontFamily: MONO, fontSize: 10, color: INK3, letterSpacing: '0.06em', marginTop: 2 }}>{t.role}</div>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="orgs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 14 }}>
+          {orgs.map(org => <OrgCard key={org.slug} org={org} />)}
         </div>
       </div>
     </section>
   );
 }
 
-// ── Pricing ────────────────────────────────────────────────────────────────
-const PLANS = [
-  {
-    tier: 'Starter', name: 'For individual educators',
-    desc: 'Everything you need to launch your first course.',
-    price: <><sup style={{ fontSize: 28, verticalAlign: 'top', marginTop: 12, opacity: 0.7 }}>$</sup>9<span style={{ fontSize: 16, color: INK3, fontWeight: 400, fontFamily: UI }}>/mo</span></>,
-    period: '≈ 13,000 RWF / month',
-    cta: 'Start free trial', ctaTo: '/signup', featured: false,
-    features: ['Up to 5 modules','Video uploads up to 500 MB','Unlimited students','AI Q&A, quizzes & assignments','Certificates & analytics','Email support'],
-  },
-  {
-    tier: 'Professional', name: 'For growing institutions',
-    desc: 'Unlimited modules, larger uploads, priority support.',
-    price: <><sup style={{ fontSize: 28, verticalAlign: 'top', marginTop: 12, opacity: 0.7 }}>$</sup>29<span style={{ fontSize: 16, color: INK3, fontWeight: 400, fontFamily: UI }}>/mo</span></>,
-    period: '≈ 42,000 RWF / month',
-    cta: 'Start free trial', ctaTo: '/signup', featured: true,
-    features: ['Unlimited modules','Video uploads up to 2 GB','Unlimited students','AI Q&A, quizzes & assignments','Certificates & analytics','Priority support'],
-  },
-  {
-    tier: 'School', name: 'For schools & academies',
-    desc: 'Multiple teachers, custom branding, dedicated support.',
-    price: <><sup style={{ fontSize: 28, verticalAlign: 'top', marginTop: 12, opacity: 0.7 }}>$</sup>79<span style={{ fontSize: 16, color: INK3, fontWeight: 400, fontFamily: UI }}>/mo</span></>,
-    period: '≈ 115,000 RWF / month',
-    cta: 'Start free trial', ctaTo: '/signup', featured: false,
-    features: ['Everything in Professional','Video uploads up to 5 GB','Multiple teacher accounts','Custom branding (logo + colours)','Dedicated onboarding','SLA support'],
-  },
-];
-
-function Pricing() {
+// ═══ § 6 CLOSE + FOOTER ══════════════════════════════════════════════════════
+function Close() {
   return (
-    <section id="pricing" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
-        <div className="lp-reveal" style={{ textAlign: 'center', marginBottom: 'clamp(40px,5vw,70px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><SLabel>Pricing</SLabel></div>
-          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(42px,5vw,64px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK, marginBottom: 16 }}>
-            <em style={{ fontStyle: 'italic', color: GOLD }}>Simple,</em> transparent pricing.
-          </h2>
-          <p style={{ fontSize: 16, color: INK2, fontFamily: UI }}>Start free — upgrade when you're ready. No credit card. Cancel anytime.</p>
-        </div>
-
-        <div className="lp-reveal lp-three-col" style={{
-          gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 8, overflow: 'hidden',
-          opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
-        }}>
-          {PLANS.map(p => (
-            <div key={p.tier} style={{
-              background: p.featured ? '#f5eef7' : CARD,
-              padding: '44px 36px', position: 'relative', display: 'flex', flexDirection: 'column',
-              border: p.featured ? `1px solid rgba(142,45,158,0.18)` : 'none',
-              margin: p.featured ? -1 : 0, zIndex: p.featured ? 1 : 0,
-            }}>
-              {p.featured && (
-                <div style={{
-                  position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)',
-                  fontFamily: MONO, fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
-                  color: BG, background: GOLD, padding: '5px 12px', borderRadius: 100, whiteSpace: 'nowrap',
-                }}>Most popular</div>
-              )}
-              <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: p.featured ? GOLD : INK3, marginBottom: 10, marginTop: p.featured ? 20 : 0 }}>{p.tier}</div>
-              <div style={{ fontFamily: DISP, fontSize: 28, fontWeight: 400, color: INK, marginBottom: 8, letterSpacing: '-0.01em' }}>{p.name}</div>
-              <div style={{ fontSize: 13, color: INK2, marginBottom: 36, lineHeight: 1.5, fontFamily: UI }}>{p.desc}</div>
-              <div style={{ fontFamily: DISP, fontSize: 60, fontWeight: 300, color: GOLD2, lineHeight: 1, letterSpacing: '-0.03em', marginBottom: 6 }}>{p.price}</div>
-              <div style={{ fontFamily: MONO, fontSize: 12, color: INK3, marginBottom: 32, letterSpacing: '0.06em' }}>{p.period}</div>
-              <Link to={p.ctaTo} style={{
-                fontFamily: UI, fontSize: 12.5, fontWeight: 700,
-                letterSpacing: '0.06em', textTransform: 'uppercase',
-                padding: 12, borderRadius: 4, border: 'none',
-                textDecoration: 'none', textAlign: 'center', display: 'block', marginBottom: 32,
-                background: p.featured ? GOLD : 'transparent',
-                color: p.featured ? BG : INK2,
-                outline: p.featured ? 'none' : `1px solid ${RULE}`,
-                transition: 'opacity 0.2s, transform 0.15s',
-              }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.opacity = '0.82'; el.style.transform = 'translateY(-1px)'; }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }}
-              >{p.cta}</Link>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-                {p.features.map(f => (
-                  <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: INK2, lineHeight: 1.4, fontFamily: UI }}>
-                    <span style={{ color: GOLD, opacity: 0.6, fontSize: 8, marginTop: 4, flexShrink: 0 }}>✦</span>
-                    <span dangerouslySetInnerHTML={{ __html: f }} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <p style={{ textAlign: 'center', marginTop: 28, fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.06em' }}>
-          All plans include AI Q&A, quizzes, assignments, analytics & certificates · MoMo payment accepted · Cancel anytime
-        </p>
-      </div>
-    </section>
-  );
-}
-
-// ── CTA band ───────────────────────────────────────────────────────────────
-function CtaBand() {
-  return (
-    <section style={{ padding: 'clamp(64px,10vw,140px) 0', borderTop: `1px solid ${RULE}`, position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 60%, rgba(142,45,158,0.06) 0%, transparent 65%)` }} />
-      <div className="lp-reveal" style={{
-        maxWidth: 700, margin: '0 auto', textAlign: 'center',
-        position: 'relative', zIndex: 1, padding: '0 clamp(16px,4vw,48px)',
-        opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease',
-      }}>
-        <SLabel>Get started today</SLabel>
-        <h2 style={{ fontFamily: DISP, fontSize: 'clamp(48px,6vw,80px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.025em', color: INK, marginBottom: 24 }}>
-          The world needs<br /><em style={{ fontStyle: 'italic', color: GOLD }}>what you know.</em>
+    <footer style={{ borderTop: `1px solid ${HAIR}`, position: 'relative', overflow: 'hidden' }}>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 700px 400px at 50% 30%, rgba(232,176,75,0.09), transparent 65%)` }} />
+      <div className="rv" style={{ position: 'relative', maxWidth: 720, margin: '0 auto', textAlign: 'center', padding: 'clamp(80px,11vw,150px) clamp(16px,4vw,48px) clamp(56px,7vw,90px)', opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.8s ease, transform 0.8s ease' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 22 }}><Eyebrow dot={GOLD}>Your turn</Eyebrow></div>
+        <h2 style={{ fontFamily: DISP, fontSize: 'clamp(44px,7vw,88px)', fontWeight: 300, lineHeight: 1.02, letterSpacing: '-0.025em', color: TEXT, margin: '0 0 22px' }}>
+          Your first course is<br /><em style={{ fontStyle: 'italic', color: GOLD }}>one afternoon away.</em>
         </h2>
-        <p style={{ fontSize: 17, color: INK2, lineHeight: 1.7, marginBottom: 48, fontFamily: UI }}>
-          Join educators who are already building the future of learning on Nest.
-          Your first course is free. No credit card. No excuses.
+        <p style={{ fontFamily: UI, fontSize: 17, color: MUTE, lineHeight: 1.6, marginBottom: 36 }}>
+          No card. No fees to start. You keep 100%.
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <Link to="/signup" style={{
-            fontFamily: UI, fontSize: 13, fontWeight: 700,
-            letterSpacing: '0.06em', textTransform: 'uppercase',
-            color: BG, background: GOLD,
-            padding: '15px 40px', borderRadius: 4,
-            textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10,
-            transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
-          }}
-            onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD2; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 16px 40px rgba(142,45,158,0.25)'; }}
-            onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none'; }}
-          >
-            Create your free workspace
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
-          </Link>
-        </div>
-        <p style={{ fontSize: 13, color: INK3, marginTop: 20, fontFamily: MONO, letterSpacing: '0.06em' }}>
+        <GoldBtn to="/signup" big>Start free
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
+        </GoldBtn>
+        <p style={{ fontFamily: MONO, fontSize: 11.5, color: FAINT, marginTop: 20, letterSpacing: '0.04em' }}>
           Already have an account?{' '}
-          <Link to="/login" style={{ color: GOLD, textDecoration: 'none' }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.textDecoration = 'underline')}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.textDecoration = 'none')}
-          >Sign in</Link>
-        </p>
-      </div>
-    </section>
-  );
-}
-
-// ── Code gate (footer variant — calls onSuccess instead of navigating) ────
-function CodeGateModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
-  const [code, setCode] = useState('');
-  const [error, setError] = useState(false);
-  const [shake, setShake] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 80);
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [onClose]);
-
-  const attempt = useCallback(() => {
-    if (code.trim() === CORRECT_CODE) {
-      setSuccess(true);
-      sessionStorage.setItem(ACCESS_KEY, '1');
-      setTimeout(onSuccess, 800);
-    } else {
-      setError(true); setShake(true); setCode('');
-      setTimeout(() => setShake(false), 600);
-      setTimeout(() => setError(false), 2500);
-    }
-  }, [code, onSuccess]);
-
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 2000,
-      background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 24, animation: 'lpRise 0.25s ease',
-    }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{
-        background: CARD, border: `1px solid ${error ? RUST : success ? SAGE : GOLD}44`,
-        borderRadius: 16, padding: 'clamp(32px,5vw,52px)',
-        maxWidth: 400, width: '100%',
-        boxShadow: `0 40px 80px rgba(0,0,0,0.6)`,
-        animation: shake ? 'lpShake 0.55s ease' : 'none',
-        transition: 'border-color 0.3s',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-          <span style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Restricted access</span>
-        </div>
-        <div style={{ fontFamily: DISP, fontSize: 28, fontWeight: 400, color: INK, marginBottom: 8 }}>Documents</div>
-        <div style={{ fontFamily: UI, fontSize: 13, color: INK2, lineHeight: 1.6, marginBottom: 28 }}>
-          {success ? 'Access granted — opening documents…' : 'Enter your access code to view the document library.'}
-        </div>
-        {!success && (
-          <>
-            <input
-              ref={inputRef}
-              type="text"
-              value={code}
-              onChange={e => { setCode(e.target.value); setError(false); }}
-              onKeyDown={e => { if (e.key === 'Enter') attempt(); }}
-              placeholder="Access code"
-              autoComplete="off"
-              style={{
-                width: '100%', background: SURFACE, boxSizing: 'border-box',
-                border: `1px solid ${error ? RUST : 'rgba(31,31,36,0.12)'}`,
-                borderRadius: 8, padding: '12px 16px',
-                fontFamily: MONO, fontSize: 15, letterSpacing: '0.18em',
-                color: INK, outline: 'none',
-              }}
-              onFocus={e => { if (!error) e.currentTarget.style.borderColor = `${GOLD}66`; }}
-              onBlur={e => { if (!error) e.currentTarget.style.borderColor = 'rgba(31,31,36,0.12)'; }}
-            />
-            {error && <div style={{ fontFamily: MONO, fontSize: 10.5, color: RUST, letterSpacing: '0.08em', marginTop: 8 }}>Incorrect code. Try again.</div>}
-            <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-              <button onClick={attempt} style={{
-                flex: 1, fontFamily: UI, fontSize: 13, fontWeight: 700,
-                background: `linear-gradient(135deg, ${GOLD}, ${GOLD2})`,
-                color: BG, border: 'none', borderRadius: 8, padding: '13px 0', cursor: 'pointer',
-              }}>Unlock</button>
-              <button onClick={onClose} style={{
-                fontFamily: UI, fontSize: 13, color: INK3, background: 'none',
-                border: `1px solid ${RULE}`, borderRadius: 8, padding: '13px 20px', cursor: 'pointer',
-              }}>Cancel</button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Footer ─────────────────────────────────────────────────────────────────
-function LandingFooter() {
-  const [showDocs, setShowDocs] = useState(false);
-  const [docsGate, setDocsGate] = useState<typeof DOCS[0] | null>(null);
-
-  const openDocs = () => {
-    if (sessionStorage.getItem(ACCESS_KEY) === '1') {
-      setShowDocs(true);
-    } else {
-      // use a sentinel doc to trigger the gate, then show all docs on success
-      setDocsGate({ id: '__all__', title: 'Documents', desc: '', pages: '', href: '', badge: '' } as any);
-    }
-  };
-
-  const handleGateClose = () => setDocsGate(null);
-  const handleGateSuccess = () => { setDocsGate(null); setShowDocs(true); };
-
-  return (
-    <footer style={{ borderTop: `1px solid ${RULE}`, padding: 'clamp(24px,4vw,48px)', fontFamily: UI }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 32, marginBottom: 40 }}>
-        {/* Brand */}
-        <div style={{ maxWidth: 240 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-            <div style={{ width: 28, height: 28, border: `1.5px solid rgba(142,45,158,0.4)`, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: GOLD }}>N</div>
-            <span style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: GOLD2 }}>Nest</span>
-          </div>
-          <p style={{ fontSize: 13, color: INK3, lineHeight: 1.6 }}>
-            The education platform built for the next generation of creators and learners.
-          </p>
-        </div>
-
-        {/* Links */}
-        <div style={{ display: 'flex', gap: 48, flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 16 }}>Platform</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[['#features','Features'],['#how','How it works'],['#for-who','For educators']].map(([h,l]) => (
-                <a key={h} href={h} style={{ fontSize: 13, color: INK3, textDecoration: 'none', transition: 'color 0.2s' }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK3)}
-                >{l}</a>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 16 }}>Account</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <Link to="/pricing" style={{ fontSize: 13, color: INK3, textDecoration: 'none', transition: 'color 0.2s' }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK3)}
-              >Pricing</Link>
-              <Link to="/login" style={{ fontSize: 13, color: INK3, textDecoration: 'none', transition: 'color 0.2s' }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK3)}
-              >Sign in</Link>
-              <Link to="/signup" style={{ fontSize: 13, color: GOLD, textDecoration: 'none' }}>Get started free</Link>
-              <button onClick={openDocs} style={{ fontSize: 13, color: INK3, textDecoration: 'none', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: UI, textAlign: 'left', transition: 'color 0.2s' }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK3)}
-              >Docs</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ borderTop: `1px solid ${RULE}`, paddingTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-        <p style={{ fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.06em' }}>
-          © {new Date().getFullYear()} Nest. All rights reserved.
-        </p>
-        <p style={{ fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.06em', fontStyle: 'italic' }}>
-          Knowledge that moves the world forward.
+          <Link to="/login" style={{ color: GOLD, textDecoration: 'none' }}>Sign in</Link>
         </p>
       </div>
 
-      {/* Docs overlay */}
-      {showDocs && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(255,255,255,0.98)', overflowY: 'auto' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(40px,6vw,80px) clamp(16px,4vw,48px)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 48 }}>
-              <div>
-                <SLabel>Official Documents</SLabel>
-                <h2 style={{ fontFamily: DISP, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 300, color: INK, margin: 0 }}>
-                  The full picture,<br /><strong style={{ fontWeight: 600 }}>beautifully documented.</strong>
-                </h2>
-              </div>
-              <button onClick={() => setShowDocs(false)} style={{ background: 'none', border: `1px solid ${RULE}`, color: INK2, cursor: 'pointer', borderRadius: 8, padding: '10px 20px', fontFamily: UI, fontSize: 13 }}>Close ✕</button>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 2 }}>
-              {DOCS.map(doc => {
-                const isLink = doc.href.startsWith('/');
-                const inner = (
-                  <div style={{ background: CARD, border: `1px solid ${RULE}`, borderRadius: 12, padding: '28px 28px 24px', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer', transition: 'border-color 0.2s' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = GOLD; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = RULE; }}
-                  >
-                    <span style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.16em', textTransform: 'uppercase' }}>{doc.badge}</span>
-                    <div style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: INK, lineHeight: 1.2 }}>{doc.title}</div>
-                    <div style={{ fontSize: 13, color: INK2, lineHeight: 1.6 }}>{doc.desc}</div>
-                    <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontFamily: MONO, fontSize: 10, color: INK3 }}>{doc.pages}</span>
-                      <span style={{ color: GOLD, fontSize: 18 }}>→</span>
-                    </div>
-                  </div>
-                );
-                return isLink
-                  ? <Link key={doc.id} to={doc.href} style={{ textDecoration: 'none' }}>{inner}</Link>
-                  : <a key={doc.id} href={doc.href} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>{inner}</a>;
-              })}
-            </div>
+      {/* Footer bar */}
+      <div style={{ borderTop: `1px solid ${HAIR}`, position: 'relative' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '28px clamp(16px,4vw,48px)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: `linear-gradient(135deg, ${GOLD}, ${GOLDD})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: INK, fontFamily: DISP }}>N</div>
+            <span style={{ fontFamily: DISP, fontSize: 20, fontWeight: 600, color: TEXT }}>Nest</span>
+          </div>
+          <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
+            {[['#how','How it works'],['/pricing','Pricing'],['/login','Sign in'],['/signup','Get started']].map(([h, l]) => (
+              h.startsWith('#')
+                ? <a key={l} href={h} style={{ fontFamily: UI, fontSize: 13, color: MUTE, textDecoration: 'none' }}>{l}</a>
+                : <Link key={l} to={h} style={{ fontFamily: UI, fontSize: 13, color: MUTE, textDecoration: 'none' }}>{l}</Link>
+            ))}
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 10.5, color: FAINT, letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Thread width={28} /> Made in Africa
           </div>
         </div>
-      )}
-
-      {/* Code gate for docs */}
-      {docsGate && (
-        <CodeGateModal onClose={handleGateClose} onSuccess={handleGateSuccess} />
-      )}
+        <div style={{ borderTop: `1px solid ${HAIR}`, padding: '16px clamp(16px,4vw,48px)', maxWidth: 1120, margin: '0 auto' }}>
+          <span style={{ fontFamily: MONO, fontSize: 10.5, color: FAINT, letterSpacing: '0.05em' }}>© {new Date().getFullYear()} Nest — a classroom with no walls.</span>
+        </div>
+      </div>
     </footer>
   );
 }
 
-// ── Documents ──────────────────────────────────────────────────────────────
-
-const ACCESS_KEY = 'nest_docs_unlocked';
-const CORRECT_CODE = 'Evone';
-
-const DOCS = [
-  {
-    id: 'pitch',
-    type: 'Presentation',
-    typeColor: GOLD,
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-      </svg>
-    ),
-    title: 'Investor Pitch Deck',
-    desc: 'Pre-seed presentation covering market opportunity, traction, business model, team and the $10K ask. Built for investors and accelerators.',
-    pages: '12 slides',
-    href: '/pitch',
-    badge: 'Pre-Seed · 2026',
-  },
-  {
-    id: 'onepager',
-    type: 'Executive Summary',
-    typeColor: SAGE,
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
-      </svg>
-    ),
-    title: 'One-Pager',
-    desc: 'A single-page overview of Nest — what it is, who it serves, how we make money, and why now. The first thing a partner reads.',
-    pages: '1 page',
-    href: '/one-pager',
-    badge: 'For Partners',
-  },
-  {
-    id: 'bizplan',
-    type: 'Strategy',
-    typeColor: GOLD2,
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
-        <line x1="6" y1="20" x2="6" y2="14"/><polyline points="1 20 23 20"/>
-      </svg>
-    ),
-    title: 'Business Plan',
-    desc: 'Full strategic document — market analysis, competitive landscape, financial projections, go-to-market plan and 24-month roadmap.',
-    pages: 'Full document',
-    href: '/business-plan',
-    badge: 'Detailed · 2026',
-  },
-  {
-    id: 'terms',
-    type: 'Legal',
-    typeColor: RUST,
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-      </svg>
-    ),
-    title: 'Terms of Service',
-    desc: 'The legal agreement governing use of the Nest platform — covering user responsibilities, content policies, payments, and platform rules.',
-    pages: 'Legal document',
-    href: '/terms',
-    badge: 'Platform Legal',
-  },
-  {
-    id: 'privacy',
-    type: 'Legal',
-    typeColor: RUST,
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
-      </svg>
-    ),
-    title: 'Privacy Policy',
-    desc: 'How Nest collects, uses, stores and protects user data. Covers GDPR-aligned practices, data retention, cookies and user rights.',
-    pages: 'Legal document',
-    href: '/privacy',
-    badge: 'Data & Privacy',
-  },
-  {
-    id: 'media',
-    type: 'Brand',
-    typeColor: INK2,
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/>
-      </svg>
-    ),
-    title: 'Media Kit',
-    desc: 'Brand assets, logo files, colour palette, typography guidelines and approved messaging for press and partner use.',
-    pages: 'Brand assets',
-    href: '/media-kit',
-    badge: 'Press & Partners',
-  },
-];
-
-// ── Code gate modal ─────────────────────────────────────────────────────────
-function CodeGate({ doc, onClose }: { doc: typeof DOCS[0]; onClose: () => void }) {
-  const [code, setCode] = useState('');
-  const [error, setError] = useState(false);
-  const [shake, setShake] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const navigate = useNavigate();
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 80);
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [onClose]);
-
-  const attempt = useCallback(() => {
-    if (code.trim() === CORRECT_CODE) {
-      setSuccess(true);
-      sessionStorage.setItem(ACCESS_KEY, '1');
-      setTimeout(() => { onClose(); navigate(doc.href); }, 900);
-    } else {
-      setError(true);
-      setShake(true);
-      setCode('');
-      setTimeout(() => setShake(false), 600);
-      setTimeout(() => setError(false), 2500);
-    }
-  }, [code, doc.href, navigate, onClose]);
-
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 2000,
-      background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 24,
-      animation: 'lpRise 0.25s ease',
-    }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{
-        background: CARD, border: `1px solid ${error ? RUST : success ? SAGE : GOLD}44`,
-        borderRadius: 16, padding: 'clamp(32px,5vw,52px)',
-        maxWidth: 440, width: '100%',
-        boxShadow: `0 30px 60px rgba(31,31,36,0.14), 0 0 0 1px ${error ? RUST : success ? SAGE : GOLD}22`,
-        animation: shake ? 'lpShake 0.55s ease' : 'none',
-        transition: 'border-color 0.3s, box-shadow 0.3s',
-      }}>
-        {/* Doc icon */}
-        <div style={{
-          width: 56, height: 56,
-          border: `1px solid ${doc.typeColor}33`,
-          background: `${doc.typeColor}0f`,
-          borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: doc.typeColor, marginBottom: 24,
-        }}>{doc.icon}</div>
-
-        {/* Header */}
-        <div style={{ fontFamily: MONO, fontSize: 9, color: doc.typeColor, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 10 }}>{doc.type}</div>
-        <div style={{ fontFamily: DISP, fontSize: 'clamp(22px,3vw,30px)', fontWeight: 400, color: INK, lineHeight: 1.2, marginBottom: 10 }}>{doc.title}</div>
-        <div style={{ fontFamily: UI, fontSize: 13.5, color: INK2, lineHeight: 1.65, marginBottom: 32 }}>{doc.desc}</div>
-
-        {/* Lock line */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={INK3} strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-          <span style={{ fontFamily: MONO, fontSize: 10, color: INK3, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            {success ? 'Access granted — opening…' : 'Enter access code to continue'}
-          </span>
-        </div>
-
-        {/* Input */}
-        {!success && (
-          <>
-            <input
-              ref={inputRef}
-              type="text"
-              value={code}
-              onChange={e => { setCode(e.target.value); setError(false); }}
-              onKeyDown={e => { if (e.key === 'Enter') attempt(); }}
-              placeholder="Access code"
-              autoComplete="off"
-              style={{
-                width: '100%', background: SURFACE,
-                border: `1px solid ${error ? RUST : 'rgba(31,31,36,0.12)'}`,
-                borderRadius: 8, padding: '13px 16px',
-                fontFamily: MONO, fontSize: 15, letterSpacing: '0.18em',
-                color: INK, outline: 'none',
-                transition: 'border-color 0.2s',
-                boxSizing: 'border-box',
-              }}
-              onFocus={e => { if (!error) e.currentTarget.style.borderColor = `${GOLD}66`; }}
-              onBlur={e => { if (!error) e.currentTarget.style.borderColor = 'rgba(31,31,36,0.12)'; }}
-            />
-            {error && (
-              <div style={{ fontFamily: MONO, fontSize: 10.5, color: RUST, letterSpacing: '0.1em', marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke={RUST} strokeWidth="2.5" strokeLinecap="round"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg>
-                Incorrect code. Try again.
-              </div>
-            )}
-            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-              <button onClick={attempt} style={{
-                flex: 1, fontFamily: UI, fontSize: 13, fontWeight: 700,
-                letterSpacing: '0.06em', textTransform: 'uppercase',
-                color: BG, background: GOLD, border: 'none',
-                padding: '13px 0', borderRadius: 7, cursor: 'pointer',
-                transition: 'background 0.2s, transform 0.15s',
-              }}
-                onMouseEnter={e => { const el = e.currentTarget; el.style.background = GOLD2; el.style.transform = 'translateY(-1px)'; }}
-                onMouseLeave={e => { const el = e.currentTarget; el.style.background = GOLD; el.style.transform = 'translateY(0)'; }}
-              >Unlock</button>
-              <button onClick={onClose} style={{
-                fontFamily: UI, fontSize: 13, fontWeight: 500,
-                color: INK3, background: 'none',
-                border: `1px solid ${RULE}`, padding: '13px 20px',
-                borderRadius: 7, cursor: 'pointer',
-                transition: 'color 0.2s',
-              }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = INK2)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = INK3)}
-              >Cancel</button>
-            </div>
-          </>
-        )}
-
-        {success && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', background: `${SAGE}12`, border: `1px solid ${SAGE}33`, borderRadius: 8 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={SAGE} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <span style={{ fontFamily: UI, fontSize: 14, color: SAGE }}>Access granted. Opening document…</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Documents section ───────────────────────────────────────────────────────
-function Documents() {
-  const [activeDoc, setActiveDoc] = useState<typeof DOCS[0] | null>(null);
-  const navigate = useNavigate();
-
-  const handleClick = (doc: typeof DOCS[0]) => {
-    if (sessionStorage.getItem(ACCESS_KEY) === '1') {
-      navigate(doc.href);
-    } else {
-      setActiveDoc(doc);
-    }
-  };
-
-  return (
-    <>
-      <section id="documents" style={{ padding: 'clamp(64px,8vw,120px) 0', borderTop: `1px solid ${RULE}` }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
-
-          {/* Header */}
-          <div className="lp-reveal" style={{ marginBottom: 'clamp(40px,5vw,64px)', opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
-              <div>
-                <SLabel>Official Documents</SLabel>
-                <h2 style={{ fontFamily: DISP, fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '-0.02em', color: INK, marginBottom: 16 }}>
-                  Everything in writing.<br /><em style={{ fontStyle: 'italic', color: GOLD }}>Nothing left to chance.</em>
-                </h2>
-                <p style={{ fontFamily: UI, fontSize: 16, color: INK2, maxWidth: 480, lineHeight: 1.7 }}>
-                  Our full document library — from investor materials to legal agreements.
-                  All documents are access-controlled and updated regularly.
-                </p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', background: `${GOLD}0a`, border: `1px solid ${GOLD}22`, borderRadius: 8 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <span style={{ fontFamily: MONO, fontSize: 10, color: GOLD, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Access-controlled</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Grid */}
-          <div className="lp-reveal" style={{
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 10, overflow: 'hidden',
-            opacity: 0, transform: 'translateY(24px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s',
-          }}>
-            {DOCS.map(doc => (
-              <button key={doc.id} onClick={() => handleClick(doc)} style={{
-                background: CARD, border: 'none', cursor: 'pointer', padding: '32px 32px 28px',
-                textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 0,
-                transition: 'background 0.2s',
-                position: 'relative', overflow: 'hidden',
-              }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget;
-                  el.style.background = '#f5eef7';
-                  const bar = el.querySelector<HTMLElement>('.doc-bar');
-                  if (bar) bar.style.transform = 'scaleX(1)';
-                  const arrow = el.querySelector<HTMLElement>('.doc-arrow');
-                  if (arrow) { arrow.style.opacity = '1'; arrow.style.transform = 'translateX(0)'; }
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget;
-                  el.style.background = CARD;
-                  const bar = el.querySelector<HTMLElement>('.doc-bar');
-                  if (bar) bar.style.transform = 'scaleX(0)';
-                  const arrow = el.querySelector<HTMLElement>('.doc-arrow');
-                  if (arrow) { arrow.style.opacity = '0'; arrow.style.transform = 'translateX(-6px)'; }
-                }}
-              >
-                {/* Gold bar on hover */}
-                <div className="doc-bar" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${doc.typeColor}, transparent)`, transform: 'scaleX(0)', transformOrigin: 'left', transition: 'transform 0.3s ease' }} />
-
-                {/* Top row */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
-                  <div style={{ width: 50, height: 50, border: `1px solid ${doc.typeColor}30`, background: `${doc.typeColor}0c`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: doc.typeColor }}>
-                    {doc.icon}
-                  </div>
-                  <div style={{ display: 'flex', flex: 1, justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap', paddingLeft: 12 }}>
-                    <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: doc.typeColor, border: `1px solid ${doc.typeColor}30`, background: `${doc.typeColor}0c`, padding: '4px 10px', borderRadius: 100, whiteSpace: 'nowrap' }}>{doc.type}</span>
-                    <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.1em', color: INK3, border: `1px solid ${RULE}`, padding: '4px 10px', borderRadius: 100, whiteSpace: 'nowrap' }}>{doc.badge}</span>
-                  </div>
-                </div>
-
-                {/* Title */}
-                <div style={{ fontFamily: UI, fontSize: 17, fontWeight: 700, color: INK, marginBottom: 10, lineHeight: 1.3 }}>{doc.title}</div>
-
-                {/* Desc */}
-                <div style={{ fontFamily: UI, fontSize: 13, color: INK2, lineHeight: 1.65, marginBottom: 24, flex: 1 }}>{doc.desc}</div>
-
-                {/* Footer */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: `1px solid ${RULE}`, paddingTop: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={INK3} strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                    <span style={{ fontFamily: MONO, fontSize: 10, color: INK3, letterSpacing: '0.1em' }}>{doc.pages}</span>
-                  </div>
-                  <div className="doc-arrow" style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0, transform: 'translateX(-6px)', transition: 'opacity 0.2s, transform 0.2s' }}>
-                    <span style={{ fontFamily: MONO, fontSize: 10, color: doc.typeColor, letterSpacing: '0.1em' }}>Open</span>
-                    <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke={doc.typeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Footer note */}
-          <p className="lp-reveal" style={{ marginTop: 28, fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.08em', textAlign: 'center', opacity: 0, transform: 'translateY(12px)', transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s' }}>
-            All documents are confidential and intended for authorised recipients only. &nbsp;·&nbsp; Code required for access.
-          </p>
-        </div>
-      </section>
-
-      {activeDoc && <CodeGate doc={activeDoc} onClose={() => setActiveDoc(null)} />}
-    </>
-  );
-}
-
-// ── Page ───────────────────────────────────────────────────────────────────
+// ═══ PAGE ════════════════════════════════════════════════════════════════════
 export default function LandingPage() {
   useReveal();
   return (
-    <div style={{ background: BG, color: INK, fontFamily: UI, fontSize: 15, lineHeight: 1.6, overflowX: 'hidden' }}>
-      {/* Noise overlay */}
-      <div style={{
+    <div style={{ background: INK, color: TEXT, fontFamily: UI, fontSize: 15, lineHeight: 1.6, overflowX: 'hidden' }}>
+      {/* Warm film grain */}
+      <div aria-hidden style={{
         position: 'fixed', inset: 0, zIndex: 1000, pointerEvents: 'none',
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-        opacity: 0.032,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+        opacity: 0.04, mixBlendMode: 'overlay',
       }} />
-      <LandingNav />
+
+      <Nav />
       <Hero />
-      <Ticker />
-      <HowItWorks />
-      <ImageBand />
-      <Features />
-      <ForWho />
+      <PromiseStrip />
+      <ThreeMoves />
+      <Manifesto />
       <Directory />
-      <Testimonials />
-      <Pricing />
-      <CtaBand />
-      <LandingFooter />
+      <Close />
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter+Tight:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-        @keyframes lpRise    { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes lpBlink   { 0%,100%{opacity:1} 50%{opacity:0.2} }
-        @keyframes lpFloat   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-        @keyframes lpTicker  { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-        @keyframes lpShake   { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-8px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(6px)} 75%{transform:translateX(-3px)} 90%{transform:translateX(3px)} }
+        @keyframes nRise   { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes nBlink  { 0%,100%{opacity:1} 50%{opacity:0.25} }
+        @keyframes nFloat  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes nPop    { from{opacity:0;transform:translateY(8px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes nBounce { 0%,80%,100%{transform:translateY(0);opacity:0.5} 40%{transform:translateY(-5px);opacity:1} }
+        @keyframes nCaret  { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes nProg   { from{width:34%} to{width:64%} }
+        @keyframes nWord   { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-        ::-webkit-scrollbar{width:5px}
-        ::-webkit-scrollbar-track{background:${BG}}
-        ::-webkit-scrollbar-thumb{background:${INK3};border-radius:3px}
+        .caret     { animation: nCaret 0.7s step-end infinite; margin-left:1px; }
+        .demo-prog { animation: nProg 6s ease-in-out infinite alternate; }
+        .man-word  { display:inline-block; animation: nWord 0.7s ease both; }
 
-        .lp-three-col { display: grid; grid-template-columns: repeat(3,1fr); }
-        .lp-two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; align-items: start; }
+        .nav-links a:hover, .signin-mobile:hover { color: ${TEXT} !important; }
 
-        @media (max-width: 768px) {
-          .lp-three-col { grid-template-columns: 1fr; }
-          .lp-two-col   { grid-template-columns: 1fr; }
-          .lp-hero-card { display: none; }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:${INK}; }
+        ::-webkit-scrollbar-thumb { background:#2a2530; border-radius:3px; }
+
+        html { scroll-behavior: smooth; }
+        section[id] { scroll-margin-top: 80px; }
+
+        @media (max-width: 860px) {
+          .moves-grid   { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .manifesto-photo { width: 100% !important; opacity: 0.28; }
+          .float-chip   { display: none !important; }
         }
-        @media (min-width: 769px) and (max-width: 1024px) {
-          .lp-three-col { grid-template-columns: repeat(2,1fr); }
+        @media (max-width: 620px) {
+          .nav-links    { display: none !important; }
+          .signin-mobile{ display: inline-block !important; }
+          .promise-grid { grid-template-columns: 1fr !important; }
+          .promise-grid > div { border-right: none !important; border-bottom: 1px solid ${HAIR}; }
         }
-        @media (max-width: 680px) {
-          .lp-nav-links     { display: none !important; }
-          .lp-signin-mobile { display: inline-block !important; }
+        @media (prefers-reduced-motion: reduce) {
+          .float-chip, .demo-prog, .caret, .man-word { animation: none !important; }
+          .rv { opacity: 1 !important; transform: none !important; }
         }
       `}</style>
     </div>

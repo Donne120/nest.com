@@ -16,6 +16,11 @@ export const ACC  = 'var(--c-acc)';
 export const ACC2 = 'var(--c-acc2)';
 export const GO   = 'var(--c-go)';
 export const BLUE = 'var(--c-acc2)';
+// Semantic + signature tokens — use these instead of hardcoding hex
+export const GOLD   = 'var(--c-gold)';   // brand signature accent
+export const WARN   = 'var(--c-warn)';   // pending / attention (amber)
+export const DANGER = 'var(--c-danger)'; // destructive / error (red)
+export const OK     = 'var(--c-ok)';     // success (green)
 
 // Video player cinema palette — fixed dark theme, not org-branded
 export const C = {

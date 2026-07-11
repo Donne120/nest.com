@@ -11,10 +11,10 @@ import Avatar from '../../components/UI/Avatar';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function pctColor(pct: number) {
-  if (pct === 100) return '#16a34a';
-  if (pct >= 60) return '#d97706';
-  if (pct > 0) return '#2563eb';
-  return '#94a3b8';
+  if (pct === 100) return '#4f8a2e';  // success green
+  if (pct >= 60) return '#b8842a';    // warn amber
+  if (pct > 0) return '#7b2d8e';      // brand purple (in progress)
+  return '#94a3b8';                   // neutral
 }
 
 function lastActiveLabel(days: number | null, pct: number): string {
@@ -82,10 +82,10 @@ function LearnerCard({ emp }: { emp: LearnerPeopleStats }) {
 
 function KpiStrip({ summary }: { summary: PeopleReport['summary'] }) {
   const kpis = [
-    { label: 'Total People', value: summary.total, icon: Users, color: 'bg-blue-500' },
+    { label: 'Total People', value: summary.total, icon: Users, color: 'bg-brand-500' },
     { label: 'Stars (100%)', value: summary.stars, icon: Star, color: 'bg-emerald-500' },
     { label: 'At Risk', value: summary.at_risk, icon: AlertTriangle, color: 'bg-amber-500' },
-    { label: 'Avg Completion', value: `${summary.avg_completion}%`, icon: TrendingUp, color: 'bg-violet-500' },
+    { label: 'Avg Completion', value: `${summary.avg_completion}%`, icon: TrendingUp, color: 'bg-brand-600' },
   ];
 
   return (
@@ -125,7 +125,7 @@ export default function AdminPeoplePage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
             <Users size={16} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">People</h1>
@@ -190,10 +190,10 @@ export default function AdminPeoplePage() {
           {active.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center gap-2 mb-4">
-                <CircleDot size={14} className="text-blue-500" />
+                <CircleDot size={14} className="text-brand-500" />
                 <h2 className="text-sm font-bold text-gray-900">
                   In Progress
-                  <span className="ml-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-full px-2 py-0.5">
+                  <span className="ml-2 text-xs font-semibold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2 py-0.5">
                     {active.length}
                   </span>
                 </h2>

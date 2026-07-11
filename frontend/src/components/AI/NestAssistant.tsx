@@ -16,7 +16,7 @@ const SUGGESTIONS = [
   'How do I ask a question during a video?',
   'Where can I find my assignments?',
   'How do I book a meeting?',
-  'What does the AI Study Notebook do?',
+  'How does Nest AI answer questions on a video?',
 ];
 
 function renderMarkdown(text: string) {

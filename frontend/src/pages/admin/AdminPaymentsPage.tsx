@@ -4,13 +4,12 @@ import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 import api from '../../api/client';
 
-import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, ACC2, GO } from '../../lib/colors';
-const WARN = '#c97a2c';
+import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, ACC2, GO, WARN, DANGER, OK } from '../../lib/colors';
 
 const STATUS_CFG = {
-  pending:  { label: 'Pending',  color: WARN, bg: 'rgba(201,122,44,0.08)', border: 'rgba(201,122,44,0.2)' },
-  approved: { label: 'Approved', color: GO,   bg: 'rgba(42,122,75,0.08)',  border: 'rgba(42,122,75,0.2)'  },
-  rejected: { label: 'Rejected', color: ACC,  bg: 'rgba(201,79,44,0.08)', border: 'rgba(201,79,44,0.2)'  },
+  pending:  { label: 'Pending',  color: WARN,   bg: 'rgba(184,132,42,0.10)', border: 'rgba(184,132,42,0.25)' },
+  approved: { label: 'Approved', color: OK,     bg: 'rgba(79,138,46,0.10)',  border: 'rgba(79,138,46,0.25)'  },
+  rejected: { label: 'Rejected', color: DANGER, bg: 'rgba(194,73,46,0.10)',  border: 'rgba(194,73,46,0.25)'  },
 };
 
 const METHOD_LABELS: Record<string, string> = {

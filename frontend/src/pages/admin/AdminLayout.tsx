@@ -40,7 +40,7 @@ const PAGE_TITLES: [string, string][] = [
 ];
 
 // Design tokens
-import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, ACC2 } from '../../lib/colors';
+import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, ACC2, GO } from '../../lib/colors';
 
 export default function AdminLayout() {
   const { user, clearAuth } = useAuthStore();
@@ -122,7 +122,7 @@ export default function AdminLayout() {
                 width: 28, height: 28, background: ACC, borderRadius: 6,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 13, fontWeight: 800, color: '#fff', flexShrink: 0,
-                boxShadow: `0 0 0 1px rgba(201,79,44,0.4), 0 4px 12px rgba(201,79,44,0.35)`,
+                boxShadow: `0 0 0 1px rgba(123,45,142,0.4), 0 4px 12px rgba(123,45,142,0.35)`,
               }}>
                 N
               </div>
@@ -189,7 +189,7 @@ export default function AdminLayout() {
             onClick={handleLogout}
             title="Sign out"
             style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: 3, transition: 'color 0.2s', flexShrink: 0 }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#c45c3c')}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#b259c4')}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.25)')}
           >
             <LogOut size={14} />
@@ -247,7 +247,7 @@ export default function AdminLayout() {
               fontSize: 11, fontWeight: 500, color: INK2,
               letterSpacing: '0.04em',
             }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2a7a4b', animation: 'notif-blink 2s ease infinite', display: 'inline-block' }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: GO, animation: 'notif-blink 2s ease infinite', display: 'inline-block' }} />
               Live
             </div>
 
@@ -309,7 +309,7 @@ export default function AdminLayout() {
                           <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: ACC, borderRadius: 100, padding: '1px 6px' }}>{unread}</span>
                         )}
                       </div>
-                      {unread === 0 && <span style={{ fontSize: 11, color: '#2a7a4b', background: 'rgba(42,122,75,0.08)', padding: '2px 8px', borderRadius: 100 }}>All read</span>}
+                      {unread === 0 && <span style={{ fontSize: 11, color: '#5a8a3c', background: 'rgba(124,179,66,0.12)', padding: '2px 8px', borderRadius: 100 }}>All read</span>}
                     </div>
                     <div style={{ maxHeight: 'min(340px, 55vh)', overflowY: 'auto' }}>
                       {notifications.length === 0 ? (
@@ -325,11 +325,11 @@ export default function AdminLayout() {
                             style={{
                               padding: '12px 18px', borderBottom: `1px solid rgba(212,205,198,0.4)`,
                               cursor: 'pointer', transition: 'background 0.15s',
-                              background: !n.is_read ? 'rgba(44,107,201,0.03)' : 'transparent',
+                              background: !n.is_read ? 'rgba(123,45,142,0.04)' : 'transparent',
                               display: 'flex', gap: 10, alignItems: 'flex-start',
                             }}
                             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = BG2)}
-                            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = !n.is_read ? 'rgba(44,107,201,0.03)' : 'transparent')}
+                            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = !n.is_read ? 'rgba(123,45,142,0.04)' : 'transparent')}
                           >
                             <div style={{ width: 7, height: 7, borderRadius: '50%', background: !n.is_read ? ACC2 : 'transparent', border: `1.5px solid ${!n.is_read ? ACC2 : RULE}`, flexShrink: 0, marginTop: 4 }} />
                             <div style={{ flex: 1, minWidth: 0 }}>

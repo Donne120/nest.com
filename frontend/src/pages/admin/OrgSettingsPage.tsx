@@ -323,7 +323,7 @@ function OrgTab() {
   const { organization, setAuth, user } = useAuthStore();
   const [name, setName] = useState(organization?.name ?? '');
   const [logoUrl, setLogoUrl] = useState(organization?.logo_url ?? '');
-  const [brandColor, setBrandColor] = useState(organization?.brand_color ?? '#6366f1');
+  const [brandColor, setBrandColor] = useState(organization?.brand_color ?? '#7b2d8e');
   // MTN MoMo
   const [momoNumber, setMomoNumber] = useState(organization?.momo_number ?? '');
   const [momoName, setMomoName]     = useState(organization?.momo_name ?? '');

@@ -27,25 +27,25 @@ const LEARNER_STEPS: Step[] = [
     emoji: '❓',
     icon: <MessageCircle size={22} />,
     title: 'Ask questions as you learn',
-    body: 'Pause any video and click "Ask a Question". Your question gets pinned to that exact moment in the video. Your manager will see it and answer — you\'ll get a notification.',
+    body: 'Pause any video and click "Ask a Question". Your question gets pinned to that exact moment in the video. Your instructor will see it and answer — you\'ll get a notification.',
   },
   {
     emoji: '✨',
     icon: <Sparkles size={22} />,
     title: 'Get instant AI answers',
-    body: 'Want an answer right now? Click the Ask AI button while watching. An AI that has read the video will answer you instantly in a private notebook — just for you.',
+    body: 'Want an answer right now? Click the Ask AI button while watching. Nest AI has read the whole lesson and answers you instantly — privately, just for you.',
   },
   {
     emoji: '📋',
     icon: <ClipboardList size={22} />,
     title: 'Complete your assignments',
-    body: 'Your manager may assign practical tasks. Find them under Assignments in the top menu. Write your response in the editor and submit when you\'re ready.',
+    body: 'Your instructor may assign practical tasks. Find them under Assignments in the top menu. Write your response in the editor and submit when you\'re ready.',
   },
   {
     emoji: '📅',
     icon: <Calendar size={22} />,
     title: 'Book a meeting',
-    body: 'Need face time with your manager? Head to Meetings to request a 1-on-1. You\'ll get an email and notification once it\'s confirmed. That\'s it — you\'re all set!',
+    body: 'Need face time with your instructor? Head to Meetings to request a 1-on-1. You\'ll get an email and notification once it\'s confirmed. That\'s it — you\'re all set!',
   },
 ];
 

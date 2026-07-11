@@ -199,7 +199,7 @@ export default function AdminQuestionDetail() {
             <textarea
               value={answerText}
               onChange={(e) => setAnswerText(e.target.value)}
-              placeholder="Write a clear, helpful answer that future employees will benefit from..."
+              placeholder="Write a clear, helpful answer that future learners will benefit from..."
               rows={5}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             />

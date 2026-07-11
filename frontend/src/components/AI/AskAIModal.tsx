@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import {
-  X, Sparkles, Loader2, CheckCircle, AlertTriangle, RotateCcw, PenLine, GripHorizontal,
+  X, Sparkles, Loader2, CheckCircle, AlertTriangle, RotateCcw, GripHorizontal,
 } from 'lucide-react';
 import { useUIStore, usePlayerStore } from '../../store';
 import katex from 'katex';
@@ -19,67 +19,69 @@ const PURIFY_ATTRS = [
   'display', 'encoding', 'x', 'y', 'width', 'height',
 ];
 
-// ─── Pen colours ──────────────────────────────────────────────────────────────
-const FONT  = `font-family:'Caveat',cursive`;
-const BLUE  = `color:#1e40af`;          // blue pen — body text
-const RED   = `color:#dc2626`;          // red pen  — bold / emphasis
-const BLACK = `color:#111827`;          // black pen — headings
+// ─── Nest AI palette (dark, premium — matches the video player & landing) ─────
+const SURFACE = '#171219';   // panel body
+const RAISED  = '#1f1826';   // header / footer
+const EDGE    = 'rgba(255,255,255,0.09)';
+const TXT     = '#ECE8F0';
+const TXT2    = '#A79FB0';
+const TXT3    = '#756D80';
+const ACC     = '#B06CC6';   // orchid — Nest AI accent
+const ACC_SOFT = 'rgba(176,108,198,0.14)';
+const GOLD    = '#E8B04B';   // streaming caret / signature
+const UIFONT  = "'Inter Tight','Inter',system-ui,sans-serif";
+const MONO    = "'DM Mono',ui-monospace,monospace";
 
-// ─── Notebook renderer ────────────────────────────────────────────────────────
+// ─── Markdown → clean HTML (dark theme) ───────────────────────────────────────
 function renderMarkdown(text: string): string {
+  const body = `font-family:${UIFONT};font-size:0.95rem;color:${TXT};line-height:1.7`;
+
   // Block math
   text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
     try {
-      return `<div style="margin:1rem 0;padding:0.9rem 1.1rem;background:rgba(30,64,175,0.05);border:1.5px dashed #93c5fd;border-radius:10px;overflow-x:auto;">${katex.renderToString(math.trim(), { displayMode: true, throwOnError: false })}</div>`;
+      return `<div style="margin:0.9rem 0;padding:0.85rem 1rem;background:rgba(255,255,255,0.03);border:1px solid ${EDGE};border-left:2px solid ${ACC};border-radius:8px;overflow-x:auto;color:${TXT};">${katex.renderToString(math.trim(), { displayMode: true, throwOnError: false })}</div>`;
     } catch {
-      return `<code style="${FONT};${RED};font-size:1rem;">$$${math}$$</code>`;
+      return `<code style="font-family:${MONO};color:${ACC};">$$${math}$$</code>`;
     }
   });
-
   // Inline math
   text = text.replace(/\$([^$\n]+?)\$/g, (_, math) => {
     try { return katex.renderToString(math, { displayMode: false, throwOnError: false }); }
-    catch { return `<code style="${FONT};${RED};">$${math}$</code>`; }
+    catch { return `<code style="font-family:${MONO};color:${ACC};">$${math}$</code>`; }
   });
 
-  // Headings — BLACK pen
+  // Headings
   text = text.replace(/^### (.+)$/gm,
-    `<h3 style="${FONT};font-size:1.25rem;font-weight:700;${BLACK};margin:1.1rem 0 0.1rem;line-height:2.2rem;letter-spacing:0.01em;">$1</h3>`);
+    `<h3 style="font-family:${UIFONT};font-size:1rem;font-weight:700;color:${TXT};margin:1.1rem 0 0.3rem;">$1</h3>`);
   text = text.replace(/^## (.+)$/gm,
-    `<h2 style="${FONT};font-size:1.5rem;font-weight:700;${BLACK};border-bottom:2.5px solid #111827;padding-bottom:2px;margin:1.6rem 0 0.2rem;line-height:2.2rem;letter-spacing:0.01em;">$1</h2>`);
+    `<h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:${TXT};margin:1.4rem 0 0.4rem;">$1</h2>`);
   text = text.replace(/^# (.+)$/gm,
-    `<h1 style="${FONT};font-size:1.85rem;font-weight:700;${BLACK};text-decoration:underline;text-underline-offset:5px;margin:0.6rem 0 0.2rem;line-height:2.4rem;letter-spacing:0.01em;">$1</h1>`);
+    `<h1 style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:${TXT};margin:0.6rem 0 0.4rem;">$1</h1>`);
 
-  // Bold → RED pen
-  text = text.replace(/\*\*(.+?)\*\*/g,
-    `<strong style="${FONT};${RED};font-weight:700;font-size:inherit;">$1</strong>`);
-  // Italic → deeper blue
-  text = text.replace(/\*([^*\n]+?)\*/g,
-    `<em style="${FONT};color:#1d4ed8;font-style:italic;">$1</em>`);
+  // Bold / italic
+  text = text.replace(/\*\*(.+?)\*\*/g, `<strong style="color:${TXT};font-weight:700;">$1</strong>`);
+  text = text.replace(/\*([^*\n]+?)\*/g, `<em style="color:${TXT2};font-style:italic;">$1</em>`);
 
   // Inline code
   text = text.replace(/`([^`]+?)`/g,
-    `<code style="font-family:monospace;${RED};background:rgba(220,38,38,0.08);padding:0.15rem 0.4rem;border-radius:5px;font-size:0.92rem;">$1</code>`);
+    `<code style="font-family:${MONO};color:${ACC};background:${ACC_SOFT};padding:0.1rem 0.4rem;border-radius:5px;font-size:0.85rem;">$1</code>`);
 
-  // Bullet lists — BLUE, red dash
+  // Bullet lists
   text = text.replace(/^[-•] (.+)$/gm,
-    `<li style="${FONT};font-size:1.15rem;${BLUE};line-height:2.2rem;padding-left:1.6rem;position:relative;list-style:none;"><span style="position:absolute;left:0.3rem;${RED};font-weight:700;font-size:1.1rem;">–</span>$1</li>`);
-  text = text.replace(/(<li[\s\S]+?<\/li>)/g, `<ul style="padding:0;margin:0.3rem 0;">$1</ul>`);
+    `<li style="${body};padding-left:1.4rem;position:relative;list-style:none;margin:0.15rem 0;"><span style="position:absolute;left:0.2rem;color:${ACC};font-weight:700;">•</span>$1</li>`);
+  text = text.replace(/(<li[\s\S]+?<\/li>)/g, `<ul style="padding:0;margin:0.4rem 0;">$1</ul>`);
 
   // Numbered lists
   text = text.replace(/^\d+\. (.+)$/gm,
-    `<li style="${FONT};font-size:1.15rem;${BLUE};line-height:2.2rem;list-style:decimal;margin-left:1.6rem;">$1</li>`);
+    `<li style="${body};list-style:decimal;margin-left:1.4rem;">$1</li>`);
 
-  // Paragraphs — BLUE pen
-  const P = `style="${FONT};font-size:1.15rem;${BLUE};line-height:2.2rem;margin:0 0 0.2rem;"`;
+  // Paragraphs
+  const P = `style="${body};margin:0 0 0.6rem;"`;
   text = text.replace(/\n\n/g, `</p><p ${P}>`);
   text = `<p ${P}>${text}</p>`;
   text = text.replace(/\n/g, '<br/>');
-
   return text;
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 type Phase = 'input' | 'streaming' | 'done' | 'error';
 
@@ -92,8 +94,7 @@ export default function AskAIModal() {
   const [streamedText, setStreamedText] = useState('');
   const [rendered, setRendered]     = useState('');
 
-  // Drag state
-  const [pos, setPos]       = useState({ x: window.innerWidth / 2 - 440, y: window.innerHeight / 2 - 320 });
+  const [pos, setPos]       = useState({ x: window.innerWidth / 2 - 320, y: window.innerHeight / 2 - 280 });
   const [dragging, setDragging] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
 
@@ -105,16 +106,9 @@ export default function AskAIModal() {
   const timestamp = currentTime || aiAskTimestamp;
 
   useEffect(() => { textareaRef.current?.focus(); }, []);
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [streamedText]);
+  useEffect(() => { if (phase === 'done' && streamedText) setRendered(renderMarkdown(streamedText)); }, [phase, streamedText]);
 
-  useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [streamedText]);
-
-  useEffect(() => {
-    if (phase === 'done' && streamedText) setRendered(renderMarkdown(streamedText));
-  }, [phase, streamedText]);
-
-  // ── Drag handlers ──
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setDragging(true);
@@ -124,7 +118,7 @@ export default function AskAIModal() {
   useEffect(() => {
     if (!dragging) return;
     const onMove = (e: MouseEvent) => {
-      const x = Math.max(0, Math.min(window.innerWidth  - 880, e.clientX - dragOffset.current.x));
+      const x = Math.max(0, Math.min(window.innerWidth  - 660, e.clientX - dragOffset.current.x));
       const y = Math.max(0, Math.min(window.innerHeight - 100, e.clientY - dragOffset.current.y));
       setPos({ x, y });
     };
@@ -185,119 +179,94 @@ export default function AskAIModal() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
   }
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap');
-        @keyframes nb-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes nai-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes nai-rise  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .nai-katex .katex, .nai-katex .katex * { color: ${TXT} !important; }
         .katex-display { overflow-x: auto; }
       `}</style>
 
-      {/* Transparent overlay — doesn't block video clicks */}
       <div className="fixed inset-0 z-50 pointer-events-none" />
 
-      {/* Draggable notebook panel */}
       <div
         ref={modalRef}
+        className="nai-katex"
         style={{
           position: 'fixed',
-          left: typeof window !== 'undefined' && window.innerWidth < 768 ? 8 : pos.x,
-          top: typeof window !== 'undefined' && window.innerWidth < 768 ? 64 : pos.y,
-          width: typeof window !== 'undefined' && window.innerWidth < 768 ? 'calc(100vw - 16px)' : 820,
-          maxHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? 'calc(100dvh - 148px)' : '82vh',
+          left: isMobile ? 8 : pos.x,
+          top: isMobile ? 64 : pos.y,
+          width: isMobile ? 'calc(100vw - 16px)' : 620,
+          maxHeight: isMobile ? 'calc(100dvh - 148px)' : '80vh',
           zIndex: 51,
-          display: 'flex',
-          flexDirection: 'column',
-          background: '#fffef5',
-          border: '1px solid #d9cfa8',
+          display: 'flex', flexDirection: 'column',
+          background: SURFACE,
+          border: `1px solid ${EDGE}`,
           borderRadius: 16,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.12)',
+          boxShadow: '0 40px 90px -20px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04) inset',
           overflow: 'hidden',
           pointerEvents: 'all',
           userSelect: dragging ? 'none' : 'auto',
+          animation: 'nai-rise 0.25s cubic-bezier(0.16,1,0.3,1) both',
         }}
       >
-
-        {/* ── Header / drag handle ── */}
+        {/* Header / drag handle */}
         <div
           onMouseDown={onMouseDown}
           style={{
-            background: '#1a3a5c',
-            borderBottom: '3px solid #dc2626',
-            padding: '14px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            cursor: dragging ? 'grabbing' : 'grab',
-            flexShrink: 0,
+            background: RAISED, borderBottom: `1px solid ${EDGE}`,
+            padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 11,
+            cursor: dragging ? 'grabbing' : 'grab', flexShrink: 0,
           }}
         >
-          <GripHorizontal size={16} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', flexShrink: 0 }}>
-            <PenLine size={16} style={{ color: '#fff' }} />
+          <GripHorizontal size={15} style={{ color: TXT3, flexShrink: 0 }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 8, background: ACC_SOFT, border: `1px solid rgba(176,108,198,0.3)`, flexShrink: 0, color: ACC }}>
+            <Sparkles size={15} />
           </div>
-
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontFamily: 'Caveat, cursive', fontSize: '1.25rem', color: '#fff', fontWeight: 700, letterSpacing: '0.02em' }}>
-                Study Notes
-              </span>
+              <span style={{ fontFamily: UIFONT, fontSize: 14, color: TXT, fontWeight: 700, letterSpacing: '-0.01em' }}>Nest AI</span>
               {phase === 'streaming' && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: '#93c5fd' }}>
-                  <Loader2 size={11} className="animate-spin" /> writing...
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: ACC, fontFamily: MONO }}>
+                  <Loader2 size={11} className="animate-spin" /> thinking
                 </span>
               )}
               {phase === 'done' && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: '#6ee7b7', fontWeight: 500 }}>
-                  <CheckCircle size={11} /> complete
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#8BD450', fontFamily: MONO }}>
+                  <CheckCircle size={11} /> answered
                 </span>
               )}
               {phase === 'error' && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: '#fca5a5' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#E0765A', fontFamily: MONO }}>
                   <AlertTriangle size={11} /> error
                 </span>
               )}
             </div>
-            <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
-              Private · only visible to you · drag to move
+            <p style={{ fontFamily: MONO, fontSize: 10, color: TXT3, marginTop: 2, letterSpacing: '0.02em' }}>
+              Private to you · drag to move
             </p>
           </div>
-
           <button
             onMouseDown={e => e.stopPropagation()}
             onClick={closeAIAsk}
-            style={{ color: 'rgba(255,255,255,0.55)', padding: 6, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', flexShrink: 0 }}
+            style={{ color: TXT3, padding: 6, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', flexShrink: 0 }}
             title="Close"
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = TXT)}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = TXT3)}
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* ── Notebook paper body ── */}
-        <div
-          ref={scrollRef}
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            // Ruled lines aligned to Caveat line-height of 2.2rem
-            backgroundImage: 'linear-gradient(#bfdbfe 1px, transparent 1px)',
-            backgroundSize: '100% 2.2rem',
-            backgroundPositionY: '2.15rem',
-            // Red margin line
-            borderLeft: '3px solid #dc2626',
-            marginLeft: '3.5rem',
-            paddingLeft: '1.4rem',
-            paddingRight: '2.5rem',
-            paddingTop: '1.1rem',
-            paddingBottom: '2rem',
-          }}
-        >
+        {/* Body */}
+        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '18px 20px 20px' }}>
 
-          {/* Input phase */}
           {phase === 'input' && (
             <div>
-              <p style={{ fontFamily: 'Caveat, cursive', fontSize: '1.1rem', color: '#1e40af', lineHeight: '2.2rem', marginBottom: '0.5rem' }}>
+              <p style={{ fontFamily: UIFONT, fontSize: 15, color: TXT, lineHeight: 1.5, marginBottom: 12, fontWeight: 500 }}>
                 What would you like to understand better?
               </p>
               <textarea
@@ -305,46 +274,37 @@ export default function AskAIModal() {
                 value={question}
                 onChange={e => setQuestion(e.target.value)}
                 onKeyDown={handleKeyDown}
-                rows={4}
-                placeholder="Write your question here..."
+                rows={3}
+                placeholder="Ask anything about this moment in the video…"
                 style={{
-                  fontFamily: 'Caveat, cursive',
-                  fontSize: '1.2rem',
-                  color: '#1e40af',
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  resize: 'none',
-                  width: '100%',
-                  lineHeight: '2.2rem',
-                  caretColor: '#1e40af',
+                  fontFamily: UIFONT, fontSize: 15, color: TXT,
+                  background: 'rgba(255,255,255,0.03)', border: `1px solid ${EDGE}`,
+                  outline: 'none', resize: 'none', width: '100%', lineHeight: 1.6,
+                  caretColor: ACC, borderRadius: 10, padding: '12px 14px', boxSizing: 'border-box',
                 }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(176,108,198,0.5)')}
+                onBlur={e => (e.currentTarget.style.borderColor = EDGE)}
               />
-              <p style={{ fontFamily: 'Caveat, cursive', fontSize: '0.9rem', color: '#9ca3af', marginTop: '0.3rem' }}>
-                Press Enter to send · Shift+Enter for new line
-              </p>
-              <p style={{ fontFamily: 'Caveat, cursive', fontSize: '0.82rem', color: '#b3c6e0', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Sparkles size={11} style={{ color: aiAskHasTranscript ? '#93c5fd' : '#fbbf24' }} />
-                {aiAskHasTranscript
-                  ? 'AI is grounded in this video\'s transcript.'
-                  : 'No transcript yet — AI will use course context instead.'}
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, flexWrap: 'wrap', gap: 6 }}>
+                <p style={{ fontFamily: MONO, fontSize: 10.5, color: TXT3 }}>Enter to send · Shift+Enter for a new line</p>
+                <p style={{ fontFamily: MONO, fontSize: 10.5, color: aiAskHasTranscript ? '#8BD450' : GOLD, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: aiAskHasTranscript ? '#8BD450' : GOLD, display: 'inline-block' }} />
+                  {aiAskHasTranscript ? 'Grounded in this video' : 'Using course context'}
+                </p>
+              </div>
 
-              <div style={{ marginTop: '1.4rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {['Explain this simply', 'Give a real-world example', 'What was just covered?', 'Why does this matter?'].map(hint => (
                   <button
                     key={hint}
                     onClick={() => setQuestion(hint)}
                     style={{
-                      fontFamily: 'Caveat, cursive',
-                      fontSize: '0.95rem',
-                      color: '#1e40af',
-                      border: '1.5px dashed #93c5fd',
-                      borderRadius: 999,
-                      padding: '0.2rem 0.85rem',
-                      background: 'transparent',
-                      cursor: 'pointer',
+                      fontFamily: UIFONT, fontSize: 12.5, fontWeight: 500, color: TXT2,
+                      border: `1px solid ${EDGE}`, borderRadius: 999, padding: '6px 13px',
+                      background: 'transparent', cursor: 'pointer', transition: 'all 0.15s',
                     }}
+                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(176,108,198,0.5)'; el.style.color = TXT; }}
+                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = EDGE; el.style.color = TXT2; }}
                   >
                     {hint}
                   </button>
@@ -353,55 +313,54 @@ export default function AskAIModal() {
             </div>
           )}
 
-          {/* Connecting */}
           {phase === 'streaming' && !streamedText && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Caveat, cursive', color: '#1e40af', fontSize: '1.1rem' }}>
-              <Loader2 size={16} className="animate-spin" />
-              Connecting...
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontFamily: UIFONT, color: TXT2, fontSize: 14 }}>
+              <Loader2 size={16} className="animate-spin" style={{ color: ACC }} />
+              Reading the lesson…
             </div>
           )}
 
-          {/* Streaming — blue ink, blinking cursor */}
           {phase === 'streaming' && streamedText && (
-            <div style={{ fontFamily: 'Caveat, cursive', fontSize: '1.2rem', color: '#1e40af', whiteSpace: 'pre-wrap', lineHeight: '2.2rem' }}>
+            <div style={{ fontFamily: UIFONT, fontSize: 15, color: TXT, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
               {streamedText}
-              <span style={{ display: 'inline-block', width: 2, height: '1.25rem', background: '#1e40af', marginLeft: 2, verticalAlign: 'middle', animation: 'nb-blink 1s step-end infinite' }} />
+              <span style={{ display: 'inline-block', width: 2, height: '1.05rem', background: GOLD, marginLeft: 2, verticalAlign: 'middle', animation: 'nai-blink 0.8s step-end infinite' }} />
             </div>
           )}
 
-          {/* Done — rendered notebook (sanitized before injection) */}
           {phase === 'done' && rendered && (
             <div dangerouslySetInnerHTML={{
               __html: String(DOMPurify.sanitize(rendered, { ALLOWED_TAGS: PURIFY_TAGS, ALLOWED_ATTR: PURIFY_ATTRS, FORCE_BODY: true }))
             }} />
           )}
 
-          {/* Error */}
           {phase === 'error' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 160, textAlign: 'center', gap: 12 }}>
-              <AlertTriangle size={36} style={{ color: '#f59e0b' }} />
-              <p style={{ fontFamily: 'Caveat, cursive', fontSize: '1.15rem', color: '#dc2626' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 150, textAlign: 'center', gap: 12 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(224,118,90,0.12)', border: '1px solid rgba(224,118,90,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E0765A' }}>
+                <AlertTriangle size={22} />
+              </div>
+              <p style={{ fontFamily: UIFONT, fontSize: 14.5, color: TXT }}>
                 Couldn't reach the AI right now — please try again in a moment.
               </p>
-              <p style={{ fontFamily: 'Caveat, cursive', fontSize: '0.95rem', color: '#9ca3af' }}>
-                If this keeps happening, contact your educator or admin.
+              <p style={{ fontFamily: MONO, fontSize: 11, color: TXT3 }}>
+                If this keeps happening, contact your instructor.
               </p>
             </div>
           )}
         </div>
 
-        {/* ── Footer ── */}
-        <div style={{ background: '#f5f0dc', borderTop: '2px solid #e2d9b3', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <span style={{ fontFamily: 'Caveat, cursive', fontSize: '0.9rem', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 5 }}>
-            <Sparkles size={12} style={{ color: '#1e40af' }} />
-            AI Tutor · private session
+        {/* Footer */}
+        <div style={{ background: RAISED, borderTop: `1px solid ${EDGE}`, padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <span style={{ fontFamily: MONO, fontSize: 10.5, color: TXT3, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Sparkles size={11} style={{ color: ACC }} />
+            Nest AI · private session
           </span>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {(phase === 'done' || phase === 'error') && (
               <button
                 onClick={handleReset}
-                style={{ fontFamily: 'Caveat, cursive', fontSize: '1rem', color: '#4b5563', border: '1.5px solid #d1d5db', borderRadius: 8, padding: '4px 14px', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}
+                style={{ fontFamily: UIFONT, fontSize: 12.5, fontWeight: 500, color: TXT2, border: `1px solid ${EDGE}`, borderRadius: 8, padding: '6px 13px', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = TXT)}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = TXT2)}
               >
                 <RotateCcw size={13} /> Ask another
               </button>
@@ -409,7 +368,9 @@ export default function AskAIModal() {
             {phase === 'done' && (
               <button
                 onClick={closeAIAsk}
-                style={{ fontFamily: 'Caveat, cursive', fontSize: '1rem', color: '#fff', background: '#1a3a5c', border: 'none', borderRadius: 8, padding: '5px 18px', cursor: 'pointer' }}
+                style={{ fontFamily: UIFONT, fontSize: 12.5, fontWeight: 600, color: '#fff', background: ACC, border: 'none', borderRadius: 8, padding: '7px 16px', cursor: 'pointer' }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#9a4fb0')}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = ACC)}
               >
                 Continue watching
               </button>

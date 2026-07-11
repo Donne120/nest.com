@@ -35,7 +35,7 @@ function tokens(isDark: boolean) {
     navHoverBg:      isDark ? '#1c1e27'                   : 'rgba(0,0,0,0.05)',
     navActiveColor:  isDark ? '#e8e4dc'                   : '#18181b',
     navInactiveColor:isDark ? '#6b6b78'                   : '#52525b',
-    orgNameColor:    isDark ? '#5bb0b5'                   : '#2f8085',
+    orgNameColor:    isDark ? '#c06fd0'                   : '#7b2d8e',
     unreadDot:       '#0b0c0f',
   };
 }
@@ -183,9 +183,9 @@ export default function Navbar() {
               aria-label="Nest Assistant"
               title="Ask Nest Assistant"
               active={nestAssistantOpen}
-              activeStyle={{ background: 'rgba(232,201,126,0.15)', border: '1px solid rgba(232,201,126,0.35)', color: '#e8c97e' }}
+              activeStyle={{ background: 'rgba(176,108,198,0.16)', border: '1px solid rgba(176,108,198,0.4)', color: '#b06cc6' }}
               idleStyle={{ background: tk.pillBg, border: `1px solid ${tk.pillBorder}`, color: tk.iconColor }}
-              hoverStyle={{ background: 'rgba(232,201,126,0.10)', border: '1px solid rgba(232,201,126,0.25)', color: '#e8c97e' }}
+              hoverStyle={{ background: 'rgba(176,108,198,0.10)', border: '1px solid rgba(176,108,198,0.28)', color: '#b06cc6' }}
             >
               <Sparkles size={14} />
             </IconButton>
@@ -244,7 +244,7 @@ export default function Navbar() {
                 <span
                   className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] rounded-full flex items-center justify-center font-bold animate-pulse"
                   style={{
-                    background: '#c45c3c',
+                    background: '#7b2d8e',
                     color: '#fff',
                     fontSize: 9,
                     lineHeight: 1,
@@ -281,15 +281,15 @@ export default function Navbar() {
                 >
                   <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: `1px solid ${tk.dropdownDivider}` }}>
                     <div className="flex items-center gap-2">
-                      <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 700, color: tk.textPrimary, fontSize: 14 }}>Notifications</h3>
+                      <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, color: tk.textPrimary, fontSize: 17 }}>Notifications</h3>
                       {displayUnread > 0 && (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: '#c45c3c', borderRadius: 100, padding: '1px 6px' }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', background: '#7b2d8e', borderRadius: 100, padding: '1px 6px' }}>
                           {displayUnread}
                         </span>
                       )}
                     </div>
                     {displayUnread === 0 && (
-                      <span style={{ fontSize: 11, color: '#2a7a4b', background: 'rgba(42,122,75,0.1)', padding: '2px 8px', borderRadius: 100, fontWeight: 600 }}>All read</span>
+                      <span style={{ fontSize: 11, color: '#5a8a3c', background: 'rgba(124,179,66,0.14)', padding: '2px 8px', borderRadius: 100, fontWeight: 600 }}>All read</span>
                     )}
                   </div>
                   <div className="overflow-y-auto" style={{ maxHeight: 'min(360px, 55vh)' }}>

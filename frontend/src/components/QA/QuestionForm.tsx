@@ -94,7 +94,7 @@ export default function QuestionForm({ videoId }: Props) {
             <div>
               <p className="text-sm font-medium text-gray-700">Visible to others</p>
               <p className="text-xs text-gray-500">
-                {isPublic ? 'Future employees can see this Q&A' : 'Only you and managers can see this'}
+                {isPublic ? 'Other learners can see this Q&A' : 'Only you and your instructor can see this'}
               </p>
             </div>
           </label>

@@ -510,7 +510,7 @@ export default function OnboardingWizard() {
 
   const [step,       setStep]       = useState(0);
   const [logoUrl,    setLogoUrl]    = useState(organization?.logo_url ?? '');
-  const [brandColor, setBrandColor] = useState(organization?.brand_color ?? '#c94f2c');
+  const [brandColor, setBrandColor] = useState(organization?.brand_color ?? '#7b2d8e');
   const [plan,       setPlan]       = useState('professional');
 
   const saveBranding = async () => {

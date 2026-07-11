@@ -86,63 +86,70 @@ export default function ModulesPage() {
 
           {/* Eyebrow */}
           <div style={{
-            fontFamily: 'monospace', fontSize: 11, letterSpacing: '0.22em',
-            textTransform: 'uppercase', color: GOLD, marginBottom: 12,
-            display: 'flex', alignItems: 'center', gap: 8,
+            fontFamily: 'monospace', fontSize: 11, letterSpacing: '0.24em',
+            textTransform: 'uppercase', color: GOLD, marginBottom: 16,
+            display: 'flex', alignItems: 'center', gap: 9,
           }}>
-            <span style={{ width: 18, height: 1, background: GOLD, display: 'inline-block', opacity: 0.6 }} />
+            <span style={{ width: 22, height: 1.5, background: GOLD, display: 'inline-block', borderRadius: 2, opacity: 0.55 }} />
             Learning Hub
           </div>
 
           {/* Greeting headline */}
           <h1 style={{
             fontFamily: "'Lora', Georgia, serif",
-            fontSize: 'clamp(36px, 6vw, 56px)',
-            fontWeight: 700, lineHeight: 1.1,
-            letterSpacing: '-0.025em', color: INK,
-            marginBottom: 12, maxWidth: 640,
+            fontSize: 'clamp(34px, 5.5vw, 52px)',
+            fontWeight: 700, lineHeight: 1.08,
+            letterSpacing: '-0.03em', color: INK,
+            marginBottom: 14, maxWidth: 640,
           }}>
             {greeting}{firstName && (
               <>, <span style={{ color: GOLD }}>{firstName}</span></>
             )}
           </h1>
 
-          <p style={{ fontSize: 15, color: INK3, lineHeight: 1.5, marginBottom: 20, maxWidth: 420 }}>
+          <p style={{ fontSize: 16, color: INK2, lineHeight: 1.55, marginBottom: 28, maxWidth: 460 }}>
             Your courses are ready. Pick up where you left off or start something new.
           </p>
 
-          {/* Progress summary bar */}
+          {/* Progress summary card */}
           {modules.length > 0 && (
             <div style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              background: DARK2, border: `1px solid ${BORDER}`,
-              borderRadius: 8, padding: '14px 18px',
-              marginBottom: 0, overflowX: 'auto', maxWidth: '100%',
+              display: 'flex', alignItems: 'center', gap: 24,
+              background: '#ffffff', border: `1px solid ${BORDER}`,
+              borderRadius: 16, padding: '20px 26px',
+              marginBottom: 0, overflowX: 'auto', maxWidth: 'fit-content',
+              boxShadow: '0 1px 2px rgba(31,31,36,0.04), 0 8px 24px -12px rgba(31,31,36,0.12)',
             }}>
               {/* Donut */}
-              <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
-                {(() => {
-                  const R = 18, C = 2 * Math.PI * R;
-                  const filled = (overallPct / 100) * C;
-                  return (
-                    <svg width="44" height="44" style={{ transform: 'rotate(-90deg)' }}>
-                      <circle cx="22" cy="22" r={R} fill="none" stroke="rgba(31,31,36,0.10)" strokeWidth="4" />
-                      <circle cx="22" cy="22" r={R} fill="none" stroke={GOLD} strokeWidth="4"
-                        strokeLinecap="round" strokeDasharray={`${filled} ${C}`}
-                        style={{ transition: 'stroke-dasharray 1.2s ease' }}
-                      />
-                    </svg>
-                  );
-                })()}
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 600, color: GOLD }}>{overallPct}%</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+                <div style={{ position: 'relative', width: 56, height: 56, flexShrink: 0 }}>
+                  {(() => {
+                    const R = 24, C = 2 * Math.PI * R;
+                    const filled = (overallPct / 100) * C;
+                    return (
+                      <svg width="56" height="56" style={{ transform: 'rotate(-90deg)' }}>
+                        <circle cx="28" cy="28" r={R} fill="none" stroke="rgba(31,31,36,0.08)" strokeWidth="5" />
+                        <circle cx="28" cy="28" r={R} fill="none" stroke={GOLD} strokeWidth="5"
+                          strokeLinecap="round" strokeDasharray={`${filled} ${C}`}
+                          style={{ transition: 'stroke-dasharray 1.2s ease' }}
+                        />
+                      </svg>
+                    );
+                  })()}
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: GOLD }}>{overallPct}%</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: INK, letterSpacing: '-0.01em' }}>Overall progress</span>
+                  <span style={{ fontSize: 12, color: INK3 }}>{completed} of {modules.length} complete</span>
                 </div>
               </div>
 
-              <div style={{ borderLeft: `1px solid ${BORDER}`, height: 32 }} />
+              <div style={{ borderLeft: `1px solid ${BORDER}`, alignSelf: 'stretch' }} />
 
               {/* Stat pills */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
                 <StatItem value={modules.length}  label="Total"       />
                 <StatItem value={completed}        label="Completed"   color="#34d399" />
                 <StatItem value={inProgress}       label="In Progress" color={GOLD} />
@@ -155,10 +162,10 @@ export default function ModulesPage() {
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
       <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '8px 16px' }}>
+        <div className="toolbar-inner" style={{ maxWidth: 1400, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
 
-          {/* Row 1: filter tabs */}
-          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', marginBottom: 8 }}>
+          {/* Filter tabs */}
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', flex: '1 1 auto' }}>
             {FILTERS.map(f => (
               <button
                 key={f.key}
@@ -168,10 +175,10 @@ export default function ModulesPage() {
                   fontSize: 11, fontWeight: filter === f.key ? 700 : 500,
                   letterSpacing: '0.06em', textTransform: 'uppercase',
                   padding: '8px 16px', borderRadius: 100,
-                  border: filter === f.key ? `1px solid rgba(142,45,158,0.25)` : `1px solid ${BORDER}`,
+                  border: filter === f.key ? `1px solid rgba(142,45,158,0.28)` : `1px solid ${BORDER}`,
                   cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
                   minHeight: 36,
-                  background: filter === f.key ? 'rgba(142,45,158,0.1)' : 'transparent',
+                  background: filter === f.key ? 'rgba(142,45,158,0.09)' : 'transparent',
                   color: filter === f.key ? f.color : INK3,
                   whiteSpace: 'nowrap',
                 }}
@@ -181,8 +188,8 @@ export default function ModulesPage() {
             ))}
           </div>
 
-          {/* Row 2: search full-width */}
-          <div style={{ position: 'relative' }}>
+          {/* Search */}
+          <div className="toolbar-search" style={{ position: 'relative', flex: '0 0 280px', maxWidth: 280 }}>
             <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: INK3, pointerEvents: 'none' }} />
             <input
               value={search}
@@ -285,6 +292,8 @@ export default function ModulesPage() {
         @media (max-width: 640px) {
           .hero-desktop-only { display: none !important; }
           .modules-grid { grid-template-columns: 1fr !important; }
+          .toolbar-inner { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; padding: 10px 16px !important; }
+          .toolbar-search { flex: 1 1 auto !important; max-width: 100% !important; }
         }
         @media (max-width: 480px) {
           .modules-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
@@ -345,13 +354,15 @@ export default function ModulesPage() {
         /* ── Animated grid ── */
         .hero-grid {
           background-image:
-            repeating-linear-gradient(90deg, rgba(31,31,36,0.035) 0, rgba(31,31,36,0.035) 1px, transparent 1px, transparent 80px),
-            repeating-linear-gradient(0deg,  rgba(31,31,36,0.035) 0, rgba(31,31,36,0.035) 1px, transparent 1px, transparent 80px);
-          animation: gridDrift 30s linear infinite;
+            repeating-linear-gradient(90deg, rgba(31,31,36,0.022) 0, rgba(31,31,36,0.022) 1px, transparent 1px, transparent 88px),
+            repeating-linear-gradient(0deg,  rgba(31,31,36,0.022) 0, rgba(31,31,36,0.022) 1px, transparent 1px, transparent 88px);
+          mask-image: radial-gradient(ellipse 90% 80% at 30% 0%, #000 40%, transparent 100%);
+          -webkit-mask-image: radial-gradient(ellipse 90% 80% at 30% 0%, #000 40%, transparent 100%);
+          animation: gridDrift 40s linear infinite;
         }
         @keyframes gridDrift {
           from { background-position: 0 0; }
-          to   { background-position: 80px 80px; }
+          to   { background-position: 88px 88px; }
         }
       `}</style>
     </div>
@@ -448,13 +459,13 @@ function ParticleCanvas() {
 }
 
 // ── StatItem ──────────────────────────────────────────────────────────────
-function StatItem({ value, label, color = '#6b6b78' }: { value: number; label: string; color?: string }) {
+function StatItem({ value, label, color = '#1f1f24' }: { value: number; label: string; color?: string }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-      <span style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 600, color, lineHeight: 1, letterSpacing: '-0.02em' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+      <span style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 26, fontWeight: 700, color, lineHeight: 1, letterSpacing: '-0.02em' }}>
         {value}
       </span>
-      <span style={{ fontFamily: 'monospace', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b6b78' }}>
+      <span style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9b96a3', whiteSpace: 'nowrap' }}>
         {label}
       </span>
     </div>

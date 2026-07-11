@@ -110,7 +110,7 @@ function DeclineForm({ meeting, onDone }: { meeting: Meeting; onDone: () => void
         value={reason}
         onChange={e => setReason(e.target.value)}
         rows={2}
-        placeholder="Optional — let the employee know why..."
+        placeholder="Optional — let the learner know why..."
         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
       />
       <div className="flex items-center gap-2 justify-end">
@@ -276,7 +276,7 @@ export default function AdminMeetingsPage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">1-on-1 Meetings</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Review and manage employee meeting requests</p>
+        <p className="text-sm text-gray-500 mt-0.5">Review and manage learner meeting requests</p>
       </div>
 
       {/* Tabs */}

@@ -69,21 +69,21 @@ export default function BottomNav() {
                     cursor: 'pointer',
                   }}
                 >
-                  {/* Glowing centre pill */}
+                  {/* Glowing centre pill — Nest AI orchid */}
                   <div
                     style={{
                       width: 44,
                       height: 44,
                       borderRadius: 14,
                       background: active
-                        ? 'linear-gradient(135deg,#e8c97e,#c97a2c)'
-                        : 'linear-gradient(135deg,rgba(232,201,126,0.18),rgba(201,122,44,0.18))',
+                        ? 'linear-gradient(135deg,#b06cc6,#7b2d8e)'
+                        : 'linear-gradient(135deg,rgba(176,108,198,0.20),rgba(123,45,142,0.20))',
                       border: active
-                        ? '1px solid rgba(232,201,126,0.6)'
-                        : '1px solid rgba(232,201,126,0.25)',
+                        ? '1px solid rgba(176,108,198,0.6)'
+                        : '1px solid rgba(176,108,198,0.28)',
                       boxShadow: active
-                        ? '0 0 20px rgba(232,201,126,0.45), 0 4px 12px rgba(0,0,0,0.3)'
-                        : '0 0 12px rgba(232,201,126,0.15)',
+                        ? '0 0 20px rgba(176,108,198,0.45), 0 4px 12px rgba(0,0,0,0.3)'
+                        : '0 0 12px rgba(176,108,198,0.15)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -95,7 +95,7 @@ export default function BottomNav() {
                     <Sparkles
                       size={18}
                       style={{
-                        color: active ? '#0a0908' : '#e8c97e',
+                        color: active ? '#fff' : '#b06cc6',
                         transition: 'color 0.2s',
                       }}
                     />
@@ -106,7 +106,7 @@ export default function BottomNav() {
                       fontWeight: 700,
                       letterSpacing: '0.03em',
                       lineHeight: 1,
-                      color: active ? '#e8c97e' : 'rgba(255,255,255,0.35)',
+                      color: active ? '#c06fd0' : 'rgba(255,255,255,0.35)',
                       transition: 'color 0.2s',
                     }}
                   >
@@ -131,7 +131,7 @@ export default function BottomNav() {
                   fontWeight: 600,
                   letterSpacing: '0.03em',
                   textDecoration: 'none',
-                  color: active ? '#e8c97e' : 'rgba(255,255,255,0.38)',
+                  color: active ? '#c06fd0' : 'rgba(255,255,255,0.38)',
                   transition: 'color 0.2s',
                 }}
               >
@@ -140,7 +140,7 @@ export default function BottomNav() {
                     width: 36,
                     height: 32,
                     borderRadius: 10,
-                    background: active ? 'rgba(232,201,126,0.12)' : 'transparent',
+                    background: active ? 'rgba(176,108,198,0.14)' : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -164,9 +164,9 @@ export default function BottomNav() {
                       bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4px)',
                       width: 4,
                       height: 4,
-                      background: '#e8c97e',
+                      background: '#c06fd0',
                       borderRadius: '50%',
-                      boxShadow: '0 0 6px rgba(232,201,126,0.8)',
+                      boxShadow: '0 0 6px rgba(176,108,198,0.8)',
                     }}
                   />
                 )}

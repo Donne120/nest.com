@@ -278,7 +278,7 @@ export default function AdminModuleEditor() {
             <RichTextEditor
               value={description}
               onChange={setDescription}
-              placeholder="Describe what employees will learn in this module. Use headings, bullet points, bold text to make it clear and engaging…"
+              placeholder="Describe what learners will gain from this module. Use headings, bullet points, bold text to make it clear and engaging…"
               minHeight={180}
             />
           </div>
@@ -337,7 +337,7 @@ export default function AdminModuleEditor() {
             <div>
               <p className="text-sm font-semibold text-gray-700">Published</p>
               <p className="text-xs text-gray-400">
-                {isPublished ? 'Visible to all employees' : 'Hidden — draft mode'}
+                {isPublished ? 'Visible to all learners' : 'Hidden — draft mode'}
               </p>
             </div>
           </label>
@@ -428,7 +428,7 @@ export default function AdminModuleEditor() {
             </div>
             <p className="text-sm font-medium text-gray-600">No resources yet</p>
             <p className="text-xs text-gray-400 mt-1 mb-3">
-              Add docs, links, PDFs or videos for employees to reference
+              Add docs, links, PDFs or videos for learners to reference
             </p>
             <button
               type="button"

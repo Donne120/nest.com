@@ -165,145 +165,126 @@ export default function WhiteboardModal({ questionId, questionText, videoId }: P
   }, [questionId]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-slide-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(11,10,15,0.7)', backdropFilter: 'blur(6px)' }}>
+      <div className="nai-katex w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden"
+        style={{ background: SURFACE, border: `1px solid ${EDGE}`, borderRadius: 16, boxShadow: '0 40px 90px -20px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04) inset', animation: 'nai-rise 0.25s cubic-bezier(0.16,1,0.3,1) both' }}>
 
         {/* Header */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-brand-50 to-indigo-50 flex-shrink-0">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-600 text-white shadow-sm flex-shrink-0">
-            <Sparkles size={18} />
+        <div className="flex items-center gap-3 px-5 py-3.5 flex-shrink-0" style={{ background: RAISED, borderBottom: `1px solid ${EDGE}` }}>
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0" style={{ background: ACC_SOFT, border: '1px solid rgba(176,108,198,0.3)', color: ACC }}>
+            <Sparkles size={16} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-brand-700">AI Teacher</span>
+              <span style={{ fontFamily: UIFONT, fontSize: 14, fontWeight: 700, color: TXT }}>Nest AI</span>
               {!isDone && !hasError && (
-                <span className="flex items-center gap-1 text-xs text-gray-500">
-                  <Loader2 size={11} className="animate-spin" />
-                  Thinking...
+                <span className="flex items-center gap-1" style={{ fontFamily: MONO, fontSize: 11, color: ACC }}>
+                  <Loader2 size={11} className="animate-spin" /> thinking
                 </span>
               )}
               {isDone && (
-                <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
-                  <CheckCircle size={11} />
-                  Done
+                <span className="flex items-center gap-1" style={{ fontFamily: MONO, fontSize: 11, color: '#8BD450' }}>
+                  <CheckCircle size={11} /> answered
                 </span>
               )}
               {hasError && (
-                <span className="flex items-center gap-1 text-xs text-red-500">
-                  <AlertTriangle size={11} />
-                  Error
+                <span className="flex items-center gap-1" style={{ fontFamily: MONO, fontSize: 11, color: '#E0765A' }}>
+                  <AlertTriangle size={11} /> error
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500 truncate mt-0.5">
-              <BookOpen size={10} className="inline mr-1" />
-              {questionText}
+            <p className="truncate mt-0.5 flex items-center gap-1" style={{ fontFamily: MONO, fontSize: 10.5, color: TXT3 }}>
+              <BookOpen size={10} /> {questionText}
             </p>
           </div>
-          <button
-            onClick={closeWhiteboard}
-            className="p-1.5 hover:bg-white/80 rounded-lg transition-colors flex-shrink-0"
-            title="Close"
-          >
-            <X size={18} className="text-gray-500" />
+          <button onClick={closeWhiteboard} className="p-1.5 rounded-lg flex-shrink-0" title="Close"
+            style={{ color: TXT3, background: 'transparent', border: 'none', cursor: 'pointer' }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = TXT)}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = TXT3)}>
+            <X size={18} />
           </button>
         </div>
 
-        {/* Content area */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 py-6">
+        {/* Content */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-5">
           {hasError && (
             <div className="flex flex-col items-center justify-center h-40 text-center gap-3">
-              <AlertTriangle size={32} className="text-amber-400" />
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(224,118,90,0.12)', border: '1px solid rgba(224,118,90,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E0765A' }}>
+                <AlertTriangle size={22} />
+              </div>
               <div>
-                <p className="text-gray-700 font-medium">Couldn't reach the AI right now</p>
-                <p className="text-gray-400 text-sm mt-1">Please try again in a moment, or contact your educator.</p>
+                <p style={{ fontFamily: UIFONT, fontSize: 14.5, color: TXT, fontWeight: 500 }}>Couldn't reach the AI right now</p>
+                <p style={{ fontFamily: MONO, fontSize: 11, color: TXT3, marginTop: 4 }}>Please try again in a moment, or contact your instructor.</p>
               </div>
             </div>
           )}
 
-          {!hasError && !isDone && (
-            /* Streaming: show raw text with cursor effect */
-            <div className="whiteboard-stream font-mono text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+          {!hasError && !isDone && streamedText && (
+            <div className="whitespace-pre-wrap" style={{ fontFamily: UIFONT, fontSize: 15, color: TXT, lineHeight: 1.7 }}>
               {streamedText}
-              <span className="inline-block w-0.5 h-4 bg-brand-500 ml-0.5 animate-pulse align-middle" />
+              <span className="inline-block align-middle" style={{ width: 2, height: '1.05rem', background: GOLD, marginLeft: 2, animation: 'nai-blink 0.8s step-end infinite' }} />
             </div>
           )}
 
           {!hasError && isDone && rendered && (
-            /* Rendered: full markdown + math */
-            <div
-              className="whiteboard-rendered"
-              dangerouslySetInnerHTML={{ __html: rendered }}
-            />
+            <div className="whiteboard-rendered" dangerouslySetInnerHTML={{ __html: rendered }} />
           )}
 
           {!hasError && !streamedText && !isDone && (
-            <div className="flex items-center gap-2 text-gray-400 text-sm">
-              <Loader2 size={16} className="animate-spin" />
-              Connecting to AI...
+            <div className="flex items-center gap-2" style={{ fontFamily: UIFONT, fontSize: 14, color: TXT2 }}>
+              <Loader2 size={16} className="animate-spin" style={{ color: ACC }} /> Reading the lesson…
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100 bg-gray-50/60 flex-shrink-0">
-          <p className="text-xs text-gray-400 flex items-center gap-1.5">
-            <Sparkles size={11} className="text-brand-400" />
-            AI-generated · your instructor will review this answer
+        <div className="flex items-center justify-between px-5 py-3 flex-shrink-0" style={{ background: RAISED, borderTop: `1px solid ${EDGE}` }}>
+          <p className="flex items-center gap-1.5" style={{ fontFamily: MONO, fontSize: 10.5, color: TXT3 }}>
+            <Sparkles size={11} style={{ color: ACC }} />
+            AI-generated · your instructor will review this
           </p>
           {isDone && (
-            <button
-              onClick={closeWhiteboard}
-              className="flex items-center gap-1.5 px-4 py-1.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
-            >
+            <button onClick={closeWhiteboard} className="flex items-center gap-1.5"
+              style={{ fontFamily: UIFONT, fontSize: 12.5, fontWeight: 600, color: '#fff', background: ACC, borderRadius: 8, padding: '7px 16px', border: 'none', cursor: 'pointer' }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#9a4fb0')}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = ACC)}>
               Continue watching
             </button>
           )}
         </div>
       </div>
 
-      {/* Whiteboard styles */}
+      {/* Rendered markdown styles — dark theme */}
       <style>{`
-        .whiteboard-rendered .wb-h1 {
-          font-size: 1.35rem; font-weight: 700; color: #1e1b4b; margin: 1.2rem 0 0.5rem;
-          border-bottom: 2px solid #e0e7ff; padding-bottom: 0.3rem;
-        }
-        .whiteboard-rendered .wb-h2 {
-          font-size: 1.1rem; font-weight: 700; color: #3730a3;
-          margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem;
-        }
-        .whiteboard-rendered .wb-h2::before {
-          content: '▸'; color: #6366f1; font-size: 0.85rem;
-        }
-        .whiteboard-rendered .wb-h3 {
-          font-size: 0.95rem; font-weight: 600; color: #4338ca; margin: 1rem 0 0.3rem;
-        }
-        .whiteboard-rendered .wb-p {
-          font-size: 0.95rem; color: #374151; line-height: 1.75; margin-bottom: 0.75rem;
-        }
-        .whiteboard-rendered .wb-math-block {
-          margin: 1rem 0; padding: 1rem; background: #f5f3ff;
-          border-left: 3px solid #6366f1; border-radius: 0 0.5rem 0.5rem 0;
-          overflow-x: auto;
-        }
-        .whiteboard-rendered .wb-code {
-          background: #f1f5f9; color: #0f172a; padding: 0.1rem 0.35rem;
-          border-radius: 0.3rem; font-size: 0.85rem; font-family: monospace;
-        }
-        .whiteboard-rendered .wb-ul {
-          margin: 0.5rem 0 0.75rem 1.2rem; list-style: none; padding: 0;
-        }
-        .whiteboard-rendered .wb-li {
-          font-size: 0.92rem; color: #374151; line-height: 1.65;
-          padding: 0.15rem 0; padding-left: 1rem; position: relative;
-        }
-        .whiteboard-rendered .wb-li::before {
-          content: '→'; position: absolute; left: 0; color: #6366f1; font-weight: 700;
-        }
-        .whiteboard-rendered strong { color: #1e1b4b; }
-        .whiteboard-rendered em { color: #4338ca; font-style: italic; }
+        .nai-katex .katex, .nai-katex .katex * { color: ${TXT} !important; }
+        .whiteboard-rendered .wb-h1 { font-family:'Cormorant Garamond',serif; font-size: 1.6rem; font-weight: 600; color: ${TXT}; margin: 0.8rem 0 0.5rem; }
+        .whiteboard-rendered .wb-h2 { font-family:'Cormorant Garamond',serif; font-size: 1.3rem; font-weight: 600; color: ${TXT}; margin: 1.3rem 0 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+        .whiteboard-rendered .wb-h2::before { content: '▸'; color: ${ACC}; font-size: 0.8rem; }
+        .whiteboard-rendered .wb-h3 { font-family:${UIFONT}; font-size: 0.95rem; font-weight: 700; color: ${TXT}; margin: 1rem 0 0.3rem; }
+        .whiteboard-rendered .wb-p { font-family:${UIFONT}; font-size: 0.95rem; color: ${TXT}; line-height: 1.7; margin-bottom: 0.7rem; }
+        .whiteboard-rendered .wb-math-block { margin: 0.9rem 0; padding: 0.85rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid ${EDGE}; border-left: 2px solid ${ACC}; border-radius: 8px; overflow-x: auto; }
+        .whiteboard-rendered .wb-code { background: ${ACC_SOFT}; color: ${ACC}; padding: 0.1rem 0.4rem; border-radius: 5px; font-size: 0.85rem; font-family: ${MONO}; }
+        .whiteboard-rendered .wb-ul { margin: 0.5rem 0 0.7rem; list-style: none; padding: 0; }
+        .whiteboard-rendered .wb-li { font-family:${UIFONT}; font-size: 0.93rem; color: ${TXT}; line-height: 1.65; padding: 0.15rem 0 0.15rem 1.3rem; position: relative; }
+        .whiteboard-rendered .wb-li::before { content: '•'; position: absolute; left: 0.2rem; color: ${ACC}; font-weight: 700; }
+        .whiteboard-rendered strong { color: ${TXT}; font-weight: 700; }
+        .whiteboard-rendered em { color: ${TXT2}; font-style: italic; }
         .katex-display { overflow-x: auto; }
       `}</style>
     </div>
   );
 }
+
+// Shared Nest AI palette (kept in sync with AskAIModal)
+const SURFACE = '#171219';
+const RAISED  = '#1f1826';
+const EDGE    = 'rgba(255,255,255,0.09)';
+const TXT     = '#ECE8F0';
+const TXT2    = '#A79FB0';
+const TXT3    = '#756D80';
+const ACC     = '#B06CC6';
+const ACC_SOFT = 'rgba(176,108,198,0.14)';
+const GOLD    = '#E8B04B';
+const UIFONT  = "'Inter Tight','Inter',system-ui,sans-serif";
+const MONO    = "'DM Mono',ui-monospace,monospace";
