@@ -5,7 +5,7 @@ import api from '../api/client';
 import type { Module, Certificate } from '../types';
 import ModuleCard from '../components/ModuleLibrary/ModuleCard';
 import { Skeleton } from '../components/UI/Skeleton';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuthStore } from '../store';
 
 // ── Design tokens — purple + lime, clean white ──────────────────────────────
@@ -91,19 +91,8 @@ export default function ModulesPage() {
           }} />
         </div>
 
-        {/* Canvas particle field — desktop only (battery drain on mobile) */}
-        <div className="hero-desktop-only"><ParticleCanvas /></div>
-
-        {/* Animated floating orbs — desktop only */}
-        <div className="hero-desktop-only" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-          <div className="orb orb-gold" />
-          <div className="orb orb-terra" />
-          <div className="orb orb-blue" />
-          <div className="orb orb-gold2" />
-        </div>
-
-        {/* Animated grid lines — desktop only */}
-        <div className="hero-desktop-only hero-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+        {/* (Animated particles/orbs/grid removed — the background photo now
+            carries the hero, and stacking moving layers over it felt busy.) */}
 
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 2 }}>
 
@@ -321,163 +310,8 @@ export default function ModulesPage() {
         @media (max-width: 480px) {
           .modules-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
         }
-
-        /* ── Animated orbs ── */
-        .orb {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(72px);
-          will-change: transform, opacity;
-        }
-        .orb-gold {
-          width: 520px; height: 520px;
-          background: radial-gradient(circle, rgba(142,45,158,0.08) 0%, transparent 70%);
-          top: -160px; left: -80px;
-          animation: orbFloat1 18s ease-in-out infinite;
-        }
-        .orb-terra {
-          width: 400px; height: 400px;
-          background: radial-gradient(circle, rgba(124,179,66,0.09) 0%, transparent 70%);
-          top: 40px; right: -60px;
-          animation: orbFloat2 22s ease-in-out infinite;
-        }
-        .orb-blue {
-          width: 360px; height: 360px;
-          background: radial-gradient(circle, rgba(142,45,158,0.05) 0%, transparent 70%);
-          bottom: -100px; left: 40%;
-          animation: orbFloat3 26s ease-in-out infinite;
-        }
-        .orb-gold2 {
-          width: 260px; height: 260px;
-          background: radial-gradient(circle, rgba(124,179,66,0.06) 0%, transparent 70%);
-          top: 30%; right: 20%;
-          animation: orbFloat4 20s ease-in-out infinite;
-        }
-
-        @keyframes orbFloat1 {
-          0%,100% { transform: translate(0,0) scale(1); }
-          33%      { transform: translate(60px,-40px) scale(1.08); }
-          66%      { transform: translate(-30px,50px) scale(0.95); }
-        }
-        @keyframes orbFloat2 {
-          0%,100% { transform: translate(0,0) scale(1); }
-          40%      { transform: translate(-50px,30px) scale(1.1); }
-          70%      { transform: translate(40px,-20px) scale(0.92); }
-        }
-        @keyframes orbFloat3 {
-          0%,100% { transform: translate(0,0) scale(1); }
-          30%      { transform: translate(30px,-60px) scale(1.05); }
-          60%      { transform: translate(-40px,20px) scale(0.98); }
-        }
-        @keyframes orbFloat4 {
-          0%,100% { transform: translate(0,0); opacity:0.8; }
-          50%      { transform: translate(-25px,35px); opacity:1; }
-        }
-
-        /* ── Animated grid ── */
-        .hero-grid {
-          background-image:
-            repeating-linear-gradient(90deg, rgba(31,31,36,0.022) 0, rgba(31,31,36,0.022) 1px, transparent 1px, transparent 88px),
-            repeating-linear-gradient(0deg,  rgba(31,31,36,0.022) 0, rgba(31,31,36,0.022) 1px, transparent 1px, transparent 88px);
-          mask-image: radial-gradient(ellipse 90% 80% at 30% 0%, #000 40%, transparent 100%);
-          -webkit-mask-image: radial-gradient(ellipse 90% 80% at 30% 0%, #000 40%, transparent 100%);
-          animation: gridDrift 40s linear infinite;
-        }
-        @keyframes gridDrift {
-          from { background-position: 0 0; }
-          to   { background-position: 88px 88px; }
-        }
       `}</style>
     </div>
-  );
-}
-
-// ── ParticleCanvas ─────────────────────────────────────────────────────────
-function ParticleCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let raf: number;
-    const resize = () => {
-      canvas.width  = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Particles
-    const N = 55;
-    const particles = Array.from({ length: N }, () => ({
-      x:  Math.random() * canvas.width,
-      y:  Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.28,
-      vy: (Math.random() - 0.5) * 0.28,
-      r:  Math.random() * 1.4 + 0.4,
-      alpha: Math.random() * 0.45 + 0.1,
-      gold: Math.random() > 0.72,      // ~28% are gold
-    }));
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw connection lines
-      for (let i = 0; i < N; i++) {
-        for (let j = i + 1; j < N; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 110) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            const fade = (1 - dist / 110) * 0.08;
-            ctx.strokeStyle = particles[i].gold || particles[j].gold
-              ? `rgba(142,45,158,${fade})`
-              : `rgba(31,31,36,${fade * 0.6})`;
-            ctx.lineWidth = 0.6;
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Draw dots
-      for (const p of particles) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.gold
-          ? `rgba(142,45,158,${p.alpha})`
-          : `rgba(124,179,66,${p.alpha * 0.7})`;
-        ctx.fill();
-
-        // Move
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0)             { p.x = canvas.width; }
-        if (p.x > canvas.width)  { p.x = 0; }
-        if (p.y < 0)             { p.y = canvas.height; }
-        if (p.y > canvas.height) { p.y = 0; }
-      }
-
-      raf = requestAnimationFrame(draw);
-    };
-
-    draw();
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
-    />
   );
 }
 

@@ -25,14 +25,13 @@ const DISP = "'Cormorant Garamond', Georgia, serif";
 const UI   = "'Inter Tight', 'Inter', system-ui, sans-serif";
 const MONO = "'DM Mono', ui-monospace, monospace";
 
-const u = (id: string, w = 900) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
-
-// Verified African learning imagery
+// Custom-generated, brand-matched African learning imagery (in /public).
 const IMG = {
-  teacher: u('photo-1531123897727-8f129e1688ce', 800), // confident young African woman
-  demo:    u('photo-1573164713988-8665fc963095', 900), // African woman w/ tablet
-  manifesto: u('photo-1531482615713-2afd69097998', 1200), // two Africans collaborating
+  demo:      '/landing-demo.jpg',  // student on laptop, lavender — hero product frame
+  teach:     '/move-teach.jpg',    // educator recording a lesson
+  learn:     '/move-learn.jpg',    // learner on a phone, golden hour
+  earn:      '/move-earn.jpg',     // mobile-money "Payment Confirmed"
+  manifesto: '/manifesto.jpg',     // students learning together (space on the left)
 };
 
 // ── Scroll reveal ───────────────────────────────────────────────────────────
@@ -421,13 +420,16 @@ function PromiseStrip() {
 
 // ═══ § 3 THREE MOVES — Teach · Learn · Earn (the ONE explanation) ════════════
 const MOVES = [
-  { n: '01', tag: 'Teach', title: 'Upload your lessons.',
+  { n: '01', tag: 'Teach', img: IMG.teach, alt: 'An educator recording a lesson',
+    title: 'Upload your lessons.',
     body: 'Drop in your videos and hit publish. Nest AI writes the transcript, the quizzes, and the answers — automatically.',
     proof: 'No editing. No tech team. One afternoon.' },
-  { n: '02', tag: 'Learn', title: 'Learners ask the video.',
+  { n: '02', tag: 'Learn', img: IMG.learn, alt: 'A learner studying on a phone',
+    title: 'Learners ask the video.',
     body: 'They ask questions right on the timeline and get answers in seconds — grounded in your actual lesson, in your voice.',
     proof: 'Instant answers · quizzes · certificates.' },
-  { n: '03', tag: 'Earn', title: 'You get paid.',
+  { n: '03', tag: 'Earn', img: IMG.earn, alt: 'A mobile-money payment confirmation',
+    title: 'You get paid.',
     body: 'Set your price. Money lands via mobile money or card — no middleman, no card required for learners.',
     proof: 'You keep 100%. Paid the way Africa pays.' },
 ];
@@ -447,8 +449,12 @@ function ThreeMoves() {
         <div className="moves-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'clamp(24px,3vw,48px)' }}>
           {MOVES.map((m, i) => (
             <div key={m.n} className="rv" style={{ position: 'relative', opacity: 0, transform: 'translateY(24px)', transition: `opacity 0.7s ease ${0.1 + i * 0.1}s, transform 0.7s ease ${0.1 + i * 0.1}s` }}>
-              <div style={{ fontFamily: DISP, fontSize: 'clamp(64px,8vw,104px)', fontWeight: 300, color: 'rgba(123,45,142,0.14)', lineHeight: 0.8, letterSpacing: '-0.04em', marginBottom: 8 }}>{m.n}</div>
-              <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLDD }}>{m.tag}</span>
+              {/* Photo */}
+              <div style={{ position: 'relative', aspectRatio: '4/3', borderRadius: 14, overflow: 'hidden', marginBottom: 20, border: '1px solid rgba(31,31,36,0.08)', boxShadow: '0 12px 30px -14px rgba(31,31,36,0.3)' }}>
+                <img src={m.img} alt={m.alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', top: 12, left: 12, fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#fff', background: 'rgba(123,45,142,0.9)', padding: '4px 10px', borderRadius: 100 }}>{m.tag}</div>
+              </div>
+              <div style={{ fontFamily: DISP, fontSize: 'clamp(48px,6vw,80px)', fontWeight: 300, color: 'rgba(123,45,142,0.16)', lineHeight: 0.8, letterSpacing: '-0.04em', marginBottom: 6 }}>{m.n}</div>
               <h3 style={{ fontFamily: UI, fontSize: 'clamp(20px,2.4vw,26px)', fontWeight: 700, color: INK, lineHeight: 1.15, margin: '8px 0 12px', letterSpacing: '-0.01em' }}>{m.title}</h3>
               <p style={{ fontFamily: UI, fontSize: 15, color: '#5c5764', lineHeight: 1.65, marginBottom: 16 }}>{m.body}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: MONO, fontSize: 11, color: '#7b2d8e', letterSpacing: '0.02em', borderTop: '1px solid rgba(31,31,36,0.1)', paddingTop: 14 }}>
@@ -479,10 +485,11 @@ function Manifesto() {
       opacity: 0, transition: 'opacity 0.9s ease',
     }}>
       {/* Photo slab bleeding from the right */}
-      <div className="manifesto-photo" style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '42%', overflow: 'hidden' }}>
-        <img src={IMG.manifesto} alt="African learners collaborating" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.3) contrast(1.05)' }} />
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${INK} 0%, rgba(11,10,15,0.4) 40%, rgba(74,29,84,0.35) 100%)`, mixBlendMode: 'multiply' }} />
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${INK}, transparent 30%)` }} />
+      <div className="manifesto-photo" style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '58%', overflow: 'hidden' }}>
+        <img src={IMG.manifesto} alt="African learners collaborating" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'right center' }} />
+        {/* Fade the photo into the dark canvas on the left so the headline reads */}
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${INK} 0%, rgba(11,10,15,0.7) 22%, rgba(11,10,15,0.15) 55%, transparent 80%)` }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, rgba(74,29,84,0.25), transparent 60%)`, mixBlendMode: 'multiply' }} />
       </div>
 
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1120, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)', width: '100%' }}>
