@@ -6,6 +6,9 @@ import type { Module } from '../../types';
 const GOLD   = '#8e2d9e';   // purple — primary accent (was gold)
 const TERRA  = '#7cb342';   // lime green — secondary (was terracotta)
 const GREEN  = '#3a9d5d';   // success green
+// Unified type system (matches the rest of the product)
+const DISP   = "'Cormorant Garamond', Georgia, serif";
+const MONO   = "'DM Mono', ui-monospace, monospace";
 const DARK2  = '#ffffff';   // card surface
 const DARK3  = '#f1eef4';   // thumbnail placeholder
 const INK    = '#1f1f24';   // primary text
@@ -142,7 +145,7 @@ export default function ModuleCard({ module }: Props) {
           borderRadius: 100, padding: '3px 10px 3px 8px',
         }}>
           <span style={{ width: 5, height: 5, borderRadius: '50%', background: cfg.dot, display: 'inline-block', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: cfg.labelColor, fontWeight: 500 }}>
+          <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: cfg.labelColor, fontWeight: 500 }}>
             {cfg.label}
           </span>
         </div>
@@ -154,7 +157,7 @@ export default function ModuleCard({ module }: Props) {
           background: 'rgba(11,12,15,0.75)', backdropFilter: 'blur(8px)',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 6, padding: '3px 9px',
-          fontFamily: 'monospace', fontSize: 11, color: INK2,
+          fontFamily: MONO, fontSize: 11, color: INK2,
         }}>
           <Clock size={10} style={{ color: INK3 }} />
           {formatDuration(module.duration_seconds)}
@@ -185,7 +188,7 @@ export default function ModuleCard({ module }: Props) {
               ? <Lock size={9} style={{ color: '#fff' }} />
               : <CheckCircle2 size={9} style={{ color: '#fff' }} />}
             <span style={{
-              fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.08em',
+              fontFamily: MONO, fontSize: 10, letterSpacing: '0.08em',
               color: '#fff', fontWeight: 600,
             }}>
               {isLocked ? formatPrice(module.price!, module.currency ?? 'RWF') : 'Purchased'}
@@ -199,7 +202,7 @@ export default function ModuleCard({ module }: Props) {
 
         {/* Title */}
         <h3 style={{
-          fontFamily: "'Lora', Georgia, serif",
+          fontFamily: DISP,
           fontSize: 16, fontWeight: 600, lineHeight: 1.35,
           letterSpacing: '-0.01em', color: INK,
           marginBottom: 8,
@@ -221,12 +224,12 @@ export default function ModuleCard({ module }: Props) {
 
         {/* Meta row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 'auto', paddingTop: plainDesc ? 0 : 6 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'monospace', fontSize: 10.5, color: INK3, letterSpacing: '0.04em' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.04em' }}>
             <Play size={9} style={{ color: INK3 }} />
             {module.video_count} LESSON{module.video_count !== 1 ? 'S' : ''}
           </span>
           {module.question_count > 0 && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'monospace', fontSize: 10.5, color: INK3, letterSpacing: '0.04em' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.04em' }}>
               <MessageSquare size={9} style={{ color: INK3 }} />
               {module.question_count} Q&amp;A
             </span>
@@ -245,10 +248,10 @@ export default function ModuleCard({ module }: Props) {
             onClick={e => { e.stopPropagation(); navigate(`/pay/submit?module_id=${module.id}`); }}
           >
             <div>
-              <p style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: GOLD, marginBottom: 2 }}>
+              <p style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: GOLD, marginBottom: 2 }}>
                 Purchase to unlock
               </p>
-              <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 15, fontWeight: 600, color: INK, letterSpacing: '-0.01em' }}>
+              <p style={{ fontFamily: DISP, fontSize: 15, fontWeight: 600, color: INK, letterSpacing: '-0.01em' }}>
                 {formatPrice(module.price!, module.currency ?? 'RWF')}
               </p>
             </div>
@@ -266,8 +269,8 @@ export default function ModuleCard({ module }: Props) {
         {(status === 'in_progress' || status === 'completed') && (
           <div style={{ marginTop: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: INK3 }}>Progress</span>
-              <span style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 600, color: status === 'completed' ? GREEN : GOLD }}>
+              <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: INK3 }}>Progress</span>
+              <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 600, color: status === 'completed' ? GREEN : GOLD }}>
                 {progress}%
               </span>
             </div>

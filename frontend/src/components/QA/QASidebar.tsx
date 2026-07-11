@@ -10,6 +10,10 @@ import Button from '../UI/Button';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
+// Unified type system (matches the rest of the product)
+const DISP = "'Cormorant Garamond', Georgia, serif";
+const MONO = "'DM Mono', ui-monospace, monospace";
+
 type Filter = 'all' | 'answered' | 'pending' | 'mine';
 
 interface Props {
@@ -77,10 +81,10 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
       <div className="px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="font-bold text-base" style={{ fontFamily: "'Lora', Georgia, serif", color: '#e8e4dc', letterSpacing: '-0.01em' }}>
+            <h2 className="font-bold text-base" style={{ fontFamily: DISP, color: '#e8e4dc', letterSpacing: '-0.01em' }}>
               Timeline Q&amp;A
             </h2>
-            <p className="mt-0.5 flex items-center gap-1.5" style={{ fontFamily: 'monospace', fontSize: 11, color: '#6b6b78', letterSpacing: '0.06em' }}>
+            <p className="mt-0.5 flex items-center gap-1.5" style={{ fontFamily: MONO, fontSize: 11, color: '#6b6b78', letterSpacing: '0.06em' }}>
               {questions.length} QUESTION{questions.length !== 1 ? 'S' : ''}
               {pendingCount > 0 && (
                 <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold" style={{ background: '#b259c4', color: '#fff' }}>
@@ -109,7 +113,7 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
           style={{
             background: 'rgba(178,89,196,0.08)',
             border: '1px solid rgba(178,89,196,0.2)',
-            fontFamily: 'monospace',
+            fontFamily: MONO,
             fontSize: 10.5,
             color: '#b259c4',
             letterSpacing: '0.1em',
@@ -179,7 +183,7 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
             >
               💬
             </div>
-            <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 16, fontWeight: 700, color: '#e8e4dc', letterSpacing: '-0.01em' }}>
+            <p style={{ fontFamily: DISP, fontSize: 16, fontWeight: 700, color: '#e8e4dc', letterSpacing: '-0.01em' }}>
               No questions yet
             </p>
             <p style={{ fontSize: 12.5, color: '#6b6b78', textAlign: 'center', lineHeight: 1.5 }}>

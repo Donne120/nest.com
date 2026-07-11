@@ -16,6 +16,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import WhiteboardModal from '../components/AI/WhiteboardModal';
 import AskAIModal from '../components/AI/AskAIModal';
 
+// Unified type system (matches the rest of the product)
+const DISP = "'Cormorant Garamond', Georgia, serif";
+const MONO = "'DM Mono', ui-monospace, monospace";
+
 function fmtTime(s: number) {
   const m = Math.floor(s / 60);
   const sec = Math.floor(s % 60);
@@ -294,20 +298,20 @@ export default function VideoPage() {
               marginBottom: 6,
             }}>
               <span style={{
-                fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.14em',
+                fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em',
                 textTransform: 'uppercase', color: '#b259c4', opacity: 0.9,
               }}>
                 {currentIndex + 1} / {moduleVideos.length}
               </span>
               <span style={{
-                fontFamily: 'monospace', fontSize: 10, color: '#6b6b78',
+                fontFamily: MONO, fontSize: 10, color: '#6b6b78',
                 letterSpacing: '0.05em',
               }}>
                 {fmtTime(displayDuration)} · {progressPct}%
               </span>
             </div>
             <h1 style={{
-              fontFamily: "'Lora', Georgia, serif",
+              fontFamily: DISP,
               fontSize: 18, fontWeight: 700, lineHeight: 1.3,
               letterSpacing: '-0.01em', color: '#e8e4dc',
               margin: 0,
@@ -487,11 +491,11 @@ export default function VideoPage() {
             )}
           </nav>
 
-          <div style={{ fontFamily: 'monospace', fontSize: 10.5, letterSpacing: '0.18em', color: '#b259c4', textTransform: 'uppercase', marginBottom: 10, opacity: 0.85 }}>
+          <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.18em', color: '#b259c4', textTransform: 'uppercase', marginBottom: 10, opacity: 0.85 }}>
             {module?.title ?? 'Module'}&nbsp;&nbsp;·&nbsp;&nbsp;Lesson {String(currentIndex + 1).padStart(2, '0')}
           </div>
 
-          <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(24px, 2.5vw, 34px)', fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.02em', color: '#e8e4dc', marginBottom: 28, maxWidth: 640 }}>
+          <h1 style={{ fontFamily: DISP, fontSize: 'clamp(24px, 2.5vw, 34px)', fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.02em', color: '#e8e4dc', marginBottom: 28, maxWidth: 640 }}>
             {video.title}
             {video.description && (
               <span style={{ display: 'block', fontStyle: 'italic', color: '#b259c4', marginTop: 4, fontSize: 'clamp(13px, 1.5vw, 16px)' }}>
@@ -515,7 +519,7 @@ export default function VideoPage() {
 
           {/* Desktop action bar */}
           <div className="flex items-center gap-2 mb-6">
-            <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#6b6b78', background: '#1c1e27', border: '1px solid rgba(255,255,255,0.07)', padding: '5px 10px', borderRadius: 100, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+            <span style={{ fontFamily: MONO, fontSize: 11, color: '#6b6b78', background: '#1c1e27', border: '1px solid rgba(255,255,255,0.07)', padding: '5px 10px', borderRadius: 100, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
               {fmtTime(displayDuration)} · <span style={{ color: '#b259c4' }}>{progressPct}%</span>
             </span>
             <div style={{ flex: 1 }} />
@@ -569,7 +573,7 @@ export default function VideoPage() {
                 <ChevronLeft size={16} style={{ flexShrink: 0 }} />
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prevVideo?.title ?? 'Previous'}</span>
               </button>
-              <span style={{ color: '#6b6b78', fontFamily: 'monospace', fontSize: 12, letterSpacing: '0.06em', margin: '0 auto', whiteSpace: 'nowrap' }}>
+              <span style={{ color: '#6b6b78', fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', margin: '0 auto', whiteSpace: 'nowrap' }}>
                 {currentIndex + 1} / {moduleVideos.length}
               </span>
               <button
@@ -820,7 +824,7 @@ function NotesTabContent({ notes, noteDraft, setNoteDraft, notePinTime, setNoteP
               ) : (
                 <div>
                   {note.timestamp_seconds != null && (
-                    <button onClick={() => seekTo(note.timestamp_seconds!)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#b259c4', fontFamily: 'monospace', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4 }}>
+                    <button onClick={() => seekTo(note.timestamp_seconds!)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#b259c4', fontFamily: MONO, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4 }}>
                       <Clock size={10} /> {fmtT(note.timestamp_seconds)}
                     </button>
                   )}
@@ -848,12 +852,12 @@ function PlaylistTabContent({ moduleVideos, videoId, navigate }: {
         const isCurrent = v.id === videoId;
         return (
           <button key={v.id} onClick={() => !isCurrent && navigate(`/video/${v.id}`)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: isCurrent ? 'rgba(178,89,196,0.08)' : '#13141a', borderTop: 'none', borderRight: 'none', borderBottom: idx < moduleVideos.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', borderLeft: `3px solid ${isCurrent ? '#b259c4' : 'transparent'}`, cursor: isCurrent ? 'default' : 'pointer', textAlign: 'left', fontFamily: 'inherit', minHeight: 52 }}>
-            <span style={{ fontFamily: 'monospace', fontSize: 10, color: isCurrent ? '#b259c4' : '#6b6b78', width: 20, flexShrink: 0, letterSpacing: '0.08em' }}>{String(idx + 1).padStart(2, '0')}</span>
+            <span style={{ fontFamily: MONO, fontSize: 10, color: isCurrent ? '#b259c4' : '#6b6b78', width: 20, flexShrink: 0, letterSpacing: '0.08em' }}>{String(idx + 1).padStart(2, '0')}</span>
             <div style={{ width: 28, height: 28, borderRadius: 4, background: isCurrent ? 'rgba(178,89,196,0.15)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Play size={11} fill={isCurrent ? '#b259c4' : '#6b6b78'} style={{ color: isCurrent ? '#b259c4' : '#6b6b78', marginLeft: 1 }} />
             </div>
             <span style={{ flex: 1, fontSize: 14, fontWeight: isCurrent ? 600 : 400, color: isCurrent ? '#e8e4dc' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.title}</span>
-            {v.duration_seconds > 0 && <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#6b6b78', flexShrink: 0 }}>{fmtDur(v.duration_seconds)}</span>}
+            {v.duration_seconds > 0 && <span style={{ fontFamily: MONO, fontSize: 11, color: '#6b6b78', flexShrink: 0 }}>{fmtDur(v.duration_seconds)}</span>}
           </button>
         );
       })}

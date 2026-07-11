@@ -18,6 +18,10 @@ const INK     = '#1f1f24';   // primary text (was light)
 const INK2    = '#5c5764';   // secondary text
 const INK3    = '#9b96a3';   // muted text
 const BORDER  = 'rgba(31,31,36,0.10)';
+// Unified type system (matches the rest of the product)
+const DISP    = "'Cormorant Garamond', Georgia, serif";
+const UIFONT  = "'Inter Tight', 'Inter', system-ui, sans-serif";
+const MONO    = "'DM Mono', ui-monospace, monospace";
 
 type FilterKey = 'all' | 'in_progress' | 'completed' | 'not_started';
 
@@ -64,7 +68,7 @@ export default function ModulesPage() {
   }, [modules, filter, search]);
 
   return (
-    <div style={{ background: DARK, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: DARK, minHeight: '100vh', fontFamily: UIFONT }}>
 
       {/* ══ HERO ═══════════════════════════════════════════════════════════ */}
       <div style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(28px,5vw,48px) 0 clamp(24px,4vw,40px)' }}>
@@ -86,7 +90,7 @@ export default function ModulesPage() {
 
           {/* Eyebrow */}
           <div style={{
-            fontFamily: 'monospace', fontSize: 11, letterSpacing: '0.24em',
+            fontFamily: MONO, fontSize: 11, letterSpacing: '0.24em',
             textTransform: 'uppercase', color: GOLD, marginBottom: 16,
             display: 'flex', alignItems: 'center', gap: 9,
           }}>
@@ -96,7 +100,7 @@ export default function ModulesPage() {
 
           {/* Greeting headline */}
           <h1 style={{
-            fontFamily: "'Lora', Georgia, serif",
+            fontFamily: DISP,
             fontSize: 'clamp(34px, 5.5vw, 52px)',
             fontWeight: 700, lineHeight: 1.08,
             letterSpacing: '-0.03em', color: INK,
@@ -137,7 +141,7 @@ export default function ModulesPage() {
                     );
                   })()}
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: GOLD }}>{overallPct}%</span>
+                    <span style={{ fontFamily: MONO, fontSize: 13, fontWeight: 700, color: GOLD }}>{overallPct}%</span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -171,7 +175,7 @@ export default function ModulesPage() {
                 key={f.key}
                 onClick={() => setFilter(f.key)}
                 style={{
-                  fontFamily: 'monospace',
+                  fontFamily: MONO,
                   fontSize: 11, fontWeight: filter === f.key ? 700 : 500,
                   letterSpacing: '0.06em', textTransform: 'uppercase',
                   padding: '8px 16px', borderRadius: 100,
@@ -247,7 +251,7 @@ export default function ModulesPage() {
             }}>
               <BookOpen size={22} style={{ color: INK3 }} />
             </div>
-            <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 20, fontWeight: 700, color: INK, marginBottom: 8, letterSpacing: '-0.01em' }}>
+            <p style={{ fontFamily: DISP, fontSize: 20, fontWeight: 700, color: INK, marginBottom: 8, letterSpacing: '-0.01em' }}>
               {search ? `No results for "${search}"` : 'No courses yet'}
             </p>
             <p style={{ fontSize: 13.5, color: INK3, lineHeight: 1.6 }}>
@@ -266,7 +270,7 @@ export default function ModulesPage() {
                       position: 'absolute', top: 14, right: 14,
                       display: 'flex', alignItems: 'center', gap: 5,
                       background: GOLD, color: '#ffffff',
-                      fontSize: 10.5, fontWeight: 700, fontFamily: 'monospace',
+                      fontSize: 10.5, fontWeight: 700, fontFamily: MONO,
                       letterSpacing: '0.06em', textTransform: 'uppercase',
                       padding: '4px 10px', borderRadius: 100,
                       textDecoration: 'none', boxShadow: '0 2px 12px rgba(142,45,158,0.4)',
@@ -462,10 +466,10 @@ function ParticleCanvas() {
 function StatItem({ value, label, color = '#1f1f24' }: { value: number; label: string; color?: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
-      <span style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 26, fontWeight: 700, color, lineHeight: 1, letterSpacing: '-0.02em' }}>
+      <span style={{ fontFamily: DISP, fontSize: 26, fontWeight: 700, color, lineHeight: 1, letterSpacing: '-0.02em' }}>
         {value}
       </span>
-      <span style={{ fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9b96a3', whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9b96a3', whiteSpace: 'nowrap' }}>
         {label}
       </span>
     </div>

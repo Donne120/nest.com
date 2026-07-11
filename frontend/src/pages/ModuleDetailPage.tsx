@@ -10,6 +10,11 @@ import {
 import api from '../api/client';
 import type { Module, Video, Lesson, ModuleResource, QuizQuestion, QuizSubmissionResult } from '../types';
 import { BG, SURF, RULE, INK, INK2, INK3, ACC, ACC2 } from '../lib/colors';
+
+// Unified type system (matches the rest of the product)
+const DISP   = "'Cormorant Garamond', Georgia, serif";
+const UIFONT = "'Inter Tight', 'Inter', system-ui, sans-serif";
+const MONO   = "'DM Mono', ui-monospace, monospace";
 import { Skeleton } from '../components/UI/Skeleton';
 import BookMeetingModal from '../components/Meetings/BookMeetingModal';
 
@@ -36,8 +41,8 @@ function DonutRing({ pct }: { pct: number }) {
         />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 600, color: '#f0ebe3', letterSpacing: '-0.02em', lineHeight: 1 }}>{pct}%</span>
-        <span style={{ fontFamily: 'monospace', fontSize: 8.5, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 3 }}>done</span>
+        <span style={{ fontFamily: MONO, fontSize: 18, fontWeight: 600, color: '#f0ebe3', letterSpacing: '-0.02em', lineHeight: 1 }}>{pct}%</span>
+        <span style={{ fontFamily: MONO, fontSize: 8.5, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 3 }}>done</span>
       </div>
     </div>
   );
@@ -161,7 +166,7 @@ export default function ModuleDetailPage() {
   const BLUE    = ACC2;
 
   return (
-    <div style={{ background: BG, minHeight: '100vh', fontFamily: "'DM Sans', 'Inter', sans-serif" }}>
+    <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
 
       {/* ══ HERO (dark) ══════════════════════════════════════════════════ */}
       <section style={{ background: '#1a1320', position: 'relative', padding: 'clamp(28px,5vw,56px) 0 clamp(40px,6vw,72px)', overflow: 'hidden' }}>
@@ -187,7 +192,7 @@ export default function ModuleDetailPage() {
           {/* Back */}
           <button
             onClick={() => navigate('/modules')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'monospace', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 28, padding: 0, transition: 'color 0.2s' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: MONO, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 28, padding: 0, transition: 'color 0.2s' }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.65)')}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.35)')}
           >
@@ -195,14 +200,14 @@ export default function ModuleDetailPage() {
           </button>
 
           {/* Status chip */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: MONO, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: status === 'completed' ? '#7cb342' : status === 'in_progress' ? '#b259c4' : 'rgba(255,255,255,0.25)', display: 'inline-block' }} />
             {status === 'not_started' ? 'Not Started' : status === 'in_progress' ? 'In Progress' : 'Completed'}
           </div>
 
           {/* Title */}
           <h1 style={{
-            fontFamily: "'Lora', Georgia, serif",
+            fontFamily: DISP,
             fontSize: 'clamp(34px, 4vw, 58px)',
             fontWeight: 700,
             lineHeight: 1.1,
@@ -224,7 +229,7 @@ export default function ModuleDetailPage() {
             ].map((m, i, arr) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                fontFamily: 'monospace', fontSize: 12, color: 'rgba(255,255,255,0.45)',
+                fontFamily: MONO, fontSize: 12, color: 'rgba(255,255,255,0.45)',
                 paddingRight: i < arr.length - 1 ? 18 : 0,
                 marginRight: i < arr.length - 1 ? 18 : 0,
                 borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none',
@@ -348,8 +353,8 @@ export default function ModuleDetailPage() {
                 { label: 'Pass Mark', val: `${PASS_MARK}%` },
               ].map(({ label, val }) => (
                 <div key={label} style={{ background: BG, padding: '14px 16px', textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'monospace', fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: INK3, marginBottom: 6 }}>{label}</div>
-                  <div style={{ fontFamily: 'monospace', fontSize: 26, fontWeight: 600, color: val === '—' ? INK3 : INK }}>{val}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: INK3, marginBottom: 6 }}>{label}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 26, fontWeight: 600, color: val === '—' ? INK3 : INK }}>{val}</div>
                 </div>
               ))}
             </div>
@@ -366,7 +371,7 @@ export default function ModuleDetailPage() {
             {/* Donut top */}
             <div style={{ padding: '28px 24px 22px', display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               <DonutRing pct={pct} />
-              <p style={{ fontFamily: 'monospace', fontSize: 10.5, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 12 }}>
+              <p style={{ fontFamily: MONO, fontSize: 10.5, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 12 }}>
                 {pct === 0 ? 'Ready to start' : pct === 100 ? 'Course completed!' : `${fmt(module.progress_seconds ?? 0)} watched`}
               </p>
             </div>
@@ -496,7 +501,7 @@ function SectionCard({
     <div style={{ background: '#ffffff', border: '1px solid #e6e3ea', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 2px rgba(31,31,36,0.04), 0 4px 14px rgba(31,31,36,0.05)', animation: 'fadeUp 0.5s ease both', ...style }}>
       <div style={{ padding: '20px 28px', borderBottom: '1px solid #e6e3ea', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.01em', color: '#1f1f24' }}>{title}</span>
-        {meta && <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#9b96a3', letterSpacing: '0.08em' }}>{meta}</span>}
+        {meta && <span style={{ fontFamily: MONO, fontSize: 11, color: '#9b96a3', letterSpacing: '0.08em' }}>{meta}</span>}
       </div>
       <div style={noPadding ? {} : { padding: '24px 28px' }}>{children}</div>
     </div>
@@ -528,7 +533,7 @@ function LessonCurriculumItem({ lesson, index, isLast, onClick, INK, INK3, RULE,
         transition: 'background 0.15s',
       }}
     >
-      <span style={{ fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.1em', width: 26, flexShrink: 0, textAlign: 'right' }}>
+      <span style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.1em', width: 26, flexShrink: 0, textAlign: 'right' }}>
         {String(index + 1).padStart(2, '0')}
       </span>
       <div style={{ width: 34, height: 34, borderRadius: 5, background: BG, border: `1px solid ${RULE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -538,12 +543,12 @@ function LessonCurriculumItem({ lesson, index, isLast, onClick, INK, INK3, RULE,
         {lesson.title}
       </span>
       {lesson.question_count > 0 && (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.04em', flexShrink: 0 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.04em', flexShrink: 0 }}>
           <Pin size={10} />
           {lesson.question_count}Q
         </span>
       )}
-      <span style={{ fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.06em', flexShrink: 0 }}>
+      <span style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.06em', flexShrink: 0 }}>
         {blockCount} block{blockCount !== 1 ? 's' : ''}
       </span>
     </button>
@@ -574,7 +579,7 @@ function CurriculumItem({ video, index, isLast, onClick, INK, INK3, RULE, BG }: 
         transition: 'background 0.15s',
       }}
     >
-      <span style={{ fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.1em', width: 26, flexShrink: 0, textAlign: 'right' }}>
+      <span style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.1em', width: 26, flexShrink: 0, textAlign: 'right' }}>
         {String(index + 1).padStart(2, '0')}
       </span>
       <div style={{ width: 34, height: 34, borderRadius: 5, background: BG, border: `1px solid ${RULE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -585,7 +590,7 @@ function CurriculumItem({ video, index, isLast, onClick, INK, INK3, RULE, BG }: 
       </span>
       {video.is_preview && (
         <span style={{
-          fontFamily: 'monospace', fontSize: 9.5, letterSpacing: '0.1em',
+          fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em',
           color: '#10b981', background: 'rgba(16,185,129,0.1)',
           border: '1px solid rgba(16,185,129,0.25)',
           padding: '2px 7px', borderRadius: 4, textTransform: 'uppercase',
@@ -595,11 +600,11 @@ function CurriculumItem({ video, index, isLast, onClick, INK, INK3, RULE, BG }: 
         </span>
       )}
       {video.question_count > 0 && (
-        <span style={{ fontFamily: 'monospace', fontSize: 11, color: INK3, letterSpacing: '0.04em', flexShrink: 0 }}>
+        <span style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.04em', flexShrink: 0 }}>
           {video.question_count}Q
         </span>
       )}
-      <span style={{ fontFamily: 'monospace', fontSize: 12, color: INK3, letterSpacing: '0.06em', flexShrink: 0 }}>
+      <span style={{ fontFamily: MONO, fontSize: 12, color: INK3, letterSpacing: '0.06em', flexShrink: 0 }}>
         {fmt(video.duration_seconds)}
       </span>
     </button>
