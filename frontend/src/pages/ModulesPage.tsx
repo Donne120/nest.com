@@ -72,6 +72,25 @@ export default function ModulesPage() {
 
       {/* ══ HERO ═══════════════════════════════════════════════════════════ */}
       <div style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(28px,5vw,48px) 0 clamp(24px,4vw,40px)' }}>
+        {/* Background photo — subtle wash. Subject sits on the right; a
+            white-to-transparent gradient keeps the left (where text lives) clean. */}
+        <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+          <img
+            src="/learning-hub-bg.jpg"
+            alt=""
+            style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'right center',
+              opacity: 0.5,
+            }}
+          />
+          {/* Scrim: fade to white on the left + bottom so text stays crisp */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(90deg, #ffffff 8%, rgba(255,255,255,0.85) 34%, rgba(255,255,255,0.55) 60%, rgba(255,255,255,0.35) 100%), linear-gradient(0deg, #ffffff 0%, rgba(255,255,255,0) 45%)',
+          }} />
+        </div>
+
         {/* Canvas particle field — desktop only (battery drain on mobile) */}
         <div className="hero-desktop-only"><ParticleCanvas /></div>
 
