@@ -192,11 +192,11 @@ export default function ModuleDetailPage() {
           {/* Back */}
           <button
             onClick={() => navigate('/modules')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: MONO, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 28, padding: 0, transition: 'color 0.2s' }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.65)')}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.35)')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, minHeight: 40, fontSize: 12.5, color: 'rgba(255,255,255,0.75)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 100, cursor: 'pointer', fontFamily: MONO, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 24, padding: '0 16px', transition: 'all 0.2s' }}
+            onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = '#fff'; el.style.background = 'rgba(255,255,255,0.12)'; }}
+            onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'rgba(255,255,255,0.75)'; el.style.background = 'rgba(255,255,255,0.06)'; }}
           >
-            <ArrowLeft size={12} /> Back to Modules
+            <ArrowLeft size={14} /> Back to Modules
           </button>
 
           {/* Status chip */}

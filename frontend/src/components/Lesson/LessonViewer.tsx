@@ -168,33 +168,35 @@ export default function LessonViewer({
               </div>
             )}
 
-            {/* Pin-to-ask button — appears on hover */}
+            {/* Pin-to-ask button — always visible on touch; hover-reveal on desktop */}
             <button
+              className="lesson-ask-btn"
               onClick={() => onPinBlock(block.id, preview)}
               style={{
                 position: 'absolute',
-                top: 16,
+                top: 12,
                 right: 0,
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: 5,
-                padding: '5px 12px',
+                minHeight: 36,
+                padding: '0 14px',
                 borderRadius: 100,
-                border: '1px solid rgba(232,201,126,0.3)',
-                background: 'rgba(232,201,126,0.08)',
-                color: '#e8c97e',
-                fontSize: 11,
+                border: '1px solid rgba(178,89,196,0.35)',
+                background: 'rgba(178,89,196,0.1)',
+                color: '#b259c4',
+                fontSize: 12,
                 fontWeight: 600,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
-                letterSpacing: '0.04em',
+                letterSpacing: '0.02em',
                 opacity: isHovered ? 1 : 0,
                 pointerEvents: isHovered ? 'auto' : 'none',
                 transition: 'opacity 0.15s',
               }}
               title="Pin this section and ask a question"
             >
-              <Pin size={11} />
+              <Pin size={12} />
               Ask about this
             </button>
           </div>

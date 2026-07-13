@@ -85,6 +85,15 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   const [controlsVisible, setControlsVisible] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Mobile: show controls in a solid strip below the video (not overlaid),
+  // and let the video keep its natural aspect ratio instead of a fixed 4:3 box.
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 1024);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   // ── Nest intro pre-roll ────────────────────────────────────────────────────
   const { organization } = useAuthStore();
   const [introDone, setIntroDone] = useState<boolean>(() => !showIntro);
@@ -332,11 +341,80 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   }
 
   // ── Native HTML5 player ───────────────────────────────────────────────────
+  const videoEl = introDone && (
+    <video
+      ref={videoRef}
+      src={videoUrl}
+      className="w-full h-full object-contain"
+      onTimeUpdate={(e) => {
+        const t = e.currentTarget.currentTime;
+        setCurrentTime(t);
+        onTimeUpdate?.(t);
+      }}
+      onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+      onPlay={() => setPlaying(true)}
+      onPause={() => setPlaying(false)}
+      onEnded={() => { setPlaying(false); onVideoEnd?.(); }}
+      onClick={() => { setPlaying(!isPlaying); showControlsBriefly(); }}
+      onTouchEnd={(e) => { e.preventDefault(); setPlaying(!isPlaying); showControlsBriefly(); }}
+      preload="metadata"
+      crossOrigin="anonymous"
+    />
+  );
+
+  // MOBILE (and not fullscreen): video in a natural-ratio box + solid control
+  // strip below. This is the same proven pattern the YouTube path uses.
+  if (isMobile && !fullscreen) {
+    return (
+      <div ref={containerRef} className="bg-black overflow-hidden" style={{ position: 'relative' }}>
+        {/* Video area — 16:9 so landscape lectures fill the width, no letterbox waste */}
+        <div className="relative w-full bg-black" style={{ aspectRatio: '16 / 9' }}>
+          {!introDone && (
+            <NestIntroOverlay
+              orgName={organization?.name}
+              orgLogoUrl={organization?.logo_url}
+              onComplete={() => { setPlaying(false); setIntroDone(true); }}
+            />
+          )}
+          {videoEl}
+          {/* Big center play/pause tap target when paused */}
+          {introDone && !isPlaying && (
+            <button
+              onClick={() => { setPlaying(true); showControlsBriefly(); }}
+              aria-label="Play"
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ background: 'rgba(0,0,0,0.28)' }}
+            >
+              <span style={{ width: 64, height: 64, borderRadius: '50%', background: '#b259c4', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 30px rgba(178,89,196,0.5)' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><polygon points="6,4 22,12 6,20" /></svg>
+              </span>
+            </button>
+          )}
+        </div>
+
+        {/* Solid control strip BELOW the video — always visible, easy to reach */}
+        <div className="px-4 pt-2 pb-3 bg-black">
+          <Timeline
+            markers={markers}
+            onSeek={handleTimelineClick}
+            onMarkerClick={(m) => handleAskAt(m.timestamp_seconds)}
+            onAskAt={handleAskAt}
+          />
+          <Controls
+            onToggleFullscreen={toggleFullscreen}
+            isFullscreen={fullscreen}
+            onAskQuestion={handleAskAtTimestamp}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // DESKTOP (and fullscreen): overlay controls on the video (works well with a mouse)
   return (
     <div
       ref={containerRef}
       className="relative bg-black video-player-container overflow-hidden"
-      style={{}}
       onPointerDown={showControlsBriefly}
     >
       {!introDone && (
@@ -346,29 +424,7 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
           onComplete={() => { setPlaying(false); setIntroDone(true); }}
         />
       )}
-      {/* Video only mounted after intro — avoids audio bleeding under the overlay.
-          React's muted prop is broken and doesn't update after mount, so we
-          gate on introDone instead of relying on muted={!introDone}. */}
-      {introDone && (
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        className="w-full h-full object-contain"
-        onTimeUpdate={(e) => {
-          const t = e.currentTarget.currentTime;
-          setCurrentTime(t);
-          onTimeUpdate?.(t);
-        }}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-        onEnded={() => { setPlaying(false); onVideoEnd?.(); }}
-        onClick={() => { setPlaying(!isPlaying); showControlsBriefly(); }}
-        onTouchEnd={(e) => { e.preventDefault(); setPlaying(!isPlaying); showControlsBriefly(); }}
-        preload="metadata"
-        crossOrigin="anonymous"
-      />
-      )}
+      {videoEl}
 
       {/* Overlay gradient — visible on hover, touch, or fullscreen */}
       <div

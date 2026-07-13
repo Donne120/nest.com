@@ -62,6 +62,13 @@ html.dark {
     box-sizing: border-box;
   }
 
+  /* Safety net: never let a stray wide element create a horizontal scroll
+     on mobile — that sideways nudge is what makes a page feel "broken". */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
@@ -237,15 +244,25 @@ html.dark {
   }
 }
 
-/* ─── Video player aspect ratio ─────────────────────────────────────────── */
-/* Taller on mobile so learners can clearly see the content */
-.video-player-container {
-  aspect-ratio: 4 / 3;
+/* On touch devices (no hover), always show the lesson "Ask about this" button —
+   otherwise it's invisible to the mobile-first audience it's meant for. */
+@media (hover: none) {
+  .lesson-ask-btn { opacity: 1 !important; pointer-events: auto !important; }
 }
-@media (min-width: 1024px) {
-  .video-player-container {
-    aspect-ratio: 16 / 9;
+
+/* Kill iOS Safari's focus-zoom: any input/textarea/select under 16px makes the
+   page jump-zoom on tap. Force >=16px on phones (desktop keeps its sizes). */
+@media (max-width: 767px) {
+  input, textarea, select {
+    font-size: 16px !important;
   }
+}
+
+/* ─── Video player aspect ratio ─────────────────────────────────────────── */
+/* 16:9 everywhere — matches how lectures/screencasts are actually filmed, so
+   landscape video fills the width with no letterbox bars wasting the screen. */
+.video-player-container {
+  aspect-ratio: 16 / 9;
 }
 
 /* ─── Mobile-first global fixes ─────────────────────────────────────────── */

@@ -602,27 +602,29 @@ export default function VideoPage() {
       {/* ── Q&A Sidebar: mobile bottom sheet (< lg) ── */}
       {videoId && (
         <div className="lg:hidden">
-          {/* Backdrop */}
+          {/* Backdrop — above the BottomNav (z-50) so the sheet fully takes over */}
           {sidebarOpen && (
             <div
               className="fixed inset-0"
-              style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(3px)', zIndex: 45 }}
+              style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(3px)', zIndex: 60 }}
               onClick={() => setSidebarOpen(false)}
             />
           )}
-          {/* Sheet */}
+          {/* Sheet — sits above the BottomNav so its reply box isn't covered */}
           <div
             style={{
               position: 'fixed',
               left: 0, right: 0, bottom: 0,
-              height: '80vh',
-              zIndex: 46,
+              height: 'min(80vh, 100dvh - 56px)',
+              zIndex: 61,
               borderRadius: '20px 20px 0 0',
               overflow: 'hidden',
               transform: sidebarOpen ? 'translateY(0)' : 'translateY(100%)',
               transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)',
               display: 'flex',
               flexDirection: 'column',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              background: '#13141a',
             }}
           >
             <div style={{ background: '#13141a', padding: '10px 0 4px', display: 'flex', justifyContent: 'center', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>

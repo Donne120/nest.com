@@ -125,11 +125,11 @@ export default function ModulesPage() {
 
           {/* Progress summary card */}
           {modules.length > 0 && (
-            <div style={{
+            <div className="hub-progress-card" style={{
               display: 'flex', alignItems: 'center', gap: 24,
               background: '#ffffff', border: `1px solid ${BORDER}`,
               borderRadius: 16, padding: '20px 26px',
-              marginBottom: 0, overflowX: 'auto', maxWidth: 'fit-content',
+              marginBottom: 0, maxWidth: 'fit-content',
               boxShadow: '0 1px 2px rgba(31,31,36,0.04), 0 8px 24px -12px rgba(31,31,36,0.12)',
             }}>
               {/* Donut */}
@@ -158,10 +158,10 @@ export default function ModulesPage() {
                 </div>
               </div>
 
-              <div style={{ borderLeft: `1px solid ${BORDER}`, alignSelf: 'stretch' }} />
+              <div className="hub-progress-divider" style={{ borderLeft: `1px solid ${BORDER}`, alignSelf: 'stretch' }} />
 
               {/* Stat pills */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
+              <div className="hub-progress-stats" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
                 <StatItem value={modules.length}  label="Total"       />
                 <StatItem value={completed}        label="Completed"   color="#34d399" />
                 <StatItem value={inProgress}       label="In Progress" color={GOLD} />
@@ -173,7 +173,8 @@ export default function ModulesPage() {
       </div>
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
-      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 20 }}>
+      {/* top:56px clears the sticky 56px Navbar (z-40) so it doesn't hide behind it */}
+      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 56, zIndex: 20 }}>
         <div className="toolbar-inner" style={{ maxWidth: 1400, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
 
           {/* Filter tabs */}
@@ -306,6 +307,10 @@ export default function ModulesPage() {
           .modules-grid { grid-template-columns: 1fr !important; }
           .toolbar-inner { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; padding: 10px 16px !important; }
           .toolbar-search { flex: 1 1 auto !important; max-width: 100% !important; }
+          /* Progress card: stack so it never overflows the viewport width */
+          .hub-progress-card { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; max-width: 100% !important; width: 100% !important; box-sizing: border-box; padding: 16px 18px !important; }
+          .hub-progress-divider { display: none !important; }
+          .hub-progress-stats { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 14px 24px !important; width: 100%; }
         }
         @media (max-width: 480px) {
           .modules-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
