@@ -8,15 +8,17 @@
 /* These are consumed by inline styles via var(--c-xxx) across all pages.    */
 /* Toggling .dark on <html> is all that's needed to switch every page.       */
 :root {
-  --c-bg:   #ffffff;   /* page background — clean white  */
-  --c-bg2:  #f5f3f7;   /* slightly deeper, faint purple tint */
-  --c-surf: #ffffff;   /* card / surface   */
+  --c-bg:   #FBFAFC;   /* page floor — a hair off white so cards genuinely lift */
+  --c-bg2:  #f2f0f5;   /* recessed well: inputs, tracks */
+  --c-surf: #ffffff;   /* card / surface — sits above the floor */
+  --c-raise: #ffffff;  /* menus / popovers (lean on shadow here, not lightness) */
   --c-rule: #e6e3ea;   /* border / divider */
-  --c-ink:  #1f1f24;   /* primary text — charcoal   */
-  --c-ink2: #5c5764;   /* secondary text   */
-  --c-ink3: #9b96a3;   /* muted text       */
-  --c-acc:  #7b2d8e;   /* purple — brand primary  */
+  --c-ink:  #1f1f24;   /* primary text — charcoal (16.8:1) */
+  --c-ink2: #5c5764;   /* secondary text (7.1:1) */
+  --c-ink3: #9b96a3;   /* muted text — decorative only */
+  --c-acc:  #7b2d8e;   /* purple — brand primary (8.9:1) */
   --c-acc2: #6a2a8a;   /* deep purple — links */
+  --c-on-acc: #ffffff; /* text ON a filled accent */
   --c-go:   #6ea23a;   /* lime green — secondary (readable on white) */
   /* Semantic + brand-signature tokens (one source of truth) */
   --c-gold: #C98A2E;   /* warm gold — the landing-page signature, readable on light */
@@ -26,20 +28,33 @@
 }
 
 html.dark {
-  --c-bg:   #15101a;
-  --c-bg2:  #0f0b13;
-  --c-surf: #1d1722;
-  --c-rule: rgba(255,255,255,0.08);
-  --c-ink:  #ece8f0;
-  --c-ink2: #a79fb0;
-  --c-ink3: #756d80;
-  --c-acc:  #b259c4;   /* brighter purple on dark */
-  --c-acc2: #c06fd0;
-  --c-go:   #9ccc5a;   /* brighter lime on dark */
-  --c-gold: #E8B04B;   /* the full landing gold glows on dark */
-  --c-warn: #d6a24a;
-  --c-danger: #e0765a;
-  --c-ok:   #8bd450;
+  /* ── Elevation ramp — neutral, warm-leaning near-black.
+        The old palette was muddy because it put saturation at very low
+        lightness (#15101a = 10-pt channel spread), which the eye reads as
+        dirt, not purple — and surf/bg differed by only 1.07:1, so cards were
+        invisible. Here lightness does the work; chroma stays under a 7-pt
+        spread. Anchored on #0B0A0F to match the landing page + video player. */
+  --c-bg:    #0B0A0F;  /* page floor */
+  --c-bg2:   #08070B;  /* RECESSED well: inputs, code blocks, tracks (was inverted) */
+  --c-surf:  #141219;  /* card / panel — a real step above the floor */
+  --c-raise: #1C1922;  /* menus, popovers, hover — the second step */
+  --c-rule:  rgba(255,255,255,0.09);  /* hairline — the primary elevation cue on dark */
+
+  /* ── Text — cool inks read crisp against the warm floor ── */
+  --c-ink:   #F2F0F5;  /* primary   — 17.4:1 on bg */
+  --c-ink2:  #A8A3B2;  /* secondary — 8.0:1 (AA everywhere) */
+  --c-ink3:  #6F6A7A;  /* muted/decorative ONLY — 3.8:1, never body copy */
+
+  /* ── Brand — lifted into the confident band for daylight LCD legibility ── */
+  --c-acc:   #C77DDA;  /* purple  — 6.9:1 on bg (was 4.57:1, a hair from failing) */
+  --c-acc2:  #D9A0E8;  /* links/hover — 9.5:1 */
+  --c-go:    #A9DC6A;  /* lime    — 12.3:1 */
+  --c-gold:  #EBB95C;  /* gold signature — 10.9:1 */
+  --c-on-acc: #0B0A0F; /* text ON a filled accent (white on purple is only 2.5:1) */
+
+  --c-warn:   #E0AC55; /* 9.6:1  */
+  --c-danger: #F0836B; /* 7.7:1  */
+  --c-ok:     #7BD44E; /* 10.7:1 */
 }
 
 /* ─── Brand palette CSS vars (overridden at runtime per org) ─────────────── */
