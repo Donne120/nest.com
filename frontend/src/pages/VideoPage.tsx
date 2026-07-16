@@ -15,6 +15,8 @@ import { Skeleton } from '../components/UI/Skeleton';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import WhiteboardModal from '../components/AI/WhiteboardModal';
 import AskAIModal from '../components/AI/AskAIModal';
+import ImmersiveMobilePlayer from '../components/VideoPlayer/ImmersiveMobilePlayer';
+import { Maximize2 } from 'lucide-react';
 
 // Unified type system (matches the rest of the product)
 const DISP = "'Cormorant Garamond', Georgia, serif";
@@ -48,6 +50,13 @@ export default function VideoPage() {
   const { seekTo, currentTime, duration: playerDuration, setPlaying } = usePlayerStore();
   const getPlayerDuration = () => usePlayerStore.getState().duration;
   const [showQuiz, setShowQuiz] = useState(false);
+  // Persisted so swiping to the next lesson (which re-routes) keeps you immersed.
+  const [immersive, setImmersiveState] = useState(() => sessionStorage.getItem('nest_immersive') === '1');
+  const setImmersive = useCallback((v: boolean) => {
+    setImmersiveState(v);
+    if (v) sessionStorage.setItem('nest_immersive', '1');
+    else sessionStorage.removeItem('nest_immersive');
+  }, []);
   const [noteDraft, setNoteDraft] = useState('');
   const [notePinTime, setNotePinTime] = useState(false);
   const [noteEditId, setNoteEditId] = useState<string | null>(null);
@@ -219,6 +228,7 @@ export default function VideoPage() {
   const currentIndex = moduleVideos.findIndex(v => v.id === videoId);
   const prevVideo = moduleVideos[currentIndex - 1];
   const nextVideo = moduleVideos[currentIndex + 1];
+
   const progressPct = playerDuration > 0 ? Math.round((currentTime / playerDuration) * 100) : 0;
   const displayDuration = playerDuration > 0 ? playerDuration : (video?.duration_seconds ?? 0);
 
@@ -230,6 +240,11 @@ export default function VideoPage() {
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
+
+  // The immersive swipe view drives its own <video>, so it only works for
+  // uploaded files — a YouTube/Vimeo iframe can't be controlled that way.
+  const isEmbedUrl = /youtu\.?be|youtube\.com|vimeo\.com/i.test(video?.video_url ?? '');
+  const canGoImmersive = isMobile && !isEmbedUrl && !!video?.video_url;
 
   if (videoLoading) {
     return (
@@ -268,9 +283,11 @@ export default function VideoPage() {
         {/* ── MOBILE UI ── */}
         <div className="lg:hidden">
 
-          {/* Video — full-bleed, single instance */}
-          {isMobile && (
-            <div style={{ background: '#000', lineHeight: 0 }}>
+          {/* Video — full-bleed, single instance.
+              Unmounted while the immersive player is open so only ONE video
+              decoder is ever alive (two will OOM a low-end phone). */}
+          {isMobile && !immersive && (
+            <div style={{ background: '#000', lineHeight: 0, position: 'relative' }}>
               <VideoPlayer
                 videoUrl={video.video_url}
                 markers={markers}
@@ -278,6 +295,23 @@ export default function VideoPage() {
                 onTimeUpdate={handleTimeUpdate}
                 onVideoEnd={handleVideoEnd}
               />
+              {/* Enter the full-screen immersive (swipe) view */}
+              {canGoImmersive && (
+                <button
+                  onClick={() => { setPlaying(false); setImmersive(true); }}
+                  aria-label="Watch full screen"
+                  style={{
+                    position: 'absolute', top: 10, right: 10, zIndex: 5,
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    minHeight: 36, padding: '0 12px', borderRadius: 100,
+                    background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.22)',
+                    color: '#fff', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+                    backdropFilter: 'blur(6px)', cursor: 'pointer',
+                  }}
+                >
+                  <Maximize2 size={13} /> Full screen
+                </button>
+              )}
             </div>
           )}
 
@@ -633,6 +667,24 @@ export default function VideoPage() {
             <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} onClose={() => setSidebarOpen(false)} />
           </div>
         </div>
+      )}
+
+      {/* Full-screen immersive lesson view (mobile, uploaded video only) */}
+      {immersive && canGoImmersive && video && (
+        <ImmersiveMobilePlayer
+          video={video}
+          videoUrl={video.video_url}
+          index={currentIndex + 1}
+          total={moduleVideos.length}
+          hasPrev={!!prevVideo}
+          hasNext={!!nextVideo}
+          onPrev={() => prevVideo && navigate(`/video/${prevVideo.id}`)}
+          onNext={() => nextVideo && navigate(`/video/${nextVideo.id}`)}
+          onExit={() => setImmersive(false)}
+          onAsk={() => { setImmersive(false); setSidebarOpen(true); openQuestionForm(currentTime); }}
+          onQuiz={quizQuestions.length > 0 ? () => { setImmersive(false); setShowQuiz(true); } : undefined}
+          hasQuiz={quizQuestions.length > 0}
+        />
       )}
 
       {/* Question form modal */}
