@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pin, ImageIcon, AlignLeft } from 'lucide-react';
 import type { LessonBlock } from '../../types';
+import RichText from '../UI/RichText';
 
 interface Props {
   blocks: LessonBlock[];
@@ -103,19 +104,13 @@ export default function LessonViewer({
               )}
             </div>
 
-            {/* Block content */}
+            {/* Block content — markdown + LaTeX. This used to dump the raw
+                string into a pre-wrap div, so "## Heading" and "$x^2$" showed
+                as literal characters. Nest teaches maths; equations must render. */}
             {block.type === 'text' ? (
-              <div
-                style={{
-                  fontSize: 15,
-                  lineHeight: 1.85,
-                  color: '#d4cfc9',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                }}
-              >
-                {block.content}
-              </div>
+              <RichText tone="on-dark" style={{ wordBreak: 'break-word' }}>
+                {block.content ?? ''}
+              </RichText>
             ) : (
               <div>
                 <div

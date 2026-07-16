@@ -3,21 +3,7 @@ import {
   X, Sparkles, Loader2, CheckCircle, AlertTriangle, RotateCcw, GripHorizontal,
 } from 'lucide-react';
 import { useUIStore, usePlayerStore } from '../../store';
-import katex from 'katex';
-import 'katex/dist/katex.min.css';
-import DOMPurify from 'dompurify';
-
-const PURIFY_TAGS = [
-  'p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li',
-  'code', 'div', 'span', 'math', 'semantics', 'mrow', 'mi', 'mo',
-  'mn', 'msup', 'msub', 'mfrac', 'mover', 'munder', 'mspace',
-  'annotation', 'svg', 'path', 'line', 'rect',
-];
-const PURIFY_ATTRS = [
-  'style', 'class', 'xmlns', 'd', 'viewBox', 'fill',
-  'stroke', 'stroke-width', 'x1', 'y1', 'x2', 'y2',
-  'display', 'encoding', 'x', 'y', 'width', 'height',
-];
+import RichText from '../UI/RichText';
 
 // ─── Nest AI palette (dark, premium — matches the video player & landing) ─────
 const SURFACE = '#171219';   // panel body
@@ -32,57 +18,6 @@ const GOLD    = '#E8B04B';   // streaming caret / signature
 const UIFONT  = "'Inter Tight','Inter',system-ui,sans-serif";
 const MONO    = "'DM Mono',ui-monospace,monospace";
 
-// ─── Markdown → clean HTML (dark theme) ───────────────────────────────────────
-function renderMarkdown(text: string): string {
-  const body = `font-family:${UIFONT};font-size:0.95rem;color:${TXT};line-height:1.7`;
-
-  // Block math
-  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
-    try {
-      return `<div style="margin:0.9rem 0;padding:0.85rem 1rem;background:rgba(255,255,255,0.03);border:1px solid ${EDGE};border-left:2px solid ${ACC};border-radius:8px;overflow-x:auto;color:${TXT};">${katex.renderToString(math.trim(), { displayMode: true, throwOnError: false })}</div>`;
-    } catch {
-      return `<code style="font-family:${MONO};color:${ACC};">$$${math}$$</code>`;
-    }
-  });
-  // Inline math
-  text = text.replace(/\$([^$\n]+?)\$/g, (_, math) => {
-    try { return katex.renderToString(math, { displayMode: false, throwOnError: false }); }
-    catch { return `<code style="font-family:${MONO};color:${ACC};">$${math}$</code>`; }
-  });
-
-  // Headings
-  text = text.replace(/^### (.+)$/gm,
-    `<h3 style="font-family:${UIFONT};font-size:1rem;font-weight:700;color:${TXT};margin:1.1rem 0 0.3rem;">$1</h3>`);
-  text = text.replace(/^## (.+)$/gm,
-    `<h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:${TXT};margin:1.4rem 0 0.4rem;">$1</h2>`);
-  text = text.replace(/^# (.+)$/gm,
-    `<h1 style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:${TXT};margin:0.6rem 0 0.4rem;">$1</h1>`);
-
-  // Bold / italic
-  text = text.replace(/\*\*(.+?)\*\*/g, `<strong style="color:${TXT};font-weight:700;">$1</strong>`);
-  text = text.replace(/\*([^*\n]+?)\*/g, `<em style="color:${TXT2};font-style:italic;">$1</em>`);
-
-  // Inline code
-  text = text.replace(/`([^`]+?)`/g,
-    `<code style="font-family:${MONO};color:${ACC};background:${ACC_SOFT};padding:0.1rem 0.4rem;border-radius:5px;font-size:0.85rem;">$1</code>`);
-
-  // Bullet lists
-  text = text.replace(/^[-•] (.+)$/gm,
-    `<li style="${body};padding-left:1.4rem;position:relative;list-style:none;margin:0.15rem 0;"><span style="position:absolute;left:0.2rem;color:${ACC};font-weight:700;">•</span>$1</li>`);
-  text = text.replace(/(<li[\s\S]+?<\/li>)/g, `<ul style="padding:0;margin:0.4rem 0;">$1</ul>`);
-
-  // Numbered lists
-  text = text.replace(/^\d+\. (.+)$/gm,
-    `<li style="${body};list-style:decimal;margin-left:1.4rem;">$1</li>`);
-
-  // Paragraphs
-  const P = `style="${body};margin:0 0 0.6rem;"`;
-  text = text.replace(/\n\n/g, `</p><p ${P}>`);
-  text = `<p ${P}>${text}</p>`;
-  text = text.replace(/\n/g, '<br/>');
-  return text;
-}
-
 type Phase = 'input' | 'streaming' | 'done' | 'error';
 
 export default function AskAIModal() {
@@ -92,7 +27,6 @@ export default function AskAIModal() {
   const [phase, setPhase]           = useState<Phase>('input');
   const [question, setQuestion]     = useState('');
   const [streamedText, setStreamedText] = useState('');
-  const [rendered, setRendered]     = useState('');
 
   const [pos, setPos]       = useState({ x: window.innerWidth / 2 - 320, y: window.innerHeight / 2 - 280 });
   const [dragging, setDragging] = useState(false);
@@ -107,7 +41,6 @@ export default function AskAIModal() {
 
   useEffect(() => { textareaRef.current?.focus(); }, []);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [streamedText]);
-  useEffect(() => { if (phase === 'done' && streamedText) setRendered(renderMarkdown(streamedText)); }, [phase, streamedText]);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -130,13 +63,13 @@ export default function AskAIModal() {
 
   function handleReset() {
     readerRef.current?.cancel();
-    setPhase('input'); setQuestion(''); setStreamedText(''); setRendered('');
+    setPhase('input'); setQuestion(''); setStreamedText('');
   }
 
   async function handleSubmit() {
     const q = question.trim();
     if (!q || !aiAskVideoId) return;
-    setPhase('streaming'); setStreamedText(''); setRendered('');
+    setPhase('streaming'); setStreamedText('');
 
     const token = localStorage.getItem('nest_token');
     if (!token) { setPhase('error'); return; }
@@ -327,10 +260,8 @@ export default function AskAIModal() {
             </div>
           )}
 
-          {phase === 'done' && rendered && (
-            <div dangerouslySetInnerHTML={{
-              __html: String(DOMPurify.sanitize(rendered, { ALLOWED_TAGS: PURIFY_TAGS, ALLOWED_ATTR: PURIFY_ATTRS, FORCE_BODY: true }))
-            }} />
+          {phase === 'done' && streamedText && (
+            <RichText tone="on-dark">{streamedText}</RichText>
           )}
 
           {phase === 'error' && (

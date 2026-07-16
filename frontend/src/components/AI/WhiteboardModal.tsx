@@ -2,67 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { X, Sparkles, Loader2, CheckCircle, AlertTriangle, BookOpen } from 'lucide-react';
 import { useUIStore } from '../../store';
 import { useQueryClient } from '@tanstack/react-query';
-import katex from 'katex';
-import 'katex/dist/katex.min.css';
-import DOMPurify from 'dompurify';
+import RichText from '../UI/RichText';
 
 interface Props {
   questionId: string;
   questionText: string;
   videoId: string;
-}
-
-// ─── Math + Markdown renderer ─────────────────────────────────────────────────
-
-function renderToken(text: string): string {
-  // Block math  $$...$$
-  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
-    try {
-      return `<div class="wb-math-block">${katex.renderToString(math.trim(), { displayMode: true, throwOnError: false })}</div>`;
-    } catch {
-      return `<code class="wb-math-fallback">$$${math}$$</code>`;
-    }
-  });
-
-  // Inline math  $...$
-  text = text.replace(/\$([^$\n]+?)\$/g, (_, math) => {
-    try {
-      return katex.renderToString(math, { displayMode: false, throwOnError: false });
-    } catch {
-      return `<code>$${math}$</code>`;
-    }
-  });
-
-  // ### sub-heading
-  text = text.replace(/^### (.+)$/gm, '<h3 class="wb-h3">$1</h3>');
-  // ## section heading
-  text = text.replace(/^## (.+)$/gm, '<h2 class="wb-h2">$1</h2>');
-  // # main heading
-  text = text.replace(/^# (.+)$/gm, '<h1 class="wb-h1">$1</h1>');
-
-  // **bold**
-  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  // *italic*
-  text = text.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
-
-  // `code`
-  text = text.replace(/`([^`]+?)`/g, '<code class="wb-code">$1</code>');
-
-  // Bullet points
-  text = text.replace(/^[-•] (.+)$/gm, '<li class="wb-li">$1</li>');
-  text = text.replace(/(<li[\s\S]+?<\/li>)/g, '<ul class="wb-ul">$1</ul>');
-
-  // Numbered lists
-  text = text.replace(/^\d+\. (.+)$/gm, '<li class="wb-li wb-li-num">$1</li>');
-
-  // Paragraph breaks (double newline)
-  text = text.replace(/\n\n/g, '</p><p class="wb-p">');
-  text = `<p class="wb-p">${text}</p>`;
-
-  // Single newlines (inside paragraphs)
-  text = text.replace(/\n/g, '<br/>');
-
-  return text;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -73,7 +18,6 @@ export default function WhiteboardModal({ questionId, questionText, videoId }: P
   const [streamedText, setStreamedText] = useState('');
   const [isDone, setIsDone] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [rendered, setRendered] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
 
@@ -84,16 +28,9 @@ export default function WhiteboardModal({ questionId, questionText, videoId }: P
     }
   }, [streamedText]);
 
-  // Render full markdown+math when streaming completes
+  // When streaming completes, refresh the sidebar so the AI answer appears there
   useEffect(() => {
     if (isDone && streamedText) {
-      const raw = renderToken(streamedText);
-      const clean = DOMPurify.sanitize(raw, {
-        ALLOWED_TAGS: ['h1','h2','h3','p','strong','em','li','ul','ol','code','div','br','span'],
-        ALLOWED_ATTR: ['class'],
-      });
-      setRendered(clean);
-      // Invalidate questions so AI answer appears in sidebar
       queryClient.invalidateQueries({ queryKey: ['questions', videoId] });
     }
   }, [isDone, streamedText, videoId, queryClient]);
@@ -227,8 +164,8 @@ export default function WhiteboardModal({ questionId, questionText, videoId }: P
             </div>
           )}
 
-          {!hasError && isDone && rendered && (
-            <div className="whiteboard-rendered" dangerouslySetInnerHTML={{ __html: rendered }} />
+          {!hasError && isDone && streamedText && (
+            <RichText tone="on-dark">{streamedText}</RichText>
           )}
 
           {!hasError && !streamedText && !isDone && (
@@ -255,21 +192,8 @@ export default function WhiteboardModal({ questionId, questionText, videoId }: P
         </div>
       </div>
 
-      {/* Rendered markdown styles — dark theme */}
       <style>{`
         .nai-katex .katex, .nai-katex .katex * { color: ${TXT} !important; }
-        .whiteboard-rendered .wb-h1 { font-family:'Cormorant Garamond',serif; font-size: 1.6rem; font-weight: 600; color: ${TXT}; margin: 0.8rem 0 0.5rem; }
-        .whiteboard-rendered .wb-h2 { font-family:'Cormorant Garamond',serif; font-size: 1.3rem; font-weight: 600; color: ${TXT}; margin: 1.3rem 0 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
-        .whiteboard-rendered .wb-h2::before { content: '▸'; color: ${ACC}; font-size: 0.8rem; }
-        .whiteboard-rendered .wb-h3 { font-family:${UIFONT}; font-size: 0.95rem; font-weight: 700; color: ${TXT}; margin: 1rem 0 0.3rem; }
-        .whiteboard-rendered .wb-p { font-family:${UIFONT}; font-size: 0.95rem; color: ${TXT}; line-height: 1.7; margin-bottom: 0.7rem; }
-        .whiteboard-rendered .wb-math-block { margin: 0.9rem 0; padding: 0.85rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid ${EDGE}; border-left: 2px solid ${ACC}; border-radius: 8px; overflow-x: auto; }
-        .whiteboard-rendered .wb-code { background: ${ACC_SOFT}; color: ${ACC}; padding: 0.1rem 0.4rem; border-radius: 5px; font-size: 0.85rem; font-family: ${MONO}; }
-        .whiteboard-rendered .wb-ul { margin: 0.5rem 0 0.7rem; list-style: none; padding: 0; }
-        .whiteboard-rendered .wb-li { font-family:${UIFONT}; font-size: 0.93rem; color: ${TXT}; line-height: 1.65; padding: 0.15rem 0 0.15rem 1.3rem; position: relative; }
-        .whiteboard-rendered .wb-li::before { content: '•'; position: absolute; left: 0.2rem; color: ${ACC}; font-weight: 700; }
-        .whiteboard-rendered strong { color: ${TXT}; font-weight: 700; }
-        .whiteboard-rendered em { color: ${TXT2}; font-style: italic; }
         .katex-display { overflow-x: auto; }
       `}</style>
     </div>

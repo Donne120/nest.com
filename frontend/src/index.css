@@ -265,6 +265,64 @@ html.dark {
   .lesson-ask-btn { opacity: 1 !important; pointer-events: auto !important; }
 }
 
+/* ─── RichText — markdown + KaTeX for lessons and AI answers ─────────────── */
+/* Nest teaches maths, so lesson bodies must render equations, code and
+   headings — not dump them as literal characters. Class-based so it follows
+   the learner's theme; `.nest-rich-dark` for surfaces that are dark in both. */
+.nest-rich {
+  --rt-ink:  var(--c-ink);
+  --rt-ink2: var(--c-ink2);
+  --rt-acc:  var(--c-acc);
+  --rt-surf: var(--c-bg2);
+  --rt-rule: var(--c-rule);
+  font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  color: var(--rt-ink);
+}
+.nest-rich-dark {
+  --rt-ink:  #ECE8F0;
+  --rt-ink2: #A79FB0;
+  --rt-acc:  #C77DDA;
+  --rt-surf: rgba(255,255,255,0.04);
+  --rt-rule: rgba(255,255,255,0.09);
+}
+.nest-rich .rt-p  { font-size: 15px; line-height: 1.75; color: var(--rt-ink); margin: 0 0 0.75rem; }
+.nest-rich .rt-p:last-child { margin-bottom: 0; }
+.nest-rich .rt-h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.75rem; font-weight: 600; color: var(--rt-ink); margin: 0.7rem 0 0.5rem; letter-spacing: -0.01em; }
+.nest-rich .rt-h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.4rem;  font-weight: 600; color: var(--rt-ink); margin: 1.4rem 0 0.45rem; letter-spacing: -0.01em; }
+.nest-rich .rt-h3 { font-size: 1rem; font-weight: 700; color: var(--rt-ink); margin: 1.1rem 0 0.3rem; }
+.nest-rich strong { color: var(--rt-ink); font-weight: 700; }
+.nest-rich em     { color: var(--rt-ink2); font-style: italic; }
+.nest-rich .rt-a  { color: var(--rt-acc); text-decoration: underline; text-underline-offset: 2px; }
+.nest-rich .rt-ul { padding: 0; margin: 0.5rem 0 0.8rem; list-style: none; }
+.nest-rich .rt-li { font-size: 15px; line-height: 1.7; color: var(--rt-ink); position: relative; padding-left: 1.4rem; margin: 0.2rem 0; }
+.nest-rich .rt-li::before { content: '•'; position: absolute; left: 0.3rem; color: var(--rt-acc); font-weight: 700; }
+.nest-rich .rt-li-num { list-style: decimal; margin-left: 1.4rem; padding-left: 0.2rem; }
+.nest-rich .rt-li-num::before { content: none; }
+.nest-rich .rt-code {
+  font-family: 'DM Mono', ui-monospace, monospace; font-size: 0.85em;
+  color: var(--rt-acc); background: var(--rt-surf);
+  padding: 0.1rem 0.4rem; border-radius: 5px;
+}
+.nest-rich .rt-pre {
+  background: var(--rt-surf); border: 1px solid var(--rt-rule);
+  border-radius: 8px; padding: 0.85rem 1rem; margin: 0.9rem 0;
+  overflow-x: auto;  /* long code must scroll, never blow out the phone */
+  -webkit-overflow-scrolling: touch;
+}
+.nest-rich .rt-pre code {
+  font-family: 'DM Mono', ui-monospace, monospace; font-size: 13px;
+  color: var(--rt-ink); background: none; padding: 0; white-space: pre;
+}
+.nest-rich .rt-math-block {
+  margin: 0.9rem 0; padding: 0.85rem 1rem;
+  background: var(--rt-surf); border: 1px solid var(--rt-rule);
+  border-left: 2px solid var(--rt-acc); border-radius: 8px;
+  overflow-x: auto;  /* wide equations scroll instead of overflowing */
+  -webkit-overflow-scrolling: touch;
+}
+.nest-rich .katex { color: var(--rt-ink); font-size: 1.05em; }
+.nest-rich .katex-display { margin: 0; overflow-x: auto; overflow-y: hidden; }
+
 /* Press feedback. Phones can't hover, so without this the product gives a
    learner NO physical response to a tap. transform-only = cheap on low-end
    Android. Put `class="press"` on any card/button. */
