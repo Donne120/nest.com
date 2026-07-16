@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/client';
 import type { Module, Certificate } from '../types';
 import ModuleCard from '../components/ModuleLibrary/ModuleCard';
+import ContinueCard from '../components/ModuleLibrary/ContinueCard';
 import { Skeleton } from '../components/UI/Skeleton';
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '../store';
@@ -24,13 +25,14 @@ const DISP    = "'Cormorant Garamond', Georgia, serif";
 const UIFONT  = "'Inter Tight', 'Inter', system-ui, sans-serif";
 const MONO    = "'DM Mono', ui-monospace, monospace";
 
-type FilterKey = 'all' | 'in_progress' | 'completed' | 'not_started';
+type FilterKey = 'all' | 'in_progress' | 'completed';
 
+// Verbs, not statuses. And no "Not Started" filter — nobody wants to filter
+// FOR the things they haven't done yet.
 const FILTERS: { key: FilterKey; label: string; color: string }[] = [
-  { key: 'all',         label: 'All',         color: INK2  },
-  { key: 'in_progress', label: 'In Progress',  color: GOLD  },
-  { key: 'completed',   label: 'Completed',    color: '#34d399' },
-  { key: 'not_started', label: 'Not Started',  color: INK3  },
+  { key: 'all',         label: 'All courses', color: INK2  },
+  { key: 'in_progress', label: 'Learning',    color: GOLD  },
+  { key: 'completed',   label: 'Finished',    color: 'var(--c-ok)' },
 ];
 
 export default function ModulesPage() {
@@ -51,12 +53,6 @@ export default function ModulesPage() {
 
   const certByModule = Object.fromEntries(certificates.map(c => [c.module.id, c]));
 
-  const completed   = modules.filter(m => m.status === 'completed').length;
-  const inProgress  = modules.filter(m => m.status === 'in_progress').length;
-  const notStarted  = modules.length - completed - inProgress;
-
-  const overallPct = modules.length > 0 ? Math.round((completed / modules.length) * 100) : 0;
-
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const firstName = user?.full_name?.split(' ')[0] ?? '';
@@ -71,107 +67,17 @@ export default function ModulesPage() {
   return (
     <div style={{ background: DARK, minHeight: '100vh', fontFamily: UIFONT }}>
 
-      {/* ══ HERO ═══════════════════════════════════════════════════════════ */}
-      <div style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(28px,5vw,48px) 0 clamp(24px,4vw,40px)' }}>
-        {/* Background photo — subtle wash. Subject sits on the right; a
-            white-to-transparent gradient keeps the left (where text lives) clean. */}
-        <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-          <img
-            src="/learning-hub-bg.jpg"
-            alt=""
-            style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              objectFit: 'cover', objectPosition: 'right center',
-              opacity: 0.5,
-            }}
-          />
-          {/* Scrim: fade to white on the left + bottom so text stays crisp */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            // Fades the photo into the page bg (works in light AND dark).
-            background: 'linear-gradient(90deg, var(--c-bg) 8%, color-mix(in srgb, var(--c-bg) 85%, transparent) 34%, color-mix(in srgb, var(--c-bg) 55%, transparent) 60%, color-mix(in srgb, var(--c-bg) 35%, transparent) 100%), linear-gradient(0deg, var(--c-bg) 0%, transparent 45%)',
-          }} />
-        </div>
-
-        {/* (Animated particles/orbs/grid removed — the background photo now
-            carries the hero, and stacking moving layers over it felt busy.) */}
-
-        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 2 }}>
-
-          {/* Eyebrow */}
-          <div style={{
-            fontFamily: MONO, fontSize: 11, letterSpacing: '0.24em',
-            textTransform: 'uppercase', color: GOLD, marginBottom: 16,
-            display: 'flex', alignItems: 'center', gap: 9,
-          }}>
-            <span style={{ width: 22, height: 1.5, background: GOLD, display: 'inline-block', borderRadius: 2, opacity: 0.55 }} />
-            Learning Hub
-          </div>
-
-          {/* Greeting headline */}
-          <h1 style={{
-            fontFamily: DISP,
-            fontSize: 'clamp(34px, 5.5vw, 52px)',
-            fontWeight: 700, lineHeight: 1.08,
-            letterSpacing: '-0.03em', color: INK,
-            marginBottom: 14, maxWidth: 640,
-          }}>
-            {greeting}{firstName && (
-              <>, <span style={{ color: GOLD }}>{firstName}</span></>
-            )}
-          </h1>
-
-          <p style={{ fontSize: 16, color: INK2, lineHeight: 1.55, marginBottom: 28, maxWidth: 460 }}>
-            Your courses are ready. Pick up where you left off or start something new.
-          </p>
-
-          {/* Progress summary card */}
-          {modules.length > 0 && (
-            <div className="hub-progress-card" style={{
-              display: 'flex', alignItems: 'center', gap: 24,
-              background: 'var(--c-surf)', border: `1px solid ${BORDER}`,
-              borderRadius: 16, padding: '20px 26px',
-              marginBottom: 0, maxWidth: 'fit-content',
-              boxShadow: '0 1px 2px rgba(31,31,36,0.04), 0 8px 24px -12px rgba(31,31,36,0.12)',
-            }}>
-              {/* Donut */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
-                <div style={{ position: 'relative', width: 56, height: 56, flexShrink: 0 }}>
-                  {(() => {
-                    const R = 24, C = 2 * Math.PI * R;
-                    const filled = (overallPct / 100) * C;
-                    return (
-                      <svg width="56" height="56" style={{ transform: 'rotate(-90deg)' }}>
-                        <circle cx="28" cy="28" r={R} fill="none" stroke="rgba(31,31,36,0.08)" strokeWidth="5" />
-                        <circle cx="28" cy="28" r={R} fill="none" stroke={GOLD} strokeWidth="5"
-                          strokeLinecap="round" strokeDasharray={`${filled} ${C}`}
-                          style={{ transition: 'stroke-dasharray 1.2s ease' }}
-                        />
-                      </svg>
-                    );
-                  })()}
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontFamily: MONO, fontSize: 13, fontWeight: 700, color: GOLD }}>{overallPct}%</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: INK, letterSpacing: '-0.01em' }}>Overall progress</span>
-                  <span style={{ fontSize: 12, color: INK3 }}>{completed} of {modules.length} complete</span>
-                </div>
-              </div>
-
-              <div className="hub-progress-divider" style={{ borderLeft: `1px solid ${BORDER}`, alignSelf: 'stretch' }} />
-
-              {/* Stat pills */}
-              <div className="hub-progress-stats" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-                <StatItem value={modules.length}  label="Total"       />
-                <StatItem value={completed}        label="Completed"   color="#34d399" />
-                <StatItem value={inProgress}       label="In Progress" color={GOLD} />
-                {notStarted > 0 && <StatItem value={notStarted} label="Not Started" />}
-              </div>
-            </div>
-          )}
-        </div>
+      {/* ══ HERO — the Continue Card ═══════════════════════════════════
+          Was: a greeting + a donut + Total/Completed/In-Progress pills, which
+          greeted a brand-new learner with "0 / 0 / 0". Now: a person and one
+          next action — "You stopped 4 minutes into 'Why factoring works'." */}
+      <div style={{ padding: 'clamp(16px,4vw,28px) clamp(16px,4vw,24px) clamp(16px,3vw,24px)', maxWidth: 1400, margin: '0 auto' }}>
+        <ContinueCard
+          modules={modules}
+          firstName={firstName}
+          greeting={greeting}
+          bgImage="/learning-hub-bg.jpg"
+        />
       </div>
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
@@ -209,7 +115,7 @@ export default function ModulesPage() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search modules…"
+              placeholder="What do you want to learn?"
               style={{
                 width: '100%', boxSizing: 'border-box',
                 paddingLeft: 36, paddingRight: 16, paddingTop: 10, paddingBottom: 10,
@@ -262,12 +168,29 @@ export default function ModulesPage() {
             }}>
               <BookOpen size={22} style={{ color: INK3 }} />
             </div>
-            <p style={{ fontFamily: DISP, fontSize: 20, fontWeight: 700, color: INK, marginBottom: 8, letterSpacing: '-0.01em' }}>
-              {search ? `No results for "${search}"` : 'No courses yet'}
+            <p style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: INK, marginBottom: 8, letterSpacing: '-0.01em' }}>
+              {search ? `Nothing matches “${search}”.` : 'Nothing here yet.'}
             </p>
-            <p style={{ fontSize: 13.5, color: INK3, lineHeight: 1.6 }}>
-              {search ? 'Try a different search term or browse all courses.' : 'Your instructor will add courses here soon.'}
+            <p style={{ fontSize: 14, color: INK2, lineHeight: 1.6, maxWidth: 320, margin: '0 auto' }}>
+              {search
+                ? 'Try fewer words — or browse everything.'
+                : 'Your trainer is still building. Check back — it won’t be long.'}
             </p>
+            {/* Never leave a dead end */}
+            {(search || filter !== 'all') && (
+              <button
+                onClick={() => { setSearch(''); setFilter('all'); }}
+                className="press"
+                style={{
+                  marginTop: 18, minHeight: 44, padding: '0 20px',
+                  background: GOLD, color: 'var(--c-on-acc)',
+                  border: 'none', borderRadius: 10, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+                }}
+              >
+                Show all courses
+              </button>
+            )}
           </div>
         ) : (
           <div className="modules-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
@@ -309,10 +232,6 @@ export default function ModulesPage() {
           .modules-grid { grid-template-columns: 1fr !important; }
           .toolbar-inner { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; padding: 10px 16px !important; }
           .toolbar-search { flex: 1 1 auto !important; max-width: 100% !important; }
-          /* Progress card: stack so it never overflows the viewport width */
-          .hub-progress-card { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; max-width: 100% !important; width: 100% !important; box-sizing: border-box; padding: 16px 18px !important; }
-          .hub-progress-divider { display: none !important; }
-          .hub-progress-stats { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 14px 24px !important; width: 100%; }
         }
         @media (max-width: 480px) {
           .modules-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
@@ -322,16 +241,4 @@ export default function ModulesPage() {
   );
 }
 
-// ── StatItem ──────────────────────────────────────────────────────────────
-function StatItem({ value, label, color = '#1f1f24' }: { value: number; label: string; color?: string }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
-      <span style={{ fontFamily: DISP, fontSize: 26, fontWeight: 700, color, lineHeight: 1, letterSpacing: '-0.02em' }}>
-        {value}
-      </span>
-      <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9b96a3', whiteSpace: 'nowrap' }}>
-        {label}
-      </span>
-    </div>
-  );
-}
+

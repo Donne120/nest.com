@@ -50,12 +50,16 @@ export default function VideoPage() {
   const { seekTo, currentTime, duration: playerDuration, setPlaying } = usePlayerStore();
   const getPlayerDuration = () => usePlayerStore.getState().duration;
   const [showQuiz, setShowQuiz] = useState(false);
-  // Persisted so swiping to the next lesson (which re-routes) keeps you immersed.
-  const [immersive, setImmersiveState] = useState(() => sessionStorage.getItem('nest_immersive') === '1');
+  // The immersive full-screen view is the DEFAULT lesson experience on mobile —
+  // it's the best thing we have and phones are the main market. A learner who
+  // exits it is remembered (localStorage), so we never fight their preference.
+  const [immersive, setImmersiveState] = useState(
+    () => localStorage.getItem('nest_immersive_off') !== '1'
+  );
   const setImmersive = useCallback((v: boolean) => {
     setImmersiveState(v);
-    if (v) sessionStorage.setItem('nest_immersive', '1');
-    else sessionStorage.removeItem('nest_immersive');
+    if (v) localStorage.removeItem('nest_immersive_off');
+    else localStorage.setItem('nest_immersive_off', '1');   // remember the opt-out
   }, []);
   const [noteDraft, setNoteDraft] = useState('');
   const [notePinTime, setNotePinTime] = useState(false);
@@ -295,10 +299,11 @@ export default function VideoPage() {
                 onTimeUpdate={handleTimeUpdate}
                 onVideoEnd={handleVideoEnd}
               />
-              {/* Enter the full-screen immersive (swipe) view */}
+              {/* Re-enter the immersive view (shown only if the learner exited it) */}
               {canGoImmersive && (
                 <button
                   onClick={() => { setPlaying(false); setImmersive(true); }}
+                  className="press"
                   aria-label="Watch full screen"
                   style={{
                     position: 'absolute', top: 10, right: 10, zIndex: 5,
@@ -354,7 +359,9 @@ export default function VideoPage() {
             </h1>
           </div>
 
-          {/* Action row: back · Q&A · mark done */}
+          {/* Action row — the AI is the STAR here. "Ask the video, it answers"
+              is the whole product promise, so it gets the gold and the space;
+              back/done are administrative and shrink to icons. */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '10px 16px 0',
@@ -362,63 +369,85 @@ export default function VideoPage() {
             {/* Back to module */}
             <Link
               to={module ? `/modules/${module.id}` : '/modules'}
+              aria-label="Back to course"
+              className="press"
               style={{
-                display: 'flex', alignItems: 'center', gap: 4,
-                fontSize: 12, color: '#6b6b78', textDecoration: 'none',
-                background: '#13141a', border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: 8, padding: '8px 12px', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--c-ink2)', textDecoration: 'none',
+                background: 'var(--c-surf)', border: '1px solid var(--c-rule)',
+                borderRadius: 10, minWidth: 44, minHeight: 44, flexShrink: 0,
               }}
             >
-              <ChevronLeft size={14} /> Back
+              <ChevronLeft size={18} />
             </Link>
 
-            {/* Ask a question — pauses the video, opens the ask form pinned to the moment */}
+            {/* ★ Ask this lesson anything — the magic, in gold */}
             <button
-              onClick={() => { setPlaying(false); setSidebarOpen(true); openQuestionForm(currentTime); }}
+              onClick={() => { setPlaying(false); openAIAsk(videoId!, currentTime, video.has_transcript); }}
+              className="press"
               style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 13, fontWeight: 700,
-                background: '#b259c4', color: '#ffffff',
-                border: '1px solid rgba(178,89,196,0.4)',
-                borderRadius: 8, padding: '8px 14px',
+                display: 'flex', alignItems: 'center', gap: 7,
+                fontSize: 13.5, fontWeight: 700,
+                background: 'linear-gradient(135deg, #E8B04B, #C98A2E)',
+                color: '#0B0A0F',
+                border: 'none',
+                borderRadius: 10, padding: '0 14px',
                 cursor: 'pointer', fontFamily: 'inherit',
                 flex: 1, justifyContent: 'center',
-                minHeight: 40, transition: 'all 0.15s',
+                minHeight: 44,
+                boxShadow: '0 6px 22px rgba(232,176,75,0.3)',
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-              Ask a question
+              <Sparkles size={15} />
+              Ask this lesson anything
             </button>
 
-            {/* Mark complete / done */}
+            {/* Mark complete — administrative, icon only */}
             {existingSubmission?.passed || (quizQuestions.length === 0 && progressPct >= 95) ? (
-              <span style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'rgba(52,211,153,0.12)', color: '#34d399',
-                border: '1px solid rgba(52,211,153,0.25)',
-                fontSize: 13, fontWeight: 600,
-                borderRadius: 8, padding: '8px 14px',
-                whiteSpace: 'nowrap', flexShrink: 0,
+              <span aria-label="Completed" title="Completed" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(123,212,78,0.12)', color: 'var(--c-ok)',
+                border: '1px solid rgba(123,212,78,0.28)',
+                borderRadius: 10, minWidth: 44, minHeight: 44, flexShrink: 0,
               }}>
-                <CheckCircle size={14} /> Done
+                <CheckCircle size={18} />
               </span>
             ) : (
               <button
                 onClick={handleMarkComplete}
+                className="press"
+                aria-label={quizQuestions.length > 0 ? 'Mark done and take the quiz' : 'Mark done'}
+                title={quizQuestions.length > 0 ? 'Mark done + quiz' : 'Mark done'}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  background: '#b259c4', color: '#ffffff',
-                  fontSize: 13, fontWeight: 700,
-                  borderRadius: 8, padding: '8px 14px',
-                  border: 'none', cursor: 'pointer',
-                  fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0,
-                  minHeight: 40,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'var(--c-surf)', color: 'var(--c-ink2)',
+                  borderRadius: 10, minWidth: 44, minHeight: 44,
+                  border: '1px solid var(--c-rule)', cursor: 'pointer',
+                  fontFamily: 'inherit', flexShrink: 0,
                 }}
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-                {quizQuestions.length > 0 ? 'Done + Quiz' : 'Mark done'}
+                <Check size={18} />
               </button>
             )}
+          </div>
+
+          {/* Human Q&A — secondary, below the AI */}
+          <div style={{ padding: '8px 16px 0' }}>
+            <button
+              onClick={() => { setPlaying(false); setSidebarOpen(true); openQuestionForm(currentTime); }}
+              className="press"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                width: '100%', minHeight: 40,
+                fontSize: 12.5, fontWeight: 600,
+                background: 'transparent', color: 'var(--c-ink2)',
+                border: '1px solid var(--c-rule)', borderRadius: 10,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              <MessageSquare size={14} />
+              Ask your instructor instead
+            </button>
           </div>
 
           {/* Prev / Next lesson row — mobile */}
@@ -712,14 +741,16 @@ export default function VideoPage() {
       {/* AI Ask modal */}
       {aiAskOpen && videoId && <AskAIModal />}
 
-      {/* Ask AI FAB — desktop only (mobile uses BottomNav assistant) */}
-      {videoId && !aiAskOpen && !whiteboardQuestionId && (
+      {/* Ask AI — desktop FAB. (On mobile it's the gold hero action in the
+          row under the video: the whole product promise is "ask the video,
+          it answers", so it must never be desktop-only.) */}
+      {videoId && !aiAskOpen && !whiteboardQuestionId && !immersive && (
         <button
           onClick={() => openAIAsk(videoId, currentTime, video.has_transcript)}
           className="hidden lg:flex fixed bottom-7 right-7 z-40 items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95"
           style={{
-            background: 'linear-gradient(135deg, #8e2d9e, #7cb342)',
-            color: '#ffffff',
+            background: 'linear-gradient(135deg, #E8B04B, #C98A2E)',
+            color: '#0B0A0F',
             fontSize: 13,
             padding: '12px 22px',
             borderRadius: 100,
@@ -727,12 +758,12 @@ export default function VideoPage() {
             cursor: 'pointer',
             letterSpacing: '0.02em',
             fontFamily: 'inherit',
-            boxShadow: '0 8px 32px rgba(196,92,60,0.35)',
+            boxShadow: '0 8px 32px rgba(232,176,75,0.35)',
           }}
-          title="Ask the AI tutor anything about this lesson"
+          title="Ask this lesson anything"
         >
           <Sparkles size={15} />
-          Ask AI
+          Ask this lesson anything
         </button>
       )}
 

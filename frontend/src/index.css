@@ -265,6 +265,18 @@ html.dark {
   .lesson-ask-btn { opacity: 1 !important; pointer-events: auto !important; }
 }
 
+/* Press feedback. Phones can't hover, so without this the product gives a
+   learner NO physical response to a tap. transform-only = cheap on low-end
+   Android. Put `class="press"` on any card/button. */
+.press {
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+.press:active { transform: scale(0.985); }
+@media (prefers-reduced-motion: reduce) {
+  .press, .press:active { transition: none; transform: none; }
+}
+
 /* Kill iOS Safari's focus-zoom: any input/textarea/select under 16px makes the
    page jump-zoom on tap. Force >=16px on phones (desktop keeps its sizes). */
 @media (max-width: 767px) {
