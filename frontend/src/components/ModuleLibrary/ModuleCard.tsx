@@ -1,20 +1,16 @@
 import { useNavigate } from 'react-router-dom';
-import { Play, Clock, MessageSquare, CheckCircle2, BookOpen, Lock, ShoppingCart } from 'lucide-react';
+import { Play, MessageSquare, CheckCircle2, BookOpen, Lock } from 'lucide-react';
 import type { Module } from '../../types';
 
 // ── Design tokens — theme-aware (follow light/dark via CSS vars) ────────────
-const GOLD   = 'var(--c-acc)';   // brand purple
-const TERRA  = 'var(--c-go)';    // lime green
-const GREEN  = '#3a9d5d';        // success green (readable on both themes)
-// Unified type system (matches the rest of the product)
+const ACC    = 'var(--c-acc)';   // brand purple
+const GOLD   = '#E8B04B';        // earned things only
+const GREEN  = '#3a9d5d';
+const INK    = 'var(--c-ink)';
+const INK2   = 'var(--c-ink2)';
+const BORDER = 'var(--c-rule)';
 const DISP   = "'Cormorant Garamond', Georgia, serif";
 const MONO   = "'DM Mono', ui-monospace, monospace";
-const DARK2  = 'var(--c-surf)';  // card surface
-const DARK3  = 'var(--c-bg2)';   // thumbnail placeholder
-const INK    = 'var(--c-ink)';   // primary text
-const INK2   = 'var(--c-ink2)';  // secondary text
-const INK3   = 'var(--c-ink3)';  // muted text
-const BORDER = 'var(--c-rule)';
 
 function formatDuration(seconds: number) {
   if (seconds < 60) return `${seconds}s`;
@@ -22,277 +18,207 @@ function formatDuration(seconds: number) {
   return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
-const STATUS_CONFIG = {
-  not_started: { dot: 'rgba(255,255,255,0.2)', label: 'Not Started',  labelColor: INK3 },
-  in_progress:  { dot: GOLD,                   label: 'In Progress',   labelColor: GOLD  },
-  completed:    { dot: GREEN,                   label: 'Completed',     labelColor: GREEN },
-};
-
 interface Props { module: Module; }
 
 function formatPrice(price: number, currency: string) {
   return `${Number(price).toLocaleString()} ${currency}`;
 }
 
+/**
+ * A Nest course poster — deliberately NOT a YouTube tile.
+ *
+ * The old card was a 16:9 thumbnail + a hover play button + "6 LESSONS · 3 Q&A"
+ * in muted mono: a spec sheet that said what was in the box. It also hid its
+ * only delight behind :hover, which phones never fire, and injected an
+ * unscoped global <style> per card.
+ *
+ * This is a tall, poster-shaped card (like a phone screen), the promise reads
+ * over the image, and the brand's differentiator — "it answers" — is the
+ * loudest thing in the meta row.
+ */
 export default function ModuleCard({ module }: Props) {
   const navigate  = useNavigate();
   const status    = module.status ?? 'not_started';
-  const cfg       = STATUS_CONFIG[status];
   const progress  = module.duration_seconds > 0
     ? Math.round(((module.progress_seconds ?? 0) / module.duration_seconds) * 100)
     : 0;
 
   const isPaid    = module.is_for_sale && !!module.price;
-  // `has_access` is the authoritative flag from the backend (ModuleAccess +
-  // global payment_verified). Fall back to the old heuristic only if the
-  // server didn't send the field (older API).
   const isLocked  = module.has_access === false
     ? true
     : module.has_access === undefined
       ? isPaid && status === 'not_started'
       : false;
 
+  const done     = status === 'completed';
+  const learning = status === 'in_progress';
+
   const handleClick = () => {
-    if (isLocked) {
-      navigate(`/pay/submit?module_id=${module.id}`);
-    } else {
-      navigate(`/modules/${module.id}`);
-    }
+    navigate(isLocked ? `/pay/submit?module_id=${module.id}` : `/modules/${module.id}`);
   };
 
-  // Strip HTML tags from description for clean preview
-  const plainDesc = module.description
+  // One clean sentence beats two lines of grey mush.
+  const plain = module.description
     ? module.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
     : '';
+  const promise = plain ? (plain.split(/(?<=[.!?])\s/)[0] ?? plain) : '';
 
   return (
     <article
       onClick={handleClick}
+      className="press nest-card"
       style={{
-        background: DARK2,
-        border: `1px solid ${BORDER}`,
-        borderRadius: 14,
+        position: 'relative',
+        borderRadius: 16,
         overflow: 'hidden',
         cursor: 'pointer',
-        boxShadow: '0 1px 2px rgba(31,31,36,0.04), 0 4px 14px rgba(31,31,36,0.05)',
-        transition: 'transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease',
+        // Tall poster, like a phone screen — not a 16:9 YouTube tile.
+        aspectRatio: '3 / 4',
         display: 'flex',
         flexDirection: 'column',
-      }}
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.transform = 'translateY(-3px)';
-        el.style.boxShadow = '0 16px 40px rgba(31,31,36,0.12), 0 0 0 1px rgba(142,45,158,0.14)';
-        el.style.borderColor = 'rgba(142,45,158,0.22)';
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.transform = 'translateY(0)';
-        el.style.boxShadow = '0 1px 2px rgba(31,31,36,0.04), 0 4px 14px rgba(31,31,36,0.05)';
-        el.style.borderColor = BORDER;
+        justifyContent: 'flex-end',
+        background: '#12101a',
+        // Finished courses look different in kind, not just ticked.
+        border: done ? `1px solid rgba(232,176,75,0.55)` : `1px solid ${BORDER}`,
+        boxShadow: done ? '0 10px 34px -14px rgba(232,176,75,0.4)' : '0 10px 30px -16px rgba(0,0,0,0.55)',
       }}
     >
-      {/* Thumbnail */}
-      <div style={{ position: 'relative', aspectRatio: '16/9', background: DARK3, overflow: 'hidden', flexShrink: 0 }}>
-        {module.thumbnail_url ? (
-          <img
-            src={module.thumbnail_url}
-            alt={module.title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
-            onMouseEnter={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1.05)')}
-            onMouseLeave={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1)')}
-          />
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, color-mix(in srgb, var(--c-acc) 8%, var(--c-bg2)) 0%, color-mix(in srgb, var(--c-go) 8%, var(--c-bg2)) 100%)' }}>
-            <BookOpen size={28} style={{ color: 'rgba(142,45,158,0.30)' }} />
-          </div>
-        )}
-
-        {/* Gradient overlay */}
+      {/* Poster image */}
+      {module.thumbnail_url ? (
+        <img
+          src={module.thumbnail_url}
+          alt=""
+          loading="lazy"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      ) : (
         <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
-        }} />
-
-        {/* Centered play button (hover) */}
-        <div
-          className="card-play-btn"
-          style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          <div style={{
-            width: 44, height: 44, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.92)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            opacity: 0, transform: 'scale(0.75)',
-            transition: 'opacity 0.2s ease, transform 0.2s ease',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-          }}
-            className="card-play-icon"
-          >
-            <Play size={18} fill="#0b0c0f" color="#0b0c0f" style={{ marginLeft: 2 }} />
-          </div>
-        </div>
-
-        {/* Status chip — top left */}
-        <div style={{
-          position: 'absolute', top: 12, left: 12,
-          display: 'flex', alignItems: 'center', gap: 5,
-          background: 'rgba(11,12,15,0.75)', backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 100, padding: '3px 10px 3px 8px',
+          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'linear-gradient(150deg, color-mix(in srgb, var(--c-acc) 22%, #12101a) 0%, #12101a 60%, color-mix(in srgb, var(--c-go) 12%, #12101a) 100%)',
         }}>
-          <span style={{ width: 5, height: 5, borderRadius: '50%', background: cfg.dot, display: 'inline-block', flexShrink: 0 }} />
-          <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: cfg.labelColor, fontWeight: 500 }}>
-            {cfg.label}
-          </span>
+          <BookOpen size={34} style={{ color: 'rgba(255,255,255,0.18)' }} />
         </div>
+      )}
 
-        {/* Duration — bottom right */}
-        <div style={{
-          position: 'absolute', bottom: 12, right: 12,
-          display: 'flex', alignItems: 'center', gap: 5,
-          background: 'rgba(11,12,15,0.75)', backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 6, padding: '3px 9px',
-          fontFamily: MONO, fontSize: 11, color: INK2,
-        }}>
-          <Clock size={10} style={{ color: INK3 }} />
-          {formatDuration(module.duration_seconds)}
-        </div>
+      {/* Scrim so the words always read */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(0deg, rgba(9,8,13,0.96) 6%, rgba(9,8,13,0.75) 34%, rgba(9,8,13,0.25) 62%, rgba(9,8,13,0.35) 100%)',
+      }} />
+      {done && (
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(232,176,75,0.14), transparent 55%)' }} />
+      )}
 
-        {/* Completed checkmark */}
-        {status === 'completed' && (
-          <div style={{
-            position: 'absolute', bottom: 12, left: 12,
-            width: 26, height: 26, borderRadius: '50%',
-            background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <CheckCircle2 size={14} style={{ color: GREEN }} />
-          </div>
-        )}
+      {/* Top row — status / price */}
+      <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+        {/* Only ever a chip for something the learner has DONE or is DOING.
+            An unstarted course is an invitation, not a grey "NOT STARTED" shame badge. */}
+        {done ? (
+          <Chip color={GOLD} bg="rgba(232,176,75,0.18)" icon={<CheckCircle2 size={11} />}>Finished</Chip>
+        ) : learning ? (
+          <Chip color="#D9A0E8" bg="rgba(199,125,218,0.2)" dot>Learning now</Chip>
+        ) : <span />}
 
-        {/* Price badge — top right */}
         {isPaid && (
-          <div style={{
-            position: 'absolute', top: 12, right: 12,
-            display: 'flex', alignItems: 'center', gap: 5,
-            background: isLocked ? 'rgba(142,45,158,0.88)' : 'rgba(58,157,93,0.9)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: 100, padding: '3px 10px 3px 8px',
-          }}>
-            {isLocked
-              ? <Lock size={9} style={{ color: '#fff' }} />
-              : <CheckCircle2 size={9} style={{ color: '#fff' }} />}
-            <span style={{
-              fontFamily: MONO, fontSize: 10, letterSpacing: '0.08em',
-              color: '#fff', fontWeight: 600,
-            }}>
-              {isLocked ? formatPrice(module.price!, module.currency ?? 'RWF') : 'Purchased'}
-            </span>
-          </div>
+          isLocked
+            ? <Chip color="#fff" bg="rgba(123,45,142,0.9)" icon={<Lock size={10} />}>{formatPrice(module.price!, module.currency ?? 'RWF')}</Chip>
+            : <Chip color="#fff" bg="rgba(58,157,93,0.9)" icon={<CheckCircle2 size={10} />}>Yours</Chip>
         )}
       </div>
 
-      {/* Content */}
-      <div style={{ padding: '18px 20px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-
-        {/* Title */}
+      {/* Content — sits on the poster. Extra bottom room on finished cards so
+          the certificate button (rendered by the grid) never covers the text. */}
+      <div style={{ position: 'relative', padding: done ? '16px 16px 54px' : '16px 16px 14px' }}>
         <h3 style={{
-          fontFamily: DISP,
-          fontSize: 16, fontWeight: 600, lineHeight: 1.35,
-          letterSpacing: '-0.01em', color: INK,
-          marginBottom: 8,
+          fontFamily: DISP, fontSize: 21, fontWeight: 600, lineHeight: 1.18,
+          letterSpacing: '-0.01em', color: '#F2F0F5', marginBottom: promise ? 6 : 10,
           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
         }}>
           {module.title}
         </h3>
 
-        {/* Description */}
-        {plainDesc && (
+        {/* The promise — one sentence, well set. Was 2 lines of 12.5px grey. */}
+        {promise && (
           <p style={{
-            fontSize: 12.5, color: INK3, lineHeight: 1.6,
-            marginBottom: 14, flex: 1,
+            fontFamily: DISP, fontStyle: 'italic', fontSize: 14.5,
+            color: 'rgba(242,240,245,0.72)', lineHeight: 1.45, marginBottom: 12,
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
           }}>
-            {plainDesc}
+            {promise}
           </p>
         )}
 
-        {/* Meta row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 'auto', paddingTop: plainDesc ? 0 : 6 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.04em' }}>
-            <Play size={9} style={{ color: INK3 }} />
-            {module.video_count} LESSON{module.video_count !== 1 ? 'S' : ''}
+        {/* Meta — the differentiator is the LOUDEST thing here */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: MONO, fontSize: 10.5, color: 'rgba(242,240,245,0.5)', letterSpacing: '0.04em' }}>
+            {module.video_count} lesson{module.video_count !== 1 ? 's' : ''} · {formatDuration(module.duration_seconds)}
           </span>
           {module.question_count > 0 && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.04em' }}>
-              <MessageSquare size={9} style={{ color: INK3 }} />
-              {module.question_count} Q&amp;A
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              fontFamily: MONO, fontSize: 10, fontWeight: 500,
+              color: '#D9A0E8', background: 'rgba(199,125,218,0.16)',
+              border: '1px solid rgba(199,125,218,0.3)',
+              borderRadius: 100, padding: '3px 9px', marginLeft: 'auto',
+            }}>
+              <MessageSquare size={9} />
+              {module.question_count} answer{module.question_count !== 1 ? 's' : ''} waiting
             </span>
           )}
         </div>
 
-        {/* Buy CTA — locked paid modules */}
+        {/* Locked — lead with generosity, not the till */}
         {isLocked && (
           <div
-            style={{
-              marginTop: 14,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: 'rgba(142,45,158,0.07)', border: '1px solid rgba(142,45,158,0.2)',
-              borderRadius: 8, padding: '10px 14px',
-            }}
             onClick={e => { e.stopPropagation(); navigate(`/pay/submit?module_id=${module.id}`); }}
+            className="press"
+            style={{
+              marginTop: 14, minHeight: 42, borderRadius: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+              background: GOLD, color: '#0B0A0F',
+              fontSize: 12.5, fontWeight: 700,
+            }}
           >
-            <div>
-              <p style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: GOLD, marginBottom: 2 }}>
-                Purchase to unlock
-              </p>
-              <p style={{ fontFamily: DISP, fontSize: 15, fontWeight: 600, color: INK, letterSpacing: '-0.01em' }}>
-                {formatPrice(module.price!, module.currency ?? 'RWF')}
-              </p>
-            </div>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <ShoppingCart size={14} style={{ color: '#fff' }} />
-            </div>
+            <Play size={12} fill="currentColor" /> Watch the first lesson free
           </div>
         )}
 
-        {/* Progress bar */}
-        {(status === 'in_progress' || status === 'completed') && (
-          <div style={{ marginTop: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: INK3 }}>Progress</span>
-              <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 600, color: status === 'completed' ? GREEN : GOLD }}>
-                {progress}%
-              </span>
-            </div>
-            <div style={{ height: 3, background: 'var(--c-rule)', borderRadius: 100, overflow: 'hidden' }}>
+        {/* Progress — the learner's own effort */}
+        {(learning || done) && !isLocked && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ height: 3, background: 'rgba(255,255,255,0.16)', borderRadius: 100, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 100,
-                background: status === 'completed' ? GREEN : GOLD,
-                width: `${progress}%`,
-                transition: 'width 0.8s ease',
+                background: done ? GOLD : ACC,
+                transform: `scaleX(${Math.min(progress, 100) / 100})`, transformOrigin: 'left',
               }} />
             </div>
+            <span style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(242,240,245,0.45)', marginTop: 6, display: 'inline-block' }}>
+              {done ? 'Finished' : `${progress}% — keep going`}
+            </span>
           </div>
         )}
       </div>
-
-      {/* Hover play overlay via style injection */}
-      <style>{`
-        article:hover .card-play-icon {
-          opacity: 1 !important;
-          transform: scale(1) !important;
-        }
-      `}</style>
     </article>
+  );
+}
+
+function Chip({ children, color, bg, icon, dot }: {
+  children: React.ReactNode; color: string; bg: string; icon?: React.ReactNode; dot?: boolean;
+}) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      background: bg, backdropFilter: 'blur(8px)',
+      border: `1px solid ${color}44`,
+      borderRadius: 100, padding: '4px 10px',
+      fontFamily: MONO, fontSize: 9.5, fontWeight: 500,
+      letterSpacing: '0.08em', textTransform: 'uppercase', color,
+      whiteSpace: 'nowrap',
+    }}>
+      {dot && <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, flexShrink: 0 }} />}
+      {icon}
+      {children}
+    </span>
   );
 }

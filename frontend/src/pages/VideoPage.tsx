@@ -16,6 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import WhiteboardModal from '../components/AI/WhiteboardModal';
 import AskAIModal from '../components/AI/AskAIModal';
 import ImmersiveMobilePlayer from '../components/VideoPlayer/ImmersiveMobilePlayer';
+import LessonCompleteOverlay from '../components/VideoPlayer/LessonCompleteOverlay';
 import { Maximize2 } from 'lucide-react';
 
 // Unified type system (matches the rest of the product)
@@ -50,6 +51,7 @@ export default function VideoPage() {
   const { seekTo, currentTime, duration: playerDuration, setPlaying } = usePlayerStore();
   const getPlayerDuration = () => usePlayerStore.getState().duration;
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showComplete, setShowComplete] = useState(false);
   // The immersive full-screen view is the DEFAULT lesson experience on mobile —
   // it's the best thing we have and phones are the main market. A learner who
   // exits it is remembered (localStorage), so we never fight their preference.
@@ -195,8 +197,11 @@ export default function VideoPage() {
       });
       invalidateProgress();
     }
-    if (quizQuestions.length > 0) setShowQuiz(true);
-  }, [videoId, video?.duration_seconds, quizQuestions.length, invalidateProgress]);
+    // Give the learner a beat of "well done" and let THEM choose what's next.
+    // (This used to throw the quiz straight in their face — finishing a lesson
+    // was rewarded with a test.)
+    setShowComplete(true);
+  }, [videoId, video?.duration_seconds, invalidateProgress]);
 
   const handleNoteSave = useCallback(() => {
     const trimmed = noteDraft.trim();
@@ -713,6 +718,19 @@ export default function VideoPage() {
           onAsk={() => { setImmersive(false); setSidebarOpen(true); openQuestionForm(currentTime); }}
           onQuiz={quizQuestions.length > 0 ? () => { setImmersive(false); setShowQuiz(true); } : undefined}
           hasQuiz={quizQuestions.length > 0}
+        />
+      )}
+
+      {/* The beat after finishing a lesson — celebrate, then let them choose */}
+      {showComplete && (
+        <LessonCompleteOverlay
+          index={currentIndex + 1}
+          total={moduleVideos.length || 1}
+          nextTitle={nextVideo?.title}
+          onNext={nextVideo ? () => { setShowComplete(false); navigate(`/video/${nextVideo.id}`); } : undefined}
+          onQuiz={quizQuestions.length > 0 ? () => { setShowComplete(false); setShowQuiz(true); } : undefined}
+          quizCount={quizQuestions.length}
+          onDismiss={() => setShowComplete(false)}
         />
       )}
 

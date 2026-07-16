@@ -147,10 +147,10 @@ export default function ModulesPage() {
       {/* ══ MODULE GRID ═══════════════════════════════════════════════════ */}
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: 'clamp(16px,3vw,24px) clamp(12px,4vw,32px) 24px' }}>
         {isLoading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 16 }}>
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} style={{ background: DARK2, borderRadius: 14, overflow: 'hidden', border: `1px solid ${BORDER}` }}>
-                <div style={{ aspectRatio: '16/9', background: DARK3, animation: 'pulse 2s infinite' }} />
+                <div style={{ aspectRatio: '3/4', background: DARK3, animation: 'pulse 2s infinite' }} />
                 <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-3 w-full" />
@@ -193,28 +193,30 @@ export default function ModulesPage() {
             )}
           </div>
         ) : (
-          <div className="modules-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+          <div className="modules-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 16 }}>
             {filtered.map(m => (
               <div key={m.id} style={{ position: 'relative' }}>
                 <ModuleCard module={m} />
+                {/* Certificate — a trophy, so it's GOLD (purple is for actions).
+                    Sits at the bottom so it can't collide with the card's own
+                    status/price chips at the top. */}
                 {certByModule[m.id] && (
                   <Link
                     to={`/certificate/${certByModule[m.id].id}`}
+                    className="press"
                     style={{
-                      position: 'absolute', top: 14, right: 14,
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      background: GOLD, color: '#ffffff',
+                      position: 'absolute', left: 12, right: 12, bottom: 12,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      background: '#E8B04B', color: '#0B0A0F',
                       fontSize: 10.5, fontWeight: 700, fontFamily: MONO,
                       letterSpacing: '0.06em', textTransform: 'uppercase',
-                      padding: '4px 10px', borderRadius: 100,
-                      textDecoration: 'none', boxShadow: '0 2px 12px rgba(142,45,158,0.4)',
-                      transition: 'opacity 0.2s',
+                      minHeight: 34, borderRadius: 100,
+                      textDecoration: 'none', boxShadow: '0 6px 18px rgba(232,176,75,0.4)',
+                      zIndex: 3,
                     }}
                     title="View your certificate"
-                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.88')}
-                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
                   >
-                    <Award size={11} /> Certificate
+                    <Award size={11} /> View certificate
                   </Link>
                 )}
               </div>
@@ -229,12 +231,12 @@ export default function ModulesPage() {
         /* ── Mobile overrides ── */
         @media (max-width: 640px) {
           .hero-desktop-only { display: none !important; }
-          .modules-grid { grid-template-columns: 1fr !important; }
+          .modules-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
           .toolbar-inner { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; padding: 10px 16px !important; }
           .toolbar-search { flex: 1 1 auto !important; max-width: 100% !important; }
         }
         @media (max-width: 480px) {
-          .modules-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .modules-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
         }
       `}</style>
     </div>
