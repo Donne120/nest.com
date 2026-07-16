@@ -8,16 +8,17 @@ import { Skeleton } from '../components/UI/Skeleton';
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '../store';
 
-// ── Design tokens — purple + lime, clean white ──────────────────────────────
-const GOLD    = '#8e2d9e';   // purple — primary accent (was gold)
-const TERRA   = '#7cb342';   // lime green — secondary (was terracotta)
-const DARK    = '#ffffff';   // page background (was near-black)
-const DARK2   = '#faf9fb';   // raised surface
-const DARK3   = '#f5eef7';   // pills / hover (faint purple)
-const INK     = '#1f1f24';   // primary text (was light)
-const INK2    = '#5c5764';   // secondary text
-const INK3    = '#9b96a3';   // muted text
-const BORDER  = 'rgba(31,31,36,0.10)';
+// ── Design tokens — theme-aware (follow light/dark via CSS vars) ────────────
+// These map to --c-* in index.css, so the page follows the learner's theme.
+const GOLD    = 'var(--c-acc)';    // brand purple
+const TERRA   = 'var(--c-go)';     // lime green
+const DARK    = 'var(--c-bg)';     // page background
+const DARK2   = 'var(--c-bg2)';    // raised surface
+const DARK3   = 'var(--c-bg2)';    // pills / hover
+const INK     = 'var(--c-ink)';    // primary text
+const INK2    = 'var(--c-ink2)';   // secondary text
+const INK3    = 'var(--c-ink3)';   // muted text
+const BORDER  = 'var(--c-rule)';
 // Unified type system (matches the rest of the product)
 const DISP    = "'Cormorant Garamond', Georgia, serif";
 const UIFONT  = "'Inter Tight', 'Inter', system-ui, sans-serif";
@@ -87,7 +88,8 @@ export default function ModulesPage() {
           {/* Scrim: fade to white on the left + bottom so text stays crisp */}
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(90deg, #ffffff 8%, rgba(255,255,255,0.85) 34%, rgba(255,255,255,0.55) 60%, rgba(255,255,255,0.35) 100%), linear-gradient(0deg, #ffffff 0%, rgba(255,255,255,0) 45%)',
+            // Fades the photo into the page bg (works in light AND dark).
+            background: 'linear-gradient(90deg, var(--c-bg) 8%, color-mix(in srgb, var(--c-bg) 85%, transparent) 34%, color-mix(in srgb, var(--c-bg) 55%, transparent) 60%, color-mix(in srgb, var(--c-bg) 35%, transparent) 100%), linear-gradient(0deg, var(--c-bg) 0%, transparent 45%)',
           }} />
         </div>
 
@@ -127,7 +129,7 @@ export default function ModulesPage() {
           {modules.length > 0 && (
             <div className="hub-progress-card" style={{
               display: 'flex', alignItems: 'center', gap: 24,
-              background: '#ffffff', border: `1px solid ${BORDER}`,
+              background: 'var(--c-surf)', border: `1px solid ${BORDER}`,
               borderRadius: 16, padding: '20px 26px',
               marginBottom: 0, maxWidth: 'fit-content',
               boxShadow: '0 1px 2px rgba(31,31,36,0.04), 0 8px 24px -12px rgba(31,31,36,0.12)',
@@ -174,7 +176,7 @@ export default function ModulesPage() {
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
       {/* top:56px clears the sticky 56px Navbar (z-40) so it doesn't hide behind it */}
-      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 56, zIndex: 20 }}>
+      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'color-mix(in srgb, var(--c-bg) 92%, transparent)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 56, zIndex: 20 }}>
         <div className="toolbar-inner" style={{ maxWidth: 1400, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
 
           {/* Filter tabs */}

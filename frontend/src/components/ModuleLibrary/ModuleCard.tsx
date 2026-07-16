@@ -2,19 +2,19 @@ import { useNavigate } from 'react-router-dom';
 import { Play, Clock, MessageSquare, CheckCircle2, BookOpen, Lock, ShoppingCart } from 'lucide-react';
 import type { Module } from '../../types';
 
-// ── Design tokens — light, purple + lime ────────────────────────────────────
-const GOLD   = '#8e2d9e';   // purple — primary accent (was gold)
-const TERRA  = '#7cb342';   // lime green — secondary (was terracotta)
-const GREEN  = '#3a9d5d';   // success green
+// ── Design tokens — theme-aware (follow light/dark via CSS vars) ────────────
+const GOLD   = 'var(--c-acc)';   // brand purple
+const TERRA  = 'var(--c-go)';    // lime green
+const GREEN  = '#3a9d5d';        // success green (readable on both themes)
 // Unified type system (matches the rest of the product)
 const DISP   = "'Cormorant Garamond', Georgia, serif";
 const MONO   = "'DM Mono', ui-monospace, monospace";
-const DARK2  = '#ffffff';   // card surface
-const DARK3  = '#f1eef4';   // thumbnail placeholder
-const INK    = '#1f1f24';   // primary text
-const INK2   = '#5c5764';   // secondary text
-const INK3   = '#9b96a3';   // muted text
-const BORDER = 'rgba(31,31,36,0.10)';
+const DARK2  = 'var(--c-surf)';  // card surface
+const DARK3  = 'var(--c-bg2)';   // thumbnail placeholder
+const INK    = 'var(--c-ink)';   // primary text
+const INK2   = 'var(--c-ink2)';  // secondary text
+const INK3   = 'var(--c-ink3)';  // muted text
+const BORDER = 'var(--c-rule)';
 
 function formatDuration(seconds: number) {
   if (seconds < 60) return `${seconds}s`;
@@ -103,7 +103,7 @@ export default function ModuleCard({ module }: Props) {
             onMouseLeave={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1)')}
           />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f3edf6 0%, #eef4e6 100%)' }}>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, color-mix(in srgb, var(--c-acc) 8%, var(--c-bg2)) 0%, color-mix(in srgb, var(--c-go) 8%, var(--c-bg2)) 100%)' }}>
             <BookOpen size={28} style={{ color: 'rgba(142,45,158,0.30)' }} />
           </div>
         )}
@@ -274,7 +274,7 @@ export default function ModuleCard({ module }: Props) {
                 {progress}%
               </span>
             </div>
-            <div style={{ height: 3, background: 'rgba(31,31,36,0.08)', borderRadius: 100, overflow: 'hidden' }}>
+            <div style={{ height: 3, background: 'var(--c-rule)', borderRadius: 100, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 100,
                 background: status === 'completed' ? GREEN : GOLD,

@@ -191,8 +191,8 @@ export default function Navbar() {
             </IconButton>
           </span>
 
-          {/* ── Theme toggle — desktop only ── */}
-          <div className="relative hidden md:block" ref={themeMenuRef}>
+          {/* ── Theme toggle — available on mobile too (learners study at night) ── */}
+          <div className="relative" ref={themeMenuRef}>
             <IconButton
               onClick={() => setThemeOpen(o => !o)}
               aria-label="Switch theme"
