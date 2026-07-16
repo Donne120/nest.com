@@ -5,13 +5,14 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Play, ArrowLeft, ExternalLink,
   FileText, Film, Globe, File,
-  CheckCircle2, Calendar, BookOpen, Pin,
+  CheckCircle2, Calendar, BookOpen, Pin, Award,
 } from 'lucide-react';
 import api from '../api/client';
 import type { Module, Video, Lesson, ModuleResource, QuizQuestion, QuizSubmissionResult } from '../types';
 import { BG, SURF, RULE, INK, INK2, INK3, ACC, ACC2 } from '../lib/colors';
 
 // Unified type system (matches the rest of the product)
+const PLUM   = '#1a1320';   // the cinematic hero near-black (theme-independent)
 const DISP   = "'Cormorant Garamond', Georgia, serif";
 const UIFONT = "'Inter Tight', 'Inter', system-ui, sans-serif";
 const MONO   = "'DM Mono', ui-monospace, monospace";
@@ -54,8 +55,8 @@ const RESOURCE_ICON: Record<ModuleResource['type'], typeof Globe> = {
 
 function LoadingSkeleton() {
   return (
-    <div style={{ background: '#ffffff', minHeight: '100vh' }}>
-      <div style={{ background: '#1a1320', height: 280 }} className="animate-pulse" />
+    <div style={{ background: BG, minHeight: '100vh' }}>
+      <div style={{ background: PLUM, height: 280 }} className="animate-pulse" />
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 40px' }} className="grid gap-7 animate-pulse" >
         <Skeleton className="h-48 rounded-md" />
         <Skeleton className="h-64 rounded-md" />
@@ -132,14 +133,14 @@ export default function ModuleDetailPage() {
   }, [module?.description]);
 
   if (modLoading || vidLoading) return <LoadingSkeleton />;
-  if (!module) return <div style={{ padding: 32, color: '#6b6460' }}>Module not found.</div>;
+  if (!module) return <div style={{ padding: 32, color: INK2 }}>Module not found.</div>;
 
   const pct = module.duration_seconds > 0
     ? Math.min(100, Math.round(((module.progress_seconds ?? 0) / module.duration_seconds) * 100))
     : 0;
 
   const status = module.status ?? 'not_started';
-  const ctaLabel = pct === 0 ? 'Start Course' : pct === 100 ? 'Review Course' : 'Continue Learning';
+  const ctaLabel = pct === 0 ? 'Start the first lesson' : pct === 100 ? 'Watch it again' : 'Keep going';
   const firstVideo = videos[0]?.id;
   const firstLesson = lessons[0]?.id;
   const firstItem = firstVideo
@@ -169,7 +170,7 @@ export default function ModuleDetailPage() {
     <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
 
       {/* ══ HERO (dark) ══════════════════════════════════════════════════ */}
-      <section style={{ background: '#1a1320', position: 'relative', padding: 'clamp(28px,5vw,56px) 0 clamp(40px,6vw,72px)', overflow: 'hidden' }}>
+      <section style={{ background: PLUM, position: 'relative', padding: 'clamp(28px,5vw,56px) 0 clamp(40px,6vw,72px)', overflow: 'hidden' }}>
         {/* Ambient glow */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -286,7 +287,7 @@ export default function ModuleDetailPage() {
 
           {/* About */}
           {module.description && (
-            <SectionCard title="About This Course" style={{ marginBottom: 18 }}>
+            <SectionCard title="About this course" style={{ marginBottom: 18 }}>
               <div
                 style={{ fontSize: 15.5, lineHeight: 1.8, color: INK2 }}
                 className="about-prose"
@@ -297,7 +298,7 @@ export default function ModuleDetailPage() {
 
           {/* What You'll Learn */}
           {learnItems.length > 0 && (
-            <SectionCard title="What You'll Learn" style={{ marginBottom: 18 }}>
+            <SectionCard title="What you'll be able to do" style={{ marginBottom: 18 }}>
               <div className="learn-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {learnItems.map((item, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -311,13 +312,13 @@ export default function ModuleDetailPage() {
 
           {/* Curriculum */}
           <SectionCard
-            title="Course Curriculum"
+            title="The lessons"
             meta={`${curriculum.length} ITEM${curriculum.length !== 1 ? 'S' : ''} · ${fmt(module.duration_seconds)} TOTAL`}
             noPadding
             style={{ marginBottom: 18 }}
           >
             {curriculum.length === 0 ? (
-              <div style={{ padding: '24px', color: INK3, fontSize: 13, fontStyle: 'italic' }}>No content yet.</div>
+              <div style={{ padding: '24px', color: INK3, fontSize: 13, fontStyle: 'italic' }}>Lessons are on the way.</div>
             ) : (
               curriculum.map((entry, idx) => (
                 entry.kind === 'video' ? (
@@ -343,30 +344,53 @@ export default function ModuleDetailPage() {
             )}
           </SectionCard>
 
-          {/* Quiz Overview */}
-          {totalQuizzes > 0 && (
-          <SectionCard title="Quiz Overview" meta={`${totalQuizzes} QUESTIONS`} style={{ marginBottom: 0 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1, background: RULE, border: `1px solid ${RULE}`, borderRadius: 4, overflow: 'hidden' }}>
-              {[
-                { label: 'Questions', val: String(totalQuizzes) },
-                { label: 'Your Best', val: bestScore !== null ? `${Math.round(bestScore)}%` : '—' },
-                { label: 'Pass Mark', val: `${PASS_MARK}%` },
-              ].map(({ label, val }) => (
-                <div key={label} style={{ background: BG, padding: '14px 16px', textAlign: 'center' }}>
-                  <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: INK3, marginBottom: 6 }}>{label}</div>
-                  <div style={{ fontFamily: MONO, fontSize: 26, fontWeight: 600, color: val === '—' ? INK3 : INK }}>{val}</div>
-                </div>
-              ))}
+          {/* Your certificate — replaces the old "Quiz Overview" panel, which
+              showed "Pass Mark: 70%" and an empty "Your Best: —" to someone who
+              hadn't started yet. Opening with the bar they might fail is the most
+              demotivating thing on the page. A credential is often the whole
+              reason an African learner is here — so lead with the prize instead.
+              (Quiz stats now surface only once there's a real score, below.) */}
+          <SectionCard title="Your certificate" meta={status === 'completed' ? 'EARNED' : 'WHEN YOU FINISH'} style={{ marginBottom: 0 }}>
+            <div style={{
+              position: 'relative', overflow: 'hidden', borderRadius: 10,
+              border: `1px solid ${status === 'completed' ? 'rgba(232,176,75,0.5)' : RULE}`,
+              padding: '22px 24px', display: 'flex', alignItems: 'center', gap: 18,
+              background: 'color-mix(in srgb, #E8B04B 6%, transparent)',
+            }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
+                border: '1.5px solid #C98A2E', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#C98A2E',
+              }}>
+                <Award size={24} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontFamily: DISP, fontSize: 19, fontWeight: 600, color: INK, marginBottom: 4, letterSpacing: '-0.01em' }}>
+                  {status === 'completed'
+                    ? 'It’s yours — with your name on it.'
+                    : 'Your certificate, with your name on it.'}
+                </p>
+                <p style={{ fontSize: 13.5, color: INK2, lineHeight: 1.55 }}>
+                  {status === 'completed'
+                    ? 'Shareable, verifiable, and permanent.'
+                    : `Finish ${curriculum.length === 1 ? 'the lesson' : `all ${curriculum.length} lessons`} and it’s yours — shareable, verifiable, and permanent.`}
+                </p>
+                {/* Quiz stats appear only once the learner HAS a score */}
+                {bestScore !== null && (
+                  <p style={{ fontFamily: MONO, fontSize: 11.5, color: bestScore >= PASS_MARK ? 'var(--c-ok)' : INK3, marginTop: 8 }}>
+                    Your best: {Math.round(bestScore)}%{bestScore >= PASS_MARK ? ' ✓ passed' : ''}
+                  </p>
+                )}
+              </div>
             </div>
           </SectionCard>
-          )}
         </div>
 
         {/* ── RIGHT ── */}
         <div className="module-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* Progress card — dark */}
-          <div style={{ background: INK, borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ background: PLUM, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
 
             {/* Donut top */}
             <div style={{ padding: '28px 24px 22px', display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -459,9 +483,9 @@ export default function ModuleDetailPage() {
       <style>{`
         .about-prose p { margin-bottom: 12px; }
         .about-prose p:last-child { margin-bottom: 0; }
-        .about-prose strong { color: #1f1f24; font-weight: 600; }
+        .about-prose strong { color: var(--c-ink); font-weight: 600; }
         .about-prose ul { padding-left: 20px; margin-bottom: 12px; }
-        .about-prose li { margin-bottom: 4px; font-size: 14px; color: #5c5764; }
+        .about-prose li { margin-bottom: 4px; font-size: 14px; color: var(--c-ink2); }
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
         /* Desktop: 2-column */
@@ -498,10 +522,10 @@ function SectionCard({
   title: string; meta?: string; children: ReactNode; noPadding?: boolean; style?: React.CSSProperties;
 }) {
   return (
-    <div style={{ background: '#ffffff', border: '1px solid #e6e3ea', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 2px rgba(31,31,36,0.04), 0 4px 14px rgba(31,31,36,0.05)', animation: 'fadeUp 0.5s ease both', ...style }}>
-      <div style={{ padding: '20px 28px', borderBottom: '1px solid #e6e3ea', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.01em', color: '#1f1f24' }}>{title}</span>
-        {meta && <span style={{ fontFamily: MONO, fontSize: 11, color: '#9b96a3', letterSpacing: '0.08em' }}>{meta}</span>}
+    <div style={{ background: SURF, border: `1px solid ${RULE}`, borderRadius: 12, overflow: 'hidden', animation: 'fadeUp 0.5s ease both', ...style }}>
+      <div style={{ padding: '20px 28px', borderBottom: `1px solid ${RULE}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.01em', color: INK }}>{title}</span>
+        {meta && <span style={{ fontFamily: MONO, fontSize: 11, color: INK3, letterSpacing: '0.08em' }}>{meta}</span>}
       </div>
       <div style={noPadding ? {} : { padding: '24px 28px' }}>{children}</div>
     </div>
