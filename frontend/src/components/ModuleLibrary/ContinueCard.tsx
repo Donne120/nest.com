@@ -39,7 +39,8 @@ export default function ContinueCard({ modules, firstName, greeting, bgImage }: 
   const allDone = modules.length > 0 && modules.every(m => m.status === 'completed');
 
   // Decide the single state this card is in.
-  let eyebrow: string, title: React.ReactNode, body: React.ReactNode, cta: { to: string; label: string } | null = null;
+  let eyebrow: string, title: React.ReactNode, body: React.ReactNode;
+  let cta: { to: string; label: string; short?: string } | null = null;
   let pct = 0;
   let remainLabel: string | null = null;
 
@@ -62,7 +63,7 @@ export default function ContinueCard({ modules, firstName, greeting, bgImage }: 
     eyebrow = 'Your first lesson';
     title = <>Welcome{firstName && <>, {firstName}</>}.</>;
     body = <>{modules.length === 1 ? 'One course is' : `${modules.length} courses are`} waiting. Most people start with the first one and never look back.</>;
-    cta = { to: `/modules/${first.id}`, label: `Start “${first.title}”` };
+    cta = { to: `/modules/${first.id}`, label: `Start “${first.title}”`, short: 'Start the first course' };
   } else {
     eyebrow = 'Learning Hub';
     title = <>{greeting}{firstName && <>, {firstName}</>}.</>;
@@ -85,13 +86,13 @@ export default function ContinueCard({ modules, firstName, greeting, bgImage }: 
         position: 'absolute', inset: 0, width: '100%', height: '100%',
         objectFit: 'cover', objectPosition: 'right center',
       }} />
-      {/* One clean left-to-right scrim so the words always read */}
-      <div aria-hidden style={{
-        position: 'absolute', inset: 0,
-        background: `linear-gradient(90deg, ${PLUM} 0%, rgba(26,19,32,0.92) 42%, rgba(26,19,32,0.45) 75%, rgba(26,19,32,0.25) 100%)`,
-      }} />
+      {/* Scrim so the words always read. On a phone the card is narrow enough
+          that the subject sits behind the text, so we also darken bottom-up. */}
+      <div aria-hidden className="cc-scrim" style={{ position: 'absolute', inset: 0 }} />
 
-      <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(20px,5vw,32px)', maxWidth: 620 }}>
+      {/* width:100% + minWidth:0 so long course titles wrap/ellipsis instead of
+          blowing the card out past the viewport on a narrow phone. */}
+      <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(20px,5vw,32px)', maxWidth: 620, width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
         <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLD }}>
           {eyebrow}
         </span>
@@ -125,28 +126,53 @@ export default function ContinueCard({ modules, firstName, greeting, bgImage }: 
         {cta && (
           <Link
             to={cta.to}
-            className="press"
+            className={`press cc-cta${cta.short ? ' cc-has-short' : ''}`}
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 9,
-              marginTop: 20, minHeight: 48, padding: '0 22px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+              marginTop: 20, minHeight: 48, padding: '0 20px',
               background: GOLD, color: '#0B0A0F',
               fontFamily: UI, fontSize: 14, fontWeight: 700,
               borderRadius: 10, textDecoration: 'none',
               boxShadow: '0 8px 26px rgba(232,176,75,0.35)',
-              maxWidth: '100%',
+              // Never let a long course title push the button off-screen.
+              maxWidth: '100%', minWidth: 0, boxSizing: 'border-box',
             }}
           >
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cta.label}</span>
-            {allDone ? <Award size={16} /> : <ArrowRight size={16} />}
+            {/* Long label on wide screens; a short one on phones, where a full
+                course title would otherwise be truncated to nonsense. */}
+            <span className="cc-cta-long" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cta.label}</span>
+            {cta.short && <span className="cc-cta-short" style={{ display: 'none', whiteSpace: 'nowrap' }}>{cta.short}</span>}
+            {allDone ? <Award size={16} style={{ flexShrink: 0 }} /> : <ArrowRight size={16} style={{ flexShrink: 0 }} />}
           </Link>
         )}
       </div>
 
       <style>{`
+        /* Wide: fade left-to-right, letting the learner stay visible on the right. */
+        .cc-scrim {
+          background: linear-gradient(90deg, ${PLUM} 0%, rgba(26,19,32,0.92) 42%, rgba(26,19,32,0.45) 75%, rgba(26,19,32,0.25) 100%);
+        }
+        /* Narrow: the text sits over the subject, so darken bottom-up too. */
+        @media (max-width: 560px) {
+          .cc-scrim {
+            background:
+              linear-gradient(0deg, ${PLUM} 8%, rgba(26,19,32,0.9) 45%, rgba(26,19,32,0.35) 100%),
+              linear-gradient(90deg, rgba(26,19,32,0.85) 0%, rgba(26,19,32,0.5) 60%, rgba(26,19,32,0.3) 100%);
+          }
+        }
+
         /* Draw the learner's own progress once, on mount. transform-only. */
         @keyframes cc-fill { from { transform: scaleX(0); } }
         .cc-bar { animation: cc-fill 700ms cubic-bezier(0.16,1,0.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cc-bar { animation: none; } }
+
+        /* Phones: a full course title in the button truncates to nonsense, so
+           swap to the short label. (Plain classes — no :has(), which older
+           Android browsers may not support.) */
+        @media (max-width: 560px) {
+          .cc-has-short .cc-cta-long  { display: none !important; }
+          .cc-has-short .cc-cta-short { display: inline !important; }
+        }
       `}</style>
     </section>
   );
