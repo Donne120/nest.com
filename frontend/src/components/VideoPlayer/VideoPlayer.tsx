@@ -85,8 +85,7 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   const [controlsVisible, setControlsVisible] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Mobile: show controls in a solid strip below the video (not overlaid),
-  // and let the video keep its natural aspect ratio instead of a fixed 4:3 box.
+  // Mobile: show controls in a solid strip below the video (not overlaid).
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 1024);
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 1024);
@@ -228,6 +227,13 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
     hideTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
   }, []);
 
+  // Stable identity: an inline arrow here would change every render, restarting
+  // the intro overlay's animation loop on each parent re-render (e.g. rotate).
+  const handleIntroComplete = useCallback(() => {
+    setPlaying(false);
+    setIntroDone(true);
+  }, [setPlaying]);
+
   // Show controls when: fullscreen, briefly after tap/hover, or video is paused
   const shouldShowControls = fullscreen || controlsVisible || !isPlaying;
 
@@ -263,7 +269,7 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
             <NestIntroOverlay
               orgName={organization?.name}
               orgLogoUrl={organization?.logo_url}
-              onComplete={() => { setPlaying(false); setIntroDone(true); }}
+              onComplete={handleIntroComplete}
             />
           </div>
         )}
@@ -341,102 +347,78 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   }
 
   // ── Native HTML5 player ───────────────────────────────────────────────────
-  const videoEl = introDone && (
-    <video
-      ref={videoRef}
-      src={videoUrl}
-      className="w-full h-full object-contain"
-      onTimeUpdate={(e) => {
-        const t = e.currentTarget.currentTime;
-        setCurrentTime(t);
-        onTimeUpdate?.(t);
-      }}
-      onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-      onPlay={() => setPlaying(true)}
-      onPause={() => setPlaying(false)}
-      onEnded={() => { setPlaying(false); onVideoEnd?.(); }}
-      onClick={() => { setPlaying(!isPlaying); showControlsBriefly(); }}
-      onTouchEnd={(e) => { e.preventDefault(); setPlaying(!isPlaying); showControlsBriefly(); }}
-      preload="metadata"
-      crossOrigin="anonymous"
-    />
-  );
+  // CRITICAL: the <video> must live at ONE stable position in the tree. If it
+  // moves between branches, React destroys+recreates the element on every
+  // rotate / keyboard-open (resize), losing playback and thrashing the decoder
+  // — which blanks or crashes low-end phones. So we render a single tree and
+  // only vary CSS between mobile (controls below) and desktop (overlay).
+  const controlsBelow = isMobile && !fullscreen;
 
-  // MOBILE (and not fullscreen): video in a natural-ratio box + solid control
-  // strip below. This is the same proven pattern the YouTube path uses.
-  if (isMobile && !fullscreen) {
-    return (
-      <div ref={containerRef} className="bg-black overflow-hidden" style={{ position: 'relative' }}>
-        {/* Video area — 16:9 so landscape lectures fill the width, no letterbox waste */}
-        <div className="relative w-full bg-black" style={{ aspectRatio: '16 / 9' }}>
-          {!introDone && (
-            <NestIntroOverlay
-              orgName={organization?.name}
-              orgLogoUrl={organization?.logo_url}
-              onComplete={() => { setPlaying(false); setIntroDone(true); }}
-            />
-          )}
-          {videoEl}
-          {/* Big center play/pause tap target when paused */}
-          {introDone && !isPlaying && (
-            <button
-              onClick={() => { setPlaying(true); showControlsBriefly(); }}
-              aria-label="Play"
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ background: 'rgba(0,0,0,0.28)' }}
-            >
-              <span style={{ width: 64, height: 64, borderRadius: '50%', background: '#b259c4', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 30px rgba(178,89,196,0.5)' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><polygon points="6,4 22,12 6,20" /></svg>
-              </span>
-            </button>
-          )}
-        </div>
-
-        {/* Solid control strip BELOW the video — always visible, easy to reach */}
-        <div className="px-4 pt-2 pb-3 bg-black">
-          <Timeline
-            markers={markers}
-            onSeek={handleTimelineClick}
-            onMarkerClick={(m) => handleAskAt(m.timestamp_seconds)}
-            onAskAt={handleAskAt}
-          />
-          <Controls
-            onToggleFullscreen={toggleFullscreen}
-            isFullscreen={fullscreen}
-            onAskQuestion={handleAskAtTimestamp}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // DESKTOP (and fullscreen): overlay controls on the video (works well with a mouse)
   return (
     <div
       ref={containerRef}
-      className="relative bg-black video-player-container overflow-hidden"
-      onPointerDown={showControlsBriefly}
+      className="relative bg-black overflow-hidden"
+      onPointerDown={controlsBelow ? undefined : showControlsBriefly}
     >
-      {!introDone && (
-        <NestIntroOverlay
-          orgName={organization?.name}
-          orgLogoUrl={organization?.logo_url}
-          onComplete={() => { setPlaying(false); setIntroDone(true); }}
-        />
-      )}
-      {videoEl}
+      {/* Video stage — fixed 16:9 so landscape lectures fill the width */}
+      <div className="relative w-full bg-black" style={{ aspectRatio: '16 / 9' }}>
+        {!introDone && (
+          <NestIntroOverlay
+            orgName={organization?.name}
+            orgLogoUrl={organization?.logo_url}
+            onComplete={handleIntroComplete}
+          />
+        )}
+        {introDone && (
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            className="w-full h-full object-contain"
+            onTimeUpdate={(e) => {
+              const t = e.currentTarget.currentTime;
+              setCurrentTime(t);
+              onTimeUpdate?.(t);
+            }}
+            onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+            onEnded={() => { setPlaying(false); onVideoEnd?.(); }}
+            onClick={() => { setPlaying(!isPlaying); showControlsBriefly(); }}
+            preload="metadata"
+            crossOrigin="anonymous"
+            playsInline
+          />
+        )}
 
-      {/* Overlay gradient — visible on hover, touch, or fullscreen */}
-      <div
-        className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent transition-opacity duration-200 pointer-events-none"
-        style={{ opacity: shouldShowControls ? 1 : 0 }}
-      />
+        {/* Big center play tap-target when paused (mobile) */}
+        {controlsBelow && introDone && !isPlaying && (
+          <button
+            onClick={() => { setPlaying(true); showControlsBriefly(); }}
+            aria-label="Play"
+            className="absolute inset-0 flex items-center justify-center"
+            style={{ background: 'rgba(0,0,0,0.28)' }}
+          >
+            <span style={{ width: 64, height: 64, borderRadius: '50%', background: '#b259c4', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 30px rgba(178,89,196,0.5)' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><polygon points="6,4 22,12 6,20" /></svg>
+            </span>
+          </button>
+        )}
 
-      {/* Controls — tap anywhere on video to reveal; always on in fullscreen */}
+        {/* Desktop overlay gradient */}
+        {!controlsBelow && (
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent transition-opacity duration-200 pointer-events-none"
+            style={{ opacity: shouldShowControls ? 1 : 0 }}
+          />
+        )}
+      </div>
+
+      {/* Controls — below the video on mobile, overlaid on desktop.
+          Same children either way; only the wrapper's CSS changes. */}
       <div
-        className="absolute bottom-0 left-0 right-0 px-4 pb-3 transition-opacity duration-200"
-        style={{ opacity: shouldShowControls ? 1 : 0 }}
-        onPointerDown={e => e.stopPropagation()}
+        className={controlsBelow ? 'px-4 pt-2 pb-3 bg-black' : 'absolute bottom-0 left-0 right-0 px-4 pb-3 transition-opacity duration-200'}
+        style={controlsBelow ? undefined : { opacity: shouldShowControls ? 1 : 0 }}
+        onPointerDown={controlsBelow ? undefined : (e => e.stopPropagation())}
       >
         <Timeline
           markers={markers}

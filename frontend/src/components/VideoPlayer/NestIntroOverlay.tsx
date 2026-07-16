@@ -31,6 +31,7 @@ export default function NestIntroOverlay({ orgName, orgLogoUrl, onComplete }: Pr
   const [skipped, setSkipped]         = useState(false);
   const startRef                      = useRef<number | null>(null);
   const rafRef                        = useRef<number>(0);
+  const skipTimerRef                  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── animation loop ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -46,14 +47,18 @@ export default function NestIntroOverlay({ orgName, orgLogoUrl, onComplete }: Pr
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      if (skipTimerRef.current) clearTimeout(skipTimerRef.current);
+    };
   }, [onComplete]);
 
   const handleSkip = () => {
     cancelAnimationFrame(rafRef.current);
     setSkipped(true);
-    // short fade-out before calling onComplete
-    setTimeout(onComplete, 350);
+    // short fade-out before calling onComplete (cleared on unmount)
+    if (skipTimerRef.current) clearTimeout(skipTimerRef.current);
+    skipTimerRef.current = setTimeout(onComplete, 350);
   };
 
   // ── derived visibility values ───────────────────────────────────────────────

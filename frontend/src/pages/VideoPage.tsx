@@ -224,7 +224,7 @@ export default function VideoPage() {
 
   // ← hook must be before any conditional return
   const [activeTab, setActiveTab] = useState<'notes' | 'playlist' | 'assignments' | 'about'>('notes');
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 1024);
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener('resize', handler);

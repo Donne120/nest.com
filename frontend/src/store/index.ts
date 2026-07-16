@@ -121,7 +121,8 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  sidebarOpen: window.innerWidth >= 1024,
+  // Guarded: this runs at module import, where `window` may not exist.
+  sidebarOpen: typeof window !== 'undefined' && window.innerWidth >= 1024,
   activeQuestionId: null,
   showQuestionForm: false,
   questionFormTimestamp: null,
