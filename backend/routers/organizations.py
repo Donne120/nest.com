@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from database import get_db
 import models
@@ -18,12 +18,15 @@ _SUPER = models.UserRole.super_admin
 def list_public_orgs(db: Session = Depends(get_db)):
     """Public directory of organizations that have opted in (`is_listed`).
 
-    Unauthenticated — powers the landing-page directory so visitors can
-    discover schools/tutors and contact them directly. Returns only safe
-    profile fields (see OrganizationPublicOut); never payment/plan data.
+    Unauthenticated — powers the "Find Courses" page so visitors can discover
+    schools/tutors, see what they teach, and contact them directly. Returns
+    only safe profile fields + published courses; never payment/plan data.
     """
     orgs = (
         db.query(models.Organization)
+        .options(
+            joinedload(models.Organization.modules).joinedload(models.Module.videos)
+        )
         .filter(
             models.Organization.is_listed.is_(True),
             models.Organization.is_active.is_(True),
@@ -31,7 +34,39 @@ def list_public_orgs(db: Session = Depends(get_db)):
         .order_by(models.Organization.created_at.desc())
         .all()
     )
-    return orgs
+
+    out: List[schemas.OrganizationPublicOut] = []
+    for org in orgs:
+        published = [m for m in org.modules if m.is_published]
+        courses = [
+            schemas.PublicCourseOut(
+                id=m.id,
+                title=m.title,
+                thumbnail_url=m.thumbnail_url,
+                lesson_count=len(m.videos),
+                duration_seconds=m.duration_seconds or 0,
+            )
+            for m in published
+        ]
+        out.append(
+            schemas.OrganizationPublicOut(
+                name=org.name,
+                slug=org.slug,
+                logo_url=org.logo_url,
+                brand_color=org.brand_color,
+                tagline=org.tagline,
+                description=org.description,
+                public_email=org.public_email,
+                public_phone=org.public_phone,
+                public_whatsapp=org.public_whatsapp,
+                website_url=org.website_url,
+                country=org.country,
+                city=org.city,
+                course_count=len(courses),
+                courses=courses,
+            )
+        )
+    return out
 
 
 # ── Current org ───────────────────────────────────────────────────────

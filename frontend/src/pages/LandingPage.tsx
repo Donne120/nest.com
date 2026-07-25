@@ -99,9 +99,10 @@ function GoldBtn({ to, children, big }: { to: string; children: React.ReactNode;
   );
 }
 
-function GhostBtn({ href, children }: { href: string; children: React.ReactNode }) {
+// Ghost button that routes internally (react-router Link)
+function GhostLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <a href={href} style={{
+    <Link to={to} style={{
       fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '0.01em',
       color: TEXT, background: 'transparent', border: `1px solid ${HAIR}`,
       padding: '14px 26px', borderRadius: 6,
@@ -112,7 +113,7 @@ function GhostBtn({ href, children }: { href: string; children: React.ReactNode 
       onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = HAIR; el.style.background = 'transparent'; }}
     >
       {children}
-    </a>
+    </Link>
   );
 }
 
@@ -159,7 +160,7 @@ function Nav() {
       </Link>
 
       <nav className="nav-links" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-        <a href="#how" style={navLink}>Explore</a>
+        <Link to="/explore" style={navLink}>Find courses</Link>
         <Link to="/pricing" style={navLink}>Pricing</Link>
         <Link to="/login" style={navLink}>Sign in</Link>
       </nav>
@@ -378,9 +379,9 @@ function Hero() {
           <GoldBtn to="/signup" big>Start free
             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
           </GoldBtn>
-          <GhostBtn href="#how">See how it works
-            <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 4v12M5 11l5 5 5-5"/></svg>
-          </GhostBtn>
+          <GhostLink to="/explore">Find courses
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="9" r="6"/><path d="M14 14l3 3"/></svg>
+          </GhostLink>
         </div>
       </div>
     </section>
@@ -576,7 +577,13 @@ function Directory() {
           </h2>
         </div>
         <div className="orgs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 14 }}>
-          {orgs.map(org => <OrgCard key={org.slug} org={org} />)}
+          {orgs.slice(0, 3).map(org => <OrgCard key={org.slug} org={org} />)}
+        </div>
+        <div className="rv" style={{ textAlign: 'center', marginTop: 32, opacity: 0, transform: 'translateY(12px)', transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s' }}>
+          <Link to="/explore" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: UI, fontSize: 14, fontWeight: 600, color: GOLD, textDecoration: 'none', border: `1px solid rgba(232,176,75,0.35)`, padding: '12px 24px', borderRadius: 8 }}>
+            {orgs.length > 3 ? `See all ${orgs.length} teachers` : 'Browse all courses'}
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
+          </Link>
         </div>
       </div>
     </section>

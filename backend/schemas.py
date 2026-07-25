@@ -77,10 +77,23 @@ class OrganizationOut(BaseModel):
         from_attributes = True
 
 
+class PublicCourseOut(BaseModel):
+    """A single published course shown in the public directory."""
+    id: str
+    title: str
+    thumbnail_url: Optional[str] = None
+    lesson_count: int = 0
+    duration_seconds: int = 0
+
+    class Config:
+        from_attributes = True
+
+
 class OrganizationPublicOut(BaseModel):
-    """Safe, public-facing org profile for the landing-page directory.
+    """Safe, public-facing org profile for the directory.
 
     Deliberately excludes payment details, plan, subscription state, etc.
+    Includes the org's published courses so learners can see what's taught.
     """
     name: str
     slug: str
@@ -94,6 +107,8 @@ class OrganizationPublicOut(BaseModel):
     website_url:     Optional[str] = None
     country:         Optional[str] = None
     city:            Optional[str] = None
+    course_count:    int = 0
+    courses:         List[PublicCourseOut] = []
 
     class Config:
         from_attributes = True

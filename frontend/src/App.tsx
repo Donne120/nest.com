@@ -31,6 +31,7 @@ const InvitePage = lazy(() => import('./pages/InvitePage'));
 const JoinPage = lazy(() => import('./pages/JoinPage'));
 const OrgSettingsPage = lazy(() => import('./pages/admin/OrgSettingsPage'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
+const ExplorePage = lazy(() => import('./pages/ExplorePage'));
 const MeetingsPage = lazy(() => import('./pages/MeetingsPage'));
 const AdminMeetingsPage = lazy(() => import('./pages/admin/AdminMeetingsPage'));
 const AdminPeoplePage = lazy(() => import('./pages/admin/AdminPeoplePage'));
@@ -125,6 +126,7 @@ export default function App() {
           <Route path="/join/:token" element={<JoinPage />} />
           <Route path="/certificate/:certId" element={<CertificatePage />} />
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/explore" element={<ExplorePage />} />
           <Route path="/pitch" element={<PitchDeck />} />
           <Route path="/one-pager" element={<OnePagerPage />} />
           <Route path="/business-plan" element={<BusinessPlanPage />} />
