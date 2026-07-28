@@ -319,10 +319,12 @@ def join_link_info(token: str, db: Session = Depends(get_db)):
     if link.max_uses is not None and link.use_count >= link.max_uses:
         raise HTTPException(status_code=400, detail="This invite link has reached its maximum number of uses")
     org = db.query(models.Organization).filter(models.Organization.id == link.organization_id).first()
+    # The public-directory link uses a reserved internal label; never show it to learners.
+    display_label = None if link.label == "__public_directory__" else link.label
     return schemas.JoinLinkInfo(
         org_name=org.name if org else "Unknown Organization",
         org_logo_url=org.logo_url if org else None,
-        label=link.label,
+        label=display_label,
         role=link.role.value,
         free_access=link.free_access,
         requires_code=link.access_code is not None,

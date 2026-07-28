@@ -14,6 +14,56 @@ _SUPER = models.UserRole.super_admin
 
 # ── Public directory (no auth) ────────────────────────────────────────
 
+# A listed org gets one durable, unlimited-use "open enrollment" invite link
+# so a stranger who finds them on Explore can actually join. Identified by this
+# reserved label so we never collide with an admin's own cohort links.
+_PUBLIC_LINK_LABEL = "__public_directory__"
+
+
+def _ensure_public_join_link(org: "models.Organization", db: Session):
+    """Return the org's public open-enrollment InviteLink, creating it if needed.
+
+    Returns None if the org has no owner to attribute it to (can't satisfy the
+    NOT NULL created_by) — Explore then falls back to contact-only for that org.
+    """
+    link = (
+        db.query(models.InviteLink)
+        .filter(
+            models.InviteLink.organization_id == org.id,
+            models.InviteLink.label == _PUBLIC_LINK_LABEL,
+        )
+        .first()
+    )
+    if link:
+        return link if link.is_active else None
+
+    owner = (
+        db.query(models.User)
+        .filter(
+            models.User.organization_id == org.id,
+            models.User.role == models.UserRole.owner,
+        )
+        .first()
+    )
+    if not owner:
+        return None
+
+    link = models.InviteLink(
+        organization_id=org.id,
+        created_by=owner.id,
+        label=_PUBLIC_LINK_LABEL,
+        role=models.UserRole.learner,
+        free_access=False,   # learner still pays for paid courses via the normal flow
+        max_uses=None,       # unlimited — it's the public front door
+        expires_at=None,     # never expires
+        is_active=True,
+    )
+    db.add(link)
+    db.commit()
+    db.refresh(link)
+    return link
+
+
 @router.get("/public", response_model=List[schemas.OrganizationPublicOut])
 def list_public_orgs(db: Session = Depends(get_db)):
     """Public directory of organizations that have opted in (`is_listed`).
@@ -37,6 +87,7 @@ def list_public_orgs(db: Session = Depends(get_db)):
 
     out: List[schemas.OrganizationPublicOut] = []
     for org in orgs:
+        join_link = _ensure_public_join_link(org, db)
         published = [m for m in org.modules if m.is_published]
         courses = [
             schemas.PublicCourseOut(
@@ -64,6 +115,7 @@ def list_public_orgs(db: Session = Depends(get_db)):
                 city=org.city,
                 course_count=len(courses),
                 courses=courses,
+                join_token=join_link.token if join_link else None,
             )
         )
     return out

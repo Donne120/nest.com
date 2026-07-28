@@ -109,6 +109,7 @@ class OrganizationPublicOut(BaseModel):
     city:            Optional[str] = None
     course_count:    int = 0
     courses:         List[PublicCourseOut] = []
+    join_token:      Optional[str] = None   # public open-enrollment link → /join/{token}
 
     class Config:
         from_attributes = True

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
-import { Search, MapPin, BookOpen, MessageCircle, Phone, Mail, Globe, X, ArrowLeft } from 'lucide-react';
+import { Search, MapPin, BookOpen, MessageCircle, Phone, Mail, Globe, X, ArrowLeft, GraduationCap } from 'lucide-react';
 
 // ── Tokens — dark cinematic, matches the landing page ───────────────────────
 const INK    = '#0B0A0F';
@@ -31,6 +31,7 @@ type PublicOrg = {
   public_whatsapp: string | null; website_url: string | null;
   country: string | null; city: string | null;
   course_count: number; courses: PublicCourse[];
+  join_token: string | null;
 };
 
 function waLink(num: string) { return `https://wa.me/${num.replace(/[^\d]/g, '')}`; }
@@ -278,8 +279,27 @@ function CreatorCard({ org }: { org: PublicOrg }) {
         <p style={{ fontFamily: MONO, fontSize: 11, color: FAINT, marginBottom: 18 }}>Courses coming soon.</p>
       )}
 
-      {/* Contact — direct channels */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, borderTop: `1px solid ${HAIR}`, paddingTop: 16, marginTop: 'auto' }}>
+      {/* Actions */}
+      <div style={{ borderTop: `1px solid ${HAIR}`, paddingTop: 16, marginTop: 'auto' }}>
+        {/* Primary: enroll — the real front door. Only shown when they've opened one. */}
+        {org.join_token && org.course_count > 0 && (
+          <Link
+            to={`/join/${org.join_token}`}
+            className="press"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', minHeight: 46, marginBottom: 12,
+              background: GOLD, color: INK, border: 'none', borderRadius: 11,
+              textDecoration: 'none', fontFamily: UI, fontSize: 14.5, fontWeight: 800,
+              boxShadow: '0 8px 22px -10px rgba(235,185,92,0.7)',
+            }}
+          >
+            <GraduationCap size={17} /> Enroll now
+          </Link>
+        )}
+
+      {/* Contact — direct channels (ask first / message the creator) */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {org.public_whatsapp && (
           <a href={waLink(org.public_whatsapp)} target="_blank" rel="noreferrer" className="press" style={{ ...contactBtn, color: INK, background: LIME, border: 'none', fontWeight: 700 }}>
             <MessageCircle size={13} /> WhatsApp
@@ -303,6 +323,7 @@ function CreatorCard({ org }: { org: PublicOrg }) {
         {!org.public_whatsapp && !org.public_phone && !org.public_email && !org.website_url && (
           <span style={{ fontFamily: MONO, fontSize: 11, color: FAINT }}>No contact details shared yet.</span>
         )}
+      </div>
       </div>
     </article>
   );
