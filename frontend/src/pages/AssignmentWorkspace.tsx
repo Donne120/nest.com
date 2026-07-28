@@ -65,13 +65,13 @@ function StepIndicator({
                 ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
                 : active
                   ? 'bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 ring-1 ring-brand-400'
-                  : 'bg-gray-100 text-gray-400 dark:bg-slate-800'
+                  : 'bg-[var(--c-bg2)] text-[var(--c-ink3)] dark:bg-[var(--c-bg2)]'
             }`}>
               <Icon size={11} />
               <span className="hidden sm:block">{s.label}</span>
             </div>
             {i < GROUP_STEPS.length - 1 && (
-              <ArrowRight size={12} className="text-gray-300 dark:text-slate-600 flex-shrink-0" />
+              <ArrowRight size={12} className="text-[var(--c-ink3)] dark:text-[var(--c-ink3)] flex-shrink-0" />
             )}
           </div>
         );
@@ -100,11 +100,11 @@ function SubmittedPanel({
           <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center">
             <CheckCircle size={32} className="text-green-500" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Assignment Submitted!</h2>
-          <p className="text-gray-500 dark:text-gray-400 max-w-sm">
+          <h2 className="text-xl font-bold text-[var(--c-ink)]">Assignment Submitted!</h2>
+          <p className="text-[var(--c-ink2)] max-w-sm">
             Your work has been submitted successfully. Your instructor will review it and may leave feedback.
           </p>
-          <div className="mt-2 text-sm text-gray-400">
+          <div className="mt-2 text-sm text-[var(--c-ink3)]">
             Submitted {sub.submitted_at
               ? formatDistanceToNow(parseISO(sub.submitted_at), { addSuffix: true })
               : 'just now'}
@@ -134,10 +134,10 @@ function SubmittedPanel({
       </div>
 
       <div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-xl font-bold text-[var(--c-ink)]">
           {mergeComplete ? 'All portions merged!' : 'Your portion is submitted!'}
         </h2>
-        <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-sm">
+        <p className="text-[var(--c-ink2)] mt-2 max-w-sm">
           {mergeComplete
             ? 'The group\'s work has been combined into one document. Review it together and submit to your instructor.'
             : `Waiting for teammates to finish. ${submittedCount} of ${totalCount} submitted so far.`}
@@ -147,19 +147,19 @@ function SubmittedPanel({
       {/* Team progress */}
       <div className="w-full max-w-xs space-y-2">
         {group?.members.map(m => (
-          <div key={m.id} className="flex items-center justify-between bg-gray-50 dark:bg-slate-800 rounded-lg px-3 py-2">
+          <div key={m.id} className="flex items-center justify-between bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] rounded-lg px-3 py-2">
             <div className="flex items-center gap-2 text-sm">
-              <User size={13} className="text-gray-400" />
-              <span className="text-gray-700 dark:text-gray-300 truncate max-w-[120px]">
+              <User size={13} className="text-[var(--c-ink3)]" />
+              <span className="text-[var(--c-ink)] dark:text-[var(--c-ink2)] truncate max-w-[120px]">
                 {m.learner.full_name}
               </span>
               {m.portion_label && (
-                <span className="text-xs text-gray-400">({m.portion_label})</span>
+                <span className="text-xs text-[var(--c-ink3)]">({m.portion_label})</span>
               )}
             </div>
             {m.submitted_at
               ? <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
-              : <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+              : <div className="w-3.5 h-3.5 rounded-full border-2 border-[var(--c-rule)] flex-shrink-0" />
             }
           </div>
         ))}
@@ -178,24 +178,24 @@ function SubmittedPanel({
 
       {/* Meeting info */}
       {(group?.kickoff_meeting_id || group?.review_meeting_id) && (
-        <div className="w-full max-w-xs border border-gray-200 dark:border-slate-700 rounded-xl p-4 text-left space-y-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Meetings</p>
+        <div className="w-full max-w-xs border border-[var(--c-rule)] rounded-xl p-4 text-left space-y-2">
+          <p className="text-xs font-semibold text-[var(--c-ink3)] uppercase tracking-wider">Meetings</p>
           {group?.kickoff_meeting_id && (
-            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+            <div className="flex items-center gap-2 text-xs text-[var(--c-ink2)]">
               <Calendar size={12} className="text-blue-500 flex-shrink-0" />
               Kickoff meeting scheduled
               <CheckCircle size={11} className="text-green-500" />
             </div>
           )}
           {group?.review_meeting_id && (
-            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+            <div className="flex items-center gap-2 text-xs text-[var(--c-ink2)]">
               <Calendar size={12} className="text-green-500 flex-shrink-0" />
               Review meeting scheduled
               <CheckCircle size={11} className="text-green-500" />
             </div>
           )}
           {!group?.review_meeting_id && (
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-[var(--c-ink3)]">
               Review meeting will be auto-scheduled once all portions are submitted.
             </div>
           )}
@@ -249,12 +249,12 @@ function AnnotatedDocViewer({ content }: { content: any }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-      <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
+      <div className="lg:col-span-2 bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden">
         <EditorContent editor={editor} />
       </div>
       {comments.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
-          <div className="px-3 py-2 border-b border-gray-100 dark:border-slate-700 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden">
+          <div className="px-3 py-2 border-b border-[var(--c-rule)] text-xs font-semibold text-[var(--c-ink2)] uppercase tracking-wider">
             {comments.length} Comment{comments.length !== 1 ? 's' : ''}
           </div>
           <div className="p-3 space-y-2">
@@ -264,8 +264,8 @@ function AnnotatedDocViewer({ content }: { content: any }) {
                 className="rounded-lg p-2.5 text-sm"
                 style={{ backgroundColor: c.color + '33', borderLeft: `3px solid ${c.color}` }}
               >
-                <p className="text-xs text-gray-500 italic mb-1 truncate">"{c.quote}"</p>
-                <p className="text-gray-800 dark:text-white">{c.comment}</p>
+                <p className="text-xs text-[var(--c-ink2)] italic mb-1 truncate">"{c.quote}"</p>
+                <p className="text-[var(--c-ink)] dark:text-[var(--c-ink)]">{c.comment}</p>
               </div>
             ))}
           </div>
@@ -314,7 +314,7 @@ function FeedbackPanel({ sub }: { sub: AssignmentSubmission }) {
       {/* Annotated document */}
       {sub.reviewed_content && (
         <div>
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+          <p className="text-xs font-semibold text-[var(--c-ink2)] uppercase tracking-wider mb-2">
             Your Annotated Submission
           </p>
           <AnnotatedDocViewer content={sub.reviewed_content} />
@@ -440,7 +440,7 @@ export default function AssignmentWorkspace() {
 
   if (!assignment) {
     return (
-      <div className="text-center py-20 text-gray-400">
+      <div className="text-center py-20 text-[var(--c-ink3)]">
         <AlertCircle size={40} className="mx-auto mb-3 opacity-40" />
         <p>Assignment not found.</p>
       </div>
@@ -448,22 +448,22 @@ export default function AssignmentWorkspace() {
   }
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col bg-gray-50 dark:bg-slate-950">
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[var(--c-bg2)] dark:bg-[var(--c-bg)]">
 
       {/* ─── Top bar ─────────────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700">
+      <div className="flex-shrink-0 bg-[var(--c-surf)] border-b border-[var(--c-rule)]">
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/assignments')}
-              className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white transition"
+              className="flex items-center gap-1 text-sm text-[var(--c-ink2)] hover:text-[var(--c-ink)] dark:hover:text-white transition"
             >
               <ChevronLeft size={16} /> <span className="hidden sm:inline">Assignments</span>
             </button>
             {/* Brief toggle — mobile only */}
             <button
               onClick={() => setBriefOpen(o => !o)}
-              className="md:hidden flex items-center gap-1 text-xs text-gray-500 hover:text-brand-600 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1 transition"
+              className="md:hidden flex items-center gap-1 text-xs text-[var(--c-ink2)] hover:text-brand-600 border border-[var(--c-rule)] rounded-lg px-2 py-1 transition"
             >
               <PanelLeftOpen size={13} /> Brief
             </button>
@@ -471,12 +471,12 @@ export default function AssignmentWorkspace() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             {saveMutation.isPending && (
-              <span className="text-xs text-gray-400">Saving…</span>
+              <span className="text-xs text-[var(--c-ink3)]">Saving…</span>
             )}
 
             {isSubmitted && !canEdit ? (
               // Deadline passed — locked
-              <span className="flex items-center gap-1.5 text-sm text-gray-500 font-medium">
+              <span className="flex items-center gap-1.5 text-sm text-[var(--c-ink2)] font-medium">
                 <CheckCircle size={16} className="text-green-500" /> Submitted · Deadline passed
               </span>
             ) : (
@@ -484,7 +484,7 @@ export default function AssignmentWorkspace() {
                 <button
                   onClick={autoSave}
                   disabled={saveMutation.isPending}
-                  className="hidden sm:block px-3 py-1.5 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white border border-gray-200 dark:border-slate-700 rounded-lg transition disabled:opacity-50"
+                  className="hidden sm:block px-3 py-1.5 text-sm text-[var(--c-ink2)] hover:text-[var(--c-ink)] dark:hover:text-white border border-[var(--c-rule)] rounded-lg transition disabled:opacity-50"
                 >
                   Save Draft
                 </button>
@@ -529,7 +529,7 @@ export default function AssignmentWorkspace() {
         {/* Desktop: always visible sidebar. Mobile: slide-in overlay toggled by briefOpen */}
         <div
           className={`
-            flex-col border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-y-auto
+            flex-col border-r border-[var(--c-rule)] bg-[var(--c-surf)] overflow-y-auto
             md:flex md:w-72 md:flex-shrink-0 md:relative md:z-auto md:translate-x-0
             ${briefOpen
               ? 'flex fixed left-0 top-0 bottom-0 z-40 shadow-2xl transition-transform'
@@ -539,10 +539,10 @@ export default function AssignmentWorkspace() {
           style={briefOpen ? { width: 'min(320px, 85vw)' } : undefined}
         >
           {/* Mobile close button */}
-          <div className="md:hidden flex items-center justify-between px-4 pt-4 pb-2 border-b border-gray-100 dark:border-slate-700">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Brief</span>
-            <button onClick={() => setBriefOpen(false)} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-              <X size={16} className="text-gray-400" />
+          <div className="md:hidden flex items-center justify-between px-4 pt-4 pb-2 border-b border-[var(--c-rule)]">
+            <span className="text-xs font-semibold text-[var(--c-ink3)] uppercase tracking-wider">Brief</span>
+            <button onClick={() => setBriefOpen(false)} className="p-1 rounded-lg hover:bg-[var(--c-bg2)] dark:hover:bg-[var(--c-bg2)] transition">
+              <X size={16} className="text-[var(--c-ink3)]" />
             </button>
           </div>
           <div className="p-4 space-y-4">
@@ -558,7 +558,7 @@ export default function AssignmentWorkspace() {
                   {assignment.type === 'group' ? <><Users size={11} /> Group</> : 'Individual'}
                 </span>
               </div>
-              <h1 className="text-base font-bold text-gray-900 dark:text-white leading-snug">
+              <h1 className="text-base font-bold text-[var(--c-ink)] leading-snug">
                 {assignment.title}
               </h1>
             </div>
@@ -587,10 +587,10 @@ export default function AssignmentWorkspace() {
 
             {/* Instructions */}
             {assignment.description && (
-              <div className="border-t border-gray-100 dark:border-slate-700 pt-3">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Instructions</p>
+              <div className="border-t border-[var(--c-rule)] pt-3">
+                <p className="text-xs font-semibold text-[var(--c-ink3)] uppercase tracking-wider mb-2">Instructions</p>
                 <div
-                  className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 text-xs leading-relaxed"
+                  className="prose prose-sm dark:prose-invert max-w-none text-[var(--c-ink)] dark:text-[var(--c-ink2)] text-xs leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: assignment.description }}
                 />
               </div>
@@ -598,23 +598,23 @@ export default function AssignmentWorkspace() {
 
             {/* Team status (group only) */}
             {assignment.type === 'group' && group && (
-              <div className="border-t border-gray-100 dark:border-slate-700 pt-3">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Team Progress</p>
+              <div className="border-t border-[var(--c-rule)] pt-3">
+                <p className="text-xs font-semibold text-[var(--c-ink3)] uppercase tracking-wider mb-2">Team Progress</p>
                 <div className="space-y-2">
                   {group.members.map(m => (
                     <div key={m.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs">
-                        <User size={11} className="text-gray-400 flex-shrink-0" />
-                        <span className={`truncate max-w-[110px] ${m.learner_id === user?.id ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                        <User size={11} className="text-[var(--c-ink3)] flex-shrink-0" />
+                        <span className={`truncate max-w-[110px] ${m.learner_id === user?.id ? 'font-semibold text-[var(--c-ink)]' : 'text-[var(--c-ink2)] dark:text-[var(--c-ink3)]'}`}>
                           {m.learner_id === user?.id ? 'You' : m.learner.full_name}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
                         {m.submitted_at
                           ? <CheckCircle size={12} className="text-green-500" />
-                          : <div className="w-3 h-3 rounded-full border-2 border-gray-300" />
+                          : <div className="w-3 h-3 rounded-full border-2 border-[var(--c-rule)]" />
                         }
-                        <span className="text-xs text-gray-400 truncate max-w-[60px]">{m.portion_label}</span>
+                        <span className="text-xs text-[var(--c-ink3)] truncate max-w-[60px]">{m.portion_label}</span>
                       </div>
                     </div>
                   ))}
@@ -634,12 +634,12 @@ export default function AssignmentWorkspace() {
 
             {/* Meetings */}
             {assignment.type === 'group' && group && (
-              <div className="border-t border-gray-100 dark:border-slate-700 pt-3 space-y-1.5">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Meetings</p>
+              <div className="border-t border-[var(--c-rule)] pt-3 space-y-1.5">
+                <p className="text-xs font-semibold text-[var(--c-ink3)] uppercase tracking-wider mb-2">Meetings</p>
                 <div className={`flex items-center gap-2 text-xs rounded-lg px-2 py-1.5 ${
                   group.kickoff_meeting_id
                     ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                    : 'bg-gray-50 text-gray-400 dark:bg-slate-800'
+                    : 'bg-[var(--c-bg2)] text-[var(--c-ink3)] dark:bg-[var(--c-bg2)]'
                 }`}>
                   <Calendar size={11} />
                   <span>Kickoff Meeting</span>
@@ -648,7 +648,7 @@ export default function AssignmentWorkspace() {
                 <div className={`flex items-center gap-2 text-xs rounded-lg px-2 py-1.5 ${
                   group.review_meeting_id
                     ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300'
-                    : 'bg-gray-50 text-gray-400 dark:bg-slate-800'
+                    : 'bg-[var(--c-bg2)] text-[var(--c-ink3)] dark:bg-[var(--c-bg2)]'
                 }`}>
                   <Calendar size={11} />
                   <span>Review Meeting</span>

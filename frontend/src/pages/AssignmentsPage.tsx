@@ -3,10 +3,26 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import {
   BookOpen, Users, Clock, CheckCircle, AlertCircle,
-  ChevronRight, FileEdit, Hourglass, Star, Sparkles,
+  ChevronRight, FileEdit, Hourglass, Star,
 } from 'lucide-react';
 import api from '../api/client';
 import type { Assignment } from '../types';
+
+// ── Design tokens — theme-aware (follow light/dark via CSS vars) ────────────
+const ACC    = 'var(--c-acc)';    // brand purple
+const BG      = 'var(--c-bg)';    // page background
+const SURF     = 'var(--c-surf)';  // card surface
+const RAISE    = 'var(--c-bg2)';   // recessed / pill
+const INK     = 'var(--c-ink)';   // primary text
+const INK2    = 'var(--c-ink2)';  // secondary text
+const INK3    = 'var(--c-ink3)';  // muted text
+const BORDER  = 'var(--c-rule)';
+const OK      = 'var(--c-ok)';
+const WARN    = 'var(--c-warn)';
+const BLUE    = 'var(--c-acc2)';
+const DISP    = "'Cormorant Garamond', Georgia, serif";
+const UIFONT  = "'Inter Tight', 'Inter', system-ui, sans-serif";
+const MONO    = "'DM Mono', ui-monospace, monospace";
 
 // ─── Per-learner submission status ───────────────────────────────────────────
 
@@ -33,70 +49,49 @@ function deriveLearnerStatus(a: Assignment): LearnerStatus {
 
 const STATUS_CONFIG: Record<LearnerStatus, {
   label: string;
-  textColor: string;
-  badgeBg: string;
-  accentBorder: string;
-  iconBg: string;
+  color: string;        // accent colour for this state
   icon: React.ReactNode;
   cta: string;
   hint: string;
 }> = {
   not_started: {
-    label: 'Not Started',
-    textColor: 'text-gray-500 dark:text-gray-400',
-    badgeBg: 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300',
-    accentBorder: 'border-l-gray-200 dark:border-l-slate-600',
-    iconBg: 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400',
+    label: 'Not started',
+    color: INK3,
     icon: <BookOpen size={15} />,
     cta: 'Start',
     hint: 'Open the assignment and begin writing.',
   },
   draft: {
-    label: 'In Progress',
-    textColor: 'text-amber-600 dark:text-amber-400',
-    badgeBg: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400',
-    accentBorder: 'border-l-amber-400',
-    iconBg: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400',
+    label: 'In progress',
+    color: WARN,
     icon: <FileEdit size={15} />,
     cta: 'Continue',
     hint: 'Draft saved. Keep writing and submit when ready.',
   },
   submitted: {
     label: 'Submitted',
-    textColor: 'text-green-600 dark:text-green-400',
-    badgeBg: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400',
-    accentBorder: 'border-l-green-400',
-    iconBg: 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+    color: OK,
     icon: <CheckCircle size={15} />,
     cta: 'View',
     hint: 'Your work has been submitted successfully.',
   },
   waiting_team: {
-    label: 'Waiting for Team',
-    textColor: 'text-blue-600 dark:text-blue-400',
-    badgeBg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400',
-    accentBorder: 'border-l-blue-400',
-    iconBg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
+    label: 'Waiting for team',
+    color: BLUE,
     icon: <Hourglass size={15} />,
-    cta: 'View Progress',
+    cta: 'View progress',
     hint: 'Your portion is in. Waiting for teammates to finish.',
   },
   review_ready: {
-    label: 'Ready to Review',
-    textColor: 'text-purple-600 dark:text-purple-400',
-    badgeBg: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400',
-    accentBorder: 'border-l-purple-400',
-    iconBg: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
+    label: 'Ready to review',
+    color: ACC,
     icon: <Star size={15} />,
-    cta: 'Review & Submit',
+    cta: 'Review & submit',
     hint: 'All portions merged! Review together and submit to your instructor.',
   },
   done: {
-    label: 'Submitted to Instructor',
-    textColor: 'text-green-600 dark:text-green-400',
-    badgeBg: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400',
-    accentBorder: 'border-l-green-400',
-    iconBg: 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+    label: 'Submitted to instructor',
+    color: OK,
     icon: <CheckCircle size={15} />,
     cta: 'View',
     hint: "Your group's merged document has been submitted.",
@@ -116,67 +111,132 @@ function AssignmentCard({ a }: { a: Assignment }) {
       ? `/assignments/${a.id}/merged`
       : `/assignments/${a.id}/work`;
 
+  const showOverdue = overdue && status !== 'submitted' && status !== 'done';
+
   return (
     <Link
       to={href}
-      className={`group block bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 border-l-4 ${cfg.accentBorder} rounded-xl shadow-card hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-200 overflow-hidden`}
+      className="press assignment-card"
+      style={{
+        display: 'block', textDecoration: 'none',
+        background: SURF, border: `1px solid ${BORDER}`,
+        borderLeft: `3px solid ${cfg.color}`,
+        borderRadius: 14, overflow: 'hidden',
+        transition: 'border-color 0.2s, transform 0.15s',
+      }}
     >
-      <div className="flex items-start gap-0 p-5">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '16px 18px' }}>
         {/* Status icon */}
-        <div className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center mr-4 mt-0.5 ${cfg.iconBg}`}>
+        <div style={{
+          flexShrink: 0, width: 42, height: 42, borderRadius: 11, marginTop: 2,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: cfg.color,
+          background: `color-mix(in srgb, ${cfg.color} 12%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${cfg.color} 26%, transparent)`,
+        }}>
           {cfg.icon}
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cfg.badgeBg}`}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <span style={{
+              fontFamily: MONO, fontSize: 9.5, fontWeight: 600, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: cfg.color,
+              background: `color-mix(in srgb, ${cfg.color} 12%, transparent)`,
+              padding: '3px 8px', borderRadius: 100,
+            }}>
               {cfg.label}
             </span>
-            <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-              a.type === 'group'
-                ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400'
-                : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400'
-            }`}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontFamily: MONO, fontSize: 9.5, fontWeight: 600, letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: a.type === 'group' ? ACC : BLUE,
+              background: a.type === 'group'
+                ? 'color-mix(in srgb, var(--c-acc) 11%, transparent)'
+                : 'color-mix(in srgb, var(--c-acc2) 11%, transparent)',
+              padding: '3px 8px', borderRadius: 100,
+            }}>
               {a.type === 'group' ? <><Users size={10} /> Group</> : <><BookOpen size={10} /> Individual</>}
             </span>
             {a.my_portion_label && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 font-medium">
-                Your part: <strong>{a.my_portion_label}</strong>
+              <span style={{
+                fontFamily: MONO, fontSize: 9.5, color: INK2,
+                background: RAISE, padding: '3px 8px', borderRadius: 100,
+              }}>
+                Your part: <strong style={{ color: INK }}>{a.my_portion_label}</strong>
               </span>
             )}
           </div>
 
-          <h2 className="font-serif text-base font-semibold text-gray-900 dark:text-white leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+          <h2 style={{
+            fontFamily: DISP, fontSize: 18, fontWeight: 600, lineHeight: 1.25,
+            color: INK, letterSpacing: '-0.01em', margin: 0,
+          }}>
             {a.title}
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{cfg.hint}</p>
+          <p style={{ fontSize: 13, color: INK2, lineHeight: 1.5, marginTop: 4 }}>{cfg.hint}</p>
 
-          {overdue && status !== 'submitted' && status !== 'done' && (
-            <div className="mt-2 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
-              <AlertCircle size={11} />
+          {showOverdue && (
+            <div style={{
+              marginTop: 8, display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 600, color: 'var(--c-danger)',
+            }}>
+              <AlertCircle size={12} />
               Deadline passed — submit as soon as possible
             </div>
           )}
         </div>
 
         {/* Right: deadline + CTA */}
-        <div className="flex flex-col items-end justify-between gap-2 flex-shrink-0 ml-2 sm:ml-4">
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+          justifyContent: 'space-between', gap: 10, flexShrink: 0,
+        }}>
           {deadline && (
-            <span className={`flex items-center gap-1 text-xs font-medium ${
-              overdue ? 'text-red-500 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
-            }`}>
+            <span className="assignment-deadline" style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              fontFamily: MONO, fontSize: 11, fontWeight: 500,
+              color: overdue ? 'var(--c-danger)' : WARN,
+              whiteSpace: 'nowrap',
+            }}>
               {overdue ? <AlertCircle size={11} /> : <Clock size={11} />}
-              <span className="hidden sm:inline">{overdue ? 'Overdue' : formatDistanceToNow(deadline, { addSuffix: true })}</span>
-              <span className="sm:hidden">{overdue ? 'Overdue' : formatDistanceToNow(deadline, { addSuffix: false })}</span>
+              {overdue ? 'Overdue' : formatDistanceToNow(deadline, { addSuffix: true })}
             </span>
           )}
-          <span className={`flex items-center gap-1 text-xs font-semibold whitespace-nowrap ${cfg.textColor} group-hover:gap-2 transition-all`}>
+          <span style={{
+            display: 'flex', alignItems: 'center', gap: 4,
+            fontSize: 12.5, fontWeight: 700, color: cfg.color, whiteSpace: 'nowrap',
+          }}>
             {cfg.cta} <ChevronRight size={13} />
           </span>
         </div>
       </div>
     </Link>
+  );
+}
+
+// ─── Section header ────────────────────────────────────────────────────────────
+
+function SectionHeader({ label, count, color }: { label: string; count: number; color: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+      <span style={{
+        fontFamily: MONO, fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
+        textTransform: 'uppercase', color: INK3,
+      }}>
+        {label}
+      </span>
+      <span style={{
+        minWidth: 20, height: 20, padding: '0 6px', borderRadius: 100,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 11, fontWeight: 700, color: 'var(--c-on-acc)', background: color,
+      }}>
+        {count}
+      </span>
+      <div style={{ flex: 1, height: 1, background: BORDER }} />
+    </div>
   );
 }
 
@@ -197,106 +257,116 @@ export default function AssignmentsPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-10 space-y-4">
-        <div className="h-28 bg-gray-100 dark:bg-slate-800 rounded-2xl animate-pulse" />
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-28 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
-        ))}
+      <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(16px,4vw,32px) clamp(14px,4vw,24px)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ height: 120, background: RAISE, borderRadius: 18, animation: 'pulse 2s infinite' }} />
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ height: 96, background: RAISE, borderRadius: 14, animation: 'pulse 2s infinite', animationDelay: `${i * 80}ms` }} />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
+      <div className="admin-page-content" style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(16px,4vw,32px) clamp(14px,4vw,24px) 40px' }}>
 
-      {/* ─── Hero header ─────────────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-br from-brand-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border border-brand-100 dark:border-slate-700 rounded-2xl px-6 py-7 mb-8 shadow-card">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold text-brand-500 uppercase tracking-widest mb-1 font-mono">
-              Workspace
-            </p>
-            <h1 className="font-serif text-3xl font-bold text-gray-900 dark:text-white leading-tight">
-              My Assignments
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
-              Click any assignment to open your workspace and start writing.
-            </p>
-          </div>
-          <Sparkles size={28} className="text-brand-300 dark:text-brand-700 flex-shrink-0 mt-1" />
-        </div>
-
-        {assignments.length > 0 && (
-          <div className="flex items-center gap-4 sm:gap-6 mt-5 pt-5 border-t border-brand-100 dark:border-slate-700 overflow-x-auto">
-            <div className="text-center">
-              <p className="font-mono text-2xl font-bold text-gray-900 dark:text-white">{assignments.length}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Total</p>
-            </div>
-            <div className="w-px h-8 bg-gray-200 dark:bg-slate-700" />
-            <div className="text-center">
-              <p className="font-mono text-2xl font-bold text-amber-600">{active.length}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Active</p>
-            </div>
-            <div className="w-px h-8 bg-gray-200 dark:bg-slate-700" />
-            <div className="text-center">
-              <p className="font-mono text-2xl font-bold text-green-600">{completed.length}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Completed</p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ─── Empty state ─────────────────────────────────────────────────────── */}
-      {assignments.length === 0 && (
-        <div className="text-center py-20">
-          <div className="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-5">
-            <BookOpen size={36} className="text-gray-300 dark:text-slate-600" />
-          </div>
-          <h2 className="font-serif text-xl font-bold text-gray-700 dark:text-gray-200 mb-2">
-            No assignments yet
-          </h2>
-          <p className="text-sm text-gray-400 dark:text-gray-500 max-w-xs mx-auto">
-            Your instructor hasn't published any assignments. Check back soon.
+        {/* ── Hero header ── */}
+        <div style={{
+          position: 'relative', overflow: 'hidden',
+          background: SURF, border: `1px solid ${BORDER}`,
+          borderRadius: 18, padding: 'clamp(20px,5vw,28px)', marginBottom: 28,
+        }}>
+          <div style={{
+            position: 'absolute', top: -60, right: -40, width: 200, height: 200,
+            background: 'radial-gradient(circle, color-mix(in srgb, var(--c-acc) 18%, transparent) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+          <p style={{
+            fontFamily: MONO, fontSize: 10, fontWeight: 700, letterSpacing: '0.2em',
+            textTransform: 'uppercase', color: ACC, marginBottom: 8,
+          }}>
+            Workspace
           </p>
+          <h1 style={{
+            fontFamily: DISP, fontSize: 'clamp(28px,7vw,38px)', fontWeight: 600,
+            color: INK, lineHeight: 1.05, letterSpacing: '-0.02em', margin: 0,
+          }}>
+            My assignments
+          </h1>
+          <p style={{ fontSize: 14, color: INK2, marginTop: 8, lineHeight: 1.5 }}>
+            Open any assignment to start writing and submit your work.
+          </p>
+
+          {assignments.length > 0 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 'clamp(16px,5vw,28px)',
+              marginTop: 22, paddingTop: 20, borderTop: `1px solid ${BORDER}`,
+            }}>
+              <Stat value={assignments.length} label="Total" color={INK} />
+              <div style={{ width: 1, height: 30, background: BORDER }} />
+              <Stat value={active.length} label="Active" color={WARN} />
+              <div style={{ width: 1, height: 30, background: BORDER }} />
+              <Stat value={completed.length} label="Done" color={OK} />
+            </div>
+          )}
         </div>
-      )}
 
-      {/* ─── Sections ────────────────────────────────────────────────────────── */}
-      <div className="space-y-10">
-        {active.length > 0 && (
-          <section>
-            <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest font-mono">
-                Action Required
-              </h2>
-              <span className="text-[11px] font-bold text-white bg-brand-500 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                {active.length}
-              </span>
-              <div className="flex-1 h-px bg-gray-100 dark:bg-slate-800" />
+        {/* ── Empty state ── */}
+        {assignments.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '64px 20px' }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: 16, margin: '0 auto 20px',
+              background: SURF, border: `1px solid ${BORDER}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <BookOpen size={28} style={{ color: INK3 }} />
             </div>
-            <div className="space-y-3">
-              {active.map(a => <AssignmentCard key={a.id} a={a} />)}
-            </div>
-          </section>
+            <h2 style={{ fontFamily: DISP, fontSize: 24, fontWeight: 600, color: INK, marginBottom: 8 }}>
+              No assignments yet
+            </h2>
+            <p style={{ fontSize: 14, color: INK2, maxWidth: 320, margin: '0 auto', lineHeight: 1.6 }}>
+              Your instructor hasn't published any assignments. Check back soon.
+            </p>
+          </div>
         )}
 
-        {completed.length > 0 && (
-          <section>
-            <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest font-mono">
-                Completed
-              </h2>
-              <span className="text-[11px] font-bold text-white bg-green-500 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                {completed.length}
-              </span>
-              <div className="flex-1 h-px bg-gray-100 dark:bg-slate-800" />
-            </div>
-            <div className="space-y-3">
-              {completed.map(a => <AssignmentCard key={a.id} a={a} />)}
-            </div>
-          </section>
-        )}
+        {/* ── Sections ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          {active.length > 0 && (
+            <section>
+              <SectionHeader label="Action required" count={active.length} color={ACC} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {active.map(a => <AssignmentCard key={a.id} a={a} />)}
+              </div>
+            </section>
+          )}
+
+          {completed.length > 0 && (
+            <section>
+              <SectionHeader label="Completed" count={completed.length} color={OK} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {completed.map(a => <AssignmentCard key={a.id} a={a} />)}
+              </div>
+            </section>
+          )}
+        </div>
       </div>
+
+      <style>{`
+        .assignment-card:hover { border-color: color-mix(in srgb, var(--c-acc) 45%, var(--c-rule)) !important; }
+        @media (max-width: 420px) { .assignment-deadline { display: none !important; } }
+      `}</style>
+    </div>
+  );
+}
+
+function Stat({ value, label, color }: { value: number; label: string; color: string }) {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <p style={{ fontFamily: MONO, fontSize: 24, fontWeight: 700, color, lineHeight: 1 }}>{value}</p>
+      <p style={{ fontSize: 11, color: INK3, marginTop: 5, letterSpacing: '0.04em' }}>{label}</p>
     </div>
   );
 }

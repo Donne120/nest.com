@@ -44,11 +44,11 @@ function AnnotationSidebar({
   if (comments.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-8 px-4 h-full">
-        <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-2">
-          <MessageSquare size={17} className="text-gray-300 dark:text-slate-600" />
+        <div className="w-10 h-10 rounded-xl bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] flex items-center justify-center mb-2">
+          <MessageSquare size={17} className="text-[var(--c-ink3)] dark:text-[var(--c-ink3)]" />
         </div>
-        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500">No annotations yet</p>
-        <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+        <p className="text-xs font-semibold text-[var(--c-ink3)] dark:text-[var(--c-ink2)]">No annotations yet</p>
+        <p className="text-xs text-[var(--c-ink3)] mt-1 leading-relaxed">
           Select text, pick a colour, click Annotate.
         </p>
       </div>
@@ -59,17 +59,17 @@ function AnnotationSidebar({
       {comments.map(c => (
         <div
           key={c.id}
-          className="rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 group shadow-card"
+          className="rounded-xl overflow-hidden border border-[var(--c-rule)] group shadow-card"
           style={{ borderLeftColor: c.color, borderLeftWidth: 4 }}
         >
-          <div className="px-3 py-1.5 text-xs text-gray-500 italic bg-gray-50 dark:bg-slate-800/80 truncate">
+          <div className="px-3 py-1.5 text-xs text-[var(--c-ink2)] italic bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)]/80 truncate">
             "{c.quote}"
           </div>
-          <div className="px-3 py-2 flex items-start justify-between gap-2 bg-white dark:bg-slate-900">
-            <p className="text-sm text-gray-800 dark:text-white flex-1 leading-relaxed">{c.comment}</p>
+          <div className="px-3 py-2 flex items-start justify-between gap-2 bg-[var(--c-surf)]">
+            <p className="text-sm text-[var(--c-ink)] dark:text-[var(--c-ink)] flex-1 leading-relaxed">{c.comment}</p>
             <button
               onClick={() => onDelete(c.id)}
-              className="text-gray-300 hover:text-red-400 transition flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100"
+              className="text-[var(--c-ink3)] hover:text-red-400 transition flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100"
             >
               <Trash2 size={12} />
             </button>
@@ -292,8 +292,8 @@ export default function GroupMergedView() {
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-4">
-        <div className="h-36 bg-gray-100 dark:bg-slate-800 rounded-2xl animate-pulse" />
-        <div className="h-96 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
+        <div className="h-36 bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] rounded-2xl animate-pulse" />
+        <div className="h-96 bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] rounded-xl animate-pulse" />
       </div>
     );
   }
@@ -304,10 +304,10 @@ export default function GroupMergedView() {
         <div className="w-20 h-20 rounded-2xl bg-purple-100 dark:bg-purple-950 flex items-center justify-center mx-auto mb-5">
           <Users size={34} className="text-purple-400 dark:text-purple-500" />
         </div>
-        <h2 className="font-serif text-2xl font-bold text-gray-900 dark:text-white mb-3">
+        <h2 className="font-serif text-2xl font-bold text-[var(--c-ink)] mb-3">
           Waiting for Your Team
         </h2>
-        <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-sm mx-auto">
+        <p className="text-[var(--c-ink2)] text-sm leading-relaxed max-w-sm mx-auto">
           The merged document isn't ready yet. All team members need to submit their
           portions first.
         </p>
@@ -378,18 +378,18 @@ export default function GroupMergedView() {
 
       {/* ─── Sticky control bar (instructor) ────────────────────────────────── */}
       {isInstructor && (
-        <div className="sticky top-0 z-20 bg-white/95 dark:bg-slate-950/95 backdrop-blur border border-gray-200 dark:border-slate-700 rounded-2xl shadow-elevated px-4 py-3 space-y-2.5">
+        <div className="sticky top-0 z-20 bg-white/95 dark:bg-[var(--c-bg)]/95 backdrop-blur border border-[var(--c-rule)] rounded-2xl shadow-elevated px-4 py-3 space-y-2.5">
 
           {/* Row 1: Back · Grade · Feedback · Save */}
           <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white transition font-medium flex-shrink-0"
+              className="flex items-center gap-1 text-sm text-[var(--c-ink2)] hover:text-[var(--c-ink)] dark:hover:text-white transition font-medium flex-shrink-0"
             >
               <ChevronLeft size={16} /> Back
             </button>
 
-            <div className="h-5 w-px bg-gray-200 dark:bg-slate-600 flex-shrink-0" />
+            <div className="h-5 w-px bg-[var(--c-rule)] flex-shrink-0" />
 
             {/* Grade input */}
             <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-1.5 flex-shrink-0">
@@ -399,7 +399,7 @@ export default function GroupMergedView() {
                 value={grade}
                 onChange={e => setGrade(e.target.value)}
                 placeholder="Grade (A, 85/100, Pass…)"
-                className="text-sm bg-transparent outline-none text-gray-800 dark:text-white placeholder-amber-400 dark:placeholder-amber-700 w-40 font-medium"
+                className="text-sm bg-transparent outline-none text-[var(--c-ink)] dark:text-[var(--c-ink)] placeholder-amber-400 dark:placeholder-amber-700 w-40 font-medium"
               />
             </div>
 
@@ -409,7 +409,7 @@ export default function GroupMergedView() {
               value={overallFeedback}
               onChange={e => setOverallFeedback(e.target.value)}
               placeholder="Overall feedback for the team…"
-              className="flex-1 min-w-[180px] text-sm px-3 py-1.5 border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 outline-none transition"
+              className="flex-1 min-w-[180px] text-sm px-3 py-1.5 border border-[var(--c-rule)] dark:border-[var(--c-rule)] rounded-lg bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] text-[var(--c-ink)] dark:text-[var(--c-ink)] placeholder-[var(--c-ink3)] focus:ring-2 focus:ring-brand-500 outline-none transition"
             />
 
             <div className="flex items-center gap-2 ml-auto flex-shrink-0">
@@ -430,10 +430,10 @@ export default function GroupMergedView() {
           </div>
 
           {/* Row 2: Annotation toolbar */}
-          <div className="flex items-center gap-3 flex-wrap border-t border-gray-100 dark:border-slate-700 pt-2.5">
+          <div className="flex items-center gap-3 flex-wrap border-t border-[var(--c-rule)] pt-2.5">
             <div className="flex items-center gap-1.5">
-              <Highlighter size={12} className="text-gray-400" />
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider font-mono">Colour</span>
+              <Highlighter size={12} className="text-[var(--c-ink3)]" />
+              <span className="text-xs font-bold text-[var(--c-ink3)] uppercase tracking-wider font-mono">Colour</span>
             </div>
             <div className="flex items-center gap-1.5">
               {COMMENT_COLORS.map(c => (
@@ -451,14 +451,14 @@ export default function GroupMergedView() {
                 />
               ))}
             </div>
-            <div className="h-4 w-px bg-gray-200 dark:bg-slate-600" />
+            <div className="h-4 w-px bg-[var(--c-rule)]" />
             <button
               onClick={handleAddAnnotation}
               className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition font-bold shadow-card"
             >
               <MessageSquare size={11} /> Annotate
             </button>
-            <p className="text-xs text-gray-400 italic hidden sm:block">
+            <p className="text-xs text-[var(--c-ink3)] italic hidden sm:block">
               Select text first, then click Annotate
             </p>
 
@@ -479,10 +479,10 @@ export default function GroupMergedView() {
                     if (e.key === 'Escape') { setShowCommentInput(false); setPendingComment(''); }
                   }}
                   placeholder="Type annotation… Enter to confirm, Esc to cancel"
-                  className="flex-1 text-sm bg-transparent outline-none text-gray-800 dark:text-white placeholder-amber-400"
+                  className="flex-1 text-sm bg-transparent outline-none text-[var(--c-ink)] dark:text-[var(--c-ink)] placeholder-amber-400"
                 />
                 <button onClick={confirmAnnotation} className="text-xs px-2.5 py-1 bg-brand-600 text-white rounded-md font-semibold transition hover:bg-brand-700">Add</button>
-                <button onClick={() => { setShowCommentInput(false); setPendingComment(''); }} className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">✕</button>
+                <button onClick={() => { setShowCommentInput(false); setPendingComment(''); }} className="text-xs text-[var(--c-ink3)] hover:text-[var(--c-ink)] dark:hover:text-[var(--c-ink)]">✕</button>
               </div>
             )}
           </div>
@@ -494,7 +494,7 @@ export default function GroupMergedView() {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white transition font-medium"
+            className="flex items-center gap-1.5 text-sm text-[var(--c-ink2)] hover:text-[var(--c-ink)] dark:hover:text-white transition font-medium"
           >
             <ChevronLeft size={16} /> Back
           </button>
@@ -515,7 +515,7 @@ export default function GroupMergedView() {
                 <button
                   onClick={() => docContent && saveMutation.mutate(docContent)}
                   disabled={saveMutation.isPending || !dirty}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition disabled:opacity-40 shadow-card"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-[var(--c-rule)] dark:border-[var(--c-rule)] text-[var(--c-ink)] dark:text-[var(--c-ink2)] hover:bg-[var(--c-bg2)] dark:hover:bg-[var(--c-bg2)] rounded-xl transition disabled:opacity-40 shadow-card"
                 >
                   <Save size={13} />
                   {saveMutation.isPending ? 'Saving…' : 'Save'}
@@ -554,14 +554,14 @@ export default function GroupMergedView() {
 
           {/* Document + annotations sidebar */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-            <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-card">
+            <div className="lg:col-span-3 bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden shadow-card">
               <EditorContent editor={reviewEditor} />
             </div>
-            <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-card flex flex-col">
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+            <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden shadow-card flex flex-col">
+              <div className="px-4 py-3 border-b border-[var(--c-rule)] flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <MessageSquare size={13} className="text-gray-400" />
-                  <span className="text-sm font-bold text-gray-700 dark:text-white">Annotations</span>
+                  <MessageSquare size={13} className="text-[var(--c-ink3)]" />
+                  <span className="text-sm font-bold text-[var(--c-ink)] dark:text-[var(--c-ink)]">Annotations</span>
                 </div>
                 {annotations.length > 0 && (
                   <span className="text-[11px] font-bold text-white bg-brand-500 rounded-full w-5 h-5 flex items-center justify-center">
@@ -585,10 +585,10 @@ export default function GroupMergedView() {
           {/* Left sidebar */}
           <div className="space-y-4">
             {/* Team card */}
-            <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-card">
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700 flex items-center gap-2">
-                <Users size={13} className="text-gray-400" />
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest font-mono">Team</span>
+            <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden shadow-card">
+              <div className="px-4 py-3 border-b border-[var(--c-rule)] flex items-center gap-2">
+                <Users size={13} className="text-[var(--c-ink3)]" />
+                <span className="text-xs font-bold text-[var(--c-ink3)] uppercase tracking-widest font-mono">Team</span>
               </div>
               <div className="p-4 space-y-3">
                 {group.members.map(m => (
@@ -597,8 +597,8 @@ export default function GroupMergedView() {
                       {m.learner.full_name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{m.learner.full_name}</p>
-                      {m.portion_label && <p className="text-xs text-gray-400 truncate">{m.portion_label}</p>}
+                      <p className="text-sm font-semibold text-[var(--c-ink)] dark:text-[var(--c-ink)] truncate">{m.learner.full_name}</p>
+                      {m.portion_label && <p className="text-xs text-[var(--c-ink3)] truncate">{m.portion_label}</p>}
                     </div>
                     <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
                   </div>
@@ -653,10 +653,10 @@ export default function GroupMergedView() {
           {/* Editor */}
           <div className="lg:col-span-3">
             <div className="flex items-center gap-2 mb-2.5">
-              <FileText size={13} className="text-gray-400" />
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest font-mono">Document</span>
+              <FileText size={13} className="text-[var(--c-ink3)]" />
+              <span className="text-xs font-bold text-[var(--c-ink3)] uppercase tracking-widest font-mono">Document</span>
               {!learnerViewOnly && (
-                <span className="text-xs text-gray-400 italic ml-auto">Auto-saved every 30s</span>
+                <span className="text-xs text-[var(--c-ink3)] italic ml-auto">Auto-saved every 30s</span>
               )}
             </div>
             <div className="rounded-xl overflow-hidden shadow-card" style={{ minHeight: 640 }}>
