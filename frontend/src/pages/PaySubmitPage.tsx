@@ -7,6 +7,9 @@ import { useAuthStore } from '../store';
 import type { PaymentCountryConfig } from '../types';
 
 import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, GO } from '../lib/colors';
+// Fixed dark for the always-dark "Remove" chip (white text) — themed INK
+// inverts to near-white in dark mode and would go white-on-white.
+const INK_FIXED = '#1f1f24';
 
 const PLAN_AMOUNTS: Record<string, { usd: number; rwf: string }> = {
   starter:      { usd: 9,  rwf: '13,000' },
@@ -362,7 +365,7 @@ export default function PaySubmitPage() {
               <img src={preview} alt="Payment proof" style={{ width: '100%', borderRadius: 6, border: `1px solid ${RULE}`, display: 'block' }} />
               <button
                 onClick={() => { setFile(null); setPreview(null); }}
-                style={{ position: 'absolute', top: 10, right: 10, background: INK, color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}
+                style={{ position: 'absolute', top: 10, right: 10, background: INK_FIXED, color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}
               >
                 Remove
               </button>

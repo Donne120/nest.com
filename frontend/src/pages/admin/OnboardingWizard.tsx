@@ -12,6 +12,9 @@ import toast from 'react-hot-toast';
 import { BG, BG2, SURF, RULE, INK, ACC, GO } from '../../lib/colors';
 const INK2 = 'var(--c-ink2)';
 const INK3 = 'var(--c-ink3)';
+// Fixed dark for always-dark chips/buttons that carry white text — the themed
+// INK token inverts to near-white in dark mode and would go white-on-white.
+const INK_FIXED = '#1f1f24';
 const ACC2 = '#e07a5f';
 const WARN = '#c97a2c';
 const DISP = "'Fraunces', Georgia, serif";
@@ -376,7 +379,7 @@ function PayStep({ plan, onDone, onBack }: {
       </p>
 
       {/* MoMo destination */}
-      <div style={{ background: INK, borderRadius: 6, padding: '18px 22px', marginBottom: 24 }}>
+      <div style={{ background: INK_FIXED, borderRadius: 6, padding: '18px 22px', marginBottom: 24 }}>
         <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 10 }}>
           MTN MoMo · Rwanda
         </div>
@@ -428,7 +431,7 @@ function PayStep({ plan, onDone, onBack }: {
           <div style={{ position: 'relative' }}>
             <img src={preview} alt="Proof" style={{ width: '100%', borderRadius: 6, border: `1px solid ${RULE}`, display: 'block', maxHeight: 200, objectFit: 'cover' }} />
             <button onClick={() => { setFile(null); setPreview(null); }}
-              style={{ position: 'absolute', top: 8, right: 8, background: INK, color: '#fff', border: 'none', borderRadius: 4, padding: '3px 10px', fontSize: 11, cursor: 'pointer' }}>
+              style={{ position: 'absolute', top: 8, right: 8, background: INK_FIXED, color: '#fff', border: 'none', borderRadius: 4, padding: '3px 10px', fontSize: 11, cursor: 'pointer' }}>
               Remove
             </button>
           </div>

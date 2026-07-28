@@ -42,6 +42,13 @@ const PAGE_TITLES: [string, string][] = [
 // Design tokens
 import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, ACC2, GO } from '../../lib/colors';
 
+// The sidebar is ALWAYS a dark panel with light text — its text colours are
+// hardcoded white/rgba-white. So its background must be a FIXED dark colour,
+// not the theme-driven INK token (which flips to near-white in dark mode and
+// turned the whole sidebar white-on-white).
+const SIDEBAR_BG = '#161019';       // fixed deep aubergine-black
+const SIDEBAR_EDGE = '#0a0906';     // right border
+
 export default function AdminLayout() {
   const { user, clearAuth } = useAuthStore();
   const navigate = useNavigate();
@@ -103,8 +110,8 @@ export default function AdminLayout() {
           flexShrink: 0,
           display: 'flex',
           flexDirection: 'column',
-          background: INK,
-          borderRight: `2px solid #0a0906`,
+          background: SIDEBAR_BG,
+          borderRight: `2px solid ${SIDEBAR_EDGE}`,
           position: 'fixed',
           top: 0, left: 0, bottom: 0,
           zIndex: 50,
@@ -136,7 +143,7 @@ export default function AdminLayout() {
             </div>
             <div style={{
               fontFamily: "'Inconsolata', monospace",
-              fontSize: 10, color: 'rgba(255,255,255,0.3)',
+              fontSize: 10, color: 'rgba(255,255,255,0.5)',
               letterSpacing: '0.14em', textTransform: 'uppercase',
               marginTop: 6, paddingLeft: 38,
             }}>
@@ -181,7 +188,7 @@ export default function AdminLayout() {
             <div style={{ fontSize: 12.5, fontWeight: 600, color: '#f2ede8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.full_name ?? firstName}
             </div>
-            <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               {user?.role ?? 'Admin'}
             </div>
           </div>
@@ -441,7 +448,7 @@ function NavSection({ label, children }: { label: string; children: React.ReactN
       <div style={{
         fontFamily: "'Inconsolata', monospace",
         fontSize: 9.5, letterSpacing: '0.2em', textTransform: 'uppercase',
-        color: 'rgba(255,255,255,0.22)',
+        color: 'rgba(255,255,255,0.42)',
         padding: '0 20px', marginBottom: 6,
       }}>
         {label}
@@ -468,8 +475,8 @@ function NavItem({
         fontSize: 13,
         fontWeight: 500,
         fontFamily: "'Syne', 'Inter', sans-serif",
-        color: isActive ? '#f2ede8' : 'rgba(255,255,255,0.5)',
-        background: isActive ? 'rgba(255,255,255,0.07)' : 'transparent',
+        color: isActive ? '#ffffff' : 'rgba(255,255,255,0.72)',
+        background: isActive ? 'rgba(255,255,255,0.10)' : 'transparent',
         textDecoration: 'none',
         transition: 'color 0.15s, background 0.15s',
         letterSpacing: '0.01em',
@@ -484,13 +491,13 @@ function NavItem({
       onMouseLeave={(e) => {
         const el = e.currentTarget as HTMLElement;
         const active = el.getAttribute('aria-current') === 'page';
-        el.style.color = active ? '#f2ede8' : 'rgba(255,255,255,0.5)';
-        el.style.background = active ? 'rgba(255,255,255,0.07)' : 'transparent';
+        el.style.color = active ? '#ffffff' : 'rgba(255,255,255,0.72)';
+        el.style.background = active ? 'rgba(255,255,255,0.10)' : 'transparent';
       }}
     >
       {({ isActive }) => (
         <>
-          <Icon size={16} style={{ opacity: isActive ? 1 : 0.6, flexShrink: 0 }} />
+          <Icon size={16} style={{ opacity: isActive ? 1 : 0.8, flexShrink: 0 }} />
           <span>{label}</span>
         </>
       )}
