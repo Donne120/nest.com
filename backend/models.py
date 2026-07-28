@@ -152,7 +152,7 @@ class Organization(Base):
     website_url    = Column(String, nullable=True)   # external site / social link
     country        = Column(String, nullable=True)   # e.g. "Cameroon"
     city           = Column(String, nullable=True)   # e.g. "Yaoundé"
-    is_listed      = Column(Boolean, default=False, nullable=False)  # opt-in to public directory
+    is_listed      = Column(Boolean, default=True, nullable=False)  # in public directory (opt-OUT to hide)
     plan = Column(SAEnum(Plan), default=Plan.trial, nullable=False)
     subscription_status = Column(SAEnum(SubscriptionStatus), default=SubscriptionStatus.active, nullable=False)
     trial_ends_at = Column(DateTime(timezone=True), nullable=True)

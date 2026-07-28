@@ -66,11 +66,15 @@ def _ensure_public_join_link(org: "models.Organization", db: Session):
 
 @router.get("/public", response_model=List[schemas.OrganizationPublicOut])
 def list_public_orgs(db: Session = Depends(get_db)):
-    """Public directory of organizations that have opted in (`is_listed`).
+    """Public directory of organizations (auto-listed, opt-out via `is_listed`).
 
     Unauthenticated — powers the "Find Courses" page so visitors can discover
     schools/tutors, see what they teach, and contact them directly. Returns
     only safe profile fields + published courses; never payment/plan data.
+
+    An org appears when it is active, has not opted out of the directory, and
+    has at least one published course — so real content shows up automatically
+    without any admin toggle, while empty shells stay hidden.
     """
     orgs = (
         db.query(models.Organization)
@@ -87,8 +91,11 @@ def list_public_orgs(db: Session = Depends(get_db)):
 
     out: List[schemas.OrganizationPublicOut] = []
     for org in orgs:
-        join_link = _ensure_public_join_link(org, db)
         published = [m for m in org.modules if m.is_published]
+        # Only surface orgs that actually have something to teach.
+        if not published:
+            continue
+        join_link = _ensure_public_join_link(org, db)
         courses = [
             schemas.PublicCourseOut(
                 id=m.id,

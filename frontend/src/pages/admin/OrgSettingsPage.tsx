@@ -337,7 +337,7 @@ function OrgTab() {
   // Custom instructions
   const [instructions, setInstructions] = useState(organization?.payment_instructions ?? '');
   // ── Public directory profile ──────────────────────────────────────────────
-  const [isListed, setIsListed]   = useState(organization?.is_listed ?? false);
+  const [isListed, setIsListed]   = useState(organization?.is_listed ?? true);
   const [tagline, setTagline]     = useState(organization?.tagline ?? '');
   const [description, setDescription] = useState(organization?.description ?? '');
   const [pubEmail, setPubEmail]   = useState(organization?.public_email ?? '');
@@ -481,11 +481,11 @@ function OrgTab() {
             <Globe size={15} className="text-brand-600" /> Public profile
           </p>
           <p className="text-xs text-gray-500 mt-0.5">
-            Appear in the public directory on the Nest landing page so visitors can discover you and reach out to join your programs.
+            Once you publish a course, you appear automatically in the public directory (Find courses) so new learners can discover you and enroll. Turn this off to stay hidden.
           </p>
         </div>
 
-        {/* Listing toggle */}
+        {/* Listing toggle — auto-listed by default; this is an opt-out */}
         <div className="px-4 py-4 border-b border-gray-100">
           <button
             type="button"
@@ -497,12 +497,12 @@ function OrgTab() {
               : <ToggleLeft size={32} className="text-gray-300 flex-shrink-0" />}
             <span>
               <span className="block text-sm font-semibold text-gray-800">
-                {isListed ? 'Listed in the public directory' : 'Not listed'}
+                {isListed ? 'Discoverable in Find courses' : 'Hidden from the directory'}
               </span>
               <span className="block text-xs text-gray-500 mt-0.5">
                 {isListed
-                  ? 'Visitors can see your profile and contact details on the landing page.'
-                  : 'Turn on to be discoverable by new learners on the landing page.'}
+                  ? 'When you have a published course, visitors can find your profile and enroll from the landing page.'
+                  : 'You are hidden from Find courses. Only people with a direct link can reach you.'}
               </span>
             </span>
           </button>

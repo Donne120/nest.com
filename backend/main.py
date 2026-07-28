@@ -180,7 +180,7 @@ END $$""",
             "ALTER TABLE organizations ADD COLUMN website_url VARCHAR",
             "ALTER TABLE organizations ADD COLUMN country VARCHAR",
             "ALTER TABLE organizations ADD COLUMN city VARCHAR",
-            "ALTER TABLE organizations ADD COLUMN is_listed BOOLEAN DEFAULT FALSE NOT NULL",
+            "ALTER TABLE organizations ADD COLUMN is_listed BOOLEAN DEFAULT TRUE NOT NULL",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:
@@ -196,6 +196,25 @@ END $$""",
                 except Exception as e:
                     logger.warning(f"Column migration skipped (already exists or error): {e}")
                     conn.rollback()
+
+        # ─── Auto-list backfill (migration 016) ──────────────────────────────
+        # The public directory changed from opt-in to opt-out: orgs are now shown
+        # automatically once they have a published course. Existing orgs were all
+        # is_listed=FALSE under the old default, so flip them to listed ONCE. Gated
+        # on a marker so an org that later opts out stays opted out.
+        with engine.connect() as conn:
+            try:
+                already = conn.execute(
+                    text("SELECT COUNT(*) FROM alembic_version WHERE version_num = '016'")
+                ).scalar()
+                if not already:
+                    conn.execute(text("UPDATE organizations SET is_listed = TRUE WHERE is_listed = FALSE"))
+                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('016')"))
+                    conn.commit()
+                    logger.info("✓ Auto-list backfill (016): existing orgs now discoverable")
+            except Exception as e:
+                logger.warning(f"Auto-list backfill (016) skipped: {e}")
+                conn.rollback()
 
         # ─── Enum value additions (PostgreSQL only) ──────────────────────────
         if is_postgres:
