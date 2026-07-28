@@ -102,7 +102,7 @@ export default function WhiteboardModal({ questionId, questionText, videoId }: P
   }, [questionId]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4"
       style={{ background: 'rgba(11,10,15,0.7)', backdropFilter: 'blur(6px)' }}>
       <div className="nai-katex w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden"
         style={{ background: SURFACE, border: `1px solid ${EDGE}`, borderRadius: 16, boxShadow: '0 40px 90px -20px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04) inset', animation: 'nai-rise 0.25s cubic-bezier(0.16,1,0.3,1) both' }}>

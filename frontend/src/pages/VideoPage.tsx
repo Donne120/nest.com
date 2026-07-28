@@ -17,7 +17,6 @@ import WhiteboardModal from '../components/AI/WhiteboardModal';
 import AskAIModal from '../components/AI/AskAIModal';
 import ImmersiveMobilePlayer from '../components/VideoPlayer/ImmersiveMobilePlayer';
 import LessonCompleteOverlay from '../components/VideoPlayer/LessonCompleteOverlay';
-import { Maximize2 } from 'lucide-react';
 
 // Unified type system (matches the rest of the product)
 const DISP = "'Cormorant Garamond', Georgia, serif";
@@ -52,17 +51,13 @@ export default function VideoPage() {
   const getPlayerDuration = () => usePlayerStore.getState().duration;
   const [showQuiz, setShowQuiz] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
-  // The immersive full-screen view is the DEFAULT lesson experience on mobile —
-  // it's the best thing we have and phones are the main market. A learner who
-  // exits it is remembered (localStorage), so we never fight their preference.
-  const [immersive, setImmersiveState] = useState(
-    () => localStorage.getItem('nest_immersive_off') !== '1'
-  );
-  const setImmersive = useCallback((v: boolean) => {
-    setImmersiveState(v);
-    if (v) localStorage.removeItem('nest_immersive_off');
-    else localStorage.setItem('nest_immersive_off', '1');   // remember the opt-out
-  }, []);
+  // The immersive full-screen (TikTok-style) view is the ONLY lesson player on
+  // mobile for uploaded videos — one way to watch, no duplicate inline player.
+  // We keep an `immersive` flag purely so modals (Ask, Quiz) can momentarily
+  // unmount it; it always returns to true on mobile. Embed videos (YouTube/
+  // Vimeo) can't drive the immersive <video>, so they fall back to the inline
+  // player — see `canGoImmersive`.
+  const [immersive] = useState(true);
   const [noteDraft, setNoteDraft] = useState('');
   const [notePinTime, setNotePinTime] = useState(false);
   const [noteEditId, setNoteEditId] = useState<string | null>(null);
@@ -292,10 +287,11 @@ export default function VideoPage() {
         {/* ── MOBILE UI ── */}
         <div className="lg:hidden">
 
-          {/* Video — full-bleed, single instance.
-              Unmounted while the immersive player is open so only ONE video
-              decoder is ever alive (two will OOM a low-end phone). */}
-          {isMobile && !immersive && (
+          {/* Inline video — ONLY the embed fallback (YouTube/Vimeo), which the
+              immersive player can't drive. Uploaded videos always use the single
+              full-screen immersive (TikTok) player, so there is never a second
+              way to watch on mobile. */}
+          {isMobile && !canGoImmersive && (
             <div style={{ background: '#000', lineHeight: 0, position: 'relative' }}>
               <VideoPlayer
                 videoUrl={video.video_url}
@@ -304,24 +300,6 @@ export default function VideoPage() {
                 onTimeUpdate={handleTimeUpdate}
                 onVideoEnd={handleVideoEnd}
               />
-              {/* Re-enter the immersive view (shown only if the learner exited it) */}
-              {canGoImmersive && (
-                <button
-                  onClick={() => { setPlaying(false); setImmersive(true); }}
-                  className="press"
-                  aria-label="Watch full screen"
-                  style={{
-                    position: 'absolute', top: 10, right: 10, zIndex: 5,
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    minHeight: 36, padding: '0 12px', borderRadius: 100,
-                    background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.22)',
-                    color: '#fff', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-                    backdropFilter: 'blur(6px)', cursor: 'pointer',
-                  }}
-                >
-                  <Maximize2 size={13} /> Full screen
-                </button>
-              )}
             </div>
           )}
 
@@ -670,21 +648,22 @@ export default function VideoPage() {
       {/* ── Q&A Sidebar: mobile bottom sheet (< lg) ── */}
       {videoId && (
         <div className="lg:hidden">
-          {/* Backdrop — above the BottomNav (z-50) so the sheet fully takes over */}
+          {/* Backdrop — above the immersive player (z-70) so the sheet takes over
+              when the learner asks a question from the full-screen view */}
           {sidebarOpen && (
             <div
               className="fixed inset-0"
-              style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(3px)', zIndex: 60 }}
+              style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(3px)', zIndex: 80 }}
               onClick={() => setSidebarOpen(false)}
             />
           )}
-          {/* Sheet — sits above the BottomNav so its reply box isn't covered */}
+          {/* Sheet — sits above the immersive player + BottomNav */}
           <div
             style={{
               position: 'fixed',
               left: 0, right: 0, bottom: 0,
               height: 'min(80vh, 100dvh - 56px)',
-              zIndex: 61,
+              zIndex: 81,
               borderRadius: '20px 20px 0 0',
               overflow: 'hidden',
               transform: sidebarOpen ? 'translateY(0)' : 'translateY(100%)',
@@ -714,9 +693,9 @@ export default function VideoPage() {
           hasNext={!!nextVideo}
           onPrev={() => prevVideo && navigate(`/video/${prevVideo.id}`)}
           onNext={() => nextVideo && navigate(`/video/${nextVideo.id}`)}
-          onExit={() => setImmersive(false)}
-          onAsk={() => { setImmersive(false); setSidebarOpen(true); openQuestionForm(currentTime); }}
-          onQuiz={quizQuestions.length > 0 ? () => { setImmersive(false); setShowQuiz(true); } : undefined}
+          onExit={() => navigate(module ? `/modules/${module.id}` : '/modules')}
+          onAsk={() => { setSidebarOpen(true); openQuestionForm(currentTime); }}
+          onQuiz={quizQuestions.length > 0 ? () => setShowQuiz(true) : undefined}
           hasQuiz={quizQuestions.length > 0}
         />
       )}

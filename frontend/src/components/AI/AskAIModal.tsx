@@ -123,7 +123,7 @@ export default function AskAIModal() {
         .katex-display { overflow-x: auto; }
       `}</style>
 
-      <div className="fixed inset-0 z-50 pointer-events-none" />
+      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 89 }} />
 
       <div
         ref={modalRef}
@@ -134,7 +134,7 @@ export default function AskAIModal() {
           top: isMobile ? 64 : pos.y,
           width: isMobile ? 'calc(100vw - 16px)' : 620,
           maxHeight: isMobile ? 'calc(100dvh - 148px)' : '80vh',
-          zIndex: 51,
+          zIndex: 90,
           display: 'flex', flexDirection: 'column',
           background: SURFACE,
           border: `1px solid ${EDGE}`,

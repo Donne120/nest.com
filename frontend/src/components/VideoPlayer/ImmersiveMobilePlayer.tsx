@@ -128,7 +128,7 @@ export default function ImmersiveMobilePlayer({
       {/* Top bar — exit + position */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4"
         style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', paddingBottom: 12, background: 'linear-gradient(180deg, rgba(0,0,0,0.6), transparent)', pointerEvents: 'none' }}>
-        <button onClick={onExit} aria-label="Exit full screen"
+        <button onClick={onExit} aria-label="Back to course"
           className="flex items-center justify-center rounded-full"
           style={{ minWidth: 40, minHeight: 40, background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', pointerEvents: 'auto' }}>
           <X size={20} />
