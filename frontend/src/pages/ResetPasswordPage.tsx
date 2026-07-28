@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-white flex items-center justify-center p-6" style={{ colorScheme: 'light' }}>
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center mx-auto mb-4">

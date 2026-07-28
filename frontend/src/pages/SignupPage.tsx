@@ -137,7 +137,7 @@ export default function SignupPage() {
   const slug = toSlug(orgName);
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: UI, position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: UI, position: 'relative', overflow: 'hidden', colorScheme: 'light' }}>
 
       {/* Noise */}
       <div style={{

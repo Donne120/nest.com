@@ -343,6 +343,53 @@ html.dark {
   }
 }
 
+/* ─── Fix invisible input text on dark-mode devices ─────────────────────────
+   When a visitor's OS/browser is in dark mode and the page never declares a
+   color-scheme, the browser paints form controls with ITS OWN dark styling —
+   dark input backgrounds and/or white text — which collided with our light
+   forms and left typed text invisible until highlighted. Pinning color-scheme
+   to the page's actual theme stops the browser from second-guessing it. */
+:root { color-scheme: light; }
+html.dark { color-scheme: dark; }
+
+/* Auth screens (login, signup, join, invite, password reset) are ALWAYS drawn
+   light — they use fixed light tokens even when html.dark is set. So force a
+   light color-scheme on their always-light containers, otherwise a dark-mode
+   device makes the browser paint their inputs dark and hides the typed text.
+   (The dedicated auth pages also set colorScheme:'light' inline as a belt.) */
+.min-h-screen.bg-white,
+[class*="from-brand-50"][class*="via-white"] {
+  color-scheme: light;
+}
+
+/* Make sure every text field renders as dark-ink-on-light in light mode and
+   the inverse in dark mode, regardless of the device's OS preference. Inline
+   styles on individual inputs still win where set; this is the safety floor. */
+input, textarea, select {
+  color: var(--c-ink);
+  caret-color: var(--c-acc);
+}
+input::placeholder, textarea::placeholder {
+  color: var(--c-ink3);
+  opacity: 1; /* Firefox dims placeholders by default */
+}
+
+/* Autofill: Chrome/Safari override the field's background AND text colour with
+   their own (often white text on a pale yellow) — on a dark device this became
+   white-on-white. Force the fill colour to our ink and hold the background with
+   a long inset shadow trick so autofilled email/password stays readable. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--c-ink) !important;
+  caret-color: var(--c-ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--c-surf) inset !important;
+  box-shadow: 0 0 0 1000px var(--c-surf) inset !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 /* ─── Video player aspect ratio ─────────────────────────────────────────── */
 /* 16:9 everywhere — matches how lectures/screencasts are actually filmed, so
    landscape video fills the width with no letterbox bars wasting the screen. */
