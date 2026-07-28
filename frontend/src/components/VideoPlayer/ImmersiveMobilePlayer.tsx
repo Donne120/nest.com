@@ -16,7 +16,7 @@ interface Props {
   onPrev: () => void;
   onNext: () => void;
   onExit: () => void;
-  onAsk: () => void;
+  onAsk: (atTime: number) => void;   // pass the CURRENT playback time so the question is timestamped
   onQuiz?: () => void;
   hasQuiz?: boolean;
 }
@@ -141,7 +141,7 @@ export default function ImmersiveMobilePlayer({
       {/* Right rail — Ask / Quiz / prev / next */}
       <div className="absolute flex flex-col items-center gap-4"
         style={{ right: 12, bottom: 'calc(env(safe-area-inset-bottom, 0px) + 110px)' }}>
-        <RailBtn label="Ask" onClick={onAsk} accent><HelpCircle size={24} /></RailBtn>
+        <RailBtn label="Ask" onClick={() => onAsk(current)} accent><HelpCircle size={24} /></RailBtn>
         {hasQuiz && onQuiz && <RailBtn label="Quiz" onClick={onQuiz}><ListChecks size={24} /></RailBtn>}
         <RailBtn label="Prev" onClick={onPrev} disabled={!hasPrev}><ChevronUp size={24} /></RailBtn>
         <RailBtn label="Next" onClick={onNext} disabled={!hasNext}><ChevronDown size={24} /></RailBtn>

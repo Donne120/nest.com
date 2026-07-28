@@ -694,7 +694,7 @@ export default function VideoPage() {
           onPrev={() => prevVideo && navigate(`/video/${prevVideo.id}`)}
           onNext={() => nextVideo && navigate(`/video/${nextVideo.id}`)}
           onExit={() => navigate(module ? `/modules/${module.id}` : '/modules')}
-          onAsk={() => { setSidebarOpen(true); openQuestionForm(currentTime); }}
+          onAsk={(atTime) => { setSidebarOpen(true); openQuestionForm(atTime); }}
           onQuiz={quizQuestions.length > 0 ? () => setShowQuiz(true) : undefined}
           hasQuiz={quizQuestions.length > 0}
         />
