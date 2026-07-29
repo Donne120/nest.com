@@ -19,6 +19,7 @@ interface Props {
   onAsk: (atTime: number) => void;   // pass the CURRENT playback time so the question is timestamped
   onQuiz?: () => void;
   hasQuiz?: boolean;
+  overlayOpen?: boolean;             // an Ask/Quiz overlay is up → pause; on close → resume
 }
 
 function fmt(s: number) {
@@ -37,7 +38,7 @@ function fmt(s: number) {
  */
 export default function ImmersiveMobilePlayer({
   video, videoUrl, index, total, hasPrev, hasNext,
-  onPrev, onNext, onExit, onAsk, onQuiz, hasQuiz,
+  onPrev, onNext, onExit, onAsk, onQuiz, hasQuiz, overlayOpen = false,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying]   = useState(true);
@@ -47,6 +48,7 @@ export default function ImmersiveMobilePlayer({
   const [swipe, setSwipe]       = useState<'up' | 'down' | null>(null);
 
   const touchStart = useRef<{ y: number; t: number } | null>(null);
+  const resumeAfterOverlay = useRef(false);
 
   // Lock body scroll while immersive
   useEffect(() => {
@@ -54,6 +56,23 @@ export default function ImmersiveMobilePlayer({
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, []);
+
+  // Ask / Quiz overlay open → pause the lesson at the current moment. When the
+  // learner is done (submits or dismisses) → resume from where it stopped, but
+  // only if it was actually playing when they opened the overlay.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (overlayOpen) {
+      resumeAfterOverlay.current = !v.paused;
+      v.pause();
+      setPlaying(false);
+    } else if (resumeAfterOverlay.current) {
+      resumeAfterOverlay.current = false;
+      v.play().catch(() => {});
+      setPlaying(true);
+    }
+  }, [overlayOpen]);
 
   // Hide the swipe hint after a moment
   useEffect(() => {
@@ -141,7 +160,11 @@ export default function ImmersiveMobilePlayer({
       {/* Right rail — Ask / Quiz / prev / next */}
       <div className="absolute flex flex-col items-center gap-4"
         style={{ right: 12, bottom: 'calc(env(safe-area-inset-bottom, 0px) + 110px)' }}>
-        <RailBtn label="Ask" onClick={() => onAsk(current)} accent><HelpCircle size={24} /></RailBtn>
+        <RailBtn
+          label="Ask"
+          accent
+          onClick={() => onAsk(videoRef.current ? videoRef.current.currentTime : current)}
+        ><HelpCircle size={24} /></RailBtn>
         {hasQuiz && onQuiz && <RailBtn label="Quiz" onClick={onQuiz}><ListChecks size={24} /></RailBtn>}
         <RailBtn label="Prev" onClick={onPrev} disabled={!hasPrev}><ChevronUp size={24} /></RailBtn>
         <RailBtn label="Next" onClick={onNext} disabled={!hasNext}><ChevronDown size={24} /></RailBtn>

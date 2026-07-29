@@ -697,6 +697,7 @@ export default function VideoPage() {
           onAsk={(atTime) => { setSidebarOpen(true); openQuestionForm(atTime); }}
           onQuiz={quizQuestions.length > 0 ? () => setShowQuiz(true) : undefined}
           hasQuiz={quizQuestions.length > 0}
+          overlayOpen={showQuestionForm || showQuiz || aiAskOpen}
         />
       )}
 
