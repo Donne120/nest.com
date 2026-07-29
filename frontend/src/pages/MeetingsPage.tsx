@@ -1,26 +1,34 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Calendar, Clock, ExternalLink, BookOpen, Plus, Video
+  Calendar, Clock, ExternalLink, BookOpen, Plus, Video,
 } from 'lucide-react';
 import api from '../api/client';
 import type { Meeting, MeetingStatus } from '../types';
-import { Skeleton } from '../components/UI/Skeleton';
 import BookMeetingModal from '../components/Meetings/BookMeetingModal';
 import { useWebSocket } from '../hooks/useWebSocket';
 
-const STATUS_STYLES: Record<MeetingStatus, string> = {
-  pending:   'bg-amber-50 text-amber-700 border-amber-200',
-  confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  declined:  'bg-red-50 text-red-600 border-red-200',
-  completed: 'bg-gray-100 text-gray-500 border-gray-200',
-};
+// ── Design tokens — theme-aware ─────────────────────────────────────────────
+const ACC    = 'var(--c-acc)';
+const BG      = 'var(--c-bg)';
+const SURF     = 'var(--c-surf)';
+const RAISE    = 'var(--c-bg2)';
+const INK     = 'var(--c-ink)';
+const INK2    = 'var(--c-ink2)';
+const INK3    = 'var(--c-ink3)';
+const BORDER  = 'var(--c-rule)';
+const OK      = 'var(--c-ok)';
+const WARN    = 'var(--c-warn)';
+const DANGER  = 'var(--c-danger)';
+const DISP    = "'Cormorant Garamond', Georgia, serif";
+const UIFONT  = "'Inter Tight', 'Inter', system-ui, sans-serif";
+const MONO    = "'DM Mono', ui-monospace, monospace";
 
-const STATUS_LABEL: Record<MeetingStatus, string> = {
-  pending:   'Pending',
-  confirmed: 'Confirmed',
-  declined:  'Declined',
-  completed: 'Completed',
+const STATUS: Record<MeetingStatus, { label: string; color: string }> = {
+  pending:   { label: 'Pending',   color: WARN },
+  confirmed: { label: 'Confirmed', color: OK },
+  declined:  { label: 'Declined',  color: DANGER },
+  completed: { label: 'Completed', color: INK3 },
 };
 
 function formatDateTime(iso: string) {
@@ -31,80 +39,94 @@ function formatDateTime(iso: string) {
 }
 
 function MeetingCard({ meeting }: { meeting: Meeting }) {
+  const st = STATUS[meeting.status];
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow">
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            {meeting.module_title && (
-              <span className="flex items-center gap-1 text-xs text-brand-600 bg-brand-50 border border-brand-100 rounded-full px-2.5 py-0.5 font-medium">
-                <BookOpen size={11} />
-                {meeting.module_title}
-              </span>
-            )}
-            <span className={`text-xs border rounded-full px-2.5 py-0.5 font-medium ${STATUS_STYLES[meeting.status]}`}>
-              {STATUS_LABEL[meeting.status]}
-            </span>
-          </div>
-          <p className="text-sm font-semibold text-gray-900 mt-2">
-            1-on-1 with {meeting.owner ? meeting.owner.full_name : 'your trainer'}
-          </p>
-        </div>
+    <article style={{
+      background: SURF, border: `1px solid ${BORDER}`,
+      borderLeft: `3px solid ${st.color}`, borderRadius: 14, padding: '16px 18px',
+    }}>
+      {/* Chips */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+        {meeting.module_title && (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            fontFamily: MONO, fontSize: 9.5, fontWeight: 600, letterSpacing: '0.06em',
+            color: ACC, background: 'color-mix(in srgb, var(--c-acc) 12%, transparent)',
+            border: `1px solid color-mix(in srgb, var(--c-acc) 26%, transparent)`,
+            borderRadius: 100, padding: '3px 9px',
+          }}>
+            <BookOpen size={10} /> {meeting.module_title}
+          </span>
+        )}
+        <span style={{
+          fontFamily: MONO, fontSize: 9.5, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+          color: st.color, background: `color-mix(in srgb, ${st.color} 13%, transparent)`,
+          borderRadius: 100, padding: '3px 9px',
+        }}>
+          {st.label}
+        </span>
       </div>
 
-      {/* Time info */}
-      <div className="space-y-1.5 text-sm text-gray-500">
+      <h3 style={{ fontFamily: DISP, fontSize: 19, fontWeight: 600, color: INK, lineHeight: 1.2, letterSpacing: '-0.01em' }}>
+        1-on-1 with {meeting.owner ? meeting.owner.full_name : 'your trainer'}
+      </h3>
+
+      {/* Time */}
+      <div style={{ marginTop: 10 }}>
         {meeting.confirmed_at ? (
-          <div className="flex items-center gap-2 text-emerald-700 font-medium">
-            <Calendar size={13} />
-            {formatDateTime(meeting.confirmed_at)}
-          </div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600, color: OK }}>
+            <Calendar size={13} /> {formatDateTime(meeting.confirmed_at)}
+          </span>
         ) : meeting.requested_at ? (
-          <div className="flex items-center gap-2">
-            <Clock size={13} />
-            Requested for {formatDateTime(meeting.requested_at)}
-          </div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, color: INK2 }}>
+            <Clock size={13} /> Requested for {formatDateTime(meeting.requested_at)}
+          </span>
         ) : (
-          <div className="flex items-center gap-2 text-gray-400">
-            <Clock size={13} />
-            No specific time requested
-          </div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, color: INK3 }}>
+            <Clock size={13} /> No specific time requested
+          </span>
         )}
       </div>
 
-      {/* Employee note */}
+      {/* Learner note */}
       {meeting.note && (
-        <p className="mt-3 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 line-clamp-2">
+        <p style={{
+          marginTop: 12, fontFamily: DISP, fontStyle: 'italic', fontSize: 14, color: INK2,
+          background: RAISE, border: `1px solid ${BORDER}`, borderRadius: 10, padding: '10px 12px', lineHeight: 1.5,
+        }}>
           "{meeting.note}"
         </p>
       )}
 
       {/* Decline reason */}
       {meeting.status === 'declined' && meeting.decline_reason && (
-        <p className="mt-3 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2 border border-red-100">
+        <p style={{
+          marginTop: 12, fontSize: 12.5, color: DANGER,
+          background: `color-mix(in srgb, ${DANGER} 10%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${DANGER} 24%, transparent)`,
+          borderRadius: 10, padding: '10px 12px',
+        }}>
           {meeting.decline_reason}
         </p>
       )}
 
-      {/* Meeting link */}
+      {/* Join */}
       {meeting.status === 'confirmed' && meeting.meeting_link && (
-        <a
-          href={meeting.meeting_link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 flex items-center justify-center gap-2 w-full py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors"
-        >
-          <Video size={14} />
-          Join Meeting
-          <ExternalLink size={12} className="opacity-70" />
+        <a href={meeting.meeting_link} target="_blank" rel="noopener noreferrer" className="press" style={{
+          marginTop: 14, minHeight: 46, borderRadius: 12,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          background: ACC, color: 'var(--c-on-acc)', textDecoration: 'none',
+          fontFamily: UIFONT, fontSize: 14, fontWeight: 700,
+          boxShadow: '0 8px 22px -10px color-mix(in srgb, var(--c-acc) 80%, transparent)',
+        }}>
+          <Video size={15} /> Join meeting <ExternalLink size={12} style={{ opacity: 0.7 }} />
         </a>
       )}
 
-      <p className="text-[11px] text-gray-400 mt-3">
+      <p style={{ fontFamily: MONO, fontSize: 10, color: INK3, marginTop: 12 }}>
         Requested {new Date(meeting.created_at).toLocaleDateString()}
       </p>
-    </div>
+    </article>
   );
 }
 
@@ -129,68 +151,88 @@ export default function MeetingsPage() {
   const past      = meetings.filter(m => m.status === 'declined' || m.status === 'completed');
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">My 1-on-1 Meetings</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Book time with your trainer for personalised help</p>
-        </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors sm:w-auto w-full"
-        >
-          <Plus size={15} />
-          Book a 1-on-1
-        </button>
-      </div>
+    <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
+      <div className="admin-page-content" style={{ maxWidth: 640, margin: '0 auto', padding: 'clamp(16px,4vw,32px) clamp(14px,4vw,20px) 40px' }}>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-36 w-full rounded-xl" />)}
-        </div>
-      ) : meetings.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-          <Calendar size={32} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500 font-medium">No meetings yet</p>
-          <p className="text-sm text-gray-400 mt-1">Book a 1-on-1 with your trainer to get personalised support</p>
-          <button
-            onClick={() => setShowModal(true)}
-            className="mt-4 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
-          >
-            Book now
+        {/* ── Hero header ── */}
+        <div style={{
+          position: 'relative', overflow: 'hidden',
+          background: SURF, border: `1px solid ${BORDER}`, borderRadius: 18,
+          padding: 'clamp(20px,5vw,26px)', marginBottom: 24,
+        }}>
+          <div aria-hidden style={{
+            position: 'absolute', top: -60, right: -30, width: 190, height: 190,
+            background: 'radial-gradient(circle, color-mix(in srgb, var(--c-acc) 18%, transparent) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+          <p style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: ACC, marginBottom: 8 }}>
+            Live support
+          </p>
+          <h1 style={{ fontFamily: DISP, fontSize: 'clamp(26px,7vw,34px)', fontWeight: 600, color: INK, lineHeight: 1.05, letterSpacing: '-0.02em', margin: 0 }}>
+            1-on-1 meetings
+          </h1>
+          <p style={{ fontSize: 14, color: INK2, marginTop: 8, lineHeight: 1.5 }}>
+            Book time with your trainer for personalised help.
+          </p>
+          <button onClick={() => setShowModal(true)} className="press" style={{
+            marginTop: 16, width: '100%', minHeight: 48, borderRadius: 12, border: 'none', cursor: 'pointer',
+            background: ACC, color: 'var(--c-on-acc)', fontFamily: UIFONT, fontSize: 14.5, fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            boxShadow: '0 10px 26px -12px color-mix(in srgb, var(--c-acc) 80%, transparent)',
+          }}>
+            <Plus size={16} /> Book a 1-on-1
           </button>
         </div>
-      ) : (
-        <div className="space-y-6">
-          {confirmed.length > 0 && (
-            <section>
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Upcoming</h2>
-              <div className="space-y-3">
-                {confirmed.map(m => <MeetingCard key={m.id} meeting={m} />)}
-              </div>
-            </section>
-          )}
-          {pending.length > 0 && (
-            <section>
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Pending</h2>
-              <div className="space-y-3">
-                {pending.map(m => <MeetingCard key={m.id} meeting={m} />)}
-              </div>
-            </section>
-          )}
-          {past.length > 0 && (
-            <section>
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Past</h2>
-              <div className="space-y-3">
-                {past.map(m => <MeetingCard key={m.id} meeting={m} />)}
-              </div>
-            </section>
-          )}
-        </div>
-      )}
 
-      {showModal && <BookMeetingModal onClose={() => setShowModal(false)} />}
+        {isLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ height: 130, background: RAISE, borderRadius: 14, animation: 'pulse 2s infinite', animationDelay: `${i * 80}ms` }} />
+            ))}
+          </div>
+        ) : meetings.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '56px 24px', background: SURF, border: `1px solid ${BORDER}`, borderRadius: 18 }}>
+            <div style={{ width: 60, height: 60, borderRadius: 16, margin: '0 auto 18px', background: RAISE, border: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Calendar size={26} style={{ color: INK3 }} />
+            </div>
+            <p style={{ fontFamily: DISP, fontSize: 23, fontWeight: 600, color: INK, marginBottom: 8 }}>No meetings yet</p>
+            <p style={{ fontSize: 14, color: INK2, maxWidth: 300, margin: '0 auto', lineHeight: 1.6 }}>
+              Book a 1-on-1 with your trainer to get personalised support.
+            </p>
+            <button onClick={() => setShowModal(true)} className="press" style={{
+              marginTop: 20, minHeight: 46, padding: '0 22px', borderRadius: 12, border: 'none', cursor: 'pointer',
+              background: ACC, color: 'var(--c-on-acc)', fontFamily: UIFONT, fontSize: 14, fontWeight: 700,
+            }}>
+              Book now
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+            {confirmed.length > 0 && <Section label="Upcoming" color={OK} items={confirmed} />}
+            {pending.length > 0 && <Section label="Pending" color={WARN} items={pending} />}
+            {past.length > 0 && <Section label="Past" color={INK3} items={past} />}
+          </div>
+        )}
+
+        {showModal && <BookMeetingModal onClose={() => setShowModal(false)} />}
+      </div>
     </div>
+  );
+}
+
+function Section({ label, color, items }: { label: string; color: string; items: Meeting[] }) {
+  return (
+    <section>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+        <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: INK3 }}>{label}</span>
+        <span style={{ minWidth: 20, height: 20, padding: '0 6px', borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--c-on-acc)', background: color }}>
+          {items.length}
+        </span>
+        <div style={{ flex: 1, height: 1, background: BORDER }} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {items.map(m => <MeetingCard key={m.id} meeting={m} />)}
+      </div>
+    </section>
   );
 }
