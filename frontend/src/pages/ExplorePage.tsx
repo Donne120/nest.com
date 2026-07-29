@@ -83,9 +83,10 @@ export default function ExplorePage() {
     <div style={{ background: INK, color: TEXT, minHeight: '100vh', fontFamily: UI }}>
       {/* Slim top bar */}
       <header style={{
-        position: 'sticky', top: 0, zIndex: 20, height: 60,
+        position: 'sticky', top: 0, zIndex: 20,
+        height: 'calc(60px + env(safe-area-inset-top, 0px))',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 clamp(16px,4vw,44px)',
+        padding: 'env(safe-area-inset-top, 0px) clamp(16px,4vw,44px) 0',
         borderBottom: `1px solid ${HAIR}`,
         background: 'rgba(11,10,15,0.8)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       }}>
@@ -117,7 +118,7 @@ export default function ExplorePage() {
 
       {/* Filter bar */}
       <div style={{
-        position: 'sticky', top: 60, zIndex: 15,
+        position: 'sticky', top: 'calc(60px + env(safe-area-inset-top, 0px))', zIndex: 15,
         borderTop: `1px solid ${HAIR}`, borderBottom: `1px solid ${HAIR}`,
         background: 'rgba(11,10,15,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
       }}>

@@ -209,9 +209,10 @@ export default function AdminLayout() {
 
         {/* Topbar */}
         <header style={{
-          height: 52,
+          // Clear the device status bar / notch so the row (incl. the bell) isn't clipped.
+          height: 'calc(52px + env(safe-area-inset-top, 0px))',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 12px 0 8px',
+          padding: 'env(safe-area-inset-top, 0px) 12px 0 8px',
           borderBottom: `1px solid ${RULE}`,
           background: SURF,
           position: 'sticky', top: 0, zIndex: 40,

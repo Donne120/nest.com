@@ -119,8 +119,13 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="h-14 flex items-center px-5 gap-4 z-40 sticky top-0"
+        className="flex items-center px-5 gap-4 z-40 sticky top-0"
         style={{
+          // Sit the action row BELOW the device status bar / notch. Without this
+          // the sticky header rendered flush at top:0 and the notch clipped the
+          // top of the row — hiding the notification bell on notched phones.
+          height: 'calc(56px + env(safe-area-inset-top, 0px))',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
           background:    tk.headerBg,
           backdropFilter: 'blur(14px)',
           WebkitBackdropFilter: 'blur(14px)',
@@ -404,11 +409,11 @@ export default function Navbar() {
           width: 340px;
         }
 
-        /* Mobile: full-width sheet below header */
+        /* Mobile: full-width sheet below header (clears the notch too) */
         @media (max-width: 639px) {
           .notif-panel {
             position: fixed !important;
-            top: 56px !important;
+            top: calc(60px + env(safe-area-inset-top, 0px)) !important;
             left: 8px !important;
             right: 8px !important;
             width: auto !important;
