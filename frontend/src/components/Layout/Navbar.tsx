@@ -134,7 +134,7 @@ export default function Navbar() {
           {organization?.logo_url ? (
             <img src={organization.logo_url} alt={orgName} className="h-7 w-auto object-contain max-w-[100px]" />
           ) : (
-            <span style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 900, fontSize: 20, color: tk.orgNameColor, letterSpacing: '-0.5px', transition: 'color 0.2s' }}>
+            <span className="nav-org-name" style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 900, fontSize: 20, color: tk.orgNameColor, letterSpacing: '-0.5px', transition: 'color 0.2s', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '58vw' }}>
               {orgName.toLowerCase()}
             </span>
           )}
@@ -166,14 +166,15 @@ export default function Navbar() {
             <kbd style={{ fontFamily: 'monospace', background: tk.kbdBg, border: `1px solid ${tk.pillBorder}`, padding: '1px 5px', borderRadius: 3, fontSize: 11, color: tk.kbdColor }}>Ctrl+K</kbd>
           </button>
 
-          {/* Search icon — mobile (44px touch target) */}
+          {/* Search icon — mobile: same 44px glass circle as theme/bell so the
+              three actions read as one consistent set (was a bare transparent icon) */}
           <button
             onClick={() => setSearchOpen(true)}
             aria-label="Search"
-            className="sm:hidden flex items-center justify-center rounded-full"
-            style={{ width: 44, height: 44, color: tk.iconColor, background: 'transparent', border: 'none', cursor: 'pointer' }}
+            className="sm:hidden nav-icon-btn"
+            style={{ width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: tk.iconColor, background: tk.pillBg, border: `1px solid ${tk.pillBorder}`, cursor: 'pointer' }}
           >
-            <Search size={20} />
+            <Search size={16} />
           </button>
 
           {/* ── Nest Assistant (desktop only — mobile uses BottomNav) ── */}
@@ -202,9 +203,9 @@ export default function Navbar() {
               idleStyle={{ background: tk.pillBg, border: `1px solid ${tk.pillBorder}`, color: tk.iconColor }}
               hoverStyle={{ background: tk.navHoverBg, border: `1px solid ${tk.pillBorderHover}`, color: tk.textPrimary }}
             >
-              {theme === 'dark'   ? <Moon    size={14} /> :
-               theme === 'light'  ? <Sun     size={14} /> :
-                                    <Monitor size={14} />}
+              {theme === 'dark'   ? <Moon    size={16} /> :
+               theme === 'light'  ? <Sun     size={16} /> :
+                                    <Monitor size={16} />}
             </IconButton>
 
             {themeOpen && (
@@ -239,7 +240,7 @@ export default function Navbar() {
               hoverStyle={{ background: tk.navHoverBg, border: `1px solid ${tk.pillBorderHover}`, color: tk.textPrimary }}
               style={{ position: 'relative' }}
             >
-              <Bell size={14} />
+              <Bell size={16} />
               {displayUnread > 0 && (
                 <span
                   className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] rounded-full flex items-center justify-center font-bold animate-pulse"
@@ -391,6 +392,10 @@ export default function Navbar() {
         }
         .animate-scale-in { animation: animate-scale-in 0.15s cubic-bezier(0.16,1,0.3,1) both; }
 
+        /* Tactile press on the mobile header action circles */
+        .nav-icon-btn { -webkit-tap-highlight-color: transparent; transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), border-color 0.15s; }
+        .nav-icon-btn:active { transform: scale(0.9); }
+
         /* Desktop: anchored to bell button */
         .notif-panel {
           position: absolute;
@@ -480,7 +485,8 @@ function IconButton({ onClick, 'aria-label': ariaLabel, title, active, activeSty
       onClick={onClick}
       aria-label={ariaLabel}
       title={title}
-      style={{ ...idleStyle, ...(active ? activeStyle : {}), width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', position: 'relative', ...style }}
+      className="nav-icon-btn"
+      style={{ ...idleStyle, ...(active ? activeStyle : {}), width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', ...style }}
       onMouseEnter={e => { if (!active) Object.assign((e.currentTarget as HTMLElement).style, hoverStyle); }}
       onMouseLeave={e => { if (!active) Object.assign((e.currentTarget as HTMLElement).style, idleStyle); }}
     >
