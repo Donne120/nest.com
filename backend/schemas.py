@@ -495,6 +495,7 @@ class CertNudge(BaseModel):
 
 class ProgressSummary(BaseModel):
     streak: int                          # consecutive active days (0 if broken)
+    at_risk: bool = False                # active yesterday, not yet today → nudge to keep it
     nudge: Optional[CertNudge] = None    # course closest to a certificate, if any
 
 

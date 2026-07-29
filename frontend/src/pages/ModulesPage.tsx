@@ -52,7 +52,7 @@ export default function ModulesPage() {
   });
 
   // Learner momentum: streak + how close to a certificate (drives the hero).
-  const { data: summary } = useQuery<{ streak: number; nudge: { lessons_left: number; lessons_done: number; lessons_total: number; module_id: string } | null }>({
+  const { data: summary } = useQuery<{ streak: number; at_risk: boolean; nudge: { lessons_left: number; lessons_done: number; lessons_total: number; module_id: string } | null }>({
     queryKey: ['progress-summary'],
     queryFn: () => api.get('/progress/summary').then(r => r.data),
     enabled: !!user,
@@ -85,6 +85,7 @@ export default function ModulesPage() {
           greeting={greeting}
           bgImage="/learning-hub-bg.jpg"
           streak={summary?.streak ?? 0}
+          atRisk={summary?.at_risk ?? false}
           nudge={summary?.nudge ?? null}
         />
       </div>

@@ -116,9 +116,14 @@ def progress_summary(
     lessons remain in the course they're closest to finishing (the certificate nudge)."""
     # If a UTC day was missed, the stored streak is stale — report 0 without writing.
     today = datetime.now(timezone.utc).date()
+    last = current_user.streak_last_day
     streak = current_user.streak_count or 0
-    if current_user.streak_last_day and current_user.streak_last_day < today - timedelta(days=1):
+    if last and last < today - timedelta(days=1):
         streak = 0
+
+    # At risk = they have a live streak, were active YESTERDAY, but not yet today.
+    # Opening the app now + one lesson keeps it alive → the highest-converting nudge.
+    at_risk = bool(streak >= 1 and last == today - timedelta(days=1))
 
     # Find the in-progress module with the FEWEST lessons left (closest to a cert).
     best = None  # (remaining, module_id, done, total)
@@ -155,4 +160,4 @@ def progress_summary(
     if best:
         nudge = {"lessons_left": best[0], "lessons_done": best[2], "lessons_total": best[3], "module_id": best[1]}
 
-    return schemas.ProgressSummary(streak=streak, nudge=nudge)
+    return schemas.ProgressSummary(streak=streak, at_risk=at_risk, nudge=nudge)

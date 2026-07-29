@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Award, Flame } from 'lucide-react';
+import { ArrowRight, Award, Flame, PartyPopper } from 'lucide-react';
 import type { Module } from '../../types';
 
 const PLUM = '#1a1320';
@@ -16,6 +16,7 @@ interface Props {
   greeting: string;
   bgImage: string;
   streak?: number;
+  atRisk?: boolean;
   nudge?: CertNudge | null;
 }
 
@@ -32,7 +33,17 @@ function mins(s: number) {
  * nothing before they'd done anything. Instead this leads with a person and a
  * single next action: "You stopped 4 minutes into 'Why factoring works'."
  */
-export default function ContinueCard({ modules, firstName, greeting, bgImage, streak = 0, nudge = null }: Props) {
+const MILESTONES = [7, 14, 30, 50, 100, 200, 365];
+
+export default function ContinueCard({ modules, firstName, greeting, bgImage, streak = 0, atRisk = false, nudge = null }: Props) {
+  // Celebrate a milestone once — remember the last one we congratulated locally.
+  const milestone = MILESTONES.includes(streak) ? streak : 0;
+  const seenKey = 'nest_streak_celebrated';
+  const alreadyCelebrated = typeof window !== 'undefined' && localStorage.getItem(seenKey) === String(milestone);
+  const showMilestone = milestone > 0 && !alreadyCelebrated;
+  if (showMilestone) {
+    try { localStorage.setItem(seenKey, String(milestone)); } catch { /* ignore */ }
+  }
   // The lesson to finish: furthest-along in-progress module.
   const inProgress = modules
     .filter(m => m.status === 'in_progress')
@@ -94,13 +105,15 @@ export default function ContinueCard({ modules, firstName, greeting, bgImage, st
           that the subject sits behind the text, so we also darken bottom-up. */}
       <div aria-hidden className="cc-scrim" style={{ position: 'absolute', inset: 0 }} />
 
-      {/* Streak flame — the come-back-tomorrow hook. Only shown once it's real. */}
+      {/* Streak flame — the come-back-tomorrow hook. When AT RISK (active
+          yesterday, not today) it turns urgent + pulses so the learner keeps it. */}
       {streak >= 1 && (
-        <div style={{
+        <div className={atRisk ? 'cc-streak cc-streak-risk' : 'cc-streak'} style={{
           position: 'absolute', top: 14, right: 14, zIndex: 2,
           display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: 'rgba(11,10,15,0.5)', backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(232,176,75,0.4)', borderRadius: 100,
+          background: atRisk ? 'rgba(232,176,75,0.22)' : 'rgba(11,10,15,0.5)',
+          backdropFilter: 'blur(8px)',
+          border: `1px solid rgba(232,176,75,${atRisk ? 0.75 : 0.4})`, borderRadius: 100,
           padding: '6px 12px 6px 10px',
         }}>
           <Flame size={15} style={{ color: GOLD }} fill={GOLD} />
@@ -113,9 +126,20 @@ export default function ContinueCard({ modules, firstName, greeting, bgImage, st
       {/* width:100% + minWidth:0 so long course titles wrap/ellipsis instead of
           blowing the card out past the viewport on a narrow phone. */}
       <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(20px,5vw,32px)', maxWidth: 620, width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
-        <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLD }}>
-          {eyebrow}
-        </span>
+        {/* Milestone celebration takes the eyebrow slot on the day it's earned. */}
+        {showMilestone ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: MONO, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: GOLD, fontWeight: 600 }}>
+            <PartyPopper size={14} /> {streak}-day streak! You're on fire
+          </span>
+        ) : atRisk ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: MONO, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: GOLD, fontWeight: 600 }}>
+            <Flame size={13} fill={GOLD} /> Keep your {streak}-day streak alive
+          </span>
+        ) : (
+          <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLD }}>
+            {eyebrow}
+          </span>
+        )}
 
         <h1 style={{
           fontFamily: DISP, fontSize: 'clamp(28px,6vw,40px)', fontWeight: 600,
@@ -199,6 +223,11 @@ export default function ContinueCard({ modules, firstName, greeting, bgImage, st
         @keyframes cc-fill { from { transform: scaleX(0); } }
         .cc-bar { animation: cc-fill 700ms cubic-bezier(0.16,1,0.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .cc-bar { animation: none; } }
+
+        /* At-risk streak chip gently pulses to draw the eye. */
+        @keyframes cc-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,176,75,0.5); } 50% { box-shadow: 0 0 0 6px rgba(232,176,75,0); } }
+        .cc-streak-risk { animation: cc-pulse 1.8s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .cc-streak-risk { animation: none; } }
 
         /* Phones: a full course title in the button truncates to nonsense, so
            swap to the short label. (Plain classes — no :has(), which older
