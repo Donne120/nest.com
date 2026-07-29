@@ -1,5 +1,5 @@
 from sqlalchemy import (
-    Column, String, Integer, Float, Boolean, DateTime, Text, JSON,
+    Column, String, Integer, Float, Boolean, DateTime, Date, Text, JSON,
     ForeignKey, Enum as SAEnum, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
@@ -284,6 +284,10 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     payment_verified = Column(Boolean, default=False, nullable=False, server_default='false')
     email_verified = Column(Boolean, default=False, nullable=False, server_default='false')
+    # Daily-learning streak — bumped from the /progress heartbeat as the learner
+    # watches. streak_last_day is the (UTC) date of their last active day.
+    streak_count = Column(Integer, default=0, nullable=False, server_default='0')
+    streak_last_day = Column(Date, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

@@ -486,6 +486,18 @@ class ProgressUpdate(BaseModel):
     status: Optional[ModuleStatus] = None
 
 
+class CertNudge(BaseModel):
+    lessons_left: int
+    lessons_done: int
+    lessons_total: int
+    module_id: str
+
+
+class ProgressSummary(BaseModel):
+    streak: int                          # consecutive active days (0 if broken)
+    nudge: Optional[CertNudge] = None    # course closest to a certificate, if any
+
+
 # ─── Quiz ─────────────────────────────────────────────────────────────────────
 
 class QuizOptionCreate(BaseModel):

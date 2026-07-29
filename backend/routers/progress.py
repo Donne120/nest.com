@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
@@ -8,6 +9,23 @@ import auth as auth_utils
 from routers.certificates import issue_if_not_exists
 
 router = APIRouter(prefix="/api/progress", tags=["progress"])
+
+
+def _bump_streak(user: models.User) -> None:
+    """Update the learner's daily-learning streak from *any* activity today.
+
+    Same day  -> no change. Yesterday -> +1. A gap (or first ever) -> reset to 1.
+    Uses UTC dates; caller commits.
+    """
+    today = datetime.now(timezone.utc).date()
+    last = user.streak_last_day
+    if last == today:
+        return  # already counted today
+    if last == today - timedelta(days=1):
+        user.streak_count = (user.streak_count or 0) + 1
+    else:
+        user.streak_count = 1
+    user.streak_last_day = today
 
 
 @router.post("/update", status_code=204)
@@ -48,8 +66,13 @@ def update_progress(
         )
         db.add(progress)
 
-    if payload.progress_seconds > (progress.progress_seconds or 0):
+    advanced = payload.progress_seconds > (progress.progress_seconds or 0)
+    if advanced:
         progress.progress_seconds = payload.progress_seconds
+
+    # Genuine watching activity today keeps the streak alive.
+    if advanced or payload.status == models.ModuleStatus.completed:
+        _bump_streak(current_user)
 
     if payload.status:
         progress.status = payload.status
@@ -82,3 +105,54 @@ def update_progress(
             pass
 
     db.commit()
+
+
+@router.get("/summary", response_model=schemas.ProgressSummary)
+def progress_summary(
+    current_user: models.User = Depends(auth_utils.get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Lightweight learner momentum for the Learn home: current streak + how many
+    lessons remain in the course they're closest to finishing (the certificate nudge)."""
+    # If a UTC day was missed, the stored streak is stale — report 0 without writing.
+    today = datetime.now(timezone.utc).date()
+    streak = current_user.streak_count or 0
+    if current_user.streak_last_day and current_user.streak_last_day < today - timedelta(days=1):
+        streak = 0
+
+    # Find the in-progress module with the FEWEST lessons left (closest to a cert).
+    best = None  # (remaining, module_id, done, total)
+    in_progress = (
+        db.query(models.UserProgress)
+        .filter(
+            models.UserProgress.user_id == current_user.id,
+            models.UserProgress.status == models.ModuleStatus.in_progress,
+        )
+        .all()
+    )
+    for p in in_progress:
+        vids = (
+            db.query(models.Video.id, models.Video.duration_seconds)
+            .filter(models.Video.module_id == p.module_id)
+            .all()
+        )
+        total = len(vids)
+        if total == 0:
+            continue
+        # A lesson counts as done once its own progress is past 80% — but we only
+        # track module-level progress_seconds, so approximate: done = share of the
+        # module's total duration watched, floored to whole lessons.
+        module_dur = sum((d or 0) for _, d in vids)
+        done = 0
+        if module_dur > 0:
+            frac = min(1.0, (p.progress_seconds or 0) / module_dur)
+            done = min(total, int(round(frac * total)))
+        remaining = total - done
+        if remaining > 0 and (best is None or remaining < best[0]):
+            best = (remaining, p.module_id, done, total)
+
+    nudge = None
+    if best:
+        nudge = {"lessons_left": best[0], "lessons_done": best[2], "lessons_total": best[3], "module_id": best[1]}
+
+    return schemas.ProgressSummary(streak=streak, nudge=nudge)

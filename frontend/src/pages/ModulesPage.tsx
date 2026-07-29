@@ -51,6 +51,13 @@ export default function ModulesPage() {
     enabled: !!user,
   });
 
+  // Learner momentum: streak + how close to a certificate (drives the hero).
+  const { data: summary } = useQuery<{ streak: number; nudge: { lessons_left: number; lessons_done: number; lessons_total: number; module_id: string } | null }>({
+    queryKey: ['progress-summary'],
+    queryFn: () => api.get('/progress/summary').then(r => r.data),
+    enabled: !!user,
+  });
+
   const certByModule = Object.fromEntries(certificates.map(c => [c.module.id, c]));
 
   const hour = new Date().getHours();
@@ -77,6 +84,8 @@ export default function ModulesPage() {
           firstName={firstName}
           greeting={greeting}
           bgImage="/learning-hub-bg.jpg"
+          streak={summary?.streak ?? 0}
+          nudge={summary?.nudge ?? null}
         />
       </div>
 

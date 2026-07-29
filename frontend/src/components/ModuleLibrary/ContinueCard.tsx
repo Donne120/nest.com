@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Award } from 'lucide-react';
+import { ArrowRight, Award, Flame } from 'lucide-react';
 import type { Module } from '../../types';
 
 const PLUM = '#1a1320';
@@ -8,11 +8,15 @@ const DISP = "'Cormorant Garamond', Georgia, serif";
 const UI   = "'Inter Tight', 'Inter', system-ui, sans-serif";
 const MONO = "'DM Mono', ui-monospace, monospace";
 
+export interface CertNudge { lessons_left: number; lessons_done: number; lessons_total: number; module_id: string; }
+
 interface Props {
   modules: Module[];
   firstName: string;
   greeting: string;
   bgImage: string;
+  streak?: number;
+  nudge?: CertNudge | null;
 }
 
 function mins(s: number) {
@@ -28,7 +32,7 @@ function mins(s: number) {
  * nothing before they'd done anything. Instead this leads with a person and a
  * single next action: "You stopped 4 minutes into 'Why factoring works'."
  */
-export default function ContinueCard({ modules, firstName, greeting, bgImage }: Props) {
+export default function ContinueCard({ modules, firstName, greeting, bgImage, streak = 0, nudge = null }: Props) {
   // The lesson to finish: furthest-along in-progress module.
   const inProgress = modules
     .filter(m => m.status === 'in_progress')
@@ -90,6 +94,22 @@ export default function ContinueCard({ modules, firstName, greeting, bgImage }: 
           that the subject sits behind the text, so we also darken bottom-up. */}
       <div aria-hidden className="cc-scrim" style={{ position: 'absolute', inset: 0 }} />
 
+      {/* Streak flame — the come-back-tomorrow hook. Only shown once it's real. */}
+      {streak >= 1 && (
+        <div style={{
+          position: 'absolute', top: 14, right: 14, zIndex: 2,
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          background: 'rgba(11,10,15,0.5)', backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(232,176,75,0.4)', borderRadius: 100,
+          padding: '6px 12px 6px 10px',
+        }}>
+          <Flame size={15} style={{ color: GOLD }} fill={GOLD} />
+          <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 600, color: '#F2F0F5' }}>
+            {streak} day{streak !== 1 ? 's' : ''}
+          </span>
+        </div>
+      )}
+
       {/* width:100% + minWidth:0 so long course titles wrap/ellipsis instead of
           blowing the card out past the viewport on a narrow phone. */}
       <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(20px,5vw,32px)', maxWidth: 620, width: '100%', minWidth: 0, boxSizing: 'border-box' }}>
@@ -120,6 +140,20 @@ export default function ContinueCard({ modules, firstName, greeting, bgImage }: 
                 {remainLabel}
               </span>
             )}
+          </div>
+        )}
+
+        {/* Certificate nudge — momentum toward a concrete reward. */}
+        {nudge && nudge.lessons_left > 0 && nudge.lessons_left <= 3 && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 14,
+            background: 'rgba(232,176,75,0.14)', border: '1px solid rgba(232,176,75,0.35)',
+            borderRadius: 100, padding: '6px 13px',
+          }}>
+            <Award size={13} style={{ color: GOLD, flexShrink: 0 }} />
+            <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: '#F2F0F5' }}>
+              {nudge.lessons_left} lesson{nudge.lessons_left !== 1 ? 's' : ''} from your certificate
+            </span>
           </div>
         )}
 

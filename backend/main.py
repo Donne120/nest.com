@@ -181,6 +181,9 @@ END $$""",
             "ALTER TABLE organizations ADD COLUMN country VARCHAR",
             "ALTER TABLE organizations ADD COLUMN city VARCHAR",
             "ALTER TABLE organizations ADD COLUMN is_listed BOOLEAN DEFAULT TRUE NOT NULL",
+            # Daily-learning streak
+            "ALTER TABLE users ADD COLUMN streak_count INTEGER DEFAULT 0 NOT NULL",
+            "ALTER TABLE users ADD COLUMN streak_last_day DATE",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:
