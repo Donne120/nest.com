@@ -36,18 +36,13 @@ export default function BottomNav() {
   return (
     <>
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-50"
+        className="md:hidden fixed bottom-0 inset-x-0 z-50 nest-bottomnav"
         style={{
-          background: 'rgba(10,9,8,0.88)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          boxShadow: '0 -1px 0 rgba(255,255,255,0.04), 0 -8px 32px rgba(0,0,0,0.4)',
         }}
         aria-label="Mobile navigation"
       >
-        <div className="flex items-stretch">
+        <div className="flex items-stretch nest-bottomnav-row">
           {tabs.map((tab) => {
             const Icon = tab.icon;
 
@@ -59,11 +54,11 @@ export default function BottomNav() {
                   key="assistant"
                   onClick={toggleNestAssistant}
                   aria-label="Nest Assistant"
-                  className="flex-1 flex flex-col items-center justify-center gap-1 relative"
+                  className="nest-tab flex-1 flex flex-col items-center justify-center gap-1 relative"
                   style={{
-                    minHeight: 60,
+                    minHeight: 58,
                     paddingTop: 8,
-                    paddingBottom: 10,
+                    paddingBottom: 8,
                     border: 'none',
                     background: 'transparent',
                     cursor: 'pointer',
@@ -71,6 +66,7 @@ export default function BottomNav() {
                 >
                   {/* Glowing centre pill — Nest AI orchid */}
                   <div
+                    className="nest-tab-cap"
                     style={{
                       width: 44,
                       height: 44,
@@ -122,54 +118,40 @@ export default function BottomNav() {
               <Link
                 key={tab.to}
                 to={tab.to!}
-                className="flex-1 flex flex-col items-center justify-center gap-1 relative"
+                className="nest-tab flex-1 flex flex-col items-center justify-center gap-1 relative"
+                aria-current={active ? 'page' : undefined}
                 style={{
-                  minHeight: 60,
+                  minHeight: 58,
                   paddingTop: 8,
-                  paddingBottom: 10,
+                  paddingBottom: 8,
                   fontSize: 10,
-                  fontWeight: 600,
-                  letterSpacing: '0.03em',
+                  fontWeight: active ? 700 : 600,
+                  letterSpacing: '0.02em',
                   textDecoration: 'none',
-                  color: active ? '#c06fd0' : 'rgba(255,255,255,0.38)',
+                  color: active ? 'var(--c-acc)' : 'var(--c-ink3)',
                   transition: 'color 0.2s',
                 }}
               >
                 <div
+                  className="nest-tab-cap"
                   style={{
-                    width: 36,
-                    height: 32,
-                    borderRadius: 10,
-                    background: active ? 'rgba(176,108,198,0.14)' : 'transparent',
+                    width: 46,
+                    height: 30,
+                    borderRadius: 12,
+                    background: active ? 'color-mix(in srgb, var(--c-acc) 15%, transparent)' : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'background 0.2s',
-                    marginBottom: 1,
+                    marginBottom: 3,
                   }}
                 >
                   <Icon
-                    size={20}
-                    strokeWidth={active ? 2.5 : 1.8}
+                    size={21}
+                    strokeWidth={active ? 2.4 : 1.9}
                     style={{ transition: 'all 0.2s' }}
                   />
                 </div>
                 <span style={{ lineHeight: 1 }}>{tab.label}</span>
-
-                {/* Active dot indicator */}
-                {active && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4px)',
-                      width: 4,
-                      height: 4,
-                      background: '#c06fd0',
-                      borderRadius: '50%',
-                      boxShadow: '0 0 6px rgba(176,108,198,0.8)',
-                    }}
-                  />
-                )}
               </Link>
             );
           })}
@@ -177,8 +159,22 @@ export default function BottomNav() {
       </nav>
 
       <style>{`
-        @media (max-width: 767px) {
-          .bottom-nav-safe { padding-bottom: env(safe-area-inset-bottom, 12px); }
+        /* Theme-aware floating glass bar — reads native in both light & dark. */
+        .nest-bottomnav {
+          background: color-mix(in srgb, var(--c-surf) 82%, transparent);
+          backdrop-filter: blur(24px) saturate(1.4);
+          -webkit-backdrop-filter: blur(24px) saturate(1.4);
+          border-top: 1px solid var(--c-rule);
+          box-shadow: 0 -0.5px 0 color-mix(in srgb, var(--c-ink) 6%, transparent),
+                      0 -10px 34px -18px rgba(0,0,0,0.55);
+        }
+        .nest-tab { -webkit-tap-highlight-color: transparent; }
+        /* Icon capsule springs on press for a tactile, app-native feel. */
+        .nest-tab-cap { transition: background 0.2s ease, transform 0.28s cubic-bezier(0.34,1.56,0.64,1); }
+        .nest-tab:active .nest-tab-cap { transform: scale(0.86); }
+        @media (prefers-reduced-motion: reduce) {
+          .nest-tab-cap { transition: none; }
+          .nest-tab:active .nest-tab-cap { transform: none; }
         }
       `}</style>
     </>

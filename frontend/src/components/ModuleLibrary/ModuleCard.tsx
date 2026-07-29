@@ -39,8 +39,10 @@ function formatPrice(price: number, currency: string) {
 export default function ModuleCard({ module }: Props) {
   const navigate  = useNavigate();
   const status    = module.status ?? 'not_started';
+  // Cap at 100 — progress_seconds can exceed duration (re-watches, seeking), and
+  // "262% — keep going" reads as a bug. Clamp both the bar and the label.
   const progress  = module.duration_seconds > 0
-    ? Math.round(((module.progress_seconds ?? 0) / module.duration_seconds) * 100)
+    ? Math.min(100, Math.round(((module.progress_seconds ?? 0) / module.duration_seconds) * 100))
     : 0;
 
   const isPaid    = module.is_for_sale && !!module.price;
@@ -128,9 +130,9 @@ export default function ModuleCard({ module }: Props) {
 
       {/* Content — sits on the poster. Extra bottom room on finished cards so
           the certificate button (rendered by the grid) never covers the text. */}
-      <div style={{ position: 'relative', padding: done ? '16px 16px 54px' : '16px 16px 14px' }}>
-        <h3 style={{
-          fontFamily: DISP, fontSize: 21, fontWeight: 600, lineHeight: 1.18,
+      <div className="nest-card-body" style={{ position: 'relative', padding: done ? '16px 16px 54px' : '16px 16px 14px' }}>
+        <h3 className="nest-card-title" style={{
+          fontFamily: DISP, fontSize: 20, fontWeight: 600, lineHeight: 1.16,
           letterSpacing: '-0.01em', color: '#F2F0F5', marginBottom: promise ? 6 : 10,
           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
         }}>
@@ -139,7 +141,7 @@ export default function ModuleCard({ module }: Props) {
 
         {/* The promise — one sentence, well set. Was 2 lines of 12.5px grey. */}
         {promise && (
-          <p style={{
+          <p className="nest-card-promise" style={{
             fontFamily: DISP, fontStyle: 'italic', fontSize: 14.5,
             color: 'rgba(242,240,245,0.72)', lineHeight: 1.45, marginBottom: 12,
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -194,7 +196,7 @@ export default function ModuleCard({ module }: Props) {
               }} />
             </div>
             <span style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(242,240,245,0.45)', marginTop: 6, display: 'inline-block' }}>
-              {done ? 'Finished' : `${progress}% — keep going`}
+              {done ? 'Finished' : progress >= 95 ? `${progress}% — almost there` : `${progress}% — keep going`}
             </span>
           </div>
         )}

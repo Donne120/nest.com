@@ -343,6 +343,16 @@ html.dark {
   }
 }
 
+/* ─── Mobile course-card tightening ─────────────────────────────────────────
+   In the 2-up mobile grid the poster tiles are narrow+tall; the full-size type
+   pushed the title up into the status chip. Tighten type + clamp the promise to
+   one line so content sits low and clear of the chip. */
+@media (max-width: 640px) {
+  .nest-card-title   { font-size: 16.5px !important; line-height: 1.15 !important; }
+  .nest-card-promise { -webkit-line-clamp: 1 !important; font-size: 12.5px !important; margin-bottom: 9px !important; }
+  .nest-card-body    { padding-left: 13px !important; padding-right: 13px !important; }
+}
+
 /* ─── Fix invisible input text on dark-mode devices ─────────────────────────
    When a visitor's OS/browser is in dark mode and the page never declares a
    color-scheme, the browser paints form controls with ITS OWN dark styling —
