@@ -119,7 +119,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="flex items-center px-5 gap-4 z-40 sticky top-0"
+        className="nest-header flex items-center px-5 gap-4 z-40 sticky top-0"
         style={{
           // Sit the action row BELOW the device status bar / notch. Without this
           // the sticky header rendered flush at top:0 and the notch clipped the
@@ -134,12 +134,13 @@ export default function Navbar() {
           transition:    'background 0.2s, border-color 0.2s',
         }}
       >
-        {/* ── Logo ── */}
-        <Link to="/" className="flex items-center gap-2.5 mr-2 flex-shrink-0" style={{ textDecoration: 'none' }}>
+        {/* ── Logo ── (min-w-0 so a long org name truncates instead of pushing
+            the action icons off the right edge) */}
+        <Link to="/" className="flex items-center gap-2.5 mr-2 min-w-0" style={{ textDecoration: 'none', overflow: 'hidden' }}>
           {organization?.logo_url ? (
             <img src={organization.logo_url} alt={orgName} className="h-7 w-auto object-contain max-w-[100px]" />
           ) : (
-            <span className="nav-org-name" style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 900, fontSize: 20, color: tk.orgNameColor, letterSpacing: '-0.5px', transition: 'color 0.2s', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '58vw' }}>
+            <span className="nav-org-name" style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 900, fontSize: 20, color: tk.orgNameColor, letterSpacing: '-0.5px', transition: 'color 0.2s', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {orgName.toLowerCase()}
             </span>
           )}
@@ -154,8 +155,8 @@ export default function Navbar() {
           <NavLink to="/pricing" active={isActive('/pricing')} label="Pricing" tk={tk} />
         </nav>
 
-        {/* ── Right actions ── */}
-        <div className="ml-auto flex items-center gap-1.5">
+        {/* ── Right actions ── (never shrink; the org name yields space instead) */}
+        <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
 
           {/* Search pill — desktop */}
           <button
@@ -400,6 +401,13 @@ export default function Navbar() {
         /* Tactile press on the mobile header action circles */
         .nav-icon-btn { -webkit-tap-highlight-color: transparent; transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), border-color 0.15s; }
         .nav-icon-btn:active { transform: scale(0.9); }
+
+        /* Narrow phones: tighten padding and icon size so all three action
+           circles fit without the bell overflowing off the right edge. */
+        @media (max-width: 420px) {
+          header.nest-header { padding-left: 12px !important; padding-right: 12px !important; gap: 8px !important; }
+          header.nest-header .nav-icon-btn { width: 40px !important; height: 40px !important; }
+        }
 
         /* Desktop: anchored to bell button */
         .notif-panel {
