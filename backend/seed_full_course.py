@@ -70,6 +70,7 @@ if existing_org:
         db.query(models.UserProgress).filter_by(user_id=uid).delete()
         db.query(models.Notification).filter_by(user_id=uid).delete()
         db.query(models.VideoNote).filter_by(user_id=uid).delete()
+        db.query(models.ModuleAccess).filter_by(student_id=uid).delete()
     # Assignments cascade
     for asgn in db.query(models.Assignment).filter_by(organization_id=oid).all():
         db.query(models.AssignmentSubmission).filter_by(assignment_id=asgn.id).delete()
@@ -224,44 +225,52 @@ db.flush()
 # VIDEOS (5)
 # ═════════════════════════════════════════════════════════════════════════════
 
+# Stock demo videos — direct MP4s from W3C's public sample bucket. They play in
+# both the normal player AND the mobile immersive (TikTok) player, which needs a
+# real <video> src (an iframe embed can't drive it). Durations match the clips.
 v1 = models.Video(
     module_id=module.id,
     title="What Is Product Thinking?",
     description="We unpack the mental model shift from 'feature factory' to genuine product ownership.",
-    video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    duration_seconds=742,
+    video_url="https://media.w3.org/2010/05/sintel/trailer.mp4",
+    thumbnail_url="https://media.w3.org/2010/05/sintel/poster.png",
+    duration_seconds=52,
     order_index=0,
 )
 v2 = models.Video(
     module_id=module.id,
     title="Understanding Your Users",
     description="Interviews, surveys, and observation — how to listen so users tell you the truth.",
-    video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    duration_seconds=918,
+    video_url="https://media.w3.org/2010/05/bunny/movie.mp4",
+    thumbnail_url="https://media.w3.org/2010/05/bunny/poster.png",
+    duration_seconds=60,
     order_index=1,
 )
 v3 = models.Video(
     module_id=module.id,
     title="Defining the Problem Space",
     description="Jobs-to-be-done, problem statements, and why solutions should come last.",
-    video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    duration_seconds=1056,
+    video_url="https://media.w3.org/2010/05/video/movie_300.mp4",
+    thumbnail_url="https://media.w3.org/2010/05/sintel/poster.png",
+    duration_seconds=6,
     order_index=2,
 )
 v4 = models.Video(
     module_id=module.id,
     title="Building Your MVP",
     description="What 'minimum' really means, how to scope a first release, and avoiding scope creep.",
-    video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    duration_seconds=884,
+    video_url="https://media.w3.org/2010/05/bunny/trailer.mp4",
+    thumbnail_url="https://media.w3.org/2010/05/bunny/poster.png",
+    duration_seconds=33,
     order_index=3,
 )
 v5 = models.Video(
     module_id=module.id,
     title="Measuring What Matters",
     description="North Star metrics, leading vs. lagging indicators, and how to run a product review.",
-    video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    duration_seconds=796,
+    video_url="https://media.w3.org/2010/05/sintel/trailer_hd.mp4",
+    thumbnail_url="https://media.w3.org/2010/05/sintel/poster.png",
+    duration_seconds=52,
     order_index=4,
 )
 db.add_all([v1, v2, v3, v4, v5])
@@ -1122,6 +1131,20 @@ db.add_all([
         reference_id=str(individual_assignment.id),
     ),
 ])
+
+# ═════════════════════════════════════════════════════════════════════════════
+# COURSE ACCESS — grant the learners access so the full funnel is walkable.
+# Mirrors an approved enrollment/payment (a ModuleAccess row per learner), which
+# is what has_module_access() checks. Without this the course is locked and you
+# can't reach the player/quizzes on a fresh demo.
+# ═════════════════════════════════════════════════════════════════════════════
+
+for learner in [marcus, aisha, carlos, yuki]:
+    db.add(models.ModuleAccess(
+        student_id=learner.id,
+        module_id=module.id,
+        granted_by=owner.id,
+    ))
 
 # ═════════════════════════════════════════════════════════════════════════════
 # COMMIT
