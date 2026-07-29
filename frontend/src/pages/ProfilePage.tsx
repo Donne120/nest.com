@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { User, Lock, Shield, Palette } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Lock, Shield, Palette, LogOut, Check, Mail, Briefcase, Image as ImageIcon } from 'lucide-react';
 import api from '../api/client';
 import { useAuthStore } from '../store';
 import Avatar from '../components/UI/Avatar';
@@ -8,8 +9,23 @@ import ThemeToggle from '../components/UI/ThemeToggle';
 import toast from 'react-hot-toast';
 import type { User as UserType } from '../types';
 
+// ── Design tokens — theme-aware (follow light/dark via CSS vars) ────────────
+const ACC    = 'var(--c-acc)';
+const BG      = 'var(--c-bg)';
+const SURF     = 'var(--c-surf)';
+const RAISE    = 'var(--c-bg2)';
+const INK     = 'var(--c-ink)';
+const INK2    = 'var(--c-ink2)';
+const INK3    = 'var(--c-ink3)';
+const BORDER  = 'var(--c-rule)';
+const OK      = 'var(--c-ok)';
+const DISP    = "'Cormorant Garamond', Georgia, serif";
+const UIFONT  = "'Inter Tight', 'Inter', system-ui, sans-serif";
+const MONO    = "'DM Mono', ui-monospace, monospace";
+
 export default function ProfilePage() {
-  const { user, updateUser } = useAuthStore();
+  const { user, updateUser, clearAuth } = useAuthStore();
+  const navigate = useNavigate();
 
   const [name, setName] = useState(user?.full_name ?? '');
   const [department, setDepartment] = useState(user?.department ?? '');
@@ -55,166 +71,198 @@ export default function ProfilePage() {
     changePassword.mutate();
   };
 
+  const handleSignOut = () => { clearAuth(); navigate('/login'); };
+
   const previewName = name.trim() || (user?.full_name ?? '');
 
-  const inputCls = "w-full border border-gray-200 dark:border-slate-600 rounded-xl px-3.5 py-2.5 text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400";
-  const disabledInputCls = "w-full border border-gray-100 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-slate-500 cursor-not-allowed";
-  const labelCls = "block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1.5";
-  const cardCls = "bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 overflow-hidden";
-  const cardHeaderCls = "px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center gap-2";
-
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
+      <div className="admin-page-content" style={{ maxWidth: 640, margin: '0 auto', padding: '0 0 40px' }}>
 
-      <div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">Profile Settings</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Manage your personal information and preferences</p>
-      </div>
-
-      {/* ── Appearance ── */}
-      <div className={cardCls}>
-        <div className={cardHeaderCls}>
-          <Palette size={15} className="text-gray-400 dark:text-slate-400" />
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-slate-200">Appearance</h2>
-        </div>
-        <div className="p-6 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-gray-800 dark:text-slate-200">Theme</p>
-            <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Choose how Nest looks for you</p>
+        {/* ── Hero header — a real app profile top ── */}
+        <div style={{ position: 'relative', overflow: 'hidden', paddingBottom: 4 }}>
+          {/* Ambient glow */}
+          <div aria-hidden style={{
+            position: 'absolute', top: -80, left: '50%', transform: 'translateX(-50%)',
+            width: 340, height: 260,
+            background: 'radial-gradient(ellipse, color-mix(in srgb, var(--c-acc) 24%, transparent) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{ position: 'relative', textAlign: 'center', padding: 'clamp(28px,8vw,44px) 20px 24px' }}>
+            <div style={{
+              display: 'inline-flex', borderRadius: '50%', padding: 3,
+              background: 'linear-gradient(135deg, var(--c-acc), var(--c-gold))',
+              boxShadow: '0 8px 30px -8px color-mix(in srgb, var(--c-acc) 60%, transparent)',
+            }}>
+              <div style={{ borderRadius: '50%', border: `3px solid ${BG}` }}>
+                <Avatar name={previewName} url={avatarUrl || null} className="!w-[86px] !h-[86px] !text-2xl" />
+              </div>
+            </div>
+            <h1 style={{ fontFamily: DISP, fontSize: 'clamp(26px,7vw,32px)', fontWeight: 600, color: INK, marginTop: 16, lineHeight: 1.1, letterSpacing: '-0.01em' }}>
+              {previewName}
+            </h1>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+              <span style={{
+                fontFamily: MONO, fontSize: 10, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase',
+                color: ACC, background: 'color-mix(in srgb, var(--c-acc) 13%, transparent)',
+                border: `1px solid color-mix(in srgb, var(--c-acc) 30%, transparent)`,
+                borderRadius: 100, padding: '4px 12px',
+              }}>
+                {user?.role}
+              </span>
+            </div>
+            <p style={{ fontFamily: MONO, fontSize: 11.5, color: INK3, marginTop: 10 }}>{user?.email}</p>
           </div>
-          <ThemeToggle />
-        </div>
-      </div>
-
-      {/* ── Profile card ── */}
-      <div className={cardCls}>
-        <div className={cardHeaderCls}>
-          <User size={15} className="text-gray-400 dark:text-slate-400" />
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-slate-200">Personal information</h2>
         </div>
 
-        <div className="p-6">
-          {/* Avatar preview */}
-          <div className="flex items-center gap-4 mb-6">
-            <Avatar name={previewName} url={avatarUrl || null} size="lg" />
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-slate-100">{previewName}</p>
-              <p className="text-xs text-gray-400 dark:text-slate-400 capitalize mt-0.5">{user?.role} · {user?.email}</p>
-            </div>
-          </div>
+        <div style={{ padding: '0 clamp(14px,4vw,20px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-          <form
-            onSubmit={e => { e.preventDefault(); saveProfile.mutate(); }}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* ── Appearance ── */}
+          <Card icon={<Palette size={15} />} title="Appearance">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '4px 2px' }}>
               <div>
-                <label htmlFor="full-name" className={labelCls}>Full name</label>
-                <input id="full-name" type="text" value={name} onChange={e => setName(e.target.value)} required className={inputCls} />
+                <p style={{ fontSize: 14, fontWeight: 600, color: INK }}>Theme</p>
+                <p style={{ fontSize: 12.5, color: INK3, marginTop: 2 }}>Choose how Nest looks for you</p>
               </div>
-              <div>
-                <label htmlFor="department" className={labelCls}>Department</label>
-                <input id="department" type="text" value={department} onChange={e => setDepartment(e.target.value)} placeholder="e.g. Engineering" className={inputCls} />
-              </div>
+              <ThemeToggle />
             </div>
+          </Card>
 
-            <div>
-              <label htmlFor="avatar-url" className={labelCls}>Avatar URL <span className="text-gray-400 dark:text-slate-500 font-normal">(optional)</span></label>
-              <input id="avatar-url" type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://..." className={inputCls} />
-            </div>
+          {/* ── Personal information ── */}
+          <Card icon={<User size={15} />} title="Personal information">
+            <form onSubmit={e => { e.preventDefault(); saveProfile.mutate(); }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <Field label="Full name" icon={<User size={13} />}>
+                <input value={name} onChange={e => setName(e.target.value)} required style={inputStyle} placeholder="Your name" />
+              </Field>
+              <Field label="Department" icon={<Briefcase size={13} />}>
+                <input value={department} onChange={e => setDepartment(e.target.value)} placeholder="e.g. Engineering" style={inputStyle} />
+              </Field>
+              <Field label="Avatar URL" hint="optional" icon={<ImageIcon size={13} />}>
+                <input type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://…" style={inputStyle} />
+              </Field>
 
-            {/* Read-only fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-              <div>
-                <label className="block text-xs font-medium text-gray-400 dark:text-slate-500 mb-1.5">Email <span className="text-gray-300 dark:text-slate-600">(can't change)</span></label>
-                <input type="text" value={user?.email ?? ''} disabled className={disabledInputCls} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-400 dark:text-slate-500 mb-1.5">Role <span className="text-gray-300 dark:text-slate-600">(assigned by admin)</span></label>
-                <input type="text" value={user?.role ?? ''} disabled className={`${disabledInputCls} capitalize`} />
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <button
-                type="submit"
-                disabled={saveProfile.isPending}
-                className="bg-brand-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saveProfile.isPending ? 'Saving...' : 'Save changes'}
+              <button type="submit" disabled={saveProfile.isPending} className="press" style={{
+                minHeight: 48, borderRadius: 12, border: 'none', cursor: 'pointer',
+                background: ACC, color: 'var(--c-on-acc)', fontFamily: UIFONT, fontSize: 14.5, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                opacity: saveProfile.isPending ? 0.6 : 1,
+              }}>
+                <Check size={16} /> {saveProfile.isPending ? 'Saving…' : 'Save changes'}
               </button>
+            </form>
+          </Card>
+
+          {/* ── Security ── */}
+          <Card icon={<Lock size={15} />} title="Change password">
+            <form onSubmit={handlePasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <Field label="Current password">
+                <input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} required placeholder="••••••••" style={inputStyle} />
+              </Field>
+              <Field label="New password" hint="min 8 characters">
+                <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} required minLength={8} placeholder="At least 8 characters" style={inputStyle} />
+                {newPw.length > 0 && newPw.length < 8 && <p style={warnText}>Password must be at least 8 characters</p>}
+              </Field>
+              <Field label="Confirm new password">
+                <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} required placeholder="Same as above" style={inputStyle} />
+                {confirmPw.length > 0 && confirmPw !== newPw && <p style={warnText}>Passwords do not match</p>}
+              </Field>
+              <button type="submit" disabled={changePassword.isPending} className="press" style={{
+                minHeight: 48, borderRadius: 12, cursor: 'pointer',
+                background: RAISE, color: INK, border: `1px solid ${BORDER}`,
+                fontFamily: UIFONT, fontSize: 14.5, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                opacity: changePassword.isPending ? 0.6 : 1,
+              }}>
+                <Lock size={15} /> {changePassword.isPending ? 'Updating…' : 'Update password'}
+              </button>
+            </form>
+          </Card>
+
+          {/* ── Account ── */}
+          <Card icon={<Shield size={15} />} title="Account">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Row label="Email" icon={<Mail size={13} />}>
+                <span style={{ fontSize: 13.5, fontWeight: 500, color: INK, wordBreak: 'break-all', textAlign: 'right' }}>{user?.email}</span>
+              </Row>
+              <div style={{ height: 1, background: BORDER, margin: '2px 0' }} />
+              <Row label="Role" icon={<Shield size={13} />}>
+                <span style={{ fontSize: 13.5, fontWeight: 500, color: INK, textTransform: 'capitalize' }}>{user?.role}</span>
+              </Row>
+              <div style={{ height: 1, background: BORDER, margin: '2px 0' }} />
+              <Row label="Status">
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 600, color: OK }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: OK, boxShadow: `0 0 8px ${OK}` }} /> Active
+                </span>
+              </Row>
             </div>
-          </form>
+          </Card>
+
+          {/* ── Sign out — was desktop-navbar only; mobile had no way out ── */}
+          <button onClick={handleSignOut} className="press" style={{
+            minHeight: 50, borderRadius: 14, cursor: 'pointer',
+            background: 'transparent', color: 'var(--c-danger)',
+            border: `1px solid color-mix(in srgb, var(--c-danger) 40%, var(--c-rule))`,
+            fontFamily: UIFONT, fontSize: 14.5, fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4,
+          }}>
+            <LogOut size={16} /> Sign out
+          </button>
+
+          <p style={{ textAlign: 'center', fontFamily: MONO, fontSize: 10.5, color: INK3, letterSpacing: '0.08em', marginTop: 4 }}>
+            NEST · {user?.email}
+          </p>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* ── Change password ── */}
-      <div className={cardCls}>
-        <div className={cardHeaderCls}>
-          <Lock size={15} className="text-gray-400 dark:text-slate-400" />
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-slate-200">Change password</h2>
-        </div>
+// ── Building blocks ─────────────────────────────────────────────────────────
 
-        <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
-          <div>
-            <label htmlFor="current-pw" className={labelCls}>Current password</label>
-            <input id="current-pw" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} required placeholder="••••••••" className={inputCls} />
-          </div>
+const inputStyle: React.CSSProperties = {
+  width: '100%', boxSizing: 'border-box',
+  background: 'var(--c-bg2)', border: '1px solid var(--c-rule)',
+  borderRadius: 11, padding: '12px 14px',
+  fontFamily: "'Inter Tight','Inter',system-ui,sans-serif", fontSize: 15,
+  color: 'var(--c-ink)', outline: 'none', transition: 'border-color 0.15s',
+};
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="new-pw" className={labelCls}>New password</label>
-              <input id="new-pw" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} required minLength={8} placeholder="At least 8 characters" className={inputCls} />
-              {newPw.length > 0 && newPw.length < 8 && (
-                <p className="text-xs text-red-500 mt-1">Password must be at least 8 characters</p>
-              )}
-            </div>
-            <div>
-              <label htmlFor="confirm-pw" className={labelCls}>Confirm new password</label>
-              <input id="confirm-pw" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} required placeholder="Same as above" className={inputCls} />
-              {confirmPw.length > 0 && confirmPw !== newPw && (
-                <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
-              )}
-            </div>
-          </div>
+const warnText: React.CSSProperties = {
+  fontSize: 11.5, color: 'var(--c-danger)', marginTop: 6, fontFamily: MONO,
+};
 
-          <div className="pt-2 flex justify-end">
-            <button
-              type="submit"
-              disabled={changePassword.isPending}
-              className="bg-gray-900 dark:bg-slate-600 dark:hover:bg-slate-500 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {changePassword.isPending ? 'Updating...' : 'Update password'}
-            </button>
-          </div>
-        </form>
+function Card({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <section style={{ background: SURF, border: `1px solid ${BORDER}`, borderRadius: 18, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '14px 18px', borderBottom: `1px solid ${BORDER}` }}>
+        <span style={{ color: ACC, display: 'flex' }}>{icon}</span>
+        <h2 style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK2 }}>{title}</h2>
       </div>
+      <div style={{ padding: '18px' }}>{children}</div>
+    </section>
+  );
+}
 
-      {/* ── Account info ── */}
-      <div className={cardCls}>
-        <div className={cardHeaderCls}>
-          <Shield size={15} className="text-gray-400 dark:text-slate-400" />
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-slate-200">Account</h2>
-        </div>
-        <div className="p-6 space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-400 dark:text-slate-500">Email</span>
-            <span className="font-medium text-gray-800 dark:text-slate-200">{user?.email}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400 dark:text-slate-500">Role</span>
-            <span className="font-medium text-gray-800 dark:text-slate-200 capitalize">{user?.role}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400 dark:text-slate-500">Status</span>
-            <span className="flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-400">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-              Active
-            </span>
-          </div>
-        </div>
-      </div>
+function Field({ label, hint, icon, children }: { label: string; hint?: string; icon?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <label style={{ display: 'block' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
+        {icon && <span style={{ color: INK3, display: 'flex' }}>{icon}</span>}
+        <span style={{ fontSize: 12, fontWeight: 600, color: INK2 }}>{label}</span>
+        {hint && <span style={{ fontSize: 11, color: INK3, fontWeight: 400 }}>· {hint}</span>}
+      </span>
+      {children}
+    </label>
+  );
+}
 
+function Row({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '11px 2px' }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: INK3 }}>
+        {icon && <span style={{ display: 'flex' }}>{icon}</span>}{label}
+      </span>
+      {children}
     </div>
   );
 }
