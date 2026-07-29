@@ -1,0 +1,17 @@
+{
+  "name": "Nest — Learn with AI",
+  "short_name": "Nest",
+  "description": "Video courses with AI tutoring and timestamped Q&A. Ask questions at any moment, get answers tied to the exact second.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0A0F",
+  "theme_color": "#7b2d8e",
+  "categories": ["education"],
+  "icons": [
+    { "src": "/pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

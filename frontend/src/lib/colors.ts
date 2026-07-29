@@ -21,6 +21,7 @@ export const GOLD   = 'var(--c-gold)';   // brand signature accent
 export const WARN   = 'var(--c-warn)';   // pending / attention (amber)
 export const DANGER = 'var(--c-danger)'; // destructive / error (red)
 export const OK     = 'var(--c-ok)';     // success (green)
+export const INFO   = 'var(--c-info)';   // cool teal — neutral/informational chips only
 
 // Video player cinema palette — fixed dark theme, not org-branded
 export const C = {

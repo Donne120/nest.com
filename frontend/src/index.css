@@ -25,6 +25,7 @@
   --c-warn: #b8842a;   /* single amber for "pending/attention" */
   --c-danger: #c2492e; /* single red for destructive/error */
   --c-ok:   #4f8a2e;   /* success green (distinct from lime brand accent) */
+  --c-info: #2f7a8c;   /* cool teal — neutral/informational only (a rest for the warm accents) */
 }
 
 html.dark {
@@ -36,9 +37,9 @@ html.dark {
         spread. Anchored on #0B0A0F to match the landing page + video player. */
   --c-bg:    #0B0A0F;  /* page floor */
   --c-bg2:   #08070B;  /* RECESSED well: inputs, code blocks, tracks (was inverted) */
-  --c-surf:  #141219;  /* card / panel — a real step above the floor */
-  --c-raise: #1C1922;  /* menus, popovers, hover — the second step */
-  --c-rule:  rgba(255,255,255,0.09);  /* hairline — the primary elevation cue on dark */
+  --c-surf:  #17151F;  /* card / panel — nudged lighter so cards read as a clear step above the floor on OLED at low brightness */
+  --c-raise: #211D2B;  /* menus, popovers, hover — the second step */
+  --c-rule:  rgba(255,255,255,0.10);  /* hairline — the primary elevation cue on dark (a hair stronger) */
 
   /* ── Text — cool inks read crisp against the warm floor ── */
   --c-ink:   #F2F0F5;  /* primary   — 17.4:1 on bg */
@@ -55,7 +56,10 @@ html.dark {
   --c-warn:   #E0AC55; /* 9.6:1  */
   --c-danger: #F0836B; /* 7.7:1  */
   --c-ok:     #7BD44E; /* 10.7:1 */
+  --c-info:   #6FC5D6; /* cool teal on dark — informational only, ~8:1 */
 }
+
+/* Add the lib/colors export target */
 
 /* ─── Brand palette CSS vars (overridden at runtime per org) ─────────────── */
 /* Default: Nest vivid purple — confident, friendly, professional */
