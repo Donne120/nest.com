@@ -45,34 +45,34 @@ function ActionMenu({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(v => !v)}
-        className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+        className="p-2 rounded-lg text-[var(--c-ink3)] hover:text-[var(--c-ink2)] hover:bg-[var(--c-bg2)] transition-colors"
         title="Actions"
       >
         <MoreVertical size={16} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-20 py-1 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1 w-44 bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl shadow-lg z-20 py-1 overflow-hidden">
           <button
             onClick={() => { onEdit(); setOpen(false); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--c-ink2)] hover:bg-[var(--c-bg2)] transition-colors"
           >
-            <Pencil size={14} className="text-gray-400" />
+            <Pencil size={14} className="text-[var(--c-ink3)]" />
             Edit module
           </button>
           <button
             onClick={() => { onToggle(); setOpen(false); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--c-ink2)] hover:bg-[var(--c-bg2)] transition-colors"
           >
             {m.is_published
-              ? <EyeOff size={14} className="text-gray-400" />
-              : <Eye size={14} className="text-gray-400" />}
+              ? <EyeOff size={14} className="text-[var(--c-ink3)]" />
+              : <Eye size={14} className="text-[var(--c-ink3)]" />}
             {m.is_published ? 'Unpublish' : 'Publish'}
           </button>
-          <div className="border-t border-gray-100 my-1" />
+          <div className="border-t border-[var(--c-rule)] my-1" />
           <button
             onClick={() => { onDelete(); setOpen(false); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-500/10 transition-colors"
           >
             <Trash2 size={14} />
             Delete
@@ -155,8 +155,8 @@ export default function AdminCoursesPage() {
         {/* Header */}
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Courses</h1>
-            <p className="text-base text-gray-500 mt-2">Build and manage your learning content library</p>
+            <h1 className="text-3xl font-bold text-[var(--c-ink)]">Courses</h1>
+            <p className="text-base text-[var(--c-ink2)] mt-2">Build and manage your learning content library</p>
           </div>
           <button
             onClick={() => navigate('/admin/courses/new')}
@@ -198,12 +198,12 @@ export default function AdminCoursesPage() {
         </div>
 
       ) : modules.length === 0 ? (
-        <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl py-24 text-center">
-          <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <Layers size={24} className="text-gray-300" />
+        <div className="bg-[var(--c-surf)] border-2 border-dashed border-[var(--c-rule)] rounded-2xl py-24 text-center">
+          <div className="w-14 h-14 bg-[var(--c-bg2)] rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Layers size={24} className="text-[var(--c-ink3)]" />
           </div>
-          <p className="text-gray-900 font-semibold text-lg">No modules yet</p>
-          <p className="text-sm text-gray-400 mt-1.5 mb-6">Create your first learning module to get started.</p>
+          <p className="text-[var(--c-ink)] font-semibold text-lg">No modules yet</p>
+          <p className="text-sm text-[var(--c-ink3)] mt-1.5 mb-6">Create your first learning module to get started.</p>
           <button
             onClick={() => navigate('/admin/courses/new')}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
@@ -213,25 +213,25 @@ export default function AdminCoursesPage() {
         </div>
 
       ) : (
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-2xl overflow-hidden shadow-sm">
 
           {/* Table head */}
-          <div className="grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50/50">
+          <div className="grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-3 border-b border-[var(--c-rule)] bg-[var(--c-bg2)]/50">
             <input
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
-              className="w-4 h-4 rounded border-gray-300 text-brand-600 cursor-pointer"
+              className="w-4 h-4 rounded border-[var(--c-rule)] text-brand-600 cursor-pointer"
               title="Select all"
             />
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 w-7">#</span>
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Module</span>
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Status</span>
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 pr-1"></span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--c-ink3)] w-7">#</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--c-ink3)]">Module</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--c-ink3)]">Status</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--c-ink3)] pr-1"></span>
           </div>
 
           {/* Rows */}
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-[var(--c-rule)]">
             {modules.map((m, idx) => {
               const duration = formatDuration(m.duration_seconds);
               const isChecked = selected.has(m.id);
@@ -239,8 +239,8 @@ export default function AdminCoursesPage() {
                 <div
                   key={m.id}
                   className={clsx(
-                    'grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-4 hover:bg-slate-50/70 transition-colors group',
-                    isChecked && 'bg-red-50/40',
+                    'grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-4 hover:bg-[var(--c-bg2)]/70 transition-colors group',
+                    isChecked && 'bg-red-500/10/40',
                   )}
                 >
                   {/* Checkbox */}
@@ -248,11 +248,11 @@ export default function AdminCoursesPage() {
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => toggleSelect(m.id)}
-                    className="w-4 h-4 rounded border-gray-300 text-brand-600 cursor-pointer"
+                    className="w-4 h-4 rounded border-[var(--c-rule)] text-brand-600 cursor-pointer"
                   />
 
                   {/* Index */}
-                  <span className="text-sm font-bold text-gray-300 tabular-nums w-7 text-center">
+                  <span className="text-sm font-bold text-[var(--c-ink3)] tabular-nums w-7 text-center">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
 
@@ -263,16 +263,16 @@ export default function AdminCoursesPage() {
                       <img
                         src={m.thumbnail_url}
                         alt={m.title}
-                        className="w-16 h-10 object-cover rounded-lg flex-shrink-0 border border-gray-100"
+                        className="w-16 h-10 object-cover rounded-lg flex-shrink-0 border border-[var(--c-rule)]"
                       />
                     ) : (
-                      <div className="w-16 h-10 bg-gradient-to-br from-indigo-50 to-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-100">
+                      <div className="w-16 h-10 bg-[var(--c-bg2)] rounded-lg flex items-center justify-center flex-shrink-0 border border-[var(--c-rule)]">
                         <BookOpen size={15} className="text-indigo-300" />
                       </div>
                     )}
 
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate leading-snug">{m.title}</p>
+                      <p className="text-sm font-semibold text-[var(--c-ink)] truncate leading-snug">{m.title}</p>
                       <div className="flex items-center gap-3 mt-1">
                         <Meta icon={<Video size={11} />} label={`${m.video_count} video${m.video_count !== 1 ? 's' : ''}`} />
                         <Dot />
@@ -291,8 +291,8 @@ export default function AdminCoursesPage() {
                   <span className={clsx(
                     'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold',
                     m.is_published
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
                   )}>
                     <span className={clsx(
                       'w-1.5 h-1.5 rounded-full',
@@ -305,7 +305,7 @@ export default function AdminCoursesPage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => navigate(`/admin/courses/${m.id}/edit`)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-brand-600 bg-brand-50 hover:bg-brand-100 border border-brand-100 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-brand-600 bg-brand-500/10 hover:bg-brand-500/15 border border-brand-500/25 rounded-lg transition-colors"
                     >
                       <Pencil size={12} />
                       Edit
@@ -327,8 +327,8 @@ export default function AdminCoursesPage() {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-            <p className="text-xs text-gray-400">
+          <div className="px-6 py-3 border-t border-[var(--c-rule)] bg-[var(--c-bg2)] flex items-center justify-between">
+            <p className="text-xs text-[var(--c-ink3)]">
               {selected.size > 0
                 ? <span className="text-red-600 font-semibold">{selected.size} selected — </span>
                 : null}
@@ -336,13 +336,13 @@ export default function AdminCoursesPage() {
             </p>
             <div className="flex items-center gap-3">
               {selected.size > 0 && (
-                <button onClick={() => setSelected(new Set())} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                <button onClick={() => setSelected(new Set())} className="text-xs text-[var(--c-ink3)] hover:text-[var(--c-ink2)] transition-colors">
                   Clear selection
                 </button>
               )}
               <button
                 onClick={() => navigate('/admin/courses/new')}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-400 transition-colors"
               >
                 <Plus size={13} />
                 Add module
@@ -367,19 +367,19 @@ function StatCard({
   color: 'emerald' | 'amber' | 'indigo';
 }) {
   const palette = {
-    emerald: { bg: 'bg-emerald-50', border: 'border-emerald-100', icon: 'text-emerald-500', value: 'text-emerald-700' },
-    amber:   { bg: 'bg-amber-50',   border: 'border-amber-100',   icon: 'text-amber-500',   value: 'text-amber-700'   },
-    indigo:  { bg: 'bg-brand-50',  border: 'border-brand-100',  icon: 'text-indigo-500',  value: 'text-indigo-700'  },
+    emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/25', icon: 'text-emerald-500', value: 'text-emerald-400' },
+    amber:   { bg: 'bg-amber-500/10',   border: 'border-amber-500/25',   icon: 'text-amber-500',   value: 'text-amber-400'   },
+    indigo:  { bg: 'bg-brand-500/10',  border: 'border-brand-500/25',  icon: 'text-indigo-500',  value: 'text-indigo-400'  },
   }[color];
 
   return (
     <div className={clsx('rounded-2xl border p-5 flex items-center gap-4', palette.bg, palette.border)}>
-      <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-sm', palette.icon)}>
+      <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--c-surf)] shadow-sm', palette.icon)}>
         {icon}
       </div>
       <div>
         <p className={clsx('text-2xl font-bold leading-none', palette.value)}>{value}</p>
-        <p className="text-xs text-gray-500 mt-1 font-medium">{label}</p>
+        <p className="text-xs text-[var(--c-ink2)] mt-1 font-medium">{label}</p>
       </div>
     </div>
   );
@@ -387,13 +387,13 @@ function StatCard({
 
 function Meta({ icon, label }: { icon: ReactNode; label: string }) {
   return (
-    <span className="flex items-center gap-1 text-xs text-gray-400">
-      <span className="text-gray-300">{icon}</span>
+    <span className="flex items-center gap-1 text-xs text-[var(--c-ink3)]">
+      <span className="text-[var(--c-ink3)]">{icon}</span>
       {label}
     </span>
   );
 }
 
 function Dot() {
-  return <span className="w-0.5 h-0.5 rounded-full bg-gray-300 flex-shrink-0" />;
+  return <span className="w-0.5 h-0.5 rounded-full bg-[var(--c-ink3)] flex-shrink-0" />;
 }

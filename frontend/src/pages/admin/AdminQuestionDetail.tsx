@@ -106,45 +106,45 @@ export default function AdminQuestionDetail() {
     );
   }
 
-  if (!question) return <div className="p-8 text-gray-500">Question not found.</div>;
+  if (!question) return <div className="p-8 text-[var(--c-ink2)]">Question not found.</div>;
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <button
         onClick={() => navigate('/admin/questions')}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-600 mb-6 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-[var(--c-ink2)] hover:text-brand-600 mb-6 transition-colors"
       >
         <ArrowLeft size={15} /> Back to Questions
       </button>
 
       {/* Question card */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-card mb-5">
+      <div className="bg-[var(--c-surf)] rounded-2xl border border-[var(--c-rule)] shadow-card mb-5">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Avatar name={question.asked_by_user.full_name} url={question.asked_by_user.avatar_url} size="md" />
               <div>
-                <p className="text-sm font-semibold text-gray-900">{question.asked_by_user.full_name}</p>
-                <p className="text-xs text-gray-500">{question.asked_by_user.department}</p>
+                <p className="text-sm font-semibold text-[var(--c-ink)]">{question.asked_by_user.full_name}</p>
+                <p className="text-xs text-[var(--c-ink2)]">{question.asked_by_user.department}</p>
               </div>
             </div>
             <Badge variant={question.status} />
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-4 mb-4">
-            <p className="text-gray-900 leading-relaxed">{question.question_text}</p>
+          <div className="bg-[var(--c-bg2)] rounded-xl p-4 mb-4">
+            <p className="text-[var(--c-ink)] leading-relaxed">{question.question_text}</p>
           </div>
 
           {/* Context */}
-          <div className="flex items-center gap-3 text-sm text-gray-500">
-            <span className="flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-lg font-mono text-xs">
+          <div className="flex items-center gap-3 text-sm text-[var(--c-ink2)]">
+            <span className="flex items-center gap-1.5 bg-[var(--c-bg2)] px-2.5 py-1 rounded-lg font-mono text-xs">
               <Clock size={13} />
               {formatTime(question.timestamp_seconds)}
             </span>
             {video && (
               <button
                 onClick={() => navigate(`/video/${video.id}`)}
-                className="flex items-center gap-1 text-brand-600 hover:text-brand-800 transition-colors text-xs"
+                className="flex items-center gap-1 text-brand-600 hover:text-brand-400 transition-colors text-xs"
               >
                 <ExternalLink size={12} />
                 Watch at this moment
@@ -159,28 +159,28 @@ export default function AdminQuestionDetail() {
 
       {/* Existing answers */}
       {question.answers.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-card mb-5">
-          <div className="px-6 py-3 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-900 text-sm">
+        <div className="bg-[var(--c-surf)] rounded-2xl border border-[var(--c-rule)] shadow-card mb-5">
+          <div className="px-6 py-3 border-b border-[var(--c-rule)]">
+            <h3 className="font-semibold text-[var(--c-ink)] text-sm">
               {question.answers.length} Answer{question.answers.length > 1 ? 's' : ''}
             </h3>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-[var(--c-rule)]">
             {question.answers.map((ans) => (
               <div key={ans.id} className="p-6">
                 <div className="flex items-center gap-2 mb-3">
                   <Avatar name={ans.answered_by_user.full_name} url={ans.answered_by_user.avatar_url} size="sm" />
-                  <span className="text-sm font-medium text-gray-800">{ans.answered_by_user.full_name}</span>
+                  <span className="text-sm font-medium text-[var(--c-ink)]">{ans.answered_by_user.full_name}</span>
                   {ans.is_official && (
-                    <span className="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-xs bg-brand-500/15 text-brand-400 px-2 py-0.5 rounded-full font-medium">
                       Official Answer
                     </span>
                   )}
-                  <span className="text-xs text-gray-400 ml-auto">
+                  <span className="text-xs text-[var(--c-ink3)] ml-auto">
                     {formatDistanceToNow(new Date(ans.created_at), { addSuffix: true })}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700 leading-relaxed pl-8">{ans.answer_text}</p>
+                <p className="text-sm text-[var(--c-ink2)] leading-relaxed pl-8">{ans.answer_text}</p>
               </div>
             ))}
           </div>
@@ -189,9 +189,9 @@ export default function AdminQuestionDetail() {
 
       {/* Answer form */}
       {question.status !== 'archived' && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-card mb-5">
-          <div className="px-6 py-3 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-900 text-sm">
+        <div className="bg-[var(--c-surf)] rounded-2xl border border-[var(--c-rule)] shadow-card mb-5">
+          <div className="px-6 py-3 border-b border-[var(--c-rule)]">
+            <h3 className="font-semibold text-[var(--c-ink)] text-sm">
               {question.status === 'answered' ? 'Add Another Reply' : 'Post Official Answer'}
             </h3>
           </div>
@@ -201,13 +201,13 @@ export default function AdminQuestionDetail() {
               onChange={(e) => setAnswerText(e.target.value)}
               placeholder="Write a clear, helpful answer that future learners will benefit from..."
               rows={5}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full border border-[var(--c-rule)] rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             />
             <div className="flex items-center justify-between mt-4">
               <button
                 onClick={fetchAiDraft}
                 disabled={aiDrafting}
-                className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Sparkles size={13} />
                 {aiDrafting ? 'Drafting…' : 'Ask AI for draft'}

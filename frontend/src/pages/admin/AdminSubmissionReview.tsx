@@ -39,11 +39,11 @@ function CommentSidebar({
   if (comments.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-10 px-5 h-full">
-        <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
-          <MessageSquare size={20} className="text-gray-300 dark:text-slate-600" />
+        <div className="w-12 h-12 rounded-2xl bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] flex items-center justify-center mb-3">
+          <MessageSquare size={20} className="text-[var(--c-ink3)] dark:text-[var(--c-ink2)]" />
         </div>
-        <p className="text-sm font-semibold text-gray-400 dark:text-gray-500">No annotations yet</p>
-        <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+        <p className="text-sm font-semibold text-[var(--c-ink3)] dark:text-[var(--c-ink2)]">No annotations yet</p>
+        <p className="text-xs text-[var(--c-ink3)] mt-1 leading-relaxed">
           Select text in the document, choose a highlight colour, then click Annotate.
         </p>
       </div>
@@ -55,17 +55,17 @@ function CommentSidebar({
       {comments.map(c => (
         <div
           key={c.id}
-          className="rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 group shadow-card"
+          className="rounded-xl overflow-hidden border border-[var(--c-rule)] group shadow-card"
           style={{ borderLeftColor: c.color, borderLeftWidth: 4 }}
         >
-          <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-slate-800/80 truncate leading-relaxed">
+          <div className="px-3 py-2 text-xs text-[var(--c-ink2)] dark:text-[var(--c-ink3)] italic bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)]/80 truncate leading-relaxed">
             "{c.quote}"
           </div>
-          <div className="px-3 py-2.5 flex items-start justify-between gap-2 bg-white dark:bg-slate-900">
-            <p className="text-sm text-gray-800 dark:text-white flex-1 leading-relaxed">{c.comment}</p>
+          <div className="px-3 py-2.5 flex items-start justify-between gap-2 bg-[var(--c-surf)]">
+            <p className="text-sm text-[var(--c-ink)] dark:text-[var(--c-ink)] flex-1 leading-relaxed">{c.comment}</p>
             <button
               onClick={() => onDelete(c.id)}
-              className="text-gray-300 hover:text-red-400 transition flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100"
+              className="text-[var(--c-ink3)] hover:text-red-400 transition flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100"
               title="Remove annotation"
             >
               <Trash2 size={13} />
@@ -215,9 +215,9 @@ export default function AdminSubmissionReview() {
   if (isLoading || !sub) {
     return (
       <div className="space-y-4">
-        <div className="h-10 w-48 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" />
-        <div className="h-28 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-        <div className="h-96 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
+        <div className="h-10 w-48 bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] rounded-lg animate-pulse" />
+        <div className="h-28 bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] rounded-xl animate-pulse" />
+        <div className="h-96 bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] rounded-xl animate-pulse" />
       </div>
     );
   }
@@ -232,12 +232,12 @@ export default function AdminSubmissionReview() {
       <div className="flex items-center justify-between gap-3">
         <button
           onClick={() => navigate(`/admin/assignments/${assignmentId}`)}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white transition font-medium"
+          className="flex items-center gap-1.5 text-sm text-[var(--c-ink2)] hover:text-[var(--c-ink)] dark:hover:text-white transition font-medium"
         >
           <ChevronLeft size={16} />
-          <span className="text-gray-400">Assignment</span>
-          <span className="text-gray-300 dark:text-slate-600 mx-1">/</span>
-          <span className="text-gray-700 dark:text-gray-200">Review: {name}</span>
+          <span className="text-[var(--c-ink3)]">Assignment</span>
+          <span className="text-[var(--c-ink3)] dark:text-[var(--c-ink2)] mx-1">/</span>
+          <span className="text-[var(--c-ink2)] dark:text-[var(--c-ink2)]">Review: {name}</span>
         </button>
 
         <button
@@ -251,18 +251,18 @@ export default function AdminSubmissionReview() {
       </div>
 
       {/* ─── Learner info + grade ─────────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-5 shadow-card">
+      <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl p-5 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 font-bold flex items-center justify-center text-sm flex-shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-brand-500/15 dark:bg-brand-900 text-brand-400 dark:text-brand-300 font-bold flex items-center justify-center text-sm flex-shrink-0">
               {initials}
             </div>
             <div>
-              <p className="font-serif text-base font-bold text-gray-800 dark:text-white">{name}</p>
+              <p className="font-serif text-base font-bold text-[var(--c-ink)] dark:text-[var(--c-ink)]">{name}</p>
               {sub.learner?.email && (
-                <p className="text-xs text-gray-400 mt-0.5">{sub.learner.email}</p>
+                <p className="text-xs text-[var(--c-ink3)] mt-0.5">{sub.learner.email}</p>
               )}
-              <p className="text-xs text-gray-400 mt-0.5 font-mono">
+              <p className="text-xs text-[var(--c-ink3)] mt-0.5 font-mono">
                 {sub.submitted_at
                   ? `Submitted ${format(parseISO(sub.submitted_at), 'MMM d, yyyy \u00b7 h:mm a')} \u00b7 ${sub.word_count} words`
                   : 'Draft'}
@@ -272,18 +272,18 @@ export default function AdminSubmissionReview() {
 
           <div className="flex items-center gap-3 flex-wrap">
             {/* Grade input */}
-            <div className="flex items-center gap-2.5 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2.5 bg-amber-500/10 dark:bg-amber-950/50 border border-amber-500/30 dark:border-amber-800 rounded-xl px-3 py-2">
               <Star size={16} className="text-amber-400 flex-shrink-0" />
               <input
                 type="text"
                 value={grade}
                 onChange={e => setGrade(e.target.value)}
                 placeholder="Grade (A, 85/100, Pass…)"
-                className="text-sm bg-transparent outline-none text-gray-800 dark:text-white placeholder-amber-300 dark:placeholder-amber-700 w-44 font-medium"
+                className="text-sm bg-transparent outline-none text-[var(--c-ink)] dark:text-[var(--c-ink)] placeholder-amber-300 dark:placeholder-amber-700 w-44 font-medium"
               />
             </div>
             {sub.reviewed_at && (
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 px-2.5 py-1.5 rounded-lg">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-green-600 dark:text-green-400 bg-green-500/10 dark:bg-green-950 border border-green-500/30 dark:border-green-800 px-2.5 py-1.5 rounded-lg">
                 <CheckCircle size={12} /> Reviewed {format(parseISO(sub.reviewed_at), 'MMM d')}
               </span>
             )}
@@ -298,10 +298,10 @@ export default function AdminSubmissionReview() {
         <div className="lg:col-span-2 space-y-3">
 
           {/* Annotation toolbar */}
-          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 flex items-center gap-4 flex-wrap shadow-card">
+          <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl px-4 py-3 flex items-center gap-4 flex-wrap shadow-card">
             <div className="flex items-center gap-2">
-              <Highlighter size={13} className="text-gray-400" />
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider font-mono">Colour</span>
+              <Highlighter size={13} className="text-[var(--c-ink3)]" />
+              <span className="text-xs font-bold text-[var(--c-ink3)] uppercase tracking-wider font-mono">Colour</span>
             </div>
             <div className="flex items-center gap-1.5">
               {COMMENT_COLORS.map(c => (
@@ -318,7 +318,7 @@ export default function AdminSubmissionReview() {
               ))}
             </div>
 
-            <div className="h-4 w-px bg-gray-200 dark:bg-slate-600" />
+            <div className="h-4 w-px bg-[var(--c-rule)] dark:bg-[var(--c-rule)]" />
 
             <button
               onClick={handleAddComment}
@@ -327,14 +327,14 @@ export default function AdminSubmissionReview() {
               <MessageSquare size={12} /> Annotate
             </button>
 
-            <p className="text-xs text-gray-400 italic hidden sm:block">
+            <p className="text-xs text-[var(--c-ink3)] italic hidden sm:block">
               Select text first, then click Annotate
             </p>
           </div>
 
           {/* Comment input */}
           {showCommentInput && (
-            <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-3.5 flex items-center gap-3 shadow-elevated">
+            <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl p-3.5 flex items-center gap-3 shadow-elevated">
               <div
                 className="w-3.5 h-3.5 rounded-full flex-shrink-0 ring-2 ring-white shadow"
                 style={{ backgroundColor: activeColor }}
@@ -349,7 +349,7 @@ export default function AdminSubmissionReview() {
                   if (e.key === 'Escape') { setShowCommentInput(false); setPendingComment(''); }
                 }}
                 placeholder="Type your annotation… (Enter to confirm, Esc to cancel)"
-                className="flex-1 text-sm bg-transparent outline-none text-gray-800 dark:text-white placeholder-gray-400"
+                className="flex-1 text-sm bg-transparent outline-none text-[var(--c-ink)] dark:text-[var(--c-ink)] placeholder-[var(--c-ink3)]"
               />
               <button
                 onClick={confirmComment}
@@ -359,7 +359,7 @@ export default function AdminSubmissionReview() {
               </button>
               <button
                 onClick={() => { setShowCommentInput(false); setPendingComment(''); }}
-                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
+                className="text-xs text-[var(--c-ink3)] hover:text-[var(--c-ink2)] dark:hover:text-[var(--c-ink)] transition"
               >
                 Cancel
               </button>
@@ -367,17 +367,17 @@ export default function AdminSubmissionReview() {
           )}
 
           {/* Document */}
-          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-card">
+          <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden shadow-card">
             <EditorContent editor={editor} />
           </div>
         </div>
 
         {/* Annotations sidebar */}
-        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-card flex flex-col">
-          <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+        <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden shadow-card flex flex-col">
+          <div className="px-4 py-3 border-b border-[var(--c-rule)] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare size={14} className="text-gray-400" />
-              <span className="text-sm font-bold text-gray-700 dark:text-white">
+              <MessageSquare size={14} className="text-[var(--c-ink3)]" />
+              <span className="text-sm font-bold text-[var(--c-ink2)] dark:text-[var(--c-ink)]">
                 Annotations
               </span>
             </div>
@@ -394,9 +394,9 @@ export default function AdminSubmissionReview() {
       </div>
 
       {/* ─── Overall feedback ────────────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-5 shadow-card">
-        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-3 font-mono">
-          <MessageSquare size={12} className="text-gray-400" />
+      <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl p-5 shadow-card">
+        <label className="text-xs font-bold text-[var(--c-ink3)] uppercase tracking-widest flex items-center gap-2 mb-3 font-mono">
+          <MessageSquare size={12} className="text-[var(--c-ink3)]" />
           Overall Feedback
         </label>
         <textarea
@@ -404,10 +404,10 @@ export default function AdminSubmissionReview() {
           value={overallFeedback}
           onChange={e => setOveralFeedback(e.target.value)}
           placeholder="Write overall comments for the learner — your thoughts on their work, what they did well, and areas to improve…"
-          className="w-full text-sm px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none resize-none transition leading-relaxed"
+          className="w-full text-sm px-4 py-3 border border-[var(--c-rule)] dark:border-[var(--c-rule)] rounded-xl bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] text-[var(--c-ink)] dark:text-[var(--c-ink)] placeholder-[var(--c-ink3)] focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none resize-none transition leading-relaxed"
         />
         <div className="flex items-center justify-between mt-3">
-          <p className="text-xs text-gray-400 font-mono">{overallFeedback.length} characters</p>
+          <p className="text-xs text-[var(--c-ink3)] font-mono">{overallFeedback.length} characters</p>
           <button
             onClick={handleSubmitReview}
             disabled={reviewMutation.isPending}

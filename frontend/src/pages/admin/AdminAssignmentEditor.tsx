@@ -143,7 +143,7 @@ export default function AdminAssignmentEditor() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/admin/assignments')}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white transition"
+          className="flex items-center gap-1 text-sm text-[var(--c-ink2)] hover:text-[var(--c-ink)] dark:hover:text-white transition"
         >
           <ChevronLeft size={16} /> Assignments
         </button>
@@ -170,7 +170,7 @@ export default function AdminAssignmentEditor() {
         </div>
       </div>
 
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      <h1 className="text-2xl font-bold text-[var(--c-ink)]">
         {isEdit ? 'Edit Assignment' : 'New Assignment'}
       </h1>
 
@@ -178,7 +178,7 @@ export default function AdminAssignmentEditor() {
 
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-[var(--c-ink2)] dark:text-[var(--c-ink2)] mb-1">
             Title <span className="text-red-500">*</span>
           </label>
           <input
@@ -187,15 +187,15 @@ export default function AdminAssignmentEditor() {
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
             disabled={isActive || isClosed}
             placeholder="e.g. Module 3 Group Research Project"
-            className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
+            className="w-full px-4 py-2.5 border border-[var(--c-rule)] dark:border-[var(--c-rule)] rounded-xl bg-[var(--c-surf)] text-[var(--c-ink)] placeholder-[var(--c-ink3)] focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
           />
         </div>
 
         {/* Module */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-[var(--c-ink2)] dark:text-[var(--c-ink2)] mb-1">
             Module
-            <span className="ml-2 text-xs font-normal text-gray-400">
+            <span className="ml-2 text-xs font-normal text-[var(--c-ink3)]">
               Learners see this assignment on the module's video page
             </span>
           </label>
@@ -203,7 +203,7 @@ export default function AdminAssignmentEditor() {
             value={form.module_id}
             onChange={e => setForm(f => ({ ...f, module_id: e.target.value }))}
             disabled={isClosed}
-            className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
+            className="w-full px-4 py-2.5 border border-[var(--c-rule)] dark:border-[var(--c-rule)] rounded-xl bg-[var(--c-surf)] text-[var(--c-ink)] focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
           >
             <option value="">— No module (standalone) —</option>
             {modules.map(m => (
@@ -214,7 +214,7 @@ export default function AdminAssignmentEditor() {
 
         {/* Instructions */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-[var(--c-ink2)] dark:text-[var(--c-ink2)] mb-1">
             Instructions
           </label>
           <RichTextEditor
@@ -227,7 +227,7 @@ export default function AdminAssignmentEditor() {
 
         {/* Type toggle */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-[var(--c-ink2)] dark:text-[var(--c-ink2)] mb-2">
             Type
           </label>
           <div className="flex gap-3">
@@ -239,8 +239,8 @@ export default function AdminAssignmentEditor() {
                 onClick={() => setForm(f => ({ ...f, type: t }))}
                 className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition capitalize ${
                   form.type === t
-                    ? 'border-brand-500 bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300'
-                    : 'border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                    ? 'border-brand-500 bg-brand-500/10 dark:bg-brand-950 text-brand-400 dark:text-brand-300'
+                    : 'border-[var(--c-rule)] text-[var(--c-ink2)] dark:text-[var(--c-ink3)] hover:border-[var(--c-rule)]'
                 } disabled:opacity-60`}
               >
                 {t}
@@ -251,9 +251,9 @@ export default function AdminAssignmentEditor() {
 
         {/* Group settings */}
         {form.type === 'group' && (
-          <div className="space-y-4 border border-gray-200 dark:border-slate-700 rounded-xl p-4 bg-gray-50 dark:bg-slate-800/50">
+          <div className="space-y-4 border border-[var(--c-rule)] rounded-xl p-4 bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)]/50">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[var(--c-ink2)] dark:text-[var(--c-ink2)] mb-1">
                 Max group size
               </label>
               <input
@@ -263,19 +263,19 @@ export default function AdminAssignmentEditor() {
                 value={form.max_group_size}
                 disabled={isActive || isClosed}
                 onChange={e => setForm(f => ({ ...f, max_group_size: e.target.value }))}
-                className="w-32 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
+                className="w-32 px-3 py-2 border border-[var(--c-rule)] dark:border-[var(--c-rule)] rounded-xl bg-[var(--c-surf)] text-[var(--c-ink)] focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--c-ink2)] dark:text-[var(--c-ink2)] mb-2">
                 Portion labels
-                <span className="ml-2 text-xs font-normal text-gray-400">Each member gets one portion</span>
+                <span className="ml-2 text-xs font-normal text-[var(--c-ink3)]">Each member gets one portion</span>
               </label>
               <div className="space-y-2">
                 {form.portions.map((p, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400 w-5 text-right">{i + 1}.</span>
+                    <span className="text-xs text-[var(--c-ink3)] w-5 text-right">{i + 1}.</span>
                     <input
                       type="text"
                       value={p}
@@ -285,13 +285,13 @@ export default function AdminAssignmentEditor() {
                         next[i] = e.target.value;
                         setForm(f => ({ ...f, portions: next }));
                       }}
-                      className="flex-1 px-3 py-1.5 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
+                      className="flex-1 px-3 py-1.5 border border-[var(--c-rule)] dark:border-[var(--c-rule)] rounded-lg bg-[var(--c-surf)] text-sm text-[var(--c-ink)] focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
                     />
                     {!isActive && !isClosed && form.portions.length > 1 && (
                       <button
                         type="button"
                         onClick={() => setForm(f => ({ ...f, portions: f.portions.filter((_, j) => j !== i) }))}
-                        className="p-1 text-gray-400 hover:text-red-500 transition"
+                        className="p-1 text-[var(--c-ink3)] hover:text-red-500 transition"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -302,7 +302,7 @@ export default function AdminAssignmentEditor() {
                   <button
                     type="button"
                     onClick={() => setForm(f => ({ ...f, portions: [...f.portions, ''] }))}
-                    className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-700 font-medium mt-1"
+                    className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-400 font-medium mt-1"
                   >
                     <Plus size={13} /> Add portion
                   </button>
@@ -314,7 +314,7 @@ export default function AdminAssignmentEditor() {
 
         {/* Deadline */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-[var(--c-ink2)] dark:text-[var(--c-ink2)] mb-1">
             Deadline
           </label>
           <input
@@ -322,12 +322,12 @@ export default function AdminAssignmentEditor() {
             value={form.deadline}
             disabled={isActive && isClosed}
             onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
-            className="px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
+            className="px-4 py-2.5 border border-[var(--c-rule)] dark:border-[var(--c-rule)] rounded-xl bg-[var(--c-surf)] text-[var(--c-ink)] focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none disabled:opacity-60"
           />
         </div>
 
         {isActive && (
-          <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl p-3 text-sm text-green-700 dark:text-green-300">
+          <div className="bg-green-500/10 dark:bg-green-950 border border-green-500/30 dark:border-green-800 rounded-xl p-3 text-sm text-green-400 dark:text-green-300">
             This assignment is live. You can still update the deadline and meeting locks in the detail view.
           </div>
         )}

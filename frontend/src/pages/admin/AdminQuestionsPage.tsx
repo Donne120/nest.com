@@ -30,26 +30,26 @@ const STATUS_CONFIG: Record<QuestionStatus, {
 }> = {
   pending: {
     icon: AlertCircle,
-    accent: 'border-l-amber-400 bg-amber-50/30',
-    rowHover: 'hover:bg-amber-50/60',
-    badge: 'bg-amber-50 text-amber-700 border border-amber-200',
+    accent: 'border-l-amber-400 bg-amber-500/10/30',
+    rowHover: 'hover:bg-amber-500/10/60',
+    badge: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
     dot: 'bg-amber-400',
     label: 'Needs reply',
   },
   answered: {
     icon: CheckCircle2,
     accent: 'border-l-emerald-300',
-    rowHover: 'hover:bg-slate-50',
-    badge: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    rowHover: 'hover:bg-[var(--c-bg2)]',
+    badge: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30',
     dot: 'bg-emerald-500',
     label: 'Answered',
   },
   archived: {
     icon: Archive,
-    accent: 'border-l-gray-200 opacity-60',
-    rowHover: 'hover:bg-gray-50',
-    badge: 'bg-gray-100 text-gray-500 border border-gray-200',
-    dot: 'bg-gray-300',
+    accent: 'border-l-[var(--c-rule)] opacity-60',
+    rowHover: 'hover:bg-[var(--c-bg2)]',
+    badge: 'bg-[var(--c-bg2)] text-[var(--c-ink2)] border border-[var(--c-rule)]',
+    dot: 'bg-[var(--c-ink3)]',
     label: 'Archived',
   },
 };
@@ -108,9 +108,9 @@ export default function AdminQuestionsPage() {
               <div className="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center">
                 <Inbox size={17} className="text-white" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Question Queue</h1>
+              <h1 className="text-3xl font-bold text-[var(--c-ink)] tracking-tight">Question Queue</h1>
             </div>
-            <p className="text-base text-gray-500 ml-11">
+            <p className="text-base text-[var(--c-ink2)] ml-11">
               {questions.length} question{questions.length !== 1 ? 's' : ''}
               {pendingCount > 0 && (
                 <>
@@ -124,7 +124,7 @@ export default function AdminQuestionsPage() {
           </div>
 
           {/* Live indicator */}
-          <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-white border border-gray-200 rounded-full px-3 py-2 shadow-sm">
+          <div className="flex items-center gap-1.5 text-xs text-[var(--c-ink3)] bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-full px-3 py-2 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Live
           </div>
@@ -153,17 +153,17 @@ export default function AdminQuestionsPage() {
 
         {/* ── Search ── */}
         <div className="relative mb-6">
-          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--c-ink3)] pointer-events-none" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search questions or learners…"
-            className="w-full pl-9 pr-4 py-3 text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent placeholder:text-gray-300 transition"
+            className="w-full pl-9 pr-4 py-3 text-sm bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent placeholder:text-[var(--c-ink3)] transition"
           />
         </div>
 
         {/* ── Tabs ── */}
-        <div className="flex gap-1.5 bg-gray-100 p-1.5 rounded-xl mb-6 w-fit">
+        <div className="flex gap-1.5 bg-[var(--c-bg2)] p-1.5 rounded-xl mb-6 w-fit">
           {TABS.map(({ key, label, count }) => (
             <button
               key={key}
@@ -171,8 +171,8 @@ export default function AdminQuestionsPage() {
               className={clsx(
                 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap',
                 statusFilter === key
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-[var(--c-surf)] text-[var(--c-ink)] shadow-sm'
+                  : 'text-[var(--c-ink2)] hover:text-[var(--c-ink2)]'
               )}
             >
               {label}
@@ -180,10 +180,10 @@ export default function AdminQuestionsPage() {
                 <span className={clsx(
                   'text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight',
                   key === 'pending'
-                    ? 'bg-amber-100 text-amber-700'
+                    ? 'bg-amber-500/15 text-amber-400'
                     : statusFilter === key
-                      ? 'bg-gray-100 text-gray-500'
-                      : 'bg-white text-gray-400'
+                      ? 'bg-[var(--c-bg2)] text-[var(--c-ink2)]'
+                      : 'bg-[var(--c-surf)] text-[var(--c-ink3)]'
                 )}>
                   {count}
                 </span>
@@ -194,24 +194,24 @@ export default function AdminQuestionsPage() {
 
         {/* ── Content ── */}
         {isLoading ? (
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden divide-y divide-gray-100 shadow-sm">
+          <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-2xl overflow-hidden divide-y divide-[var(--c-rule)] shadow-sm">
             {Array.from({ length: 5 }).map((_, i) => <QuestionCardSkeleton key={i} />)}
           </div>
 
         ) : filtered.length === 0 ? (
-          <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl py-24 text-center">
-            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-              <MessageSquare size={22} className="text-gray-300" />
+          <div className="bg-[var(--c-surf)] border-2 border-dashed border-[var(--c-rule)] rounded-2xl py-24 text-center">
+            <div className="w-14 h-14 bg-[var(--c-bg2)] rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <MessageSquare size={22} className="text-[var(--c-ink3)]" />
             </div>
-            <p className="text-gray-900 font-semibold">No questions found</p>
-            <p className="text-sm text-gray-400 mt-1.5">
+            <p className="text-[var(--c-ink)] font-semibold">No questions found</p>
+            <p className="text-sm text-[var(--c-ink3)] mt-1.5">
               {search ? 'Try a different search term' : 'Questions will appear here once learners ask them.'}
             </p>
           </div>
 
         ) : (
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="divide-y divide-gray-100">
+          <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-2xl overflow-hidden shadow-sm">
+            <div className="divide-y divide-[var(--c-rule)]">
               {filtered.map((q) => {
                 const cfg = STATUS_CONFIG[q.status] ?? STATUS_CONFIG.pending;
                 const Icon = cfg.icon;
@@ -230,7 +230,7 @@ export default function AdminQuestionsPage() {
                     {/* Status icon */}
                     <div className="flex-shrink-0 px-4 py-5">
                       <Icon size={15} className={clsx(
-                        isPending ? 'text-amber-500' : q.status === 'answered' ? 'text-emerald-500' : 'text-gray-300'
+                        isPending ? 'text-amber-500' : q.status === 'answered' ? 'text-emerald-500' : 'text-[var(--c-ink3)]'
                       )} />
                     </div>
 
@@ -238,7 +238,7 @@ export default function AdminQuestionsPage() {
                     <div className="flex-1 min-w-0 py-4 pr-3">
                       <p className={clsx(
                         'text-sm leading-snug mb-2.5',
-                        isPending ? 'font-semibold text-gray-900' : 'font-medium text-gray-600'
+                        isPending ? 'font-semibold text-[var(--c-ink)]' : 'font-medium text-[var(--c-ink2)]'
                       )}>
                         {q.question_text}
                       </p>
@@ -251,7 +251,7 @@ export default function AdminQuestionsPage() {
                             url={q.asked_by_user.avatar_url}
                             size="sm"
                           />
-                          <span className="text-xs font-medium text-gray-500">
+                          <span className="text-xs font-medium text-[var(--c-ink2)]">
                             {q.asked_by_user.full_name}
                           </span>
                         </div>
@@ -259,14 +259,14 @@ export default function AdminQuestionsPage() {
                         <Sep />
 
                         {/* Timestamp */}
-                        <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-brand-700 bg-brand-50 border border-brand-100 px-1.5 py-0.5 rounded-md">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-brand-400 bg-brand-500/10 border border-brand-500/25 px-1.5 py-0.5 rounded-md">
                           @{formatTime(q.timestamp_seconds)}
                         </span>
 
                         <Sep />
 
                         {/* Time ago */}
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-[var(--c-ink3)]">
                           {formatDistanceToNow(new Date(q.created_at), { addSuffix: true })}
                         </span>
 
@@ -291,7 +291,7 @@ export default function AdminQuestionsPage() {
                         <span className={clsx('w-1.5 h-1.5 rounded-full flex-shrink-0', cfg.dot)} />
                         {cfg.label}
                       </span>
-                      <ChevronRight size={15} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
+                      <ChevronRight size={15} className="text-[var(--c-ink3)] group-hover:text-[var(--c-ink2)] transition-colors" />
                     </div>
                   </div>
                 );
@@ -299,11 +299,11 @@ export default function AdminQuestionsPage() {
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-              <p className="text-xs text-gray-400">
+            <div className="px-5 py-3 border-t border-[var(--c-rule)] bg-[var(--c-bg2)] flex items-center justify-between">
+              <p className="text-xs text-[var(--c-ink3)]">
                 Showing {filtered.length} of {questions.length} questions
               </p>
-              <p className="text-xs text-gray-400 flex items-center gap-1">
+              <p className="text-xs text-[var(--c-ink3)] flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 Auto-refreshing
               </p>
@@ -319,7 +319,7 @@ export default function AdminQuestionsPage() {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function Sep() {
-  return <span className="w-1 h-1 rounded-full bg-gray-200 flex-shrink-0" />;
+  return <span className="w-1 h-1 rounded-full bg-[var(--c-rule)] flex-shrink-0" />;
 }
 
 function StatPill({
@@ -330,9 +330,9 @@ function StatPill({
   color: 'amber' | 'emerald' | 'brand';
 }) {
   const cls = {
-    amber:   'bg-amber-50 border-amber-200 text-amber-700',
-    emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
-    brand:   'bg-brand-50 border-brand-200 text-brand-700',
+    amber:   'bg-amber-500/10 border-amber-500/30 text-amber-400',
+    emerald: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+    brand:   'bg-brand-500/10 border-brand-500/30 text-brand-400',
   }[color];
 
   return (

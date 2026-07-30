@@ -9,8 +9,8 @@ function TypeBadge({ type }: { type: Assignment['type'] }) {
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full ${
       type === 'group'
-        ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300'
-        : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
+        ? 'bg-brand-500/15 text-brand-400 dark:bg-brand-900/40 dark:text-brand-300'
+        : 'bg-[var(--c-bg2)] text-[var(--c-ink2)] dark:bg-[var(--c-bg2)] dark:text-[var(--c-ink2)]'
     }`}>
       {type === 'group' ? <Users size={10} /> : <BookOpen size={10} />}
       {type === 'group' ? 'Group' : 'Individual'}
@@ -19,9 +19,9 @@ function TypeBadge({ type }: { type: Assignment['type'] }) {
 }
 
 const STATUS_CONFIG: Record<Assignment['status'], { label: string; accent: string; badge: string; dot: string }> = {
-  active:  { label: 'Active',  accent: 'border-l-green-500',  badge: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',  dot: 'bg-green-500' },
-  draft:   { label: 'Draft',   accent: 'border-l-gray-400',   badge: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',           dot: 'bg-gray-400' },
-  closed:  { label: 'Closed',  accent: 'border-l-red-400',    badge: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400',            dot: 'bg-red-400' },
+  active:  { label: 'Active',  accent: 'border-l-green-500',  badge: 'bg-green-500/15 text-green-400 dark:bg-green-900/40 dark:text-green-300',  dot: 'bg-green-500' },
+  draft:   { label: 'Draft',   accent: 'border-l-[var(--c-ink3)]',   badge: 'bg-[var(--c-bg2)] text-[var(--c-ink2)] dark:bg-[var(--c-bg2)] dark:text-[var(--c-ink3)]',           dot: 'bg-[var(--c-ink3)]' },
+  closed:  { label: 'Closed',  accent: 'border-l-red-400',    badge: 'bg-red-500/15 text-red-600 dark:bg-red-900/40 dark:text-red-400',            dot: 'bg-red-400' },
 };
 
 function StatusBadge({ status }: { status: Assignment['status'] }) {
@@ -39,8 +39,8 @@ function DeadlineChip({ deadline }: { deadline: string }) {
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
       overdue
-        ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-        : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+        ? 'bg-red-500/10 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+        : 'bg-amber-500/10 text-amber-400 dark:bg-amber-900/30 dark:text-amber-400'
     }`}>
       <Clock size={10} />
       {overdue ? 'Overdue · ' : ''}{formatDistanceToNow(parseISO(deadline), { addSuffix: true })}
@@ -55,7 +55,7 @@ function AssignmentCard({ a }: { a: Assignment }) {
     : null;
 
   return (
-    <div className="border-b border-gray-100 last:border-b-0 px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+    <div className="border-b border-[var(--c-rule)] last:border-b-0 px-6 py-4 hover:bg-[var(--c-bg2)] transition-colors cursor-pointer">
       <div className="flex items-start justify-between gap-4">
         {/* Left */}
         <div className="flex-1 min-w-0">
@@ -65,19 +65,19 @@ function AssignmentCard({ a }: { a: Assignment }) {
           </div>
           <Link
             to={`/admin/assignments/${a.id}`}
-            className="text-lg font-semibold text-gray-900 hover:text-brand-600 transition truncate block"
+            className="text-lg font-semibold text-[var(--c-ink)] hover:text-brand-600 transition truncate block"
           >
             {a.title}
           </Link>
           {a.description && (
-            <p className="mt-1 text-sm text-gray-500 line-clamp-1">{a.description}</p>
+            <p className="mt-1 text-sm text-[var(--c-ink2)] line-clamp-1">{a.description}</p>
           )}
         </div>
 
         {/* Right: edit */}
         <Link
           to={`/admin/assignments/${a.id}/edit`}
-          className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition"
+          className="flex-shrink-0 p-2 rounded-lg text-[var(--c-ink3)] hover:text-brand-600 hover:bg-brand-500/10 transition"
           title="Edit assignment"
         >
           <Edit3 size={15} />
@@ -87,15 +87,15 @@ function AssignmentCard({ a }: { a: Assignment }) {
       {/* Metrics row */}
       <div className="mt-3 flex items-center gap-5 text-sm flex-wrap">
         {a.type === 'group' && (
-          <div className="flex items-center gap-1.5 text-gray-500">
+          <div className="flex items-center gap-1.5 text-[var(--c-ink2)]">
             <Users size={13} className="text-purple-400" />
-            <span className="font-mono font-semibold text-gray-700">{a.group_count}</span>
+            <span className="font-mono font-semibold text-[var(--c-ink2)]">{a.group_count}</span>
             <span>groups</span>
           </div>
         )}
-        <div className="flex items-center gap-1.5 text-gray-500">
+        <div className="flex items-center gap-1.5 text-[var(--c-ink2)]">
           <FileText size={13} className="text-brand-400" />
-          <span className="font-mono font-semibold text-gray-700">{a.submission_count}</span>
+          <span className="font-mono font-semibold text-[var(--c-ink2)]">{a.submission_count}</span>
           <span>submitted</span>
         </div>
         {a.deadline && <DeadlineChip deadline={a.deadline} />}
@@ -104,11 +104,11 @@ function AssignmentCard({ a }: { a: Assignment }) {
       {/* Progress bar (group only) */}
       {submissionRate !== null && (
         <div className="mt-3">
-          <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+          <div className="flex items-center justify-between text-xs text-[var(--c-ink3)] mb-1">
             <span>Submission progress</span>
-            <span className="font-mono font-semibold text-gray-600">{submissionRate}%</span>
+            <span className="font-mono font-semibold text-[var(--c-ink2)]">{submissionRate}%</span>
           </div>
-          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-[var(--c-bg2)] rounded-full overflow-hidden">
             <div
               className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600 transition-all duration-500"
               style={{ width: `${submissionRate}%` }}
@@ -123,19 +123,19 @@ function AssignmentCard({ a }: { a: Assignment }) {
 function SectionHeader({ label, count }: { label: string; count: number }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <span className="font-mono text-xs font-bold uppercase tracking-widest text-gray-400">{label}</span>
-      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{count}</span>
-      <div className="flex-1 h-px bg-gray-200" />
+      <span className="font-mono text-xs font-bold uppercase tracking-widest text-[var(--c-ink3)]">{label}</span>
+      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-full bg-[var(--c-bg2)] text-[var(--c-ink2)]">{count}</span>
+      <div className="flex-1 h-px bg-[var(--c-rule)]" />
     </div>
   );
 }
 
 function StatPill({ label, color }: { label: string; color: 'gray' | 'green' | 'amber' | 'brand' }) {
   const cls = {
-    gray:   'bg-gray-50 border-gray-200 text-gray-700',
-    green:  'bg-green-50 border-green-200 text-green-700',
-    amber:  'bg-amber-50 border-amber-200 text-amber-700',
-    brand:  'bg-brand-50 border-brand-200 text-brand-700',
+    gray:   'bg-[var(--c-bg2)] border-[var(--c-rule)] text-[var(--c-ink2)]',
+    green:  'bg-green-500/10 border-green-500/30 text-green-400',
+    amber:  'bg-amber-500/10 border-amber-500/30 text-amber-400',
+    brand:  'bg-brand-500/10 border-brand-500/30 text-brand-400',
   }[color];
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-medium border rounded-full px-3 py-1 ${cls}`}>
@@ -159,10 +159,10 @@ export default function AdminAssignmentsPage() {
     return (
       <div className="space-y-6 animate-pulse">
         {/* Hero skeleton */}
-        <div className="h-36 bg-gray-100 dark:bg-slate-800 rounded-2xl" />
+        <div className="h-36 bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] rounded-2xl" />
         {/* Cards skeleton */}
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-28 bg-gray-100 dark:bg-slate-800 rounded-2xl" />
+          <div key={i} className="h-28 bg-[var(--c-bg2)] dark:bg-[var(--c-bg2)] rounded-2xl" />
         ))}
       </div>
     );
@@ -173,8 +173,8 @@ export default function AdminAssignmentsPage() {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Assignments</h1>
-          <p className="text-base text-gray-500 mt-2">
+          <h1 className="text-3xl font-bold text-[var(--c-ink)]">Assignments</h1>
+          <p className="text-base text-[var(--c-ink2)] mt-2">
             Track submissions, groups, and deadlines across all assignments
           </p>
         </div>
@@ -201,12 +201,12 @@ export default function AdminAssignmentsPage() {
 
       {/* ── Empty State ── */}
       {assignments.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-24 text-center bg-white border border-gray-200 rounded-2xl">
-          <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <BookOpen size={24} className="text-gray-300" />
+        <div className="flex flex-col items-center justify-center py-24 text-center bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-2xl">
+          <div className="w-14 h-14 bg-[var(--c-bg2)] rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <BookOpen size={24} className="text-[var(--c-ink3)]" />
           </div>
-          <p className="text-gray-900 font-semibold text-lg">No assignments yet</p>
-          <p className="text-sm text-gray-400 mt-1.5 mb-6">Create your first assignment to start tracking learner submissions.</p>
+          <p className="text-[var(--c-ink)] font-semibold text-lg">No assignments yet</p>
+          <p className="text-sm text-[var(--c-ink3)] mt-1.5 mb-6">Create your first assignment to start tracking learner submissions.</p>
           <Link
             to="/admin/assignments/new"
             className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors"
@@ -220,7 +220,7 @@ export default function AdminAssignmentsPage() {
       {active.length > 0 && (
         <section>
           <SectionHeader label="Active" count={active.length} />
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-2xl overflow-hidden shadow-sm">
             {active.map(a => <AssignmentCard key={a.id} a={a} />)}
           </div>
         </section>
@@ -230,7 +230,7 @@ export default function AdminAssignmentsPage() {
       {draft.length > 0 && (
         <section>
           <SectionHeader label="Draft" count={draft.length} />
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-2xl overflow-hidden shadow-sm">
             {draft.map(a => <AssignmentCard key={a.id} a={a} />)}
           </div>
         </section>
@@ -240,7 +240,7 @@ export default function AdminAssignmentsPage() {
       {closed.length > 0 && (
         <section>
           <SectionHeader label="Closed" count={closed.length} />
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-2xl overflow-hidden shadow-sm">
             {closed.map(a => <AssignmentCard key={a.id} a={a} />)}
           </div>
         </section>

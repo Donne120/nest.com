@@ -29,26 +29,26 @@ function lastActiveLabel(days: number | null, pct: number): string {
 
 function LearnerCard({ emp }: { emp: LearnerPeopleStats }) {
   return (
-    <div className={`bg-white rounded-2xl border p-4 flex flex-col gap-3 shadow-sm transition-all hover:shadow-md ${
-      emp.is_at_risk ? 'border-amber-200' : emp.is_star ? 'border-emerald-200' : 'border-gray-200'
+    <div className={`bg-[var(--c-surf)] rounded-2xl border p-4 flex flex-col gap-3 shadow-sm transition-all hover:shadow-md ${
+      emp.is_at_risk ? 'border-amber-500/30' : emp.is_star ? 'border-emerald-500/30' : 'border-[var(--c-rule)]'
     }`}>
       <div className="flex items-start gap-3">
         <Avatar name={emp.name} size="sm" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <p className="text-[13px] font-semibold text-gray-900 truncate">{emp.name}</p>
+            <p className="text-[13px] font-semibold text-[var(--c-ink)] truncate">{emp.name}</p>
             {emp.is_star && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2 py-0.5">
                 <Star size={9} fill="currentColor" /> Star
               </span>
             )}
             {emp.is_at_risk && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-full px-2 py-0.5">
                 <AlertTriangle size={9} /> At Risk
               </span>
             )}
           </div>
-          <p className="text-[11px] text-gray-400 truncate">{emp.email}</p>
+          <p className="text-[11px] text-[var(--c-ink3)] truncate">{emp.email}</p>
         </div>
         <span className="text-[11px] font-bold tabular-nums flex-shrink-0" style={{ color: pctColor(emp.completion_pct) }}>
           {emp.completion_pct}%
@@ -56,7 +56,7 @@ function LearnerCard({ emp }: { emp: LearnerPeopleStats }) {
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-[var(--c-bg2)] rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${emp.completion_pct}%`, backgroundColor: pctColor(emp.completion_pct) }}
@@ -64,7 +64,7 @@ function LearnerCard({ emp }: { emp: LearnerPeopleStats }) {
       </div>
 
       {/* Stats row */}
-      <div className="flex items-center justify-between text-[11px] text-gray-400">
+      <div className="flex items-center justify-between text-[11px] text-[var(--c-ink3)]">
         <span>{emp.completed_modules}/{emp.total_modules} modules</span>
         <div className="flex items-center gap-1">
           <Clock size={10} />
@@ -91,13 +91,13 @@ function KpiStrip({ summary }: { summary: PeopleReport['summary'] }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {kpis.map(({ label, value, icon: Icon, color }) => (
-        <div key={label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-center gap-4">
+        <div key={label} className="bg-[var(--c-surf)] rounded-2xl border border-[var(--c-rule)] shadow-sm p-5 flex items-center gap-4">
           <div className={`w-10 h-10 ${color} rounded-xl flex items-center justify-center flex-shrink-0`}>
             <Icon size={16} className="text-white" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-            <p className="text-2xl font-extrabold text-gray-900 leading-none mt-1 tabular-nums">{value}</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--c-ink3)]">{label}</p>
+            <p className="text-2xl font-extrabold text-[var(--c-ink)] leading-none mt-1 tabular-nums">{value}</p>
           </div>
         </div>
       ))}
@@ -128,9 +128,9 @@ export default function AdminPeoplePage() {
           <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
             <Users size={16} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">People</h1>
+          <h1 className="text-2xl font-bold text-[var(--c-ink)] tracking-tight">People</h1>
         </div>
-        <p className="text-sm text-gray-500 ml-10">
+        <p className="text-sm text-[var(--c-ink2)] ml-10">
           Who's thriving, who's stuck, and who needs a nudge
         </p>
       </div>
@@ -153,13 +153,13 @@ export default function AdminPeoplePage() {
             <section className="mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle size={14} className="text-amber-500" />
-                <h2 className="text-sm font-bold text-gray-900">
+                <h2 className="text-sm font-bold text-[var(--c-ink)]">
                   Needs Attention
-                  <span className="ml-2 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                  <span className="ml-2 text-xs font-semibold text-amber-600 bg-amber-500/10 border border-amber-500/30 rounded-full px-2 py-0.5">
                     {atRisk.length}
                   </span>
                 </h2>
-                <p className="text-xs text-gray-400 ml-1">No activity for 5+ days, not completed</p>
+                <p className="text-xs text-[var(--c-ink3)] ml-1">No activity for 5+ days, not completed</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {atRisk.map(e => <LearnerCard key={e.id} emp={e} />)}
@@ -172,13 +172,13 @@ export default function AdminPeoplePage() {
             <section className="mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <Flame size={14} className="text-emerald-500" />
-                <h2 className="text-sm font-bold text-gray-900">
+                <h2 className="text-sm font-bold text-[var(--c-ink)]">
                   Stars
-                  <span className="ml-2 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                  <span className="ml-2 text-xs font-semibold text-emerald-600 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2 py-0.5">
                     {stars.length}
                   </span>
                 </h2>
-                <p className="text-xs text-gray-400 ml-1">100% completed</p>
+                <p className="text-xs text-[var(--c-ink3)] ml-1">100% completed</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {stars.map(e => <LearnerCard key={e.id} emp={e} />)}
@@ -191,9 +191,9 @@ export default function AdminPeoplePage() {
             <section className="mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <CircleDot size={14} className="text-brand-500" />
-                <h2 className="text-sm font-bold text-gray-900">
+                <h2 className="text-sm font-bold text-[var(--c-ink)]">
                   In Progress
-                  <span className="ml-2 text-xs font-semibold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2 py-0.5">
+                  <span className="ml-2 text-xs font-semibold text-brand-400 bg-brand-500/10 border border-brand-500/30 rounded-full px-2 py-0.5">
                     {active.length}
                   </span>
                 </h2>
@@ -208,10 +208,10 @@ export default function AdminPeoplePage() {
           {notStarted.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300" />
-                <h2 className="text-sm font-bold text-gray-900">
+                <div className="w-3.5 h-3.5 rounded-full border-2 border-[var(--c-rule)]" />
+                <h2 className="text-sm font-bold text-[var(--c-ink)]">
                   Not Started
-                  <span className="ml-2 text-xs font-semibold text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-2 py-0.5">
+                  <span className="ml-2 text-xs font-semibold text-[var(--c-ink2)] bg-[var(--c-bg2)] border border-[var(--c-rule)] rounded-full px-2 py-0.5">
                     {notStarted.length}
                   </span>
                 </h2>
@@ -223,10 +223,10 @@ export default function AdminPeoplePage() {
           )}
 
           {data.learners.length === 0 && (
-            <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl py-24 text-center">
-              <Users size={32} className="text-gray-200 mx-auto mb-4" />
-              <p className="font-semibold text-gray-500">No team members yet</p>
-              <p className="text-sm text-gray-400 mt-1">Invite learners to see their progress here.</p>
+            <div className="bg-[var(--c-surf)] border-2 border-dashed border-[var(--c-rule)] rounded-2xl py-24 text-center">
+              <Users size={32} className="text-[var(--c-ink3)] mx-auto mb-4" />
+              <p className="font-semibold text-[var(--c-ink2)]">No team members yet</p>
+              <p className="text-sm text-[var(--c-ink3)] mt-1">Invite learners to see their progress here.</p>
             </div>
           )}
         </>
