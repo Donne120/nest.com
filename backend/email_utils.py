@@ -104,7 +104,7 @@ def _wrap(body: str, preheader: str = "") -> str:
         <tr><td style="padding-bottom:24px;">
           <table cellpadding="0" cellspacing="0">
             <tr>
-              <td style="width:36px;height:36px;background:#2563eb;border-radius:10px;text-align:center;vertical-align:middle;">
+              <td style="width:36px;height:36px;background:#7b2d8e;border-radius:10px;text-align:center;vertical-align:middle;">
                 <span style="color:#fff;font-weight:700;font-size:18px;line-height:36px;">N</span>
               </td>
               <td style="padding-left:10px;font-size:15px;font-weight:700;color:#1e293b;">Nest</td>
@@ -131,7 +131,7 @@ def _wrap(body: str, preheader: str = "") -> str:
 </html>"""
 
 
-def _btn(url: str, label: str, color: str = "#2563eb") -> str:
+def _btn(url: str, label: str, color: str = "#7b2d8e") -> str:
     return f"""<table cellpadding="0" cellspacing="0" style="margin-top:24px;">
   <tr><td style="background:{color};border-radius:10px;">
     <a href="{url}" style="display:inline-block;padding:12px 28px;color:#fff;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.01em;">{label}</a>
@@ -148,7 +148,7 @@ def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
     subject = f"You're invited to join {org_name} on Nest"
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Team Invitation</p>
+      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Team Invitation</p>
       <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">You've been invited to join {org_name}</h1>
       <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 4px;">
         Someone at <strong style="color:#0f172a;">{org_name}</strong> has invited you as a
@@ -160,7 +160,7 @@ def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
       {_btn(invite_url, "Accept Invitation")}
       <p style="font-size:12px;color:#64748b;margin:16px 0 0;line-height:1.6;">
         Button not showing? Copy and paste this link into your browser:<br>
-        <a href="{safe_url}" style="color:#2563eb;word-break:break-all;">{safe_url}</a>
+        <a href="{safe_url}" style="color:#7b2d8e;word-break:break-all;">{safe_url}</a>
       </p>
       <p style="font-size:12px;color:#94a3b8;margin:12px 0 0;">
         This invitation expires in 7 days. If you weren't expecting this, you can safely ignore it.
@@ -177,7 +177,7 @@ def send_verification_email(to: str, full_name: str, verify_url: str) -> bool:
     subject = "Verify your Nest email address"
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Welcome to Nest</p>
+      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Welcome to Nest</p>
       <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Hi {first}, confirm your email</h1>
       <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 4px;">
         Thanks for signing up. Click the button below to verify your email address and activate your account.
@@ -185,7 +185,7 @@ def send_verification_email(to: str, full_name: str, verify_url: str) -> bool:
       {_btn(verify_url, "Verify my email")}
       <p style="font-size:12px;color:#64748b;margin:16px 0 0;line-height:1.6;">
         Button not showing? Copy and paste this link into your browser:<br>
-        <a href="{safe_url}" style="color:#2563eb;word-break:break-all;">{safe_url}</a>
+        <a href="{safe_url}" style="color:#7b2d8e;word-break:break-all;">{safe_url}</a>
       </p>
       <p style="font-size:12px;color:#94a3b8;margin:12px 0 0;">
         This link expires in 24 hours. If you didn't create a Nest account, you can safely ignore this email.
@@ -201,7 +201,7 @@ def send_password_reset(to: str, reset_url: str) -> bool:
     subject = "Reset your Nest password"
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Security</p>
+      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Security</p>
       <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Reset your password</h1>
       <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
         We received a password reset request for your Nest account.
@@ -210,7 +210,7 @@ def send_password_reset(to: str, reset_url: str) -> bool:
       {_btn(reset_url, "Choose New Password")}
       <p style="font-size:12px;color:#64748b;margin:16px 0 0;line-height:1.6;">
         Button not showing? Copy and paste this link into your browser:<br>
-        <a href="{safe_url}" style="color:#2563eb;word-break:break-all;">{safe_url}</a>
+        <a href="{safe_url}" style="color:#7b2d8e;word-break:break-all;">{safe_url}</a>
       </p>
       <div style="margin-top:24px;padding:14px 16px;background:#fef3c7;border-radius:10px;border:1px solid #fde68a;">
         <p style="font-size:12px;color:#92400e;margin:0;line-height:1.6;">
@@ -231,7 +231,7 @@ def send_welcome(to: str, admin_name: str, org_name: str, dashboard_url: str) ->
     subject = f"Welcome to Nest, {first} — your workspace is ready"
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Getting Started</p>
+      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Getting Started</p>
       <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Welcome aboard, {first}!</h1>
       <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
         Your <strong style="color:#0f172a;">{org_name}</strong> workspace is live on Nest.
@@ -283,7 +283,7 @@ def send_quiz_result(to: str, employee_name: str, video_title: str, passed: bool
 
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Quiz Result</p>
+      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Quiz Result</p>
       <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 16px;line-height:1.3;">{heading}</h1>
 
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
@@ -323,7 +323,7 @@ def send_meeting_request_to_manager(
     )
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Meeting Request</p>
+      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Meeting Request</p>
       <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Hey {first}, someone wants to meet</h1>
       <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
         <strong style="color:#0f172a;">{employee_name}</strong> has requested a 1-on-1 meeting
@@ -360,8 +360,8 @@ def send_meeting_confirmed(to: str, employee_name: str, confirmed_at: str, meeti
           <tr>
             <td>
               <p style="margin:0;font-size:11px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.08em;">Meeting Link</p>
-              <p style="margin:4px 0 0;font-size:13px;color:#2563eb;word-break:break-all;">
-                <a href="{meeting_link}" style="color:#2563eb;">{meeting_link}</a>
+              <p style="margin:4px 0 0;font-size:13px;color:#7b2d8e;word-break:break-all;">
+                <a href="{meeting_link}" style="color:#7b2d8e;">{meeting_link}</a>
               </p>
             </td>
           </tr>
@@ -406,7 +406,7 @@ def send_payment_submitted(
         <p style="margin:4px 0 8px;font-size:14px;color:#0f172a;">{payment_type}</p>
         {detail_line}
         <p style="margin:8px 0 0;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Amount</p>
-        <p style="margin:4px 0 0;font-size:20px;font-weight:800;color:#2563eb;">{amount:,.0f} {currency}</p>
+        <p style="margin:4px 0 0;font-size:20px;font-weight:800;color:#7b2d8e;">{amount:,.0f} {currency}</p>
       </div>
       {_btn(review_url, "Review Payment", "#f59e0b")}
     </div>"""

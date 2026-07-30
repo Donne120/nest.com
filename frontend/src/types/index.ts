@@ -82,6 +82,7 @@ export interface Invitation {
   created_at: string;
   expires_at: string;
   invite_url?: string | null;
+  email_sent?: boolean | null;
 }
 
 // ─── User ─────────────────────────────────────────────────────────────────────

@@ -203,7 +203,8 @@ class InvitationOut(BaseModel):
     is_accepted: bool
     created_at: datetime
     expires_at: datetime
-    invite_url: Optional[str] = None  # populated on create response only
+    invite_url: Optional[str] = None   # populated on create response only
+    email_sent: Optional[bool] = None  # create response: did the invite email actually send?
 
     class Config:
         from_attributes = True

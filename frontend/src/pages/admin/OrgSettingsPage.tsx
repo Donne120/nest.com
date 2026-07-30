@@ -793,11 +793,16 @@ function InviteLinksSection() {
   const [creating, setCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const { data: links = [], isLoading } = useQuery<InviteLink[]>({
+  const { data: rawLinks = [], isLoading } = useQuery<InviteLink[]>({
     queryKey: ['invite-links'],
     queryFn: () => api.get<InviteLink[]>('/invitations/links').then(r => r.data),
     staleTime: 30_000,
   });
+
+  // Hide the auto-generated public-directory link — it's managed by the Explore
+  // opt-in toggle, not a user-created bulk link, and its internal label
+  // (__public_directory__) shouldn't leak into this admin list.
+  const links = rawLinks.filter(l => l.label !== '__public_directory__');
 
   const toggleActive = useMutation({
     mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
@@ -1039,6 +1044,15 @@ function InvitationsTab() {
     staleTime: 30_000,
   });
 
+  // Is transactional email actually set up on the server? Drives the warning
+  // banner so admins aren't surprised that invite emails never arrive.
+  const { data: emailStatus } = useQuery<{ configured: boolean; provider: string | null }>({
+    queryKey: ['email-status'],
+    queryFn: () => api.get('/invitations/email-status').then((r) => r.data),
+    staleTime: 5 * 60_000,
+  });
+  const emailOff = emailStatus?.configured === false;
+
   const revoke = useMutation({
     mutationFn: (id: string) => api.delete(`/invitations/${id}`),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['org-invitations'] }); toast.success('Invitation revoked'); },
@@ -1051,10 +1065,17 @@ function InvitationsTab() {
     try {
       const { data } = await api.post<Invitation>('/invitations', { email: email.trim(), role });
       qc.invalidateQueries({ queryKey: ['org-invitations'] });
-      toast.success('Invite created');
       if (data.invite_url) {
         navigator.clipboard.writeText(data.invite_url).catch(() => {});
-        toast.success('Invite link copied to clipboard!', { duration: 4000 });
+      }
+      // Be honest about whether the email actually went out, so the admin knows
+      // to share the (copied) link manually when email isn't configured.
+      if (data.email_sent) {
+        toast.success(`Invite emailed to ${data.email} — link also copied.`, { duration: 5000 });
+      } else {
+        toast('Invite link copied. Email isn’t set up — paste it to them (WhatsApp works great).', {
+          icon: '📋', duration: 7000,
+        });
       }
       setEmail('');
     } catch (err: any) {
@@ -1076,10 +1097,29 @@ function InvitationsTab() {
 
   return (
     <div className="space-y-6 max-w-lg">
+      {/* Email-not-configured warning — the #1 reason "invites aren't received" */}
+      {emailOff && (
+        <div className="rounded-xl px-4 py-3 flex items-start gap-3"
+          style={{ background: 'color-mix(in srgb, var(--c-warn) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--c-warn) 35%, transparent)' }}>
+          <span style={{ fontSize: 16, lineHeight: 1 }}>⚠️</span>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--c-ink)', margin: 0 }}>Invite emails aren’t being sent</p>
+            <p style={{ fontSize: 12.5, color: 'var(--c-ink2)', margin: '3px 0 0', lineHeight: 1.5 }}>
+              No email service is set up, so learners won’t receive an emailed invite. Each invite below still gives you a
+              <strong style={{ color: 'var(--c-ink)' }}> copyable link</strong> — share it directly (WhatsApp works great). To enable email, add a Resend or SMTP key on the server.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Send invite form */}
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-gray-900 mb-1">Send an invitation</h3>
-        <p className="text-xs text-gray-400 mb-4">Link is valid for 7 days and copied to clipboard automatically.</p>
+        <p className="text-xs text-gray-400 mb-4">
+          {emailOff
+            ? 'The link is copied to your clipboard — paste it to the learner directly.'
+            : 'We’ll email the invite and also copy the link to your clipboard. Valid for 7 days.'}
+        </p>
         <form onSubmit={handleCreate} className="flex gap-2">
           <input
             type="email"

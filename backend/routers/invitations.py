@@ -15,6 +15,25 @@ router = APIRouter(prefix="/api/invitations", tags=["invitations"])
 _IS_SUPER = models.UserRole.super_admin
 
 
+@router.get("/email-status")
+def email_status(current_user: models.User = Depends(auth_utils.require_educator)):
+    """Whether transactional email is configured on this server (booleans only, no
+    secrets). Lets the admin UI warn 'emails won't send — share the link instead'."""
+    return {
+        "configured": (
+            email_utils._sendgrid_configured()
+            or email_utils._resend_configured()
+            or email_utils._smtp_configured()
+        ),
+        "provider": (
+            "sendgrid" if email_utils._sendgrid_configured()
+            else "resend" if email_utils._resend_configured()
+            else "smtp" if email_utils._smtp_configured()
+            else None
+        ),
+    }
+
+
 @router.post("", response_model=schemas.InvitationOut, status_code=201)
 def create_invitation(
     payload: schemas.InvitationCreate,
@@ -85,17 +104,21 @@ def create_invitation(
 
     invite_url = f"{settings.FRONTEND_URL}/invite/{invite.token}"
 
-    # Send email (no-op if SMTP not configured)
+    # Send the email inline so we can tell the admin whether it actually went out.
+    # If no provider is configured (or it errors), email_sent is False and the UI
+    # shows the copyable link so the learner can still be reached (WhatsApp/paste).
     org = db.query(models.Organization).filter_by(
         id=current_user.organization_id
     ).first()
-    background_tasks.add_task(
-        email_utils.send_invitation,
-        to=invite.email,
-        org_name=org.name if org else "your organization",
-        invite_url=invite_url,
-        role=invite.role.value,
-    )
+    try:
+        email_sent = email_utils.send_invitation(
+            to=invite.email,
+            org_name=org.name if org else "your organization",
+            invite_url=invite_url,
+            role=invite.role.value,
+        )
+    except Exception:
+        email_sent = False
 
     return schemas.InvitationOut(
         id=invite.id,
@@ -105,6 +128,7 @@ def create_invitation(
         created_at=invite.created_at,
         expires_at=invite.expires_at,
         invite_url=invite_url,
+        email_sent=email_sent,
     )
 
 
