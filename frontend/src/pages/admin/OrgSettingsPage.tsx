@@ -25,14 +25,14 @@ function roleBadgeVariant(role: UserRole): 'learner' | 'educator' | 'owner' {
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>
+      <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--c-ink2)' }}>{label}</label>
       {children}
-      {hint && <p className="text-xs text-gray-400 mt-1.5">{hint}</p>}
+      {hint && <p className="text-xs mt-1.5" style={{ color: 'var(--c-ink3)' }}>{hint}</p>}
     </div>
   );
 }
 
-const inputCls = "w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition";
+const inputCls = "w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--c-acc)] focus:border-transparent transition bg-[var(--c-bg2)] border border-[var(--c-rule)] text-[var(--c-ink)] placeholder-[var(--c-ink3)]";
 
 // ─── Country payment config data ──────────────────────────────────────────────
 
@@ -149,13 +149,13 @@ function PaymentCountriesSection() {
 
   return (
     <>
-      <div className="border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+      <div className="border border-[var(--c-rule)] rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 bg-[var(--c-bg2)] border-b border-[var(--c-rule)] flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+            <p className="text-sm font-semibold text-[var(--c-ink)] flex items-center gap-1.5">
               <Globe size={14} className="text-brand-500" /> Countries &amp; currencies
             </p>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-[var(--c-ink2)] mt-0.5">
               Per-country payment numbers and prices. Learners see the details matching their country.
             </p>
           </div>
@@ -168,39 +168,39 @@ function PaymentCountriesSection() {
         </div>
 
         {isLoading && (
-          <div className="px-4 py-6 text-sm text-gray-400 text-center animate-pulse">Loading…</div>
+          <div className="px-4 py-6 text-sm text-[var(--c-ink3)] text-center animate-pulse">Loading…</div>
         )}
 
         {!isLoading && configs.length === 0 && (
-          <div className="px-4 py-6 text-sm text-gray-400 text-center">
+          <div className="px-4 py-6 text-sm text-[var(--c-ink3)] text-center">
             No countries configured yet. Add one so learners can select their country at checkout.
           </div>
         )}
 
         {configs.map((c, i) => (
-          <div key={c.id} className={`px-4 py-3 flex items-start gap-3 ${i < configs.length - 1 ? 'border-b border-gray-100' : ''}`}>
+          <div key={c.id} className={`px-4 py-3 flex items-start gap-3 ${i < configs.length - 1 ? 'border-b border-[var(--c-rule)]' : ''}`}>
             <span className="text-xl leading-none mt-0.5" title={c.country_name}>
               {c.country_code === 'INTL' ? '🌍' : `${String.fromCodePoint(...[...c.country_code].map(ch => 0x1F1E0 + ch.charCodeAt(0) - 65))}`}
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-800">{c.country_name}
-                <span className="ml-2 font-mono text-xs text-gray-400">{c.currency_code} · {c.currency_symbol}</span>
+              <p className="text-sm font-semibold text-[var(--c-ink)]">{c.country_name}
+                <span className="ml-2 font-mono text-xs text-[var(--c-ink3)]">{c.currency_code} · {c.currency_symbol}</span>
               </p>
               {c.provider && c.number && (
-                <p className="text-xs text-gray-500 mt-0.5">{c.provider}: <span className="font-mono font-semibold text-gray-700">{c.number}</span>{c.account_name ? ` · ${c.account_name}` : ''}</p>
+                <p className="text-xs text-[var(--c-ink2)] mt-0.5">{c.provider}: <span className="font-mono font-semibold text-[var(--c-ink2)]">{c.number}</span>{c.account_name ? ` · ${c.account_name}` : ''}</p>
               )}
               {c.provider2 && c.number2 && (
-                <p className="text-xs text-gray-500">{c.provider2}: <span className="font-mono font-semibold text-gray-700">{c.number2}</span>{c.account_name2 ? ` · ${c.account_name2}` : ''}</p>
+                <p className="text-xs text-[var(--c-ink2)]">{c.provider2}: <span className="font-mono font-semibold text-[var(--c-ink2)]">{c.number2}</span>{c.account_name2 ? ` · ${c.account_name2}` : ''}</p>
               )}
               {c.price != null && (
                 <p className="text-xs text-emerald-600 font-semibold mt-0.5">{c.price.toLocaleString()} {c.currency_symbol}</p>
               )}
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
-              <button onClick={() => openEdit(c)} className="p-1.5 text-gray-400 hover:text-brand-600 rounded transition-colors" title="Edit">
+              <button onClick={() => openEdit(c)} className="p-1.5 text-[var(--c-ink3)] hover:text-brand-600 rounded transition-colors" title="Edit">
                 <Pencil size={13} />
               </button>
-              <button onClick={() => del.mutate(c.id)} className="p-1.5 text-gray-400 hover:text-red-500 rounded transition-colors" title="Remove">
+              <button onClick={() => del.mutate(c.id)} className="p-1.5 text-[var(--c-ink3)] hover:text-red-500 rounded transition-colors" title="Remove">
                 <Trash2 size={13} />
               </button>
             </div>
@@ -211,10 +211,10 @@ function PaymentCountriesSection() {
       {/* ── Add / Edit modal ── */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)' }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h3 className="text-base font-bold text-gray-900">{editing ? 'Edit country config' : 'Add country'}</h3>
-              <button onClick={() => { setShowModal(false); setEditing(null); }} className="text-gray-400 hover:text-gray-600">
+          <div className="bg-[var(--c-surf)] rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--c-rule)]">
+              <h3 className="text-base font-bold text-[var(--c-ink)]">{editing ? 'Edit country config' : 'Add country'}</h3>
+              <button onClick={() => { setShowModal(false); setEditing(null); }} className="text-[var(--c-ink3)] hover:text-[var(--c-ink2)]">
                 <X size={18} />
               </button>
             </div>
@@ -246,8 +246,8 @@ function PaymentCountriesSection() {
                 </Field>
               </div>
 
-              <hr className="border-gray-100" />
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Primary payment method</p>
+              <hr className="border-[var(--c-rule)]" />
+              <p className="text-xs font-semibold text-[var(--c-ink2)] uppercase tracking-wider">Primary payment method</p>
 
               <Field label="Provider (e.g. MTN MoMo, M-Pesa)">
                 <input className={inputCls} value={form.provider}
@@ -264,8 +264,8 @@ function PaymentCountriesSection() {
                 </Field>
               </div>
 
-              <hr className="border-gray-100" />
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Secondary method <span className="normal-case font-normal text-gray-400">(optional)</span></p>
+              <hr className="border-[var(--c-rule)]" />
+              <p className="text-xs font-semibold text-[var(--c-ink2)] uppercase tracking-wider">Secondary method <span className="normal-case font-normal text-[var(--c-ink3)]">(optional)</span></p>
 
               <Field label="Provider">
                 <input className={inputCls} value={form.provider2}
@@ -282,12 +282,12 @@ function PaymentCountriesSection() {
                 </Field>
               </div>
 
-              <hr className="border-gray-100" />
+              <hr className="border-[var(--c-rule)]" />
               <Field label="Recommended price in local currency" hint="Pre-fills the amount for learners (they can adjust)">
                 <div className="flex gap-2 items-center">
                   <input className={inputCls} style={{ marginBottom: 0 }} type="number" value={form.price}
                     onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="6000" />
-                  <span className="text-sm font-mono text-gray-500 whitespace-nowrap">{form.currency_code || 'currency'}</span>
+                  <span className="text-sm font-mono text-[var(--c-ink2)] whitespace-nowrap">{form.currency_code || 'currency'}</span>
                 </div>
               </Field>
 
@@ -299,7 +299,7 @@ function PaymentCountriesSection() {
             </div>
             <div className="flex gap-3 px-5 pb-5">
               <button onClick={() => { setShowModal(false); setEditing(null); }}
-                className="flex-1 py-2.5 text-sm font-semibold border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors">
+                className="flex-1 py-2.5 text-sm font-semibold border border-[var(--c-rule)] rounded-xl text-[var(--c-ink2)] hover:bg-[var(--c-bg2)] transition-colors">
                 Cancel
               </button>
               <button
@@ -397,13 +397,14 @@ function OrgTab() {
     <div className="space-y-6 max-w-lg">
       {/* Plan banner */}
       {organization && (
-        <div className="flex items-center justify-between bg-gradient-to-r from-brand-50 to-blue-50 border border-brand-100 rounded-xl px-4 py-3.5">
+        <div className="flex items-center justify-between rounded-xl px-4 py-3.5"
+          style={{ background: 'color-mix(in srgb, var(--c-acc) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--c-acc) 26%, transparent)' }}>
           <div className="flex items-center gap-3">
-            <Crown size={16} className="text-brand-600" />
+            <Crown size={16} style={{ color: 'var(--c-acc)' }} />
             <div>
-              <p className="text-sm font-semibold text-gray-900">{planLabel[organization.plan]} plan</p>
+              <p className="text-sm font-semibold text-[var(--c-ink)]">{planLabel[organization.plan]} plan</p>
               {organization.plan === 'trial' && organization.trial_ends_at && (
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-[var(--c-ink2)] mt-0.5">
                   Trial ends {new Date(organization.trial_ends_at).toLocaleDateString()}
                 </p>
               )}
@@ -440,7 +441,7 @@ function OrgTab() {
           className={inputCls}
         />
         {logoUrl && (
-          <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-xl inline-block">
+          <div className="mt-3 p-3 bg-[var(--c-bg2)] border border-[var(--c-rule)] rounded-xl inline-block">
             <img
               src={logoUrl}
               alt="Logo preview"
@@ -458,35 +459,35 @@ function OrgTab() {
             type="color"
             value={brandColor}
             onChange={(e) => setBrandColor(e.target.value)}
-            className="w-10 h-10 rounded-xl border border-gray-300 cursor-pointer p-0.5 flex-shrink-0"
+            className="w-10 h-10 rounded-xl border border-[var(--c-rule)] cursor-pointer p-0.5 flex-shrink-0"
           />
           <input
             type="text"
             value={brandColor}
             onChange={(e) => setBrandColor(e.target.value)}
             pattern="^#[0-9a-fA-F]{6}$"
-            className="w-36 border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-36 border border-[var(--c-rule)] rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
           <div
-            className="w-10 h-10 rounded-xl border border-gray-200 flex-shrink-0"
+            className="w-10 h-10 rounded-xl border border-[var(--c-rule)] flex-shrink-0"
             style={{ backgroundColor: brandColor }}
           />
         </div>
       </Field>
 
       {/* ── Public directory profile ─────────────────────────────────── */}
-      <div className="border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-          <p className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+      <div className="border border-[var(--c-rule)] rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 bg-[var(--c-bg2)] border-b border-[var(--c-rule)]">
+          <p className="text-sm font-semibold text-[var(--c-ink)] flex items-center gap-2">
             <Globe size={15} className="text-brand-600" /> Public profile
           </p>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-[var(--c-ink2)] mt-0.5">
             Once you publish a course, you appear automatically in the public directory (Find courses) so new learners can discover you and enroll. Turn this off to stay hidden.
           </p>
         </div>
 
         {/* Listing toggle — auto-listed by default; this is an opt-out */}
-        <div className="px-4 py-4 border-b border-gray-100">
+        <div className="px-4 py-4 border-b border-[var(--c-rule)]">
           <button
             type="button"
             onClick={() => setIsListed(v => !v)}
@@ -494,12 +495,12 @@ function OrgTab() {
           >
             {isListed
               ? <ToggleRight size={32} className="text-brand-600 flex-shrink-0" />
-              : <ToggleLeft size={32} className="text-gray-300 flex-shrink-0" />}
+              : <ToggleLeft size={32} className="text-[var(--c-ink3)] flex-shrink-0" />}
             <span>
-              <span className="block text-sm font-semibold text-gray-800">
+              <span className="block text-sm font-semibold text-[var(--c-ink)]">
                 {isListed ? 'Discoverable in Find courses' : 'Hidden from the directory'}
               </span>
-              <span className="block text-xs text-gray-500 mt-0.5">
+              <span className="block text-xs text-[var(--c-ink2)] mt-0.5">
                 {isListed
                   ? 'When you have a published course, visitors can find your profile and enroll from the landing page.'
                   : 'You are hidden from Find courses. Only people with a direct link can reach you.'}
@@ -509,7 +510,7 @@ function OrgTab() {
         </div>
 
         {/* Profile fields */}
-        <div className="px-4 py-4 border-b border-gray-100 space-y-4">
+        <div className="px-4 py-4 border-b border-[var(--c-rule)] space-y-4">
           <Field label="Tagline" hint="A short one-liner shown under your name (max 140 chars)">
             <input type="text" value={tagline} maxLength={140}
               onChange={e => setTagline(e.target.value)}
@@ -535,7 +536,7 @@ function OrgTab() {
 
         {/* Contact fields */}
         <div className="px-4 py-4 space-y-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">How visitors reach you</p>
+          <p className="text-xs font-semibold text-[var(--c-ink2)] uppercase tracking-wide">How visitors reach you</p>
           <div className="grid grid-cols-2 gap-3">
             <Field label="WhatsApp number" hint="Include country code, e.g. +237…">
               <input type="tel" value={pubWhats} onChange={e => setPubWhats(e.target.value)}
@@ -558,21 +559,21 @@ function OrgTab() {
       </div>
 
       {/* ── Payment methods ──────────────────────────────────────────── */}
-      <div className="border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-          <p className="text-sm font-semibold text-gray-800">Payment methods</p>
-          <p className="text-xs text-gray-500 mt-0.5">
+      <div className="border border-[var(--c-rule)] rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 bg-[var(--c-bg2)] border-b border-[var(--c-rule)]">
+          <p className="text-sm font-semibold text-[var(--c-ink)]">Payment methods</p>
+          <p className="text-xs text-[var(--c-ink2)] mt-0.5">
             Configure how learners pay you. Only methods with a number/account filled in will be shown to learners.
           </p>
         </div>
 
         {/* MTN MoMo */}
-        <div className="px-4 py-4 border-b border-gray-100">
+        <div className="px-4 py-4 border-b border-[var(--c-rule)]">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-7 h-7 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-black text-yellow-900">M</span>
             </div>
-            <span className="text-sm font-semibold text-gray-800">MTN MoMo</span>
+            <span className="text-sm font-semibold text-[var(--c-ink)]">MTN MoMo</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Field label="MoMo number">
@@ -587,12 +588,12 @@ function OrgTab() {
         </div>
 
         {/* Orange Money */}
-        <div className="px-4 py-4 border-b border-gray-100">
+        <div className="px-4 py-4 border-b border-[var(--c-rule)]">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-black text-white">O</span>
             </div>
-            <span className="text-sm font-semibold text-gray-800">Orange Money</span>
+            <span className="text-sm font-semibold text-[var(--c-ink)]">Orange Money</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Orange number">
@@ -607,12 +608,12 @@ function OrgTab() {
         </div>
 
         {/* Bank Transfer */}
-        <div className="px-4 py-4 border-b border-gray-100">
+        <div className="px-4 py-4 border-b border-[var(--c-rule)]">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-black text-white">B</span>
             </div>
-            <span className="text-sm font-semibold text-gray-800">Bank Transfer</span>
+            <span className="text-sm font-semibold text-[var(--c-ink)]">Bank Transfer</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Bank name">
@@ -692,7 +693,7 @@ function TeamTab() {
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-xl" />
+          <div key={i} className="h-16 bg-[var(--c-bg2)] animate-pulse rounded-xl" />
         ))}
       </div>
     );
@@ -700,17 +701,17 @@ function TeamTab() {
 
   return (
     <div>
-      <p className="text-sm text-gray-400 mb-4 font-medium">
+      <p className="text-sm text-[var(--c-ink3)] mb-4 font-medium">
         {members.length} member{members.length !== 1 ? 's' : ''} in this workspace
       </p>
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden">
         {/* Table header */}
-        <div className="grid grid-cols-[1fr_auto_auto] gap-4 px-4 py-2.5 border-b border-gray-100 bg-gray-50/50">
-          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Member</span>
-          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Role</span>
-          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Action</span>
+        <div className="grid grid-cols-[1fr_auto_auto] gap-4 px-4 py-2.5 border-b border-[var(--c-rule)] bg-[var(--c-bg2)]/50">
+          <span className="text-[11px] font-semibold text-[var(--c-ink3)] uppercase tracking-wider">Member</span>
+          <span className="text-[11px] font-semibold text-[var(--c-ink3)] uppercase tracking-wider">Role</span>
+          <span className="text-[11px] font-semibold text-[var(--c-ink3)] uppercase tracking-wider">Action</span>
         </div>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-[var(--c-rule)]">
           {members.map((m) => (
             <div
               key={m.id}
@@ -718,8 +719,8 @@ function TeamTab() {
             >
               <Avatar name={m.full_name} size="sm" />
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-gray-900 truncate">{m.full_name}</p>
-                <p className="text-[12px] text-gray-400 truncate">{m.email}</p>
+                <p className="text-[13px] font-semibold text-[var(--c-ink)] truncate">{m.full_name}</p>
+                <p className="text-[12px] text-[var(--c-ink3)] truncate">{m.email}</p>
               </div>
 
               {/* Role */}
@@ -727,7 +728,7 @@ function TeamTab() {
                 <select
                   value={m.role}
                   onChange={(e) => updateRole.mutate({ userId: m.id, role: e.target.value as UserRole })}
-                  className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-gray-700"
+                  className="text-xs border border-[var(--c-rule)] rounded-lg px-2.5 py-1.5 bg-[var(--c-surf)] focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-[var(--c-ink2)]"
                 >
                   {ROLE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -743,7 +744,7 @@ function TeamTab() {
                   <button
                     onClick={() => deactivate.mutate(m.id)}
                     title="Deactivate member"
-                    className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-1.5 text-[var(--c-ink3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -853,14 +854,14 @@ function InviteLinksSection() {
     : `${window.location.origin}/join/`;
 
   return (
-    <div className="mt-10 pt-8 border-t border-gray-100">
+    <div className="mt-10 pt-8 border-t border-[var(--c-rule)]">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-[var(--c-ink)] flex items-center gap-2">
             <Link2 size={15} className="text-brand-600" />
             Bulk invite links
           </h3>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-[var(--c-ink3)] mt-0.5">
             Share one link with many students. They register and follow the normal flow.
           </p>
         </div>
@@ -870,10 +871,10 @@ function InviteLinksSection() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-5 space-y-4">
+        <form onSubmit={handleCreate} className="bg-[var(--c-bg2)] border border-[var(--c-rule)] rounded-xl p-5 mb-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Label (optional)</label>
+              <label className="block text-xs font-medium text-[var(--c-ink2)] mb-1">Label (optional)</label>
               <input
                 type="text"
                 value={label}
@@ -883,11 +884,11 @@ function InviteLinksSection() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Role</label>
+              <label className="block text-xs font-medium text-[var(--c-ink2)] mb-1">Role</label>
               <select
                 value={role}
                 onChange={e => setRole(e.target.value as UserRole)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-[var(--c-rule)] rounded-xl px-3 py-2.5 text-sm bg-[var(--c-surf)] focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 {ROLE_OPTIONS.map(o => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -898,7 +899,7 @@ function InviteLinksSection() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Max uses (optional)</label>
+              <label className="block text-xs font-medium text-[var(--c-ink2)] mb-1">Max uses (optional)</label>
               <input
                 type="number"
                 min="1"
@@ -909,7 +910,7 @@ function InviteLinksSection() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Expires in days (optional)</label>
+              <label className="block text-xs font-medium text-[var(--c-ink2)] mb-1">Expires in days (optional)</label>
               <input
                 type="number"
                 min="1"
@@ -923,15 +924,15 @@ function InviteLinksSection() {
           </div>
 
           {/* Free access toggle */}
-          <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-[var(--c-rule)] bg-[var(--c-surf)] px-4 py-3">
             <div>
-              <p className="text-sm font-medium text-gray-800">Free access</p>
-              <p className="text-xs text-gray-400">Skip payment — students get instant access on sign-up</p>
+              <p className="text-sm font-medium text-[var(--c-ink)]">Free access</p>
+              <p className="text-xs text-[var(--c-ink3)]">Skip payment — students get instant access on sign-up</p>
             </div>
             <button
               type="button"
               onClick={() => setFreeAccess(v => !v)}
-              className={`transition-colors ${freeAccess ? 'text-brand-600' : 'text-gray-300'}`}
+              className={`transition-colors ${freeAccess ? 'text-brand-600' : 'text-[var(--c-ink3)]'}`}
             >
               {freeAccess ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
             </button>
@@ -939,7 +940,7 @@ function InviteLinksSection() {
 
           {/* Access code */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-xs font-medium text-[var(--c-ink2)] mb-1">
               Access code (optional)
               {accessCode && <span className="ml-1.5 inline-flex items-center gap-0.5 text-brand-600"><Lock size={10} /> Required to join</span>}
             </label>
@@ -952,7 +953,7 @@ function InviteLinksSection() {
               minLength={4}
               maxLength={32}
             />
-            <p className="text-xs text-gray-400 mt-1">Students must enter this code on the join page.</p>
+            <p className="text-xs text-[var(--c-ink3)] mt-1">Students must enter this code on the join page.</p>
           </div>
 
           <Button type="submit" loading={creating} size="sm">Create link</Button>
@@ -960,11 +961,11 @@ function InviteLinksSection() {
       )}
 
       {isLoading ? (
-        <div className="text-center py-4 text-sm text-gray-400">Loading…</div>
+        <div className="text-center py-4 text-sm text-[var(--c-ink3)]">Loading…</div>
       ) : links.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-4">No bulk invite links yet.</p>
+        <p className="text-sm text-[var(--c-ink3)] text-center py-4">No bulk invite links yet.</p>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
+        <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden divide-y divide-[var(--c-rule)]">
           {links.map(link => {
             const url = `${frontendUrl}${link.token}`;
             const expired = link.expires_at && new Date(link.expires_at) < new Date();
@@ -973,12 +974,12 @@ function InviteLinksSection() {
               <div key={link.id} className={`flex items-center gap-3 px-4 py-3.5 ${!link.is_active || expired || exhausted ? 'opacity-60' : ''}`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-[13px] font-semibold text-gray-900 truncate">
+                    <p className="text-[13px] font-semibold text-[var(--c-ink)] truncate">
                       {link.label || 'Untitled link'}
                     </p>
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded capitalize ${
-                      link.role === 'learner' ? 'bg-slate-100 text-slate-600'
-                      : link.role === 'educator' ? 'bg-blue-100 text-blue-600'
+                      link.role === 'learner' ? 'bg-[var(--c-bg2)] text-[var(--c-ink2)]'
+                      : link.role === 'educator' ? 'bg-[color-mix(in_srgb,var(--c-info)_18%,transparent)] text-[var(--c-info)]'
                       : 'bg-indigo-100 text-indigo-600'
                     }`}>{link.role}</span>
                     {link.free_access && (
@@ -990,8 +991,8 @@ function InviteLinksSection() {
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-gray-400 mt-0.5 font-mono truncate">{url}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-[11px] text-[var(--c-ink3)] mt-0.5 font-mono truncate">{url}</p>
+                  <p className="text-[11px] text-[var(--c-ink3)] mt-0.5">
                     {link.use_count}{link.max_uses != null ? `/${link.max_uses}` : ''} uses
                     {link.expires_at && ` · Expires ${new Date(link.expires_at).toLocaleDateString()}`}
                     {!link.is_active && ' · Deactivated'}
@@ -1002,21 +1003,21 @@ function InviteLinksSection() {
                 <button
                   onClick={() => copyLink(link)}
                   title="Copy link"
-                  className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors flex-shrink-0"
+                  className="p-1.5 text-[var(--c-ink3)] hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors flex-shrink-0"
                 >
                   {copiedId === link.id ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                 </button>
                 <button
                   onClick={() => toggleActive.mutate({ id: link.id, is_active: !link.is_active })}
                   title={link.is_active ? 'Deactivate' : 'Activate'}
-                  className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ${link.is_active ? 'text-brand-500 hover:bg-brand-50' : 'text-gray-300 hover:text-brand-500 hover:bg-brand-50'}`}
+                  className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ${link.is_active ? 'text-brand-500 hover:bg-brand-50' : 'text-[var(--c-ink3)] hover:text-brand-500 hover:bg-brand-50'}`}
                 >
                   {link.is_active ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                 </button>
                 <button
                   onClick={() => deleteLink.mutate(link.id)}
                   title="Delete link"
-                  className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                  className="p-1.5 text-[var(--c-ink3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -1113,9 +1114,9 @@ function InvitationsTab() {
       )}
 
       {/* Send invite form */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-gray-900 mb-1">Send an invitation</h3>
-        <p className="text-xs text-gray-400 mb-4">
+      <div className="bg-[var(--c-bg2)] border border-[var(--c-rule)] rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-[var(--c-ink)] mb-1">Send an invitation</h3>
+        <p className="text-xs text-[var(--c-ink3)] mb-4">
           {emailOff
             ? 'The link is copied to your clipboard — paste it to the learner directly.'
             : 'We’ll email the invite and also copy the link to your clipboard. Valid for 7 days.'}
@@ -1132,7 +1133,7 @@ function InvitationsTab() {
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as UserRole)}
-            className="border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-gray-700"
+            className="border border-[var(--c-rule)] rounded-xl px-3 py-2.5 text-sm bg-[var(--c-surf)] focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-[var(--c-ink2)]"
           >
             {ROLE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -1146,27 +1147,27 @@ function InvitationsTab() {
 
       {/* Pending invites */}
       {isLoading ? (
-        <div className="text-center py-4 text-sm text-gray-400">Loading...</div>
+        <div className="text-center py-4 text-sm text-[var(--c-ink3)]">Loading...</div>
       ) : (
         <>
           {pending.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              <p className="text-[11px] font-semibold text-[var(--c-ink3)] uppercase tracking-wider mb-3">
                 Pending ({pending.length})
               </p>
-              <div className="bg-white border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
+              <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden divide-y divide-[var(--c-rule)]">
                 {pending.map((inv) => (
                   <div key={inv.id} className="flex items-center gap-4 px-4 py-3.5">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-gray-900 truncate">{inv.email}</p>
-                      <p className="text-[12px] text-gray-400 mt-0.5 capitalize">
+                      <p className="text-[13px] font-semibold text-[var(--c-ink)] truncate">{inv.email}</p>
+                      <p className="text-[12px] text-[var(--c-ink3)] mt-0.5 capitalize">
                         {inv.role} · Expires {new Date(inv.expires_at).toLocaleDateString()}
                       </p>
                     </div>
                     <button
                       onClick={() => copyLink(inv)}
                       title="Copy invite link"
-                      className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+                      className="p-1.5 text-[var(--c-ink3)] hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                     >
                       {copiedId === inv.id
                         ? <Check size={14} className="text-emerald-500" />
@@ -1175,7 +1176,7 @@ function InvitationsTab() {
                     <button
                       onClick={() => revoke.mutate(inv.id)}
                       title="Revoke invite"
-                      className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-1.5 text-[var(--c-ink3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -1187,19 +1188,19 @@ function InvitationsTab() {
 
           {done.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              <p className="text-[11px] font-semibold text-[var(--c-ink3)] uppercase tracking-wider mb-3">
                 Accepted / Expired
               </p>
-              <div className="bg-white border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100 opacity-60">
+              <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-xl overflow-hidden divide-y divide-[var(--c-rule)] opacity-60">
                 {done.map((inv) => (
                   <div key={inv.id} className="flex items-center gap-4 px-4 py-3.5">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] text-gray-700 truncate">{inv.email}</p>
-                      <p className="text-[12px] text-gray-400 capitalize">
+                      <p className="text-[13px] text-[var(--c-ink2)] truncate">{inv.email}</p>
+                      <p className="text-[12px] text-[var(--c-ink3)] capitalize">
                         {inv.is_accepted ? 'Accepted' : 'Expired'} · {inv.role}
                       </p>
                     </div>
-                    <Shield size={14} className={inv.is_accepted ? 'text-emerald-500' : 'text-gray-300'} />
+                    <Shield size={14} className={inv.is_accepted ? 'text-emerald-500' : 'text-[var(--c-ink3)]'} />
                   </div>
                 ))}
               </div>
@@ -1207,7 +1208,7 @@ function InvitationsTab() {
           )}
 
           {invitations.length === 0 && (
-            <p className="text-center text-sm text-gray-400 py-6">No invitations yet. Send one above.</p>
+            <p className="text-center text-sm text-[var(--c-ink3)] py-6">No invitations yet. Send one above.</p>
           )}
         </>
       )}
@@ -1275,18 +1276,18 @@ function IntegrationsTab() {
 
   return (
     <div className="space-y-6 max-w-lg">
-      <div className="flex items-center gap-3 p-4 bg-brand-50 border border-brand-100 rounded-xl">
+      <div className="flex items-center gap-3 p-4 rounded-xl bg-[color-mix(in_srgb,var(--c-acc)_10%,transparent)] border border-[color-mix(in_srgb,var(--c-acc)_26%,transparent)]">
         <Plug size={16} className="text-brand-600 flex-shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-gray-900">ATS Auto-Invite</p>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-sm font-semibold text-[var(--c-ink)]">ATS Auto-Invite</p>
+          <p className="text-xs text-[var(--c-ink2)] mt-0.5">
             When a new hire accepts an offer in your ATS, Nest automatically sends them an onboarding invite.
           </p>
         </div>
       </div>
 
       {connection && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+        <div className="rounded-xl p-4 bg-[color-mix(in_srgb,var(--c-ok)_12%,transparent)] border border-[color-mix(in_srgb,var(--c-ok)_30%,transparent)]">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-emerald-800 capitalize">
@@ -1307,7 +1308,7 @@ function IntegrationsTab() {
             <div className="mt-3 pt-3 border-t border-emerald-200">
               <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1.5">Webhook URL</p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 text-[11px] bg-white border border-emerald-200 rounded-lg px-2.5 py-1.5 text-gray-700 truncate font-mono">
+                <code className="flex-1 text-[11px] bg-[var(--c-surf)] border border-emerald-200 rounded-lg px-2.5 py-1.5 text-[var(--c-ink2)] truncate font-mono">
                   {webhookUrl}
                 </code>
                 <button onClick={copyWebhook} className="p-1.5 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors">
@@ -1324,7 +1325,7 @@ function IntegrationsTab() {
 
       <form onSubmit={handleSave} className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">ATS Provider</label>
+          <label className="block text-sm font-semibold text-[var(--c-ink2)] mb-2">ATS Provider</label>
           <div className="grid grid-cols-3 gap-2">
             {ATS_PROVIDERS.map(p => (
               <button
@@ -1333,19 +1334,19 @@ function IntegrationsTab() {
                 onClick={() => setSelectedProvider(p.value)}
                 className={`border rounded-xl p-3 text-left transition-all ${
                   selectedProvider === p.value
-                    ? 'border-brand-400 bg-brand-50 ring-2 ring-brand-200'
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                    ? 'border-[var(--c-acc)] bg-[color-mix(in_srgb,var(--c-acc)_10%,transparent)] ring-2 ring-[color-mix(in_srgb,var(--c-acc)_30%,transparent)]'
+                    : 'border-[var(--c-rule)] hover:border-[var(--c-rule)] bg-[var(--c-surf)]'
                 }`}
               >
                 <div className="w-5 h-5 rounded-md mb-2 flex-shrink-0" style={{ backgroundColor: p.color }} />
-                <p className="text-xs font-semibold text-gray-900">{p.label}</p>
+                <p className="text-xs font-semibold text-[var(--c-ink)]">{p.label}</p>
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-sm font-semibold text-[var(--c-ink2)] mb-1.5">
             API Key
             <a
               href="https://developers.greenhouse.io/harvest.html#authentication"
@@ -1361,16 +1362,16 @@ function IntegrationsTab() {
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
             placeholder="••••••••••••••••"
-            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+            className="w-full border border-[var(--c-rule)] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Default role for new hires</label>
+          <label className="block text-sm font-semibold text-[var(--c-ink2)] mb-1.5">Default role for new hires</label>
           <select
             value={defaultRole}
             onChange={e => setDefaultRole(e.target.value as UserRole)}
-            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-[var(--c-rule)] rounded-xl px-4 py-2.5 text-sm bg-[var(--c-surf)] focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             <option value="learner">Learner</option>
             <option value="educator">Educator</option>
@@ -1402,14 +1403,14 @@ export default function OrgSettingsPage() {
       <div className="mx-auto max-w-5xl px-6 py-12 lg:px-8 lg:py-16">
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="text-base text-gray-500 mt-2">
+          <h1 className="text-3xl font-bold text-[var(--c-ink)]">Settings</h1>
+          <p className="text-base text-[var(--c-ink2)] mt-2">
             Manage your workspace, team members, and integrations
           </p>
         </div>
 
         {/* Tab bar */}
-        <div className="flex gap-0 border-b border-gray-200 mb-8">
+        <div className="flex gap-0 border-b border-[var(--c-rule)] mb-8">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -1417,7 +1418,7 @@ export default function OrgSettingsPage() {
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
                 activeTab === id
                   ? 'border-brand-600 text-brand-700'
-                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+                  : 'border-transparent text-[var(--c-ink2)] hover:text-[var(--c-ink)] hover:border-[var(--c-rule)]'
               }`}
             >
               <Icon size={16} />
@@ -1427,7 +1428,7 @@ export default function OrgSettingsPage() {
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 lg:p-10 shadow-sm">
+        <div className="bg-[var(--c-surf)] rounded-2xl border border-[var(--c-rule)] p-8 lg:p-10 shadow-sm">
           {activeTab === 'organization' && <OrgTab />}
           {activeTab === 'team' && <TeamTab />}
           {activeTab === 'invitations' && <InvitationsTab />}
