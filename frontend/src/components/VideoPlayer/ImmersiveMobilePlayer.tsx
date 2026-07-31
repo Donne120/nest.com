@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { X, ChevronUp, ChevronDown, HelpCircle, Play, Pause, ListChecks } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, ChevronRight, MoreVertical, HelpCircle, Play, Pause, ListChecks } from 'lucide-react';
 import type { Video } from '../../types';
 
 const ACC  = '#b259c4';
@@ -41,14 +41,26 @@ export default function ImmersiveMobilePlayer({
   onPrev, onNext, onExit, onAsk, onQuiz, hasQuiz, overlayOpen = false,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const bgRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying]   = useState(true);
   const [current, setCurrent]   = useState(0);
   const [duration, setDuration] = useState(0);
   const [hint, setHint]         = useState(true);      // first-run swipe hint
   const [swipe, setSwipe]       = useState<'up' | 'down' | null>(null);
+  const [railOpen, setRailOpen] = useState(true);      // collapsible Ask/Quiz rail
 
   const touchStart = useRef<{ y: number; t: number } | null>(null);
   const resumeAfterOverlay = useRef(false);
+
+  // Keep the blurred ambient background loosely in sync with the main video —
+  // when they drift (seek/pause), snap it back. Cheap: only correct on real gaps.
+  const syncBg = useCallback((t: number, isPlaying: boolean) => {
+    const b = bgRef.current;
+    if (!b) return;
+    if (Math.abs(b.currentTime - t) > 0.4) b.currentTime = t;
+    if (isPlaying && b.paused) b.play().catch(() => {});
+    if (!isPlaying && !b.paused) b.pause();
+  }, []);
 
   // Lock body scroll while immersive
   useEffect(() => {
@@ -113,7 +125,22 @@ export default function ImmersiveMobilePlayer({
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Video — fills the screen */}
+      {/* Ambient blurred fill — the same frame, scaled up + blurred behind the
+          real video, so the empty letterbox space glows instead of dead black
+          (TikTok / YouTube Shorts style). Muted, decorative, follows the player. */}
+      <video
+        ref={bgRef}
+        src={videoUrl}
+        autoPlay
+        muted
+        playsInline
+        aria-hidden
+        preload="metadata"
+        className="absolute inset-0 w-full h-full"
+        style={{ objectFit: 'cover', filter: 'blur(28px) brightness(0.55) saturate(1.3)', transform: 'scale(1.25)', pointerEvents: 'none' }}
+      />
+
+      {/* Video — sits on the blurred fill */}
       <video
         ref={videoRef}
         src={videoUrl}
@@ -123,10 +150,11 @@ export default function ImmersiveMobilePlayer({
         className="absolute inset-0 w-full h-full"
         style={{ objectFit: 'contain', animation: swipe ? `imm-${swipe} 0.32s ease` : undefined }}
         onClick={togglePlay}
-        onTimeUpdate={e => setCurrent(e.currentTarget.currentTime)}
+        onTimeUpdate={e => { setCurrent(e.currentTarget.currentTime); syncBg(e.currentTarget.currentTime, !e.currentTarget.paused); }}
         onLoadedMetadata={e => setDuration(e.currentTarget.duration)}
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
+        onPlay={() => { setPlaying(true); syncBg(videoRef.current?.currentTime ?? 0, true); }}
+        onPause={() => { setPlaying(false); syncBg(videoRef.current?.currentTime ?? 0, false); }}
+        onSeeked={e => syncBg(e.currentTarget.currentTime, !e.currentTarget.paused)}
         onEnded={() => { if (hasNext) onNext(); }}
       />
 
@@ -157,17 +185,40 @@ export default function ImmersiveMobilePlayer({
         </span>
       </div>
 
-      {/* Right rail — Ask / Quiz / prev / next */}
-      <div className="absolute flex flex-col items-center gap-4"
-        style={{ right: 12, bottom: 'calc(env(safe-area-inset-bottom, 0px) + 110px)' }}>
-        <RailBtn
-          label="Ask"
-          accent
-          onClick={() => onAsk(videoRef.current ? videoRef.current.currentTime : current)}
-        ><HelpCircle size={24} /></RailBtn>
-        {hasQuiz && onQuiz && <RailBtn label="Quiz" onClick={onQuiz}><ListChecks size={24} /></RailBtn>}
-        <RailBtn label="Prev" onClick={onPrev} disabled={!hasPrev}><ChevronUp size={24} /></RailBtn>
-        <RailBtn label="Next" onClick={onNext} disabled={!hasNext}><ChevronDown size={24} /></RailBtn>
+      {/* Right rail — Ask / Quiz / prev / next. Collapsible so it never blocks
+          the video: tap the handle to slide it out of the way and back. */}
+      <div className="absolute flex flex-col items-center"
+        style={{ right: 12, bottom: 'calc(env(safe-area-inset-bottom, 0px) + 110px)', gap: 10 }}>
+        {/* Toggle handle */}
+        <button
+          onClick={() => setRailOpen(o => !o)}
+          aria-label={railOpen ? 'Hide controls' : 'Show controls'}
+          className="flex items-center justify-center rounded-full"
+          style={{ width: 34, height: 34, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', backdropFilter: 'blur(6px)' }}
+        >
+          {railOpen ? <ChevronRight size={18} /> : <MoreVertical size={18} />}
+        </button>
+
+        {/* The actions — slide + fade away when collapsed */}
+        <div
+          className="flex flex-col items-center"
+          style={{
+            gap: 16,
+            transition: 'transform 0.28s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s',
+            transform: railOpen ? 'translateX(0)' : 'translateX(78px)',
+            opacity: railOpen ? 1 : 0,
+            pointerEvents: railOpen ? 'auto' : 'none',
+          }}
+        >
+          <RailBtn
+            label="Ask"
+            accent
+            onClick={() => onAsk(videoRef.current ? videoRef.current.currentTime : current)}
+          ><HelpCircle size={24} /></RailBtn>
+          {hasQuiz && onQuiz && <RailBtn label="Quiz" onClick={onQuiz}><ListChecks size={24} /></RailBtn>}
+          <RailBtn label="Prev" onClick={onPrev} disabled={!hasPrev}><ChevronUp size={24} /></RailBtn>
+          <RailBtn label="Next" onClick={onNext} disabled={!hasNext}><ChevronDown size={24} /></RailBtn>
+        </div>
       </div>
 
       {/* Bottom — title + scrubber */}

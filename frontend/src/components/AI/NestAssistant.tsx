@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Send, Sparkles, RotateCcw, ChevronDown } from 'lucide-react';
+import { X, Send, Sparkles, RotateCcw, ChevronDown, ArrowUpRight } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { useUIStore } from '../../store';
 import api from '../../api/client';
@@ -139,35 +139,34 @@ export default function NestAssistant() {
       <div className="nest-ai-backdrop" onClick={closeNestAssistant} />
 
       <div className={`nest-ai-panel ${minimized ? 'nest-ai-minimized' : ''}`}>
-      {/* Header */}
+      {/* Header — a warm gradient bar, not flat near-black */}
       <div
         style={{
-          height: 52,
-          minHeight: 52,
+          minHeight: 58,
           display: 'flex',
           alignItems: 'center',
-          gap: 10,
+          gap: 11,
           padding: '0 14px',
-          borderBottom: minimized ? 'none' : '1px solid rgba(255,255,255,0.07)',
-          background: 'rgba(20,21,28,0.95)',
+          borderBottom: minimized ? 'none' : '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(120deg, rgba(178,89,196,0.28) 0%, rgba(124,45,142,0.14) 45%, rgba(20,18,25,0.6) 100%)',
           cursor: 'pointer',
           flexShrink: 0,
         }}
         onClick={() => setMinimized((m) => !m)}
       >
-        <span style={{
-          width: 28, height: 28, borderRadius: 8,
-          background: 'linear-gradient(135deg,#b259c422,#7cb34222)',
-          border: '1px solid rgba(178,89,196,0.3)',
+        <span className="nai-orb" style={{
+          width: 34, height: 34, borderRadius: 11,
+          background: 'linear-gradient(135deg,#c77dda,#7b2d8e)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
+          boxShadow: '0 4px 16px rgba(178,89,196,0.5)',
         }}>
-          <Sparkles size={14} style={{ color: '#b259c4' }} />
+          <Sparkles size={17} style={{ color: '#fff' }} fill="#fff" />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#e8e4dc', margin: 0 }}>Nest Assistant</p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>Nest Assistant</p>
           {!minimized && (
-            <p style={{ fontSize: 11, color: '#6b6b78', margin: 0 }}>Ask anything about the platform</p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', margin: 0 }}>Your guide to everything Nest</p>
           )}
         </div>
         <div style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
@@ -217,47 +216,35 @@ export default function NestAssistant() {
           {/* Messages */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             {isEmpty ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', paddingTop: 16 }}>
-                <div style={{
-                  width: 48, height: 48, borderRadius: 14,
-                  background: 'linear-gradient(135deg,#b259c422,#7cb34222)',
-                  border: '1px solid rgba(178,89,196,0.25)',
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center', paddingTop: 20 }}>
+                <div className="nai-hero-orb" style={{
+                  width: 60, height: 60, borderRadius: 18,
+                  background: 'linear-gradient(135deg,#c77dda,#7b2d8e)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 10px 34px rgba(178,89,196,0.5)',
                 }}>
-                  <Sparkles size={22} style={{ color: '#b259c4' }} />
+                  <Sparkles size={28} style={{ color: '#fff' }} fill="#fff" />
                 </div>
-                <p style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', lineHeight: 1.5, maxWidth: 260 }}>
-                  Hi! Ask me anything about using Nest — features, how-to, or troubleshooting.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 24, fontWeight: 600, color: '#F2F0F5', margin: 0, lineHeight: 1.15 }}>
+                    Hey! I'm your Nest guide 👋
+                  </p>
+                  <p style={{ fontSize: 13, color: '#A8A3B2', lineHeight: 1.55, maxWidth: 270, margin: '8px auto 0' }}>
+                    Ask me anything — how features work, where to find things, or how to get unstuck.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%', marginTop: 2 }}>
+                  <p style={{ fontFamily: "'DM Mono', ui-monospace, monospace", fontSize: 9.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6F6A7A', margin: '0 0 2px 2px' }}>
+                    Try asking
+                  </p>
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
                       onClick={() => send(s)}
-                      style={{
-                        background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        borderRadius: 8,
-                        padding: '8px 12px',
-                        fontSize: 12.5,
-                        color: '#9ca3af',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        transition: 'all 0.15s',
-                        fontFamily: 'inherit',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = 'rgba(178,89,196,0.08)';
-                        e.currentTarget.style.borderColor = 'rgba(178,89,196,0.2)';
-                        e.currentTarget.style.color = '#b259c4';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
-                        e.currentTarget.style.color = '#9ca3af';
-                      }}
+                      className="nai-suggestion"
                     >
-                      {s}
+                      <span style={{ flex: 1, textAlign: 'left' }}>{s}</span>
+                      <ArrowUpRight size={15} className="nai-sug-arrow" />
                     </button>
                   ))}
                 </div>
@@ -356,15 +343,17 @@ export default function NestAssistant() {
             <button
               onClick={() => send()}
               disabled={!input.trim() || streaming}
+              className="press"
               style={{
-                width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                background: input.trim() && !streaming ? '#b259c4' : 'rgba(255,255,255,0.06)',
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: input.trim() && !streaming ? 'linear-gradient(135deg,#c77dda,#7b2d8e)' : 'rgba(255,255,255,0.06)',
                 border: 'none', cursor: input.trim() && !streaming ? 'pointer' : 'default',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'background 0.15s',
+                boxShadow: input.trim() && !streaming ? '0 4px 16px rgba(178,89,196,0.45)' : 'none',
               }}
             >
-              <Send size={14} style={{ color: input.trim() && !streaming ? '#0b0c0f' : '#6b6b78' }} />
+              <Send size={16} style={{ color: input.trim() && !streaming ? '#fff' : '#6b6b78' }} />
             </button>
           </div>
         </>
@@ -385,9 +374,11 @@ export default function NestAssistant() {
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          border-radius: 16px;
-          border: 1px solid rgba(255,255,255,0.09);
-          background: rgba(14,15,20,0.98);
+          border-radius: 20px;
+          border: 1px solid rgba(255,255,255,0.10);
+          background:
+            radial-gradient(120% 80% at 50% 0%, rgba(178,89,196,0.14) 0%, transparent 55%),
+            linear-gradient(180deg, #171219 0%, #100d15 100%);
           backdrop-filter: blur(24px);
           -webkit-backdrop-filter: blur(24px);
           box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
@@ -434,6 +425,33 @@ export default function NestAssistant() {
           from { opacity: 0; transform: translateY(12px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0)   scale(1);    }
         }
+
+        /* Charming suggestion cards */
+        .nai-suggestion {
+          display: flex; align-items: center; gap: 8;
+          width: 100%; text-align: left;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 12px; padding: 11px 13px;
+          font-size: 13px; color: #D6D1DE; cursor: pointer;
+          font-family: inherit; line-height: 1.35;
+          transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), background 0.15s, border-color 0.15s, color 0.15s;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .nai-suggestion .nai-sug-arrow { color: #7b6f86; flex-shrink: 0; transition: transform 0.18s, color 0.15s; }
+        .nai-suggestion:hover, .nai-suggestion:active {
+          background: rgba(178,89,196,0.14);
+          border-color: rgba(178,89,196,0.45);
+          color: #F2F0F5;
+        }
+        .nai-suggestion:hover .nai-sug-arrow { color: #c77dda; transform: translate(2px,-2px); }
+        .nai-suggestion:active { transform: scale(0.98); }
+
+        /* Gentle life on the header orb + hero */
+        @keyframes nai-breathe { 0%,100% { box-shadow: 0 4px 16px rgba(178,89,196,0.5); } 50% { box-shadow: 0 6px 24px rgba(178,89,196,0.75); } }
+        .nai-orb { animation: nai-breathe 3s ease-in-out infinite; }
+        .nai-hero-orb { animation: nai-breathe 3s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .nai-orb, .nai-hero-orb { animation: none; } }
       `}</style>
     </>
   );
