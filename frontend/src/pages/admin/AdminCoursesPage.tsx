@@ -215,8 +215,8 @@ export default function AdminCoursesPage() {
       ) : (
         <div className="bg-[var(--c-surf)] border border-[var(--c-rule)] rounded-2xl overflow-hidden shadow-sm">
 
-          {/* Table head */}
-          <div className="grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-3 border-b border-[var(--c-rule)] bg-[var(--c-bg2)]/50">
+          {/* Table head — desktop only (mobile rows are self-labelling cards) */}
+          <div className="hidden sm:grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-3 border-b border-[var(--c-rule)] bg-[var(--c-bg2)]/50">
             <input
               type="checkbox"
               checked={allSelected}
@@ -239,8 +239,9 @@ export default function AdminCoursesPage() {
                 <div
                   key={m.id}
                   className={clsx(
-                    'grid grid-cols-[auto_auto_1fr_auto_auto] items-center gap-4 px-6 py-4 hover:bg-[var(--c-bg2)]/70 transition-colors group',
-                    isChecked && 'bg-red-500/10/40',
+                    // Mobile: stacked flex card. Desktop (sm+): the original 5-col table grid.
+                    'flex flex-wrap items-center gap-x-3 gap-y-3 px-4 py-4 sm:grid sm:grid-cols-[auto_auto_1fr_auto_auto] sm:gap-4 sm:px-6 hover:bg-[var(--c-bg2)]/70 transition-colors group',
+                    isChecked && 'bg-red-500/5',
                   )}
                 >
                   {/* Checkbox */}
@@ -248,32 +249,32 @@ export default function AdminCoursesPage() {
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => toggleSelect(m.id)}
-                    className="w-4 h-4 rounded border-[var(--c-rule)] text-brand-600 cursor-pointer"
+                    className="w-4 h-4 rounded border-[var(--c-rule)] text-brand-600 cursor-pointer flex-shrink-0"
                   />
 
                   {/* Index */}
-                  <span className="text-sm font-bold text-[var(--c-ink3)] tabular-nums w-7 text-center">
+                  <span className="text-sm font-bold text-[var(--c-ink3)] tabular-nums w-7 text-center flex-shrink-0">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
 
-                  {/* Module info */}
-                  <div className="flex items-center gap-4 min-w-0">
+                  {/* Module info — takes remaining width; wraps to full row on mobile */}
+                  <div className="flex items-center gap-3 min-w-0 flex-1 basis-[60%]">
                     {/* Thumbnail */}
                     {m.thumbnail_url ? (
                       <img
                         src={m.thumbnail_url}
                         alt={m.title}
-                        className="w-16 h-10 object-cover rounded-lg flex-shrink-0 border border-[var(--c-rule)]"
+                        className="w-14 h-9 object-cover rounded-lg flex-shrink-0 border border-[var(--c-rule)]"
                       />
                     ) : (
-                      <div className="w-16 h-10 bg-[var(--c-bg2)] rounded-lg flex items-center justify-center flex-shrink-0 border border-[var(--c-rule)]">
-                        <BookOpen size={15} className="text-indigo-300" />
+                      <div className="w-14 h-9 bg-[var(--c-bg2)] rounded-lg flex items-center justify-center flex-shrink-0 border border-[var(--c-rule)]">
+                        <BookOpen size={15} className="text-brand-400/50" />
                       </div>
                     )}
 
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[var(--c-ink)] truncate leading-snug">{m.title}</p>
-                      <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-2.5 mt-1 flex-wrap">
                         <Meta icon={<Video size={11} />} label={`${m.video_count} video${m.video_count !== 1 ? 's' : ''}`} />
                         <Dot />
                         <Meta icon={<MessageSquare size={11} />} label={`${m.question_count} Q&A`} />
@@ -287,9 +288,10 @@ export default function AdminCoursesPage() {
                     </div>
                   </div>
 
-                  {/* Status badge */}
+                  {/* Status + actions — on mobile they sit together on their own row,
+                      pushed right; on desktop they occupy the grid's last two columns. */}
                   <span className={clsx(
-                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold',
+                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold flex-shrink-0 ml-auto sm:ml-0',
                     m.is_published
                       ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                       : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
@@ -302,7 +304,7 @@ export default function AdminCoursesPage() {
                   </span>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       onClick={() => navigate(`/admin/courses/${m.id}/edit`)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-brand-600 bg-brand-500/10 hover:bg-brand-500/15 border border-brand-500/25 rounded-lg transition-colors"
@@ -373,13 +375,19 @@ function StatCard({
   }[color];
 
   return (
-    <div className={clsx('rounded-2xl border p-5 flex items-center gap-4', palette.bg, palette.border)}>
-      <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--c-surf)] shadow-sm', palette.icon)}>
+    <div className={clsx(
+      // Mobile: compact stacked card (icon top, value+label below) so 3 fit a
+      // narrow phone cleanly. Desktop: icon beside the value.
+      'rounded-2xl border p-3.5 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-4',
+      palette.bg, palette.border,
+    )}>
+      <div className={clsx('w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0', palette.bg, palette.icon)}
+        style={{ background: 'color-mix(in srgb, currentColor 16%, transparent)' }}>
         {icon}
       </div>
-      <div>
-        <p className={clsx('text-2xl font-bold leading-none', palette.value)}>{value}</p>
-        <p className="text-xs text-[var(--c-ink2)] mt-1 font-medium">{label}</p>
+      <div className="min-w-0">
+        <p className={clsx('text-xl sm:text-2xl font-bold leading-none', palette.value)}>{value}</p>
+        <p className="text-[11px] sm:text-xs text-[var(--c-ink2)] mt-1 font-medium leading-tight">{label}</p>
       </div>
     </div>
   );
