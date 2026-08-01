@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { X, ChevronUp, ChevronDown, ChevronRight, MoreVertical, HelpCircle, Play, Pause, ListChecks } from 'lucide-react';
 import type { Video } from '../../types';
+import { getYouTubeId, getVimeoId, loadYouTubeAPI } from '../../lib/youtube';
 
 const ACC  = '#b259c4';
 const UI   = "'Inter Tight', 'Inter', system-ui, sans-serif";
@@ -40,8 +41,17 @@ export default function ImmersiveMobilePlayer({
   video, videoUrl, index, total, hasPrev, hasNext,
   onPrev, onNext, onExit, onAsk, onQuiz, hasQuiz, overlayOpen = false,
 }: Props) {
+  // What kind of media backs this lesson: a real file we drive via <video>, or a
+  // YouTube / Vimeo embed we drive via its iframe API — all shown full-screen in
+  // the same TikTok chrome so mobile never sees a boxed desktop-style player.
+  const ytId = getYouTubeId(videoUrl);
+  const viId = ytId ? null : getVimeoId(videoUrl);
+  const kind: 'youtube' | 'vimeo' | 'native' = ytId ? 'youtube' : viId ? 'vimeo' : 'native';
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgRef = useRef<HTMLVideoElement>(null);
+  const ytRef = useRef<any>(null);                     // YT.Player instance
+  const ytBoxId = useRef(`imm-yt-${Math.random().toString(36).slice(2)}`).current;
   const [playing, setPlaying]   = useState(true);
   const [current, setCurrent]   = useState(0);
   const [duration, setDuration] = useState(0);
@@ -51,6 +61,12 @@ export default function ImmersiveMobilePlayer({
 
   const touchStart = useRef<{ y: number; t: number } | null>(null);
   const resumeAfterOverlay = useRef(false);
+
+  // Read current playback time regardless of source (for Ask timestamp).
+  const readTime = useCallback((): number => {
+    if (kind === 'youtube') { try { return ytRef.current?.getCurrentTime?.() ?? current; } catch { return current; } }
+    return videoRef.current?.currentTime ?? current;
+  }, [kind, current]);
 
   // Keep the blurred ambient background loosely in sync with the main video —
   // when they drift (seek/pause), snap it back. Cheap: only correct on real gaps.
@@ -73,6 +89,19 @@ export default function ImmersiveMobilePlayer({
   // learner is done (submits or dismisses) → resume from where it stopped, but
   // only if it was actually playing when they opened the overlay.
   useEffect(() => {
+    if (kind === 'youtube') {
+      const p = ytRef.current; if (!p) return;
+      try {
+        if (overlayOpen) {
+          resumeAfterOverlay.current = p.getPlayerState?.() === 1;
+          p.pauseVideo(); setPlaying(false);
+        } else if (resumeAfterOverlay.current) {
+          resumeAfterOverlay.current = false;
+          p.playVideo(); setPlaying(true);
+        }
+      } catch { /* ignore */ }
+      return;
+    }
     const v = videoRef.current;
     if (!v) return;
     if (overlayOpen) {
@@ -84,7 +113,35 @@ export default function ImmersiveMobilePlayer({
       v.play().catch(() => {});
       setPlaying(true);
     }
-  }, [overlayOpen]);
+  }, [overlayOpen, kind]);
+
+  // ── YouTube: build the player in the full-screen box + poll time ──────────
+  useEffect(() => {
+    if (kind !== 'youtube' || !ytId) return;
+    let poll: any;
+    loadYouTubeAPI(() => {
+      if (!document.getElementById(ytBoxId)) return;
+      ytRef.current = new (window as any).YT.Player(ytBoxId, {
+        videoId: ytId,
+        playerVars: { autoplay: 1, playsinline: 1, rel: 0, modestbranding: 1, controls: 0, fs: 0 },
+        events: {
+          onReady: (e: any) => { try { e.target.playVideo(); setDuration(e.target.getDuration() || 0); setPlaying(true); } catch {} },
+          onStateChange: (e: any) => {
+            setPlaying(e.data === 1);
+            if (e.data === 0 && hasNext) onNext();   // ended → next lesson
+          },
+        },
+      });
+    });
+    poll = setInterval(() => {
+      try {
+        const p = ytRef.current;
+        if (p?.getCurrentTime) { setCurrent(p.getCurrentTime() || 0); if (!duration) setDuration(p.getDuration?.() || 0); }
+      } catch { /* ignore */ }
+    }, 500);
+    return () => { clearInterval(poll); try { ytRef.current?.destroy?.(); } catch {} ytRef.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, ytId]);
 
   // Hide the swipe hint after a moment
   useEffect(() => {
@@ -93,11 +150,20 @@ export default function ImmersiveMobilePlayer({
   }, []);
 
   const togglePlay = useCallback(() => {
+    if (kind === 'youtube') {
+      const p = ytRef.current; if (!p) return;
+      try {
+        const st = p.getPlayerState?.();      // 1 = playing
+        if (st === 1) { p.pauseVideo(); setPlaying(false); }
+        else { p.playVideo(); setPlaying(true); }
+      } catch { /* ignore */ }
+      return;
+    }
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) { v.play().catch(() => {}); setPlaying(true); }
     else { v.pause(); setPlaying(false); }
-  }, []);
+  }, [kind]);
 
   // Swipe up = next lesson, swipe down = previous
   const onTouchStart = (e: React.TouchEvent) => {
@@ -125,41 +191,51 @@ export default function ImmersiveMobilePlayer({
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Ambient blurred fill — the same frame, scaled up + blurred behind the
-          real video, so the empty letterbox space glows instead of dead black
-          (TikTok / YouTube Shorts style). Muted, decorative, follows the player. */}
-      <video
-        ref={bgRef}
-        src={videoUrl}
-        autoPlay
-        muted
-        playsInline
-        aria-hidden
-        preload="metadata"
-        className="absolute inset-0 w-full h-full"
-        style={{ objectFit: 'cover', filter: 'blur(28px) brightness(0.55) saturate(1.3)', transform: 'scale(1.25)', pointerEvents: 'none' }}
-      />
+      {kind === 'native' ? (
+        <>
+          {/* Ambient blurred fill — the frame, scaled up + blurred, so letterbox
+              space glows instead of dead black (only for real files we can mirror). */}
+          <video
+            ref={bgRef}
+            src={videoUrl}
+            autoPlay muted playsInline aria-hidden preload="metadata"
+            className="absolute inset-0 w-full h-full"
+            style={{ objectFit: 'cover', filter: 'blur(28px) brightness(0.55) saturate(1.3)', transform: 'scale(1.25)', pointerEvents: 'none' }}
+          />
+          {/* Video — sits on the blurred fill */}
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            autoPlay playsInline preload="metadata"
+            className="absolute inset-0 w-full h-full"
+            style={{ objectFit: 'contain', animation: swipe ? `imm-${swipe} 0.32s ease` : undefined }}
+            onClick={togglePlay}
+            onTimeUpdate={e => { setCurrent(e.currentTarget.currentTime); syncBg(e.currentTarget.currentTime, !e.currentTarget.paused); }}
+            onLoadedMetadata={e => setDuration(e.currentTarget.duration)}
+            onPlay={() => { setPlaying(true); syncBg(videoRef.current?.currentTime ?? 0, true); }}
+            onPause={() => { setPlaying(false); syncBg(videoRef.current?.currentTime ?? 0, false); }}
+            onSeeked={e => syncBg(e.currentTarget.currentTime, !e.currentTarget.paused)}
+            onEnded={() => { if (hasNext) onNext(); }}
+          />
+        </>
+      ) : kind === 'youtube' ? (
+        // YouTube fills the screen; the YT IFrame API drives play/pause/time.
+        <div className="absolute inset-0" style={{ animation: swipe ? `imm-${swipe} 0.32s ease` : undefined }}>
+          <div id={ytBoxId} className="w-full h-full" style={{ pointerEvents: 'none' }} />
+        </div>
+      ) : (
+        // Vimeo — full-bleed iframe (autoplay muted-less relies on Vimeo defaults).
+        <div className="absolute inset-0" style={{ animation: swipe ? `imm-${swipe} 0.32s ease` : undefined }}>
+          <iframe
+            src={`https://player.vimeo.com/video/${viId}?autoplay=1&playsinline=1&title=0&byline=0&portrait=0`}
+            className="w-full h-full" style={{ border: 0 }}
+            allow="autoplay; fullscreen; picture-in-picture" title="Lesson video"
+          />
+        </div>
+      )}
 
-      {/* Video — sits on the blurred fill */}
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        autoPlay
-        playsInline
-        preload="metadata"
-        className="absolute inset-0 w-full h-full"
-        style={{ objectFit: 'contain', animation: swipe ? `imm-${swipe} 0.32s ease` : undefined }}
-        onClick={togglePlay}
-        onTimeUpdate={e => { setCurrent(e.currentTarget.currentTime); syncBg(e.currentTarget.currentTime, !e.currentTarget.paused); }}
-        onLoadedMetadata={e => setDuration(e.currentTarget.duration)}
-        onPlay={() => { setPlaying(true); syncBg(videoRef.current?.currentTime ?? 0, true); }}
-        onPause={() => { setPlaying(false); syncBg(videoRef.current?.currentTime ?? 0, false); }}
-        onSeeked={e => syncBg(e.currentTarget.currentTime, !e.currentTarget.paused)}
-        onEnded={() => { if (hasNext) onNext(); }}
-      />
-
-      {/* Tap-to-play affordance */}
-      {!playing && (
+      {/* Tap-to-play affordance (native + youtube; vimeo uses its own controls) */}
+      {!playing && kind !== 'vimeo' && (
         <button
           onClick={togglePlay}
           aria-label="Play"
@@ -171,10 +247,15 @@ export default function ImmersiveMobilePlayer({
           </span>
         </button>
       )}
+      {/* For YouTube the iframe has pointer-events:none so taps hit our overlay —
+          this transparent layer captures the tap to toggle play. */}
+      {kind === 'youtube' && (
+        <button onClick={togglePlay} aria-label="Play/pause" className="absolute inset-0" style={{ background: 'transparent', zIndex: 1 }} />
+      )}
 
       {/* Top bar — exit + position */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', paddingBottom: 12, background: 'linear-gradient(180deg, rgba(0,0,0,0.6), transparent)', pointerEvents: 'none' }}>
+        style={{ zIndex: 3, paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', paddingBottom: 12, background: 'linear-gradient(180deg, rgba(0,0,0,0.6), transparent)', pointerEvents: 'none' }}>
         <button onClick={onExit} aria-label="Back to course"
           className="flex items-center justify-center rounded-full"
           style={{ minWidth: 40, minHeight: 40, background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', pointerEvents: 'auto' }}>
@@ -188,7 +269,7 @@ export default function ImmersiveMobilePlayer({
       {/* Right rail — Ask / Quiz / prev / next. Collapsible so it never blocks
           the video: tap the handle to slide it out of the way and back. */}
       <div className="absolute flex flex-col items-center"
-        style={{ right: 12, bottom: 'calc(env(safe-area-inset-bottom, 0px) + 110px)', gap: 10 }}>
+        style={{ zIndex: 3, right: 12, bottom: 'calc(env(safe-area-inset-bottom, 0px) + 110px)', gap: 10 }}>
         {/* Toggle handle */}
         <button
           onClick={() => setRailOpen(o => !o)}
@@ -213,7 +294,7 @@ export default function ImmersiveMobilePlayer({
           <RailBtn
             label="Ask"
             accent
-            onClick={() => onAsk(videoRef.current ? videoRef.current.currentTime : current)}
+            onClick={() => onAsk(readTime())}
           ><HelpCircle size={24} /></RailBtn>
           {hasQuiz && onQuiz && <RailBtn label="Quiz" onClick={onQuiz}><ListChecks size={24} /></RailBtn>}
           <RailBtn label="Prev" onClick={onPrev} disabled={!hasPrev}><ChevronUp size={24} /></RailBtn>
@@ -223,7 +304,7 @@ export default function ImmersiveMobilePlayer({
 
       {/* Bottom — title + scrubber */}
       <div className="absolute left-0 right-0 bottom-0 px-4"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)', paddingTop: 40, background: 'linear-gradient(0deg, rgba(0,0,0,0.85), transparent)' }}>
+        style={{ zIndex: 3, paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)', paddingTop: 40, background: 'linear-gradient(0deg, rgba(0,0,0,0.85), transparent)' }}>
         <p style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: ACC, marginBottom: 6 }}>
           Lesson {index} of {total}
         </p>
@@ -240,7 +321,12 @@ export default function ImmersiveMobilePlayer({
           <span style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(255,255,255,0.75)', flexShrink: 0 }}>{fmt(current)}</span>
           <input
             type="range" min={0} max={duration || 0} step={0.1} value={current}
-            onChange={e => { const t = Number(e.target.value); if (videoRef.current) videoRef.current.currentTime = t; setCurrent(t); }}
+            onChange={e => {
+              const t = Number(e.target.value);
+              if (kind === 'youtube') { try { ytRef.current?.seekTo?.(t, true); } catch {} }
+              else if (videoRef.current) { videoRef.current.currentTime = t; }
+              setCurrent(t);
+            }}
             aria-label="Seek"
             style={{ flex: 1, height: 4, accentColor: ACC }}
           />

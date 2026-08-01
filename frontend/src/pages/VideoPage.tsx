@@ -245,13 +245,15 @@ export default function VideoPage() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // The immersive swipe view drives its own <video>, so it only works for real
-  // uploaded video files — not a YouTube/Vimeo iframe, and not an EXTERNAL link
-  // (NotebookLM, Drive…) which can't be embedded or played at all.
+  // On mobile EVERY playable lesson uses the full-screen immersive (TikTok) view
+  // — uploaded files, YouTube AND Vimeo (the immersive player embeds each in its
+  // own chrome). Only EXTERNAL links (NotebookLM, Drive…) that can't be embedded
+  // fall back to the "open in a new tab" card.
   const url = video?.video_url ?? '';
   const isEmbedUrl = /youtu\.?be|youtube\.com|vimeo\.com/i.test(url);
-  const isExternalUrl = /^https?:\/\//i.test(url) && !isEmbedUrl && !/\.(mp4|webm|ogg|ogv|mov|m4v|m3u8)(\?|#|$)/i.test(url);
-  const canGoImmersive = isMobile && !isEmbedUrl && !isExternalUrl && !!url;
+  const isFileUrl = /\.(mp4|webm|ogg|ogv|mov|m4v|m3u8)(\?|#|$)/i.test(url);
+  const isExternalUrl = /^https?:\/\//i.test(url) && !isEmbedUrl && !isFileUrl;
+  const canGoImmersive = isMobile && !isExternalUrl && !!url;
 
   if (videoLoading) {
     return (
