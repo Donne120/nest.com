@@ -4,9 +4,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, Trash2, Video,
   Save, GripVertical, Link as LinkIcon,
-  FileText, Film, Globe, File, UploadCloud, X, BookOpen, ScreenShare,
+  FileText, Film, Globe, File, UploadCloud, X, BookOpen, ScreenShare, ExternalLink,
 } from 'lucide-react';
 import ScreenRecorderModal from '../../components/Admin/ScreenRecorderModal';
+import { isPlayableVideo, externalSourceName } from '../../components/VideoPlayer/VideoPlayer';
 import api from '../../api/client';
 import type { Module, Video as VideoType, Lesson, ModuleResource } from '../../types';
 import Button from '../../components/UI/Button';
@@ -961,11 +962,21 @@ function VideoFormCard({ form, setForm, onSave, onCancel, saving }: VideoFormCar
             onChange={url => f('video_url', url)}
             accept=".mp4,.webm,.mov,.ogg"
             endpoint="/videos/upload/video"
-            urlPlaceholder="https://… (YouTube, Vimeo, mp4, m3u8)"
+            urlPlaceholder="Upload, or paste a YouTube / Vimeo / .mp4 / NotebookLM link"
             required
             allowRecord
             onDurationHint={secs => f('duration_seconds', secs)}
           />
+          {form.video_url.trim() && !isPlayableVideo(form.video_url) && (
+            <p className="mt-2 text-xs flex items-start gap-1.5" style={{ color: 'var(--c-ink2)' }}>
+              <ExternalLink size={13} style={{ marginTop: 1, flexShrink: 0, color: 'var(--c-acc)' }} />
+              <span>
+                This link opens in a new tab (it can't play inside Nest). Perfect for NotebookLM, Google Drive or docs —
+                learners get an <strong style={{ color: 'var(--c-ink)' }}>“Open in {externalSourceName(form.video_url)}”</strong> button.
+                For in-app playback, upload the file or use a YouTube/Vimeo link.
+              </span>
+            </p>
+          )}
         </div>
 
         <div>

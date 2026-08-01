@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ExternalLink } from 'lucide-react';
 import { usePlayerStore, useUIStore } from '../../store';
 import Controls from './Controls';
 import Timeline from './Timeline';
@@ -37,16 +38,51 @@ function getVimeoId(url: string): string | null {
   return m ? m[1] : null;
 }
 
-function getEmbedInfo(url: string): { type: 'youtube' | 'vimeo' | 'native'; embedUrl?: string } {
+// A URL that ends in a real video file extension → we can play it natively.
+function isDirectVideoFile(url: string): boolean {
+  return /\.(mp4|webm|ogg|ogv|mov|m4v|m3u8)(\?|#|$)/i.test(url);
+}
+
+function getEmbedInfo(url: string): { type: 'youtube' | 'vimeo' | 'native' | 'external'; embedUrl?: string } {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const ytId = getYouTubeId(url);
+  const u = (url || '').trim();
+  const ytId = getYouTubeId(u);
   if (ytId) return {
     type: 'youtube',
     embedUrl: `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=0&origin=${encodeURIComponent(origin)}`,
   };
-  const viId = getVimeoId(url);
+  const viId = getVimeoId(u);
   if (viId) return { type: 'vimeo', embedUrl: `https://player.vimeo.com/video/${viId}` };
+  // A direct video file → native <video>. Anything else that's an http(s) link
+  // (NotebookLM, Google Drive, a doc…) can't be embedded/played — treat it as an
+  // EXTERNAL lesson that opens in a new tab. Relative/blob paths stay native.
+  if (isDirectVideoFile(u)) return { type: 'native' };
+  if (/^https?:\/\//i.test(u)) return { type: 'external' };
   return { type: 'native' };
+}
+
+// Friendly label for the "Open in …" button, from the URL host.
+export function externalSourceName(url: string): string {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    if (host.includes('notebooklm.google') || host.includes('notebook.google')) return 'NotebookLM';
+    if (host.includes('drive.google')) return 'Google Drive';
+    if (host.includes('docs.google')) return 'Google Docs';
+    if (host.includes('loom.com')) return 'Loom';
+    if (host.includes('dropbox.com')) return 'Dropbox';
+    // Title-case the first domain label as a fallback (e.g. "example")
+    const name = host.split('.')[0];
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  } catch {
+    return 'the source';
+  }
+}
+
+// Exported so other views (immersive player, module detail) agree on what's a
+// real, in-app playable video vs an external link.
+export function isPlayableVideo(url: string): boolean {
+  const t = getEmbedInfo(url).type;
+  return t !== 'external';
 }
 
 // ─── YouTube IFrame API loader (module-level singleton) ───────────────────────
@@ -107,7 +143,8 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   const { openQuestionForm } = useUIStore();
 
   const embed = getEmbedInfo(videoUrl);
-  const isEmbed = embed.type !== 'native';
+  const isExternal = embed.type === 'external';
+  const isEmbed = embed.type === 'youtube' || embed.type === 'vimeo';
   const isYouTube = embed.type === 'youtube';
 
   // Stable iframe ID based on videoId so the YT API can find the element
@@ -258,6 +295,52 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
   }, [openQuestionForm, setPlaying]);
 
   const handleAskAtTimestamp = () => handleAskAt(currentTime);
+
+  // ── External link (NotebookLM, Drive, docs…) — can't be embedded, so we
+  //    present a clean "open in a new tab" card instead of a broken player. ──
+  if (isExternal) {
+    const source = externalSourceName(videoUrl);
+    return (
+      <div className="bg-black video-player-container overflow-hidden flex items-center justify-center" style={{ position: 'relative' }}>
+        <div style={{
+          textAlign: 'center', padding: '32px 24px', maxWidth: 380,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+        }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: 16,
+            background: 'linear-gradient(135deg,#c77dda,#7b2d8e)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 10px 30px rgba(178,89,196,0.45)',
+          }}>
+            <ExternalLink size={26} color="#fff" />
+          </div>
+          <div>
+            <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 24, fontWeight: 600, color: '#F2F0F5', margin: 0, lineHeight: 1.2 }}>
+              This lesson opens in {source}
+            </p>
+            <p style={{ fontSize: 13.5, color: '#A8A3B2', lineHeight: 1.55, margin: '8px 0 0' }}>
+              It's hosted on {source} and can't play inside Nest. Tap below to open it in a new tab.
+            </p>
+          </div>
+          <a
+            href={videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="press"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              minHeight: 48, padding: '0 22px', borderRadius: 12,
+              background: 'linear-gradient(135deg,#c77dda,#7b2d8e)', color: '#fff',
+              fontFamily: "'Inter Tight','Inter',system-ui,sans-serif", fontSize: 14.5, fontWeight: 700,
+              textDecoration: 'none', boxShadow: '0 8px 24px rgba(178,89,196,0.45)',
+            }}
+          >
+            Open in {source} <ExternalLink size={16} />
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   // ── YouTube / Vimeo player ─────────────────────────────────────────────────
   if (isEmbed) {

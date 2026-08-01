@@ -245,10 +245,13 @@ export default function VideoPage() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // The immersive swipe view drives its own <video>, so it only works for
-  // uploaded files — a YouTube/Vimeo iframe can't be controlled that way.
-  const isEmbedUrl = /youtu\.?be|youtube\.com|vimeo\.com/i.test(video?.video_url ?? '');
-  const canGoImmersive = isMobile && !isEmbedUrl && !!video?.video_url;
+  // The immersive swipe view drives its own <video>, so it only works for real
+  // uploaded video files — not a YouTube/Vimeo iframe, and not an EXTERNAL link
+  // (NotebookLM, Drive…) which can't be embedded or played at all.
+  const url = video?.video_url ?? '';
+  const isEmbedUrl = /youtu\.?be|youtube\.com|vimeo\.com/i.test(url);
+  const isExternalUrl = /^https?:\/\//i.test(url) && !isEmbedUrl && !/\.(mp4|webm|ogg|ogv|mov|m4v|m3u8)(\?|#|$)/i.test(url);
+  const canGoImmersive = isMobile && !isEmbedUrl && !isExternalUrl && !!url;
 
   if (videoLoading) {
     return (
