@@ -52,27 +52,33 @@ def get_dashboard_stats(
         models.User.is_active == True,
     ).scalar()
 
-    # Average response time — single SQL aggregation, no Python loop
-    from sqlalchemy import select, func as sqlfunc
-    avg_result = (
-        db.query(
-            sqlfunc.avg(
-                sqlfunc.extract(
-                    'epoch',
-                    models.Answer.created_at - models.Question.created_at
-                ) / 3600.0
-            )
-        )
+    # Average response time. Compute in Python from real timestamps — SQL
+    # epoch-subtraction is unreliable across SQLite/Postgres and was producing
+    # absurd values (e.g. -58,574,100h). Ignore rows where the answer predates
+    # the question or the gap is implausibly large (bad/seed data).
+    pairs = (
+        db.query(models.Answer.created_at, models.Question.created_at)
         .join(models.Question, models.Answer.question_id == models.Question.id)
         .join(models.Video, models.Question.video_id == models.Video.id)
         .join(models.Module, models.Video.module_id == models.Module.id)
         .filter(
             models.Module.organization_id == org_id,
             models.Question.status == models.QuestionStatus.answered,
+            models.Answer.created_at.isnot(None),
+            models.Question.created_at.isnot(None),
         )
-        .scalar()
+        .all()
     )
-    avg_hours = round(float(avg_result), 1) if avg_result else 0.0
+    gaps = []
+    for answered_at, asked_at in pairs:
+        try:
+            hrs = (answered_at - asked_at).total_seconds() / 3600.0
+        except Exception:
+            continue
+        # keep only sane gaps: 0 up to ~180 days
+        if 0 <= hrs <= 24 * 180:
+            gaps.append(hrs)
+    avg_hours = round(sum(gaps) / len(gaps), 1) if gaps else 0.0
 
     modules_with_q = (
         db.query(func.count(func.distinct(models.Video.module_id)))
