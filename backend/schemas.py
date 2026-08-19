@@ -768,7 +768,8 @@ class NoteOut(BaseModel):
 
 class AssignmentCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = None
+    description: Optional[str] = Field(None, max_length=50000)
+    worked_example: Optional[str] = Field(None, max_length=50000)
     type: AssignmentType = AssignmentType.individual
     module_id: Optional[str] = None
     max_group_size: Optional[int] = Field(None, ge=2, le=50)
@@ -778,7 +779,8 @@ class AssignmentCreate(BaseModel):
 
 class AssignmentUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = None
+    description: Optional[str] = Field(None, max_length=50000)
+    worked_example: Optional[str] = Field(None, max_length=50000)
     module_id: Optional[str] = None
     max_group_size: Optional[int] = Field(None, ge=2, le=50)
     portions: Optional[List[str]] = None
@@ -794,6 +796,7 @@ class AssignmentOut(BaseModel):
     created_by: str
     title: str
     description: Optional[str]
+    worked_example: Optional[str] = None
     type: AssignmentType
     max_group_size: Optional[int]
     portions: Optional[List[str]]

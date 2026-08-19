@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, ChevronLeft, Zap } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, Zap, Lightbulb } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/client';
 import type { Assignment, Module } from '../../types';
-import RichTextEditor from '../../components/Editor/RichTextEditor';
+import MarkdownField from '../../components/Editor/MarkdownField';
 
 interface FormState {
   title: string;
   description: string;
+  worked_example: string;
   type: 'individual' | 'group';
   module_id: string;
   max_group_size: string;
@@ -20,6 +21,7 @@ interface FormState {
 const EMPTY: FormState = {
   title: '',
   description: '',
+  worked_example: '',
   type: 'individual',
   module_id: '',
   max_group_size: '4',
@@ -52,6 +54,7 @@ export default function AdminAssignmentEditor() {
     setForm({
       title: existing.title,
       description: existing.description ?? '',
+      worked_example: (existing as any).worked_example ?? '',
       type: existing.type,
       module_id: existing.module_id ?? '',
       max_group_size: String(existing.max_group_size ?? 4),
@@ -107,6 +110,7 @@ export default function AdminAssignmentEditor() {
     return {
       title: form.title,
       description: form.description || null,
+      worked_example: form.worked_example.trim() || null,
       type: form.type,
       module_id: form.module_id || null,
       max_group_size: form.type === 'group' ? parseInt(form.max_group_size) : null,
@@ -212,18 +216,25 @@ export default function AdminAssignmentEditor() {
           </select>
         </div>
 
-        {/* Instructions */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--c-ink2)] dark:text-[var(--c-ink2)] mb-1">
-            Instructions
-          </label>
-          <RichTextEditor
-            value={form.description}
-            onChange={v => setForm(f => ({ ...f, description: v }))}
-            placeholder="Write the assignment brief here…"
-            minHeight={180}
-          />
-        </div>
+        {/* Instructions — markdown/LaTeX so pasted math, tables & diagrams render */}
+        <MarkdownField
+          label="Instructions"
+          value={form.description}
+          onChange={v => setForm(f => ({ ...f, description: v }))}
+          placeholder={"Write the assignment brief. Supports headings, math ($…$ and $$…$$), tables and diagrams.\n\ne.g.\n## Task\nCalculate the relative atomic mass ($A_r$) of the sample."}
+          rows={8}
+          hint={<>Supports Markdown, tables and LaTeX math (<code className="px-1 rounded bg-[var(--c-bg2)]">$…$</code>). Use <strong>Preview</strong> to check.</>}
+        />
+
+        {/* Worked example — a fully solved problem shown beside the learner's work */}
+        <MarkdownField
+          label={<span className="inline-flex items-center gap-1.5"><Lightbulb size={14} style={{ color: 'var(--c-acc)' }} /> Worked example <span className="text-[var(--c-ink3)] font-normal">(optional)</span></span>}
+          value={form.worked_example}
+          onChange={v => setForm(f => ({ ...f, worked_example: v }))}
+          placeholder={"Paste a fully solved example. Learners study it, then solve their own — 'learn while doing'.\n\ne.g.\n### Example: Gallium\nProblem: 60% ⁶⁹Ga, 40% ⁷¹Ga.\n$$A_r = \\frac{(69 \\times 60)+(71 \\times 40)}{100} = 69.8$$"}
+          rows={9}
+          hint="This appears next to the learner's work area as a solved example to learn from."
+        />
 
         {/* Type toggle */}
         <div>

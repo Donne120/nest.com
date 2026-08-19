@@ -5,8 +5,17 @@ import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import {
   Clock, Users, CheckCircle, Send, AlertCircle, ChevronLeft,
   Calendar, User, Hourglass, ArrowRight, FileText, Star,
-  MessageSquare, PanelLeftOpen, X,
+  MessageSquare, PanelLeftOpen, X, Lightbulb,
 } from 'lucide-react';
+import RichText from '../components/UI/RichText';
+
+// Old assignments stored HTML (from the WYSIWYG editor); new ones store
+// markdown/LaTeX. If it has no HTML tags (or has $ math / | tables), render rich.
+function isRichMarkdown(s: string): boolean {
+  const hasHtml = /<\/?(p|div|h[1-6]|ul|ol|li|strong|em|br|table)\b/i.test(s);
+  const hasMd = /\$.+\$|^\s*#{1,3}\s|\n\s*\n/.test(s);
+  return !hasHtml || hasMd;
+}
 import toast from 'react-hot-toast';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -585,14 +594,29 @@ export default function AssignmentWorkspace() {
               </div>
             )}
 
-            {/* Instructions */}
+            {/* Instructions — rendered rich (math, tables, headings) */}
             {assignment.description && (
               <div className="border-t border-[var(--c-rule)] pt-3">
                 <p className="text-xs font-semibold text-[var(--c-ink3)] uppercase tracking-wider mb-2">Instructions</p>
-                <div
-                  className="prose prose-sm dark:prose-invert max-w-none text-[var(--c-ink)] dark:text-[var(--c-ink2)] text-xs leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: assignment.description }}
-                />
+                {isRichMarkdown(assignment.description)
+                  ? <RichText className="text-[13px]">{assignment.description}</RichText>
+                  : <div
+                      className="prose prose-sm dark:prose-invert max-w-none text-[var(--c-ink)] dark:text-[var(--c-ink2)] text-xs leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: assignment.description }}
+                    />}
+              </div>
+            )}
+
+            {/* Worked example — a solved problem to learn from, beside your work */}
+            {assignment.worked_example && (
+              <div className="border-t border-[var(--c-rule)] pt-3">
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2 inline-flex items-center gap-1.5" style={{ color: 'var(--c-acc)' }}>
+                  <Lightbulb size={12} /> Worked example
+                </p>
+                <div className="rounded-xl border p-3" style={{ borderColor: 'color-mix(in srgb, var(--c-acc) 26%, transparent)', background: 'color-mix(in srgb, var(--c-acc) 6%, transparent)' }}>
+                  <RichText className="text-[13px]">{assignment.worked_example}</RichText>
+                </div>
+                <p className="text-[11px] text-[var(--c-ink3)] mt-2 italic">Study this, then solve your own in the answer area.</p>
               </div>
             )}
 

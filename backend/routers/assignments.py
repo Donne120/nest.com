@@ -273,6 +273,7 @@ def create_assignment(
         created_by=current_user.id,
         title=payload.title,
         description=payload.description,
+        worked_example=payload.worked_example,
         type=payload.type,
         module_id=payload.module_id,
         max_group_size=payload.max_group_size,

@@ -280,7 +280,7 @@ export default function VideoPage() {
     [
       { key: 'notes' as TabKey, label: `Notes${notes.length > 0 ? ` (${notes.length})` : ''}`, show: true },
       { key: 'playlist' as TabKey, label: `Playlist (${moduleVideos.length})`, show: moduleVideos.length > 1 },
-      { key: 'assignments' as TabKey, label: `Assignments${moduleAssignments.length > 0 ? ` (${moduleAssignments.length})` : ''}`, show: true },
+      { key: 'assignments' as TabKey, label: `Prob/Solution${moduleAssignments.length > 0 ? ` (${moduleAssignments.length})` : ''}`, show: true },
       { key: 'about' as TabKey, label: 'About', show: !!(video.description) },
     ] as { key: TabKey; label: string; show: boolean }[]
   ).filter(t => t.show);

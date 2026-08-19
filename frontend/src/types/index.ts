@@ -355,6 +355,7 @@ export interface Assignment {
   created_by: string;
   title: string;
   description: string | null;
+  worked_example: string | null;
   type: AssignmentType;
   max_group_size: number | null;
   portions: string[] | null;

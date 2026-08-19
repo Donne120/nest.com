@@ -630,6 +630,9 @@ class Assignment(Base):
     created_by = Column(String, ForeignKey("users.id"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
+    # A fully solved worked example (markdown + LaTeX + tables), shown to learners
+    # beside their own work so they can learn the method then solve their own.
+    worked_example = Column(Text, nullable=True)
     type = Column(SAEnum(AssignmentType), nullable=False, default=AssignmentType.individual)
     max_group_size = Column(Integer, nullable=True)
     portions = Column(JSON, nullable=True)  # list of strings e.g. ["Introduction", "Analysis"]
