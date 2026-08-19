@@ -597,6 +597,14 @@ export default function VideoPage() {
               {fmtTime(displayDuration)} · <span style={{ color: '#b259c4' }}>{progressPct}%</span>
             </span>
             <div style={{ flex: 1 }} />
+            {video.study_notes && (
+              <button
+                onClick={() => setShowStudyNotes(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(199,125,218,0.14)', color: '#C77DDA', border: '1px solid rgba(199,125,218,0.35)', fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
+              >
+                <BookOpen size={12} /> Study notes
+              </button>
+            )}
             <button
               onClick={() => { setPlaying(false); setSidebarOpen(true); openQuestionForm(currentTime); }}
               style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#b259c4', color: '#ffffff', border: '1px solid rgba(178,89,196,0.4)', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }}

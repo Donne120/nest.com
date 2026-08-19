@@ -47,12 +47,13 @@ export default function StudyNotesDrawer({ videoId, notes, onClose }: Props) {
           opacity: entered ? 1 : 0, transition: 'opacity 0.24s ease',
         }}
       />
-      {/* Sheet */}
+      {/* Sheet — bottom drawer on phones, a centred card on desktop */}
       <div
+        className="study-sheet"
         style={{
           position: 'absolute', left: 0, right: 0, bottom: 0,
           height: 'min(86vh, 100dvh - 44px)',
-          background: '#141219', borderTop: '1px solid rgba(255,255,255,0.09)',
+          background: '#141219', border: '1px solid rgba(255,255,255,0.09)',
           borderRadius: '20px 20px 0 0', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           transform: entered ? 'translateY(0)' : 'translateY(100%)',
@@ -60,6 +61,20 @@ export default function StudyNotesDrawer({ videoId, notes, onClose }: Props) {
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
+        <style>{`
+          @media (min-width: 768px) {
+            .study-sheet {
+              left: 50% !important; right: auto !important; bottom: auto !important;
+              top: 50% !important;
+              width: min(680px, 92vw) !important;
+              max-height: 84vh !important; height: auto !important;
+              border-radius: 18px !important;
+              transform: translate(-50%, -50%) ${entered ? 'scale(1)' : 'scale(0.96)'} !important;
+              opacity: ${entered ? 1 : 0};
+              transition: transform 0.24s cubic-bezier(0.16,1,0.3,1), opacity 0.24s ease !important;
+            }
+          }
+        `}</style>
         {/* Grabber + header */}
         <div style={{ flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 2px' }}>
