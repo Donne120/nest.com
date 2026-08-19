@@ -92,7 +92,7 @@ export default function AdminLayout() {
   const initials = (user?.full_name ?? 'A').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: BG, fontFamily: "'Syne', 'Inter', sans-serif" }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: BG, fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif" }}>
 
       {/* Mobile backdrop */}
       {mobileSidebarOpen && (
@@ -133,15 +133,15 @@ export default function AdminLayout() {
                 N
               </div>
               <span style={{
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 800, fontSize: 22,
-                letterSpacing: '-0.03em', color: '#f2ede8', lineHeight: 1,
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontWeight: 600, fontSize: 23,
+                letterSpacing: '-0.01em', color: '#FFFFFF', lineHeight: 1,
               }}>
                 Nest
               </span>
             </div>
             <div style={{
-              fontFamily: "'Inconsolata', monospace",
+              fontFamily: "'DM Mono', ui-monospace, monospace",
               fontSize: 10, color: 'rgba(255,255,255,0.5)',
               letterSpacing: '0.14em', textTransform: 'uppercase',
               marginTop: 6, paddingLeft: 38,
@@ -184,10 +184,10 @@ export default function AdminLayout() {
             {initials}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: '#f2ede8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontSize: 12.5, fontWeight: 600, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.full_name ?? firstName}
             </div>
-            <div style={{ fontFamily: "'Inconsolata', monospace", fontSize: 10, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: "'DM Mono', ui-monospace, monospace", fontSize: 10, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               {user?.role ?? 'Admin'}
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function AdminLayout() {
               display: 'flex', alignItems: 'center', gap: 7,
               background: BG2, border: `1px solid ${RULE}`,
               borderRadius: 100, padding: '5px 13px',
-              fontFamily: "'Inconsolata', monospace",
+              fontFamily: "'DM Mono', ui-monospace, monospace",
               fontSize: 11, fontWeight: 500, color: INK2,
               letterSpacing: '0.04em',
             }}>
@@ -446,7 +446,7 @@ function NavSection({ label, children }: { label: string; children: React.ReactN
   return (
     <div style={{ paddingBottom: 4 }}>
       <div style={{
-        fontFamily: "'Inconsolata', monospace",
+        fontFamily: "'DM Mono', ui-monospace, monospace",
         fontSize: 9.5, letterSpacing: '0.2em', textTransform: 'uppercase',
         color: 'rgba(255,255,255,0.42)',
         padding: '0 20px', marginBottom: 6,
@@ -474,7 +474,7 @@ function NavItem({
         padding: '8px 20px',
         fontSize: 13,
         fontWeight: 500,
-        fontFamily: "'Syne', 'Inter', sans-serif",
+        fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
         color: isActive ? '#ffffff' : 'rgba(255,255,255,0.72)',
         background: isActive ? 'rgba(255,255,255,0.10)' : 'transparent',
         textDecoration: 'none',

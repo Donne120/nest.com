@@ -205,7 +205,7 @@ export default function ImmersiveMobilePlayer({
   return (
     <div
       className="fixed inset-0"
-      style={{ zIndex: 70, background: '#000', animation: 'imm-in 0.25s ease both' }}
+      style={{ zIndex: 70, background: '#F6F4FD', animation: 'imm-in 0.25s ease both' }}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -218,7 +218,7 @@ export default function ImmersiveMobilePlayer({
             src={videoUrl}
             autoPlay muted playsInline aria-hidden preload="metadata"
             className="absolute inset-0 w-full h-full"
-            style={{ objectFit: 'cover', filter: 'blur(28px) brightness(0.55) saturate(1.3)', transform: 'scale(1.25)', pointerEvents: 'none' }}
+            style={{ objectFit: 'cover', filter: 'blur(30px) brightness(0.92) saturate(1.25)', transform: 'scale(1.25)', pointerEvents: 'none' }}
           />
           {/* Video — sits on the blurred fill */}
           <video
