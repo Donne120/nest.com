@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/client';
 import type { Module, Certificate } from '../types';
 import ModuleCard from '../components/ModuleLibrary/ModuleCard';
-import ContinueCard from '../components/ModuleLibrary/ContinueCard';
+import DashboardHero from '../components/ModuleLibrary/DashboardHero';
 import { Skeleton } from '../components/UI/Skeleton';
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '../store';
@@ -74,19 +74,15 @@ export default function ModulesPage() {
   return (
     <div style={{ background: DARK, minHeight: '100vh', fontFamily: UIFONT }}>
 
-      {/* ══ HERO — the Continue Card ═══════════════════════════════════
-          Was: a greeting + a donut + Total/Completed/In-Progress pills, which
-          greeted a brand-new learner with "0 / 0 / 0". Now: a person and one
-          next action — "You stopped 4 minutes into 'Why factoring works'." */}
+      {/* ══ DASHBOARD HERO — the approved Calm Purple design ═══════════════
+          A violet "continue learning" card + a progress ring, so a learner
+          lands on their momentum and one next action. */}
       <div style={{ padding: 'clamp(16px,4vw,28px) clamp(16px,4vw,24px) clamp(16px,3vw,24px)', maxWidth: 1400, margin: '0 auto' }}>
-        <ContinueCard
+        <DashboardHero
           modules={modules}
           firstName={firstName}
           greeting={greeting}
-          bgImage="/learning-hub-bg.jpg"
           streak={summary?.streak ?? 0}
-          atRisk={summary?.at_risk ?? false}
-          nudge={summary?.nudge ?? null}
         />
       </div>
 
@@ -106,10 +102,10 @@ export default function ModulesPage() {
                   fontSize: 11, fontWeight: filter === f.key ? 700 : 500,
                   letterSpacing: '0.06em', textTransform: 'uppercase',
                   padding: '8px 16px', borderRadius: 100,
-                  border: filter === f.key ? `1px solid rgba(142,45,158,0.28)` : `1px solid ${BORDER}`,
+                  border: filter === f.key ? `1px solid rgba(109,74,224,0.28)` : `1px solid ${BORDER}`,
                   cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
                   minHeight: 36,
-                  background: filter === f.key ? 'rgba(142,45,158,0.09)' : 'transparent',
+                  background: filter === f.key ? 'rgba(109,74,224,0.09)' : 'transparent',
                   color: filter === f.key ? f.color : INK3,
                   whiteSpace: 'nowrap',
                 }}
@@ -134,7 +130,7 @@ export default function ModulesPage() {
                 borderRadius: 10, color: INK, outline: 'none',
                 fontFamily: 'inherit', transition: 'border-color 0.15s',
               }}
-              onFocus={e => (e.target.style.borderColor = `rgba(142,45,158,0.4)`)}
+              onFocus={e => (e.target.style.borderColor = `rgba(109,74,224,0.4)`)}
               onBlur={e => (e.target.style.borderColor = BORDER)}
             />
             {search && (
@@ -217,11 +213,11 @@ export default function ModulesPage() {
                     style={{
                       position: 'absolute', left: 12, right: 12, bottom: 12,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                      background: '#E8B04B', color: '#0B0A0F',
+                      background: '#23B99A', color: '#FFFFFF',
                       fontSize: 10.5, fontWeight: 700, fontFamily: MONO,
                       letterSpacing: '0.06em', textTransform: 'uppercase',
                       minHeight: 34, borderRadius: 100,
-                      textDecoration: 'none', boxShadow: '0 6px 18px rgba(232,176,75,0.4)',
+                      textDecoration: 'none', boxShadow: '0 6px 18px rgba(35,185,154,0.4)',
                       zIndex: 3,
                     }}
                     title="View your certificate"
@@ -239,6 +235,9 @@ export default function ModulesPage() {
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
         /* ── Mobile overrides ── */
+        @media (max-width: 820px) {
+          .dash-hero { grid-template-columns: 1fr !important; }
+        }
         @media (max-width: 640px) {
           .hero-desktop-only { display: none !important; }
           .modules-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
