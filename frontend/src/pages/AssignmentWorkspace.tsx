@@ -5,9 +5,93 @@ import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import {
   Clock, Users, CheckCircle, Send, AlertCircle, ChevronLeft,
   Calendar, User, Hourglass, ArrowRight, FileText, Star,
-  MessageSquare, PanelLeftOpen, X, Lightbulb,
+  MessageSquare, PanelLeftOpen, X, Lightbulb, Maximize2,
 } from 'lucide-react';
 import RichText from '../components/UI/RichText';
+
+// ─── Expandable content viewer ────────────────────────────────────────────────
+// Renders rich content in the narrow brief column with an "Expand" button that
+// opens the same content full-width in a modal — so learners can read wide
+// equations and tables (e.g. a worked example) comfortably, then get back to work.
+function ExpandableRich({
+  title,
+  icon,
+  content,
+  accent,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  content: string;
+  accent?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const isHtml = !isRichMarkdown(content);
+  const body = isHtml
+    ? <div
+        className="prose prose-sm dark:prose-invert max-w-none text-[var(--c-ink)] dark:text-[var(--c-ink2)] leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    : <RichText className="text-[13px]">{content}</RichText>;
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wider inline-flex items-center gap-1.5"
+           style={accent ? { color: 'var(--c-acc)' } : { color: 'var(--c-ink3)' }}>
+          {icon} {title}
+        </p>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-1 text-[11px] font-semibold text-[var(--c-ink3)] hover:text-brand-600 border border-[var(--c-rule)] rounded-md px-1.5 py-0.5 transition"
+          title="Expand to read full-width"
+        >
+          <Maximize2 size={11} /> Expand
+        </button>
+      </div>
+
+      {accent ? (
+        <div className="rounded-xl border p-3" style={{ borderColor: 'color-mix(in srgb, var(--c-acc) 26%, transparent)', background: 'color-mix(in srgb, var(--c-acc) 6%, transparent)' }}>
+          {body}
+        </div>
+      ) : body}
+
+      {open && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6 bg-black/50"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="bg-[var(--c-surf)] rounded-2xl shadow-2xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden border border-[var(--c-rule)]"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--c-rule)] flex-shrink-0">
+              <p className="text-sm font-semibold inline-flex items-center gap-2"
+                 style={accent ? { color: 'var(--c-acc)' } : { color: 'var(--c-ink)' }}>
+                {icon} {title}
+              </p>
+              <button
+                onClick={() => setOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-[var(--c-bg2)] transition"
+                aria-label="Close"
+              >
+                <X size={18} className="text-[var(--c-ink3)]" />
+              </button>
+            </div>
+            <div className="overflow-y-auto px-5 sm:px-8 py-5">
+              {isHtml
+                ? <div
+                    className="prose dark:prose-invert max-w-none text-[var(--c-ink)] dark:text-[var(--c-ink2)] leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: content }}
+                  />
+                : <RichText className="text-[15px]">{content}</RichText>}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 // Old assignments stored HTML (from the WYSIWYG editor); new ones store
 // markdown/LaTeX. If it has no HTML tags (or has $ math / | tables), render rich.
@@ -597,25 +681,23 @@ export default function AssignmentWorkspace() {
             {/* Instructions — rendered rich (math, tables, headings) */}
             {assignment.description && (
               <div className="border-t border-[var(--c-rule)] pt-3">
-                <p className="text-xs font-semibold text-[var(--c-ink3)] uppercase tracking-wider mb-2">Instructions</p>
-                {isRichMarkdown(assignment.description)
-                  ? <RichText className="text-[13px]">{assignment.description}</RichText>
-                  : <div
-                      className="prose prose-sm dark:prose-invert max-w-none text-[var(--c-ink)] dark:text-[var(--c-ink2)] text-xs leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: assignment.description }}
-                    />}
+                <ExpandableRich
+                  title="Instructions"
+                  icon={<FileText size={12} />}
+                  content={assignment.description}
+                />
               </div>
             )}
 
             {/* Worked example — a solved problem to learn from, beside your work */}
             {assignment.worked_example && (
               <div className="border-t border-[var(--c-rule)] pt-3">
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2 inline-flex items-center gap-1.5" style={{ color: 'var(--c-acc)' }}>
-                  <Lightbulb size={12} /> Worked example
-                </p>
-                <div className="rounded-xl border p-3" style={{ borderColor: 'color-mix(in srgb, var(--c-acc) 26%, transparent)', background: 'color-mix(in srgb, var(--c-acc) 6%, transparent)' }}>
-                  <RichText className="text-[13px]">{assignment.worked_example}</RichText>
-                </div>
+                <ExpandableRich
+                  title="Worked example"
+                  icon={<Lightbulb size={12} />}
+                  content={assignment.worked_example}
+                  accent
+                />
                 <p className="text-[11px] text-[var(--c-ink3)] mt-2 italic">Study this, then solve your own in the answer area.</p>
               </div>
             )}
