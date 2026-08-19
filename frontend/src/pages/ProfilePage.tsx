@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, Shield, Palette, LogOut, Check, Mail, Briefcase, Image as ImageIcon } from 'lucide-react';
+import { User, Lock, Shield, LogOut, Check, Mail, Briefcase, Image as ImageIcon } from 'lucide-react';
 import api from '../api/client';
 import { useAuthStore } from '../store';
 import Avatar from '../components/UI/Avatar';
-import ThemeToggle from '../components/UI/ThemeToggle';
 import toast from 'react-hot-toast';
 import type { User as UserType } from '../types';
 
@@ -116,17 +115,6 @@ export default function ProfilePage() {
         </div>
 
         <div style={{ padding: '0 clamp(14px,4vw,20px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-          {/* ── Appearance ── */}
-          <Card icon={<Palette size={15} />} title="Appearance">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '4px 2px' }}>
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: INK }}>Theme</p>
-                <p style={{ fontSize: 12.5, color: INK3, marginTop: 2 }}>Choose how Nest looks for you</p>
-              </div>
-              <ThemeToggle />
-            </div>
-          </Card>
 
           {/* ── Personal information ── */}
           <Card icon={<User size={15} />} title="Personal information">

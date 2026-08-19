@@ -6,22 +6,22 @@ import { useAuthStore } from '../store';
 import type { Token } from '../types';
 import toast from 'react-hot-toast';
 
-// ── Tokens — white form + purple brand panel ────────────────────────────────
+// ── Tokens — white form + violet brand panel ("Calm Purple") ────────────────
 const BG     = '#ffffff';   // page + form background
 const CARD   = '#ffffff';
-const INK    = '#1f1f24';   // form primary text (dark)
-const INK2   = '#5c5764';   // form secondary text
-const INK3   = '#9b96a3';   // form muted text
-const RULE   = 'rgba(31,31,36,0.10)';
-const GOLD   = '#8e2d9e';   // purple — primary accent (was gold)
-const GOLD2  = '#7b2d8e';   // deep purple
-const ACC    = '#7cb342';   // lime green — secondary (was terracotta)
-// Left brand panel (purple splash) — its own light-on-dark tokens
-const PANEL   = '#1a1320';
-const PANEL_INK  = '#f3eef6';
-const PANEL_INK2 = '#bcaecb';
-const PANEL_INK3 = '#7d6f8c';
-const PANEL_ACC  = '#ce92dc';
+const INK    = '#1E1B2E';   // form primary text — deep aubergine-slate
+const INK2   = '#6E6A85';   // form secondary text
+const INK3   = '#A5A1B8';   // form muted text
+const RULE   = 'rgba(30,27,46,0.10)';
+const GOLD   = '#6D4AE0';   // brand violet — primary accent
+const GOLD2  = '#5A38C7';   // deep violet
+const ACC    = '#23B99A';   // mint — secondary accent
+// Left brand panel — now a bright violet gradient (white text on violet)
+const PANEL   = '#6D4AE0';
+const PANEL_INK  = '#FFFFFF';
+const PANEL_INK2 = 'rgba(255,255,255,0.82)';
+const PANEL_INK3 = 'rgba(255,255,255,0.60)';
+const PANEL_ACC  = '#D9C9FB';
 const DISP  = "'Cormorant Garamond', Georgia, serif";
 const UI    = "'Syne', 'Inter', sans-serif";
 const MONO  = "'DM Mono', monospace";
@@ -49,8 +49,8 @@ function Field({
           style={{
             width: '100%', padding: '11px 14px', paddingRight: children ? 42 : 14,
             background: focused ? '#ffffff' : '#f7f6f8',
-            border: `1px solid ${focused ? `rgba(142,45,158,0.55)` : RULE}`,
-            boxShadow: focused ? '0 0 0 3px rgba(142,45,158,0.12)' : 'none',
+            border: `1px solid ${focused ? `rgba(109,74,224,0.55)` : RULE}`,
+            boxShadow: focused ? '0 0 0 3px rgba(109,74,224,0.12)' : 'none',
             borderRadius: 4, outline: 'none',
             color: INK, fontFamily: UI, fontSize: 14,
             transition: 'border-color 0.2s',
@@ -114,7 +114,7 @@ export default function LoginPage() {
       {/* Left decorative panel */}
       <div style={{
         width: 440, flexShrink: 0, minHeight: '100vh',
-        background: `linear-gradient(160deg, #241830 0%, ${PANEL} 55%, #14101a 100%)`,
+        background: `linear-gradient(160deg, #8B6FE8 0%, ${PANEL} 55%, #5A38C7 100%)`,
         position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         padding: '56px 56px',
@@ -122,7 +122,7 @@ export default function LoginPage() {
         className="login-left-panel"
       >
         {/* Ambient glow */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 40% 60%, rgba(178,89,196,0.16) 0%, transparent 65%), radial-gradient(ellipse at 80% 15%, rgba(124,179,66,0.08) 0%, transparent 50%)' }} />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 40% 60%, rgba(255,255,255,0.14) 0%, transparent 65%), radial-gradient(ellipse at 80% 15%, rgba(35,185,154,0.12) 0%, transparent 50%)' }} />
         {/* Grid */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -167,7 +167,7 @@ export default function LoginPage() {
           {/* Mobile-only logo */}
           <div className="login-mobile-logo" style={{ display: 'none', marginBottom: 32, textAlign: 'center' }}>
             <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, border: `1.5px solid rgba(142,45,158,0.4)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: GOLD, fontFamily: UI }}>N</div>
+              <div style={{ width: 36, height: 36, border: `1.5px solid rgba(109,74,224,0.4)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: GOLD, fontFamily: UI }}>N</div>
               <span style={{ fontFamily: DISP, fontSize: 26, fontWeight: 600, color: GOLD2, letterSpacing: '0.01em' }}>Nest</span>
             </Link>
           </div>
@@ -200,7 +200,7 @@ export default function LoginPage() {
             <button type="submit" disabled={loading} style={{
               fontFamily: UI, fontSize: 15, fontWeight: 700,
               letterSpacing: '0.04em',
-              color: BG, background: loading ? 'rgba(142,45,158,0.6)' : GOLD,
+              color: BG, background: loading ? 'rgba(109,74,224,0.6)' : GOLD,
               padding: '15px 24px', borderRadius: 6, border: 'none',
               cursor: loading ? 'not-allowed' : 'pointer',
               minHeight: 52,

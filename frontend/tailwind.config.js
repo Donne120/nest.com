@@ -36,12 +36,12 @@ export default {
         serif: ['Lora', 'Georgia', 'serif'],
       },
       boxShadow: {
-        // Layered, realistic shadows
-        'card':     '0 1px 2px rgba(20,40,40,0.07), 0 1px 3px rgba(20,40,40,0.1)',
-        'card-md':  '0 2px 4px rgba(20,40,40,0.06), 0 4px 12px rgba(20,40,40,0.08)',
-        'elevated': '0 4px 6px rgba(20,40,40,0.05), 0 10px 20px rgba(20,40,40,0.08)',
-        'float':    '0 8px 16px rgba(0,0,0,0.08), 0 24px 48px rgba(0,0,0,0.06)',
-        'modal':    '0 0 0 1px rgba(0,0,0,0.04), 0 8px 20px rgba(0,0,0,0.1), 0 24px 60px rgba(0,0,0,0.12)',
+        // Soft, purple-tinted shadows — the Calm Purple airy feel
+        'card':     '0 1px 2px rgba(64,40,140,0.06), 0 1px 3px rgba(64,40,140,0.05)',
+        'card-md':  '0 4px 14px rgba(84,52,180,0.09), 0 2px 6px rgba(84,52,180,0.05)',
+        'elevated': '0 8px 24px rgba(84,52,180,0.10), 0 3px 8px rgba(84,52,180,0.06)',
+        'float':    '0 18px 46px rgba(84,52,180,0.16), 0 6px 16px rgba(84,52,180,0.08)',
+        'modal':    '0 0 0 1px rgba(84,52,180,0.05), 0 12px 28px rgba(84,52,180,0.14), 0 28px 64px rgba(84,52,180,0.14)',
         'glow':     '0 0 0 3px rgb(var(--brand-500) / 0.15)',
         'glow-lg':  '0 0 20px rgb(var(--brand-500) / 0.25), 0 0 60px rgb(var(--brand-500) / 0.1)',
         'inner-sm': 'inset 0 1px 2px rgba(0,0,0,0.08)',

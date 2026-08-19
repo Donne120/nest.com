@@ -2,24 +2,26 @@ import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  NEST — "The Answer"  ·  dark, cinematic, gold-soul landing page
+//  NEST — "The Answer"  ·  light, calm, violet-soul landing page ("Calm Purple")
 //  Concept: the page behaves like the product — it answers you.
 //  6 sections: Hero · Promise · Three moves · Manifesto · (Schools) · Close
 // ═══════════════════════════════════════════════════════════════════════════
 
-// ── Color system — warm near-black canvas, gold soul, orchid atmosphere ──────
-const INK    = '#0B0A0F';   // near-black canvas (warm)
-const INK2   = '#141019';   // raised surface
-const HAIR   = 'rgba(255,255,255,0.09)';   // hairlines
-const PLUM   = '#4A1D54';   // deep purple — gradients / glow
-const ORCHID = '#B06CC6';   // the one bright purple — accents/links
-const GOLD   = '#E8B04B';   // warm gold — CTAs, key numbers, the "answer" glow
-const GOLDD  = '#C98A2E';   // gold hover
-const LIME   = '#8BD450';   // rare — "live" pulse + success only
-const PAPER  = '#F4F0E9';   // the one warm light break
-const TEXT   = '#F2EEF6';   // primary text on dark
-const MUTE   = '#9A93A6';   // secondary text
-const FAINT  = '#5C5568';   // mono labels / captions
+// ── Color system — soft lilac-white canvas, violet soul, calm atmosphere ─────
+// NB: names are historical (INK/GOLD/TEXT). Values are the Calm Purple identity:
+// grounds are light, "TEXT" is dark ink, and the old gold role is now violet.
+const INK    = '#F6F4FD';   // page canvas — soft lilac-white (was near-black)
+const INK2   = '#FFFFFF';   // raised surface — white cards
+const HAIR   = 'rgba(30,27,46,0.08)';      // hairlines on light
+const PLUM   = '#8B6FE8';   // light violet — gradients / glow
+const ORCHID = '#6D4AE0';   // brand violet — accents/links
+const GOLD   = '#6D4AE0';   // primary CTA / key numbers / the "answer" glow (now violet)
+const GOLDD  = '#5A38C7';   // CTA hover (deep violet)
+const LIME   = '#23B99A';   // rare — "live" pulse + success only (mint)
+const PAPER  = '#EFEAFB';   // soft violet break panel
+const TEXT   = '#1E1B2E';   // primary text — deep aubergine-slate
+const MUTE   = '#6E6A85';   // secondary text
+const FAINT  = '#A5A1B8';   // mono labels / captions
 
 const DISP = "'Cormorant Garamond', Georgia, serif";
 const UI   = "'Inter Tight', 'Inter', system-ui, sans-serif";
@@ -89,10 +91,10 @@ function GoldBtn({ to, children, big }: { to: string; children: React.ReactNode;
       padding: big ? '15px 34px' : '12px 26px', borderRadius: 6,
       textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 9,
       transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
-      boxShadow: '0 8px 30px -8px rgba(232,176,75,0.5)',
+      boxShadow: '0 8px 30px -8px rgba(109,74,224,0.5)',
     }}
-      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLDD; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 16px 44px -8px rgba(232,176,75,0.6)'; }}
-      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; el.style.boxShadow = '0 8px 30px -8px rgba(232,176,75,0.5)'; }}
+      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLDD; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 16px 44px -8px rgba(109,74,224,0.6)'; }}
+      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = GOLD; el.style.transform = 'translateY(0)'; el.style.boxShadow = '0 8px 30px -8px rgba(109,74,224,0.5)'; }}
     >
       {children}
     </Link>
@@ -109,7 +111,7 @@ function GhostLink({ to, children }: { to: string; children: React.ReactNode }) 
       textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8,
       transition: 'border-color 0.2s, background 0.2s',
     }}
-      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.28)'; el.style.background = 'rgba(255,255,255,0.03)'; }}
+      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(109,74,224,0.35)'; el.style.background = 'rgba(109,74,224,0.05)'; }}
       onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = HAIR; el.style.background = 'transparent'; }}
     >
       {children}
@@ -132,7 +134,7 @@ function Thread({ width = 60 }: { width?: number }) {
   return (
     <svg width={width} height="6" viewBox={`0 0 ${width} 6`} style={{ display: 'block' }} aria-hidden>
       <path d={`M0 3 ${Array.from({ length: Math.ceil(width / 12) }).map((_, i) => `Q ${i * 12 + 3} 0 ${i * 12 + 6} 3 Q ${i * 12 + 9} 6 ${i * 12 + 12} 3`).join(' ')}`}
-        fill="none" stroke="rgba(232,176,75,0.45)" strokeWidth="1.2" />
+        fill="none" stroke="rgba(109,74,224,0.45)" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -145,7 +147,7 @@ function Nav() {
       height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '0 clamp(16px,4vw,44px)',
       borderBottom: `1px solid ${HAIR}`,
-      background: 'rgba(11,10,15,0.72)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+      background: 'rgba(246,244,253,0.82)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
       fontFamily: UI, gap: 12,
     }}>
       <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 11, flexShrink: 0 }}>
@@ -154,7 +156,7 @@ function Nav() {
           background: `linear-gradient(135deg, ${GOLD}, ${GOLDD})`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 14, fontWeight: 800, color: INK, fontFamily: DISP,
-          boxShadow: '0 0 0 1px rgba(232,176,75,0.3), 0 4px 14px rgba(232,176,75,0.35)',
+          boxShadow: '0 0 0 1px rgba(109,74,224,0.3), 0 4px 14px rgba(109,74,224,0.35)',
         }}>N</div>
         <span style={{ fontFamily: DISP, fontSize: 25, fontWeight: 600, color: TEXT, letterSpacing: '0.01em' }}>Nest</span>
       </Link>
@@ -227,7 +229,7 @@ function ProductDemo() {
       {/* Under-glow — the "floating, lit" effect */}
       <div aria-hidden style={{
         position: 'absolute', inset: '18% 8% -8% 8%', zIndex: 0,
-        background: `radial-gradient(ellipse at 50% 60%, rgba(176,108,198,0.35), rgba(232,176,75,0.18) 45%, transparent 72%)`,
+        background: `radial-gradient(ellipse at 50% 60%, rgba(139,111,232,0.35), rgba(109,74,224,0.18) 45%, transparent 72%)`,
         filter: 'blur(46px)', opacity: 0.9,
       }} />
 
@@ -241,11 +243,11 @@ function ProductDemo() {
         position: 'relative', zIndex: 2, width: '100%',
         borderRadius: 18, overflow: 'hidden',
         background: INK2, border: `1px solid ${HAIR}`,
-        boxShadow: '0 50px 100px -30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04) inset',
+        boxShadow: '0 40px 90px -30px rgba(84,52,180,0.35), 0 0 0 1px rgba(255,255,255,0.04) inset',
       }}>
         {/* Chrome */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderBottom: `1px solid ${HAIR}`, background: 'rgba(255,255,255,0.02)' }}>
-          {['#3a3340','#3a3340','#3a3340'].map((c, i) => <span key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderBottom: `1px solid ${HAIR}`, background: 'rgba(109,74,224,0.04)' }}>
+          {['#D9D3EC','#D9D3EC','#D9D3EC'].map((c, i) => <span key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
           <span style={{ marginLeft: 10, fontFamily: MONO, fontSize: 11, color: FAINT, letterSpacing: '0.03em' }}>nest.app / algebra · lesson 4</span>
           <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 10, color: LIME }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: LIME, animation: 'nBlink 1.5s infinite' }} /> LIVE
@@ -257,7 +259,7 @@ function ProductDemo() {
           <img src={IMG.demo} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.42 }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(11,10,15,0.15), rgba(11,10,15,0.75))' }} />
           <div style={{ position: 'absolute', left: 16, right: 16, bottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 34, height: 34, borderRadius: '50%', background: GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 18px rgba(232,176,75,0.6)' }}>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 18px rgba(109,74,224,0.6)' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill={INK}><polygon points="6,4 22,12 6,20" /></svg>
             </div>
             <div style={{ flex: 1, height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.2)', overflow: 'hidden' }}>
@@ -272,7 +274,7 @@ function ProductDemo() {
           {/* Answer bloom */}
           <div aria-hidden style={{
             position: 'absolute', left: '10%', right: '10%', bottom: 8, height: 90, zIndex: 0,
-            background: 'radial-gradient(ellipse at 30% 60%, rgba(232,176,75,0.28), transparent 70%)',
+            background: 'radial-gradient(ellipse at 30% 60%, rgba(109,74,224,0.28), transparent 70%)',
             filter: 'blur(24px)', opacity: bloom ? 1 : 0, transition: 'opacity 0.6s ease', pointerEvents: 'none',
           }} />
 
@@ -286,12 +288,12 @@ function ProductDemo() {
 
           {/* AI answer */}
           <div style={{ position: 'relative', zIndex: 1, alignSelf: 'flex-start', maxWidth: '92%', display: 'flex', gap: 10 }}>
-            <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(232,176,75,0.12)', border: `1px solid rgba(232,176,75,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: GOLD }}>
+            <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(109,74,224,0.12)', border: `1px solid rgba(109,74,224,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: GOLD }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3"/><circle cx="12" cy="12" r="3.2"/></svg>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: MONO, fontSize: 9.5, color: GOLD, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 5, fontWeight: 600 }}>Nest AI</div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${HAIR}`, borderLeft: `2px solid ${GOLD}`, padding: '11px 14px', borderRadius: '4px 12px 12px 4px', fontFamily: UI, fontSize: 13.5, lineHeight: 1.6, color: TEXT, minHeight: 44 }}>
+              <div style={{ background: 'rgba(109,74,224,0.05)', border: `1px solid ${HAIR}`, borderLeft: `2px solid ${GOLD}`, padding: '11px 14px', borderRadius: '4px 12px 12px 4px', fontFamily: UI, fontSize: 13.5, lineHeight: 1.6, color: TEXT, minHeight: 44 }}>
                 {phase === 'think' ? (
                   <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', padding: '3px 0' }}>
                     <Dot d={0} /><Dot d={0.18} /><Dot d={0.36} />
@@ -322,7 +324,7 @@ function FloatChip({ cls, label, sub, accent, top, bottom, left, right, delay }:
     <div className={`float-chip ${cls}`} style={{
       position: 'absolute', top, bottom, left, right, zIndex: 4,
       background: INK2, borderRadius: 12, padding: '10px 14px',
-      boxShadow: '0 18px 44px -10px rgba(0,0,0,0.7)',
+      boxShadow: '0 18px 44px -12px rgba(84,52,180,0.22)',
       border: `1px solid ${HAIR}`, display: 'flex', alignItems: 'center', gap: 10,
       animation: `nFloat ${7 + delay}s ease-in-out ${delay}s infinite`,
     }}>
@@ -348,9 +350,9 @@ function Hero() {
     }}>
       {/* Stage lighting */}
       <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', left: '50%', top: '38%', width: 1000, height: 700, transform: 'translate(-50%,-50%)', background: `radial-gradient(ellipse, rgba(176,108,198,0.16), transparent 70%)` }} />
-        <div style={{ position: 'absolute', left: '50%', top: '62%', width: 900, height: 500, transform: 'translate(-50%,-50%)', background: `radial-gradient(ellipse, rgba(232,176,75,0.07), transparent 70%)` }} />
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px)`, backgroundSize: '100% 84px', maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 100%)', WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 100%)' }} />
+        <div style={{ position: 'absolute', left: '50%', top: '38%', width: 1000, height: 700, transform: 'translate(-50%,-50%)', background: `radial-gradient(ellipse, rgba(139,111,232,0.16), transparent 70%)` }} />
+        <div style={{ position: 'absolute', left: '50%', top: '62%', width: 900, height: 500, transform: 'translate(-50%,-50%)', background: `radial-gradient(ellipse, rgba(109,74,224,0.07), transparent 70%)` }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(rgba(109,74,224,0.05) 1px, transparent 1px)`, backgroundSize: '100% 84px', maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 100%)', WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 100%)' }} />
       </div>
 
       <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'clamp(28px,4vw,40px)' }}>
@@ -437,13 +439,13 @@ const MOVES = [
 
 function ThreeMoves() {
   return (
-    <section id="how" style={{ background: PAPER, color: INK, padding: 'clamp(72px,9vw,130px) 0', position: 'relative' }}>
+    <section id="how" style={{ background: PAPER, color: TEXT, padding: 'clamp(72px,9vw,130px) 0', position: 'relative' }}>
       <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)' }}>
         <div className="rv" style={{ maxWidth: 640, marginBottom: 'clamp(48px,6vw,72px)', opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
           <div style={{ marginBottom: 18 }}><Thread /></div>
           <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLDD }}>How Nest works</span>
-          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(40px,6vw,72px)', fontWeight: 300, lineHeight: 1.02, letterSpacing: '-0.02em', color: INK, margin: '16px 0 0' }}>
-            Idea to income,<br /><em style={{ fontStyle: 'italic', color: '#7b2d8e' }}>in three moves.</em>
+          <h2 style={{ fontFamily: DISP, fontSize: 'clamp(40px,6vw,72px)', fontWeight: 300, lineHeight: 1.02, letterSpacing: '-0.02em', color: TEXT, margin: '16px 0 0' }}>
+            Idea to income,<br /><em style={{ fontStyle: 'italic', color: ORCHID }}>in three moves.</em>
           </h2>
         </div>
 
@@ -456,7 +458,7 @@ function ThreeMoves() {
                 <div style={{ position: 'absolute', top: 12, left: 12, fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#fff', background: 'rgba(123,45,142,0.9)', padding: '4px 10px', borderRadius: 100 }}>{m.tag}</div>
               </div>
               <div style={{ fontFamily: DISP, fontSize: 'clamp(48px,6vw,80px)', fontWeight: 300, color: 'rgba(123,45,142,0.16)', lineHeight: 0.8, letterSpacing: '-0.04em', marginBottom: 6 }}>{m.n}</div>
-              <h3 style={{ fontFamily: UI, fontSize: 'clamp(20px,2.4vw,26px)', fontWeight: 700, color: INK, lineHeight: 1.15, margin: '8px 0 12px', letterSpacing: '-0.01em' }}>{m.title}</h3>
+              <h3 style={{ fontFamily: UI, fontSize: 'clamp(20px,2.4vw,26px)', fontWeight: 700, color: TEXT, lineHeight: 1.15, margin: '8px 0 12px', letterSpacing: '-0.01em' }}>{m.title}</h3>
               <p style={{ fontFamily: UI, fontSize: 15, color: '#5c5764', lineHeight: 1.65, marginBottom: 16 }}>{m.body}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: MONO, fontSize: 11, color: '#7b2d8e', letterSpacing: '0.02em', borderTop: '1px solid rgba(31,31,36,0.1)', paddingTop: 14 }}>
                 <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10l4 4 8-9"/></svg>
@@ -488,9 +490,9 @@ function Manifesto() {
       {/* Photo slab bleeding from the right */}
       <div className="manifesto-photo" style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '58%', overflow: 'hidden' }}>
         <img src={IMG.manifesto} alt="African learners collaborating" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'right center' }} />
-        {/* Fade the photo into the dark canvas on the left so the headline reads */}
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${INK} 0%, rgba(11,10,15,0.7) 22%, rgba(11,10,15,0.15) 55%, transparent 80%)` }} />
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, rgba(74,29,84,0.25), transparent 60%)`, mixBlendMode: 'multiply' }} />
+        {/* Fade the photo into the light canvas on the left so the headline reads */}
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${INK} 0%, rgba(246,244,253,0.72) 24%, rgba(246,244,253,0.12) 56%, transparent 80%)` }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, rgba(139,111,232,0.14), transparent 60%)`, mixBlendMode: 'multiply' }} />
       </div>
 
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1120, margin: '0 auto', padding: '0 clamp(16px,4vw,48px)', width: '100%' }}>
@@ -531,7 +533,7 @@ function OrgCard({ org }: { org: PublicOrg }) {
   const contactStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: MUTE, border: `1px solid ${HAIR}`, padding: '7px 13px', borderRadius: 6, textDecoration: 'none' };
   return (
     <div style={{ background: INK2, border: `1px solid ${HAIR}`, borderRadius: 14, padding: '28px 26px 24px', display: 'flex', flexDirection: 'column', transition: 'border-color 0.2s' }}
-      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(232,176,75,0.35)')}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(109,74,224,0.35)')}
       onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = HAIR)}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
@@ -580,7 +582,7 @@ function Directory() {
           {orgs.slice(0, 3).map(org => <OrgCard key={org.slug} org={org} />)}
         </div>
         <div className="rv" style={{ textAlign: 'center', marginTop: 32, opacity: 0, transform: 'translateY(12px)', transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s' }}>
-          <Link to="/explore" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: UI, fontSize: 14, fontWeight: 600, color: GOLD, textDecoration: 'none', border: `1px solid rgba(232,176,75,0.35)`, padding: '12px 24px', borderRadius: 8 }}>
+          <Link to="/explore" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: UI, fontSize: 14, fontWeight: 600, color: GOLD, textDecoration: 'none', border: `1px solid rgba(109,74,224,0.35)`, padding: '12px 24px', borderRadius: 8 }}>
             {orgs.length > 3 ? `See all ${orgs.length} teachers` : 'Browse all courses'}
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 10h10M12 7l3 3-3 3"/></svg>
           </Link>
@@ -594,7 +596,7 @@ function Directory() {
 function Close() {
   return (
     <footer style={{ borderTop: `1px solid ${HAIR}`, position: 'relative', overflow: 'hidden' }}>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 700px 400px at 50% 30%, rgba(232,176,75,0.09), transparent 65%)` }} />
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 700px 400px at 50% 30%, rgba(109,74,224,0.09), transparent 65%)` }} />
       <div className="rv" style={{ position: 'relative', maxWidth: 720, margin: '0 auto', textAlign: 'center', padding: 'clamp(80px,11vw,150px) clamp(16px,4vw,48px) clamp(56px,7vw,90px)', opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.8s ease, transform 0.8s ease' }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 22 }}><Eyebrow dot={GOLD}>Your turn</Eyebrow></div>
         <h2 style={{ fontFamily: DISP, fontSize: 'clamp(44px,7vw,88px)', fontWeight: 300, lineHeight: 1.02, letterSpacing: '-0.025em', color: TEXT, margin: '0 0 22px' }}>

@@ -1,8 +1,9 @@
 /**
- * Nest warm palette — CSS variable references.
- * Light/dark values live in index.css under :root and html.dark.
- * Adding the `dark` class to <html> (done by useTheme) switches every
- * page that uses these constants automatically — no component logic needed.
+ * Nest "Calm Purple" palette — CSS variable references.
+ * The single light identity's values live in index.css under :root. The dark
+ * theme has been retired, so these constants always resolve to the light
+ * palette. Every page that uses them re-skins automatically — no component
+ * logic needed.
  */
 
 export const BG   = 'var(--c-bg)';

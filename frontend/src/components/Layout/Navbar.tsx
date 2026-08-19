@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, UserCircle, Search, Sparkles, Sun, Moon, Monitor } from 'lucide-react';
+import { Bell, LogOut, UserCircle, Search, Sparkles } from 'lucide-react';
 import { useAuthStore, useNotifStore, useUIStore } from '../../store';
 import { useBrandColor } from '../../hooks/useBrandColor';
-import { useTheme, type Theme } from '../../hooks/useTheme';
+import { useTheme } from '../../hooks/useTheme';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
 import type { Notification } from '../../types';
@@ -48,8 +48,8 @@ export default function Navbar() {
   const { toggleNestAssistant, nestAssistantOpen } = useUIStore();
   useBrandColor();
 
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
+  useTheme(); // keeps the app locked to the single light identity
+  const isDark = false;
   const tk = tokens(isDark);
 
   const navigate = useNavigate();
@@ -57,11 +57,9 @@ export default function Navbar() {
 
   const [notifOpen, setNotifOpen]       = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [themeOpen, setThemeOpen]       = useState(false);
   const [searchOpen, setSearchOpen]     = useState(false);
 
   const userMenuRef  = useRef<HTMLDivElement>(null);
-  const themeMenuRef = useRef<HTMLDivElement>(null);
   const notifBellRef = useRef<HTMLDivElement>(null);
   const queryClient  = useQueryClient();
 
@@ -73,15 +71,6 @@ export default function Navbar() {
     if (userMenuOpen) document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [userMenuOpen]);
-
-  // close theme picker on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (themeMenuRef.current && !themeMenuRef.current.contains(e.target as Node)) setThemeOpen(false);
-    }
-    if (themeOpen) document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [themeOpen]);
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ['notifications'],
@@ -197,43 +186,6 @@ export default function Navbar() {
               <Sparkles size={14} />
             </IconButton>
           </span>
-
-          {/* ── Theme toggle — available on mobile too (learners study at night) ── */}
-          <div className="relative" ref={themeMenuRef}>
-            <IconButton
-              onClick={() => setThemeOpen(o => !o)}
-              aria-label="Switch theme"
-              title="Appearance"
-              active={themeOpen}
-              activeStyle={{ background: tk.navActiveBg, border: `1px solid ${tk.pillBorderHover}`, color: tk.textPrimary }}
-              idleStyle={{ background: tk.pillBg, border: `1px solid ${tk.pillBorder}`, color: tk.iconColor }}
-              hoverStyle={{ background: tk.navHoverBg, border: `1px solid ${tk.pillBorderHover}`, color: tk.textPrimary }}
-            >
-              {theme === 'dark'   ? <Moon    size={16} /> :
-               theme === 'light'  ? <Sun     size={16} /> :
-                                    <Monitor size={16} />}
-            </IconButton>
-
-            {themeOpen && (
-              <div
-                className="absolute right-0 top-10 z-50 animate-scale-in overflow-hidden"
-                style={{ width: 168, background: tk.dropdownBg, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: `1px solid ${tk.dropdownBorder}`, borderRadius: 12, boxShadow: isDark ? '0 20px 60px rgba(0,0,0,0.55)' : '0 8px 32px rgba(0,0,0,0.12)', padding: '4px' }}
-              >
-                <p style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: tk.textSecondary, padding: '8px 10px 4px' }}>Appearance</p>
-                {THEME_OPTIONS.map(({ value, Icon, label }) => (
-                  <ThemeOption
-                    key={value}
-                    value={value}
-                    Icon={Icon}
-                    label={label}
-                    selected={theme === value}
-                    tk={tk}
-                    onClick={() => { setTheme(value); setThemeOpen(false); }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* ── Notifications ── */}
           <div className="relative" ref={notifBellRef}>
@@ -434,37 +386,6 @@ export default function Navbar() {
 }
 
 // ─── sub-components ────────────────────────────────────────────────────────────
-
-const THEME_OPTIONS: { value: Theme; Icon: typeof Sun; label: string }[] = [
-  { value: 'light',  Icon: Sun,     label: 'Light'  },
-  { value: 'system', Icon: Monitor, label: 'System' },
-  { value: 'dark',   Icon: Moon,    label: 'Dark'   },
-];
-
-function ThemeOption({ value, Icon, label, selected, tk, onClick }: {
-  value: Theme; Icon: typeof Sun; label: string;
-  selected: boolean; tk: ReturnType<typeof tokens>; onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all"
-      style={{
-        fontSize: 13, fontWeight: selected ? 600 : 400,
-        color:      selected ? tk.textPrimary : tk.textSecondary,
-        background: selected ? tk.navActiveBg : 'transparent',
-        border:     'none', cursor: 'pointer', fontFamily: 'inherit',
-        textAlign: 'left',
-      }}
-      onMouseEnter={e => { if (!selected) { (e.currentTarget as HTMLElement).style.background = tk.dropdownItemHov; (e.currentTarget as HTMLElement).style.color = tk.textPrimary; } }}
-      onMouseLeave={e => { if (!selected) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = tk.textSecondary; } }}
-    >
-      <Icon size={13} />
-      {label}
-      {selected && <span className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: '#e8c97e', flexShrink: 0 }} />}
-    </button>
-  );
-}
 
 function NavLink({ to, active, label, tk }: { to: string; active: boolean; label: string; tk: ReturnType<typeof tokens> }) {
   return (

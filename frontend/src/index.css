@@ -4,76 +4,60 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Nest warm palette — light & dark ───────────────────────────────────── */
-/* These are consumed by inline styles via var(--c-xxx) across all pages.    */
-/* Toggling .dark on <html> is all that's needed to switch every page.       */
+/* ─── Nest "Calm Purple" — one pure, light-first identity ─────────────────── */
+/* Consumed by inline styles via var(--c-xxx) across every page. The dark/black
+   theme has been retired (see useTheme.ts): `.dark` is never applied, so these
+   :root light tokens always win. Deep aubergine ink on a soft lilac-white floor,
+   one confident violet, a small pastel accent set for status. Never pure black. */
 :root {
-  --c-bg:   #FBFAFC;   /* page floor — a hair off white so cards genuinely lift */
-  --c-bg2:  #f2f0f5;   /* recessed well: inputs, tracks */
-  --c-surf: #ffffff;   /* card / surface — sits above the floor */
-  --c-raise: #ffffff;  /* menus / popovers (lean on shadow here, not lightness) */
-  --c-rule: #e6e3ea;   /* border / divider */
-  --c-ink:  #1f1f24;   /* primary text — charcoal (16.8:1) */
-  --c-ink2: #5c5764;   /* secondary text (7.1:1) */
-  --c-ink3: #9b96a3;   /* muted text — decorative only */
-  --c-acc:  #7b2d8e;   /* purple — brand primary (8.9:1) */
-  --c-acc2: #6a2a8a;   /* deep purple — links */
-  --c-on-acc: #ffffff; /* text ON a filled accent */
-  --c-go:   #6ea23a;   /* lime green — secondary (readable on white) */
-  /* Semantic + brand-signature tokens (one source of truth) */
-  --c-gold: #C98A2E;   /* warm gold — the landing-page signature, readable on light */
-  --c-warn: #b8842a;   /* single amber for "pending/attention" */
-  --c-danger: #c2492e; /* single red for destructive/error */
-  --c-ok:   #4f8a2e;   /* success green (distinct from lime brand accent) */
-  --c-info: #2f7a8c;   /* cool teal — neutral/informational only (a rest for the warm accents) */
+  --c-bg:    #F6F4FD;  /* page floor — soft lilac-white so cards genuinely lift */
+  --c-bg2:   #EEEAFB;  /* recessed well: inputs, tracks */
+  --c-surf:  #FFFFFF;  /* card / surface */
+  --c-raise: #FFFFFF;  /* menus / popovers (lean on shadow, not lightness) */
+  --c-rule:  #ECE9F7;  /* hairline border / divider */
+  --c-ink:   #1E1B2E;  /* primary text — deep aubergine-slate (15.7:1), never black */
+  --c-ink2:  #6E6A85;  /* secondary text (5.9:1) */
+  --c-ink3:  #A5A1B8;  /* muted text — decorative only */
+  --c-acc:   #6D4AE0;  /* brand violet (5.6:1 on white) */
+  --c-acc2:  #5A38C7;  /* deep violet — links / pressed */
+  --c-acc-l: #8B6FE8;  /* light violet — gradient top, hovers */
+  --c-acc-wash: #F1ECFD; /* tinted fill — active nav, soft buttons */
+  --c-on-acc: #FFFFFF; /* text ON a filled accent */
+  --c-go:    #1F9E85;  /* mint-green — secondary/success accent */
+  /* Semantic + signature tokens (one source of truth) */
+  --c-gold:   #C98A2E; /* warm gold — reward / certificate */
+  --c-warn:   #C77A1E; /* amber — pending / attention */
+  --c-danger: #D24A6C; /* rose-red — destructive / error (on-palette) */
+  --c-ok:     #1F9E85; /* success (matches mint accent) */
+  --c-info:   #2F7ACC; /* sky-blue — informational */
+  /* Pastel accent set (fill + readable ink) for status chips / progress dots */
+  --c-mint:  #23B99A;  --c-mint-bg:  #E4F7F1;  --c-mint-ink:  #0E6E5B;
+  --c-peach: #F0894A;  --c-peach-bg: #FDEEE2;  --c-peach-ink: #A8501F;
+  --c-sky:   #3F92EA;  --c-sky-bg:   #E6F0FD;  --c-sky-ink:   #1A5CAB;
+  --c-rose:  #EA5C86;  --c-rose-bg:  #FCE7EE;  --c-rose-ink:  #B32A54;
+  --c-goldd: #E0A62E;  --c-gold-bg:  #FBF1DC;  --c-gold-ink:  #8A6412;
+  /* Brand gradient — the hero / header treatment */
+  --c-grad:  linear-gradient(135deg, #8B6FE8 0%, #6D4AE0 55%, #5A38C7 100%);
 }
 
-html.dark {
-  /* ── Elevation ramp — neutral, warm-leaning near-black.
-        The old palette was muddy because it put saturation at very low
-        lightness (#15101a = 10-pt channel spread), which the eye reads as
-        dirt, not purple — and surf/bg differed by only 1.07:1, so cards were
-        invisible. Here lightness does the work; chroma stays under a 7-pt
-        spread. Anchored on #0B0A0F to match the landing page + video player. */
-  --c-bg:    #0B0A0F;  /* page floor */
-  --c-bg2:   #08070B;  /* RECESSED well: inputs, code blocks, tracks (was inverted) */
-  --c-surf:  #17151F;  /* card / panel — nudged lighter so cards read as a clear step above the floor on OLED at low brightness */
-  --c-raise: #211D2B;  /* menus, popovers, hover — the second step */
-  --c-rule:  rgba(255,255,255,0.10);  /* hairline — the primary elevation cue on dark (a hair stronger) */
+/* Dark theme retired: `.dark` is never applied. This block is a safety net —
+   if the class ever slips on, it resolves to the SAME light palette (no black).
+   Every token above is inherited unless overridden here; we override nothing. */
+html.dark { color-scheme: light; }
 
-  /* ── Text — cool inks read crisp against the warm floor ── */
-  --c-ink:   #F2F0F5;  /* primary   — 17.4:1 on bg */
-  --c-ink2:  #A8A3B2;  /* secondary — 8.0:1 (AA everywhere) */
-  --c-ink3:  #6F6A7A;  /* muted/decorative ONLY — 3.8:1, never body copy */
-
-  /* ── Brand — lifted into the confident band for daylight LCD legibility ── */
-  --c-acc:   #C77DDA;  /* purple  — 6.9:1 on bg (was 4.57:1, a hair from failing) */
-  --c-acc2:  #D9A0E8;  /* links/hover — 9.5:1 */
-  --c-go:    #A9DC6A;  /* lime    — 12.3:1 */
-  --c-gold:  #EBB95C;  /* gold signature — 10.9:1 */
-  --c-on-acc: #0B0A0F; /* text ON a filled accent (white on purple is only 2.5:1) */
-
-  --c-warn:   #E0AC55; /* 9.6:1  */
-  --c-danger: #F0836B; /* 7.7:1  */
-  --c-ok:     #7BD44E; /* 10.7:1 */
-  --c-info:   #6FC5D6; /* cool teal on dark — informational only, ~8:1 */
-}
-
-/* Add the lib/colors export target */
-
-/* ─── Brand palette CSS vars (overridden at runtime per org) ─────────────── */
-/* Default: Nest vivid purple — confident, friendly, professional */
+/* ─── Brand palette scale (Tailwind brand-*) — Calm Purple violet ─────────── */
+/* Overridable at runtime per org. Default: the new confident violet. */
 :root {
-  --brand-50:  248 240 250;
-  --brand-100: 240 222 245;
-  --brand-200: 226 188 235;
-  --brand-300: 206 146 220;
-  --brand-400: 178 100 198;
-  --brand-500: 142 56  168;
-  --brand-600: 123 45  142;
-  --brand-700: 102 37  118;
-  --brand-800: 80  30  93;
-  --brand-900: 58  22  68;
+  --brand-50:  241 236 253;  /* #F1ECFD */
+  --brand-100: 231 222 251;  /* #E7DEFB */
+  --brand-200: 209 191 246;  /* #D1BFF6 */
+  --brand-300: 181 154 240;  /* #B59AF0 */
+  --brand-400: 139 111 232;  /* #8B6FE8 */
+  --brand-500: 109 74  224;  /* #6D4AE0 — primary */
+  --brand-600: 90  56  199;  /* #5A38C7 */
+  --brand-700: 74  45  166;  /* #4A2DA6 */
+  --brand-800: 58  36  130;  /* #3A2482 */
+  --brand-900: 43  27  96;   /* #2B1B60 */
 }
 
 @layer base {
@@ -220,28 +204,21 @@ html.dark {
     animation: shimmer 1.6s infinite linear;
   }
 
-  /* Brand gradient backgrounds */
-  .bg-brand-gradient {
-    background: linear-gradient(135deg, rgb(var(--brand-600)), rgb(var(--brand-500)));
+  /* Brand gradient backgrounds — the Calm Purple hero / header treatment */
+  .bg-brand-gradient, .bg-brand-grad {
+    background: var(--c-grad);
   }
   .bg-brand-gradient-soft {
     background: linear-gradient(135deg, rgb(var(--brand-50)), rgb(var(--brand-100) / 0.6), white);
   }
 
-  /* Mesh gradient for hero sections */
+  /* Mesh gradient for hero sections — soft lilac wash */
   .bg-mesh {
-    background-color: #f5f4f1;
+    background-color: var(--c-bg);
     background-image:
-      radial-gradient(at 20% 30%, rgb(var(--brand-100) / 0.6) 0%, transparent 50%),
-      radial-gradient(at 80% 10%, rgb(var(--brand-50) / 0.9) 0%, transparent 40%),
-      radial-gradient(at 60% 80%, rgba(124,179,66,0.06) 0%, transparent 50%);
-  }
-  .dark .bg-mesh {
-    background-color: #0b0a0f;
-    background-image:
-      radial-gradient(at 20% 30%, rgb(var(--brand-900) / 0.45) 0%, transparent 50%),
-      radial-gradient(at 80% 10%, rgb(var(--brand-800) / 0.25) 0%, transparent 40%),
-      radial-gradient(at 60% 80%, rgba(124,179,66,0.08) 0%, transparent 50%);
+      radial-gradient(at 20% 30%, rgb(var(--brand-200) / 0.45) 0%, transparent 50%),
+      radial-gradient(at 80% 10%, rgb(var(--brand-100) / 0.9) 0%, transparent 40%),
+      radial-gradient(at 60% 80%, rgba(35,185,154,0.06) 0%, transparent 50%);
   }
 
   /* Noise texture overlay (very subtle) */

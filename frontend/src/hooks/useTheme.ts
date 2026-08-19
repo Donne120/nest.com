@@ -1,59 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-export type Theme = 'light' | 'dark' | 'system';
+// ─── Single light identity ("Calm Purple") ────────────────────────────────────
+// The dark/black theme has been retired — the whole platform now uses one pure,
+// calming light palette. This hook keeps its old shape so existing consumers
+// (Navbar, ThemeToggle, RichText…) don't break, but it is permanently light:
+// it never adds the `.dark` class, so every `dark:` Tailwind variant and every
+// `.dark …` CSS rule stays dormant and the `:root` light tokens always win.
+export type Theme = 'light';
 
-const STORAGE_KEY = 'nest_theme';
-
-function getSystemTheme(): 'light' | 'dark' {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
-function applyTheme(theme: Theme) {
-  const resolved = theme === 'system' ? getSystemTheme() : theme;
-  if (resolved === 'dark') {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-  }
+function forceLight() {
+  document.documentElement.classList.remove('dark');
+  // Clean up any previously-persisted preference so nothing re-applies dark.
+  try { localStorage.removeItem('nest_theme'); } catch { /* ignore */ }
 }
 
 export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(
-    () => (localStorage.getItem(STORAGE_KEY) as Theme) ?? 'system'
-  );
-
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(
-    () => {
-      const saved = (localStorage.getItem(STORAGE_KEY) as Theme) ?? 'system';
-      return saved === 'system' ? getSystemTheme() : saved;
-    }
-  );
-
-  useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem(STORAGE_KEY, theme);
-    setResolvedTheme(theme === 'system' ? getSystemTheme() : theme);
-  }, [theme]);
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => {
-      if ((localStorage.getItem(STORAGE_KEY) as Theme) === 'system') {
-        applyTheme('system');
-        setResolvedTheme(getSystemTheme());
-      }
-    };
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  const setTheme = (t: Theme) => setThemeState(t);
-
-  return { theme, setTheme, resolvedTheme };
+  useEffect(() => { forceLight(); }, []);
+  // setTheme is a no-op now; kept so callers compile unchanged.
+  return { theme: 'light' as Theme, setTheme: (_t?: Theme) => {}, resolvedTheme: 'light' as const };
 }
 
-// Initialise theme before React mounts (prevents flash)
+// Initialise before React mounts (prevents any flash of a stale dark class).
 export function initTheme() {
-  const saved = (localStorage.getItem(STORAGE_KEY) as Theme) ?? 'system';
-  applyTheme(saved);
+  forceLight();
 }
