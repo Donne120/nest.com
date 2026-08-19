@@ -5,26 +5,29 @@ import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import {
   Clock, Users, CheckCircle, Send, AlertCircle, ChevronLeft,
   Calendar, User, Hourglass, ArrowRight, FileText, Star,
-  MessageSquare, PanelLeftOpen, X, Lightbulb, Maximize2,
+  MessageSquare, PanelLeftOpen, X, Lightbulb, Maximize2, ChevronDown,
 } from 'lucide-react';
 import RichText from '../components/UI/RichText';
 
-// ─── Expandable content viewer ────────────────────────────────────────────────
-// Renders rich content in the narrow brief column with an "Expand" button that
-// opens the same content full-width in a modal — so learners can read wide
-// equations and tables (e.g. a worked example) comfortably, then get back to work.
+// ─── Collapsible + expandable content viewer ──────────────────────────────────
+// In the narrow brief column each section can be COLLAPSED (click the header /
+// corner chevron to fold it away) and EXPANDED to full-width in a modal — so
+// learners can read wide equations & tables comfortably, then get back to work.
 function ExpandableRich({
   title,
   icon,
   content,
   accent,
+  defaultCollapsed = false,
 }: {
   title: string;
   icon: React.ReactNode;
   content: string;
   accent?: boolean;
+  defaultCollapsed?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);          // full-width modal
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const isHtml = !isRichMarkdown(content);
   const body = isHtml
     ? <div
@@ -35,26 +38,40 @@ function ExpandableRich({
 
   return (
     <>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-semibold uppercase tracking-wider inline-flex items-center gap-1.5"
-           style={accent ? { color: 'var(--c-acc)' } : { color: 'var(--c-ink3)' }}>
-          {icon} {title}
-        </p>
+      <div className="flex items-center justify-between mb-2 gap-2">
+        {/* Header is the collapse toggle */}
+        <button
+          type="button"
+          onClick={() => setCollapsed(c => !c)}
+          className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider transition hover:opacity-80 min-w-0"
+          style={accent ? { color: 'var(--c-acc)' } : { color: 'var(--c-ink3)' }}
+          aria-expanded={!collapsed}
+          title={collapsed ? 'Click to expand' : 'Click to collapse'}
+        >
+          <ChevronDown
+            size={13}
+            className="flex-shrink-0 transition-transform"
+            style={{ transform: collapsed ? 'rotate(-90deg)' : 'none' }}
+          />
+          {icon} <span className="truncate">{title}</span>
+        </button>
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex items-center gap-1 text-[11px] font-semibold text-[var(--c-ink3)] hover:text-brand-600 border border-[var(--c-rule)] rounded-md px-1.5 py-0.5 transition"
-          title="Expand to read full-width"
+          className="flex items-center gap-1 text-[11px] font-semibold text-[var(--c-ink3)] hover:text-brand-600 border border-[var(--c-rule)] rounded-md px-1.5 py-0.5 transition flex-shrink-0"
+          title="Open full-width"
         >
           <Maximize2 size={11} /> Expand
         </button>
       </div>
 
-      {accent ? (
-        <div className="rounded-xl border p-3" style={{ borderColor: 'color-mix(in srgb, var(--c-acc) 26%, transparent)', background: 'color-mix(in srgb, var(--c-acc) 6%, transparent)' }}>
-          {body}
-        </div>
-      ) : body}
+      {!collapsed && (
+        accent ? (
+          <div className="rounded-xl border p-3" style={{ borderColor: 'color-mix(in srgb, var(--c-acc) 26%, transparent)', background: 'color-mix(in srgb, var(--c-acc) 6%, transparent)' }}>
+            {body}
+          </div>
+        ) : body
+      )}
 
       {open && (
         <div
