@@ -540,6 +540,39 @@ export default function AssignmentWorkspace() {
   const myMember = group?.members.find(m => m.learner_id === user?.id);
   const [briefOpen, setBriefOpen] = useState(false);
 
+  // ── Resizable brief panel (desktop) — drag the divider to widen for wide
+  //    equations/tables, or shrink to give the editor more room. Persisted. ──
+  const BRIEF_MIN = 240;
+  const BRIEF_MAX = 720;
+  const [briefWidth, setBriefWidth] = useState<number>(() => {
+    const saved = Number(localStorage.getItem('nest.briefWidth'));
+    return saved >= BRIEF_MIN && saved <= BRIEF_MAX ? saved : 288;
+  });
+  const dragging = useRef(false);
+  const startDrag = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragging.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const onMove = (ev: MouseEvent) => {
+      if (!dragging.current) return;
+      // The brief panel starts at the left edge of the window, so the pointer's
+      // X position is the panel's new width.
+      const w = Math.min(BRIEF_MAX, Math.max(BRIEF_MIN, ev.clientX));
+      setBriefWidth(w);
+    };
+    const onUp = () => {
+      dragging.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      setBriefWidth(w => { localStorage.setItem('nest.briefWidth', String(w)); return w; });
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, []);
+
   if (loadingAssignment) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -636,17 +669,21 @@ export default function AssignmentWorkspace() {
         )}
 
         {/* Left panel — brief */}
-        {/* Desktop: always visible sidebar. Mobile: slide-in overlay toggled by briefOpen */}
+        {/* Desktop: always visible, drag-resizable sidebar. Mobile: slide-in overlay toggled by briefOpen */}
         <div
           className={`
             flex-col border-r border-[var(--c-rule)] bg-[var(--c-surf)] overflow-y-auto
-            md:flex md:w-72 md:flex-shrink-0 md:relative md:z-auto md:translate-x-0
+            md:flex md:flex-shrink-0 md:relative md:z-auto md:translate-x-0
             ${briefOpen
               ? 'flex fixed left-0 top-0 bottom-0 z-40 shadow-2xl transition-transform'
               : 'hidden'
             }
           `}
-          style={briefOpen ? { width: 'min(320px, 85vw)' } : undefined}
+          style={
+            briefOpen
+              ? { width: 'min(320px, 85vw)' }               // mobile overlay
+              : { width: briefWidth, minWidth: briefWidth } // desktop resizable
+          }
         >
           {/* Mobile close button */}
           <div className="md:hidden flex items-center justify-between px-4 pt-4 pb-2 border-b border-[var(--c-rule)]">
@@ -785,8 +822,20 @@ export default function AssignmentWorkspace() {
           </div>
         </div>
 
+        {/* Drag handle — desktop only. Drag left/right to resize the brief. */}
+        <div
+          onMouseDown={startDrag}
+          onDoubleClick={() => { setBriefWidth(288); localStorage.setItem('nest.briefWidth', '288'); }}
+          className="hidden md:flex flex-shrink-0 w-1.5 cursor-col-resize group relative items-center justify-center hover:bg-brand-500/10 transition-colors"
+          title="Drag to resize · double-click to reset"
+          role="separator"
+          aria-orientation="vertical"
+        >
+          <div className="w-0.5 h-8 rounded-full bg-[var(--c-rule)] group-hover:bg-brand-500 transition-colors" />
+        </div>
+
         {/* Right panel — editor (always if editable) or locked submitted panel */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {isSubmitted && !canEdit ? (
             // Deadline passed — show read-only submitted state
             <SubmittedPanel
