@@ -4,10 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, Trash2, Video,
   Save, GripVertical, Link as LinkIcon,
-  FileText, Film, Globe, File, UploadCloud, X, BookOpen, ScreenShare, ExternalLink,
+  FileText, Film, Globe, File, UploadCloud, X, BookOpen, ScreenShare, ExternalLink, Eye,
 } from 'lucide-react';
 import ScreenRecorderModal from '../../components/Admin/ScreenRecorderModal';
 import { isPlayableVideo, externalSourceName } from '../../components/VideoPlayer/VideoPlayer';
+import RichText from '../../components/UI/RichText';
 import api from '../../api/client';
 import type { Module, Video as VideoType, Lesson, ModuleResource } from '../../types';
 import Button from '../../components/UI/Button';
@@ -960,6 +961,7 @@ interface VideoFormCardProps {
 
 function VideoFormCard({ form, setForm, onSave, onCancel, saving }: VideoFormCardProps) {
   const f = (field: keyof VideoForm, value: string | number | boolean) => setForm({ ...form, [field]: value });
+  const [notesPreview, setNotesPreview] = useState(false);   // study-material Edit/Preview toggle
 
   const inputCls = "w-full border border-[var(--c-rule)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition";
 
@@ -1022,21 +1024,40 @@ function VideoFormCard({ form, setForm, onSave, onCancel, saving }: VideoFormCar
           <textarea rows={2} value={form.description} onChange={e => f('description', e.target.value)} placeholder="Brief description…" className={`${inputCls} resize-none`} />
         </div>
 
-        {/* Study material — shown to learners in a drawer on the video page */}
+        {/* Study material — shown to learners in a drawer on the video page.
+            Edit/Preview toggle so authors see exactly how a paste will render. */}
         <div className="col-span-2">
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-[var(--c-ink2)] mb-1">
-            <FileText size={13} style={{ color: 'var(--c-acc)' }} /> Study material <span className="text-[var(--c-ink3)] font-normal">(optional)</span>
-          </label>
-          <textarea
-            rows={6}
-            value={form.study_notes}
-            onChange={e => f('study_notes', e.target.value)}
-            placeholder={"Notes for this lesson. Learners open these in a drawer while watching.\n\nSupports Markdown, tables and math:\n## What is Matter?\nMatter is anything with mass…\n\n| State | Shape | Volume |\n|-------|-------|--------|\n| Solid | Fixed | Fixed |\n\nDensity: $d = \\frac{m}{V}$"}
-            className={`${inputCls} resize-y font-mono text-[13px]`}
-            style={{ lineHeight: 1.6 }}
-          />
+          <div className="flex items-center justify-between mb-1">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-[var(--c-ink2)]">
+              <FileText size={13} style={{ color: 'var(--c-acc)' }} /> Study material <span className="text-[var(--c-ink3)] font-normal">(optional)</span>
+            </label>
+            <div className="flex rounded-lg overflow-hidden border border-[var(--c-rule)] text-[11px] font-semibold">
+              <button type="button" onClick={() => setNotesPreview(false)}
+                className={`px-2.5 py-1 ${!notesPreview ? 'bg-brand-500/15 text-brand-400' : 'text-[var(--c-ink3)]'}`}>Edit</button>
+              <button type="button" onClick={() => setNotesPreview(true)}
+                className={`px-2.5 py-1 flex items-center gap-1 ${notesPreview ? 'bg-brand-500/15 text-brand-400' : 'text-[var(--c-ink3)]'}`}>
+                <Eye size={12} /> Preview
+              </button>
+            </div>
+          </div>
+          {notesPreview ? (
+            <div className="rounded-xl border border-[var(--c-rule)] bg-[var(--c-bg2)] p-4" style={{ minHeight: 140 }}>
+              {form.study_notes.trim()
+                ? <RichText>{form.study_notes}</RichText>
+                : <p className="text-xs text-[var(--c-ink3)] italic">Nothing to preview yet — write or paste some notes.</p>}
+            </div>
+          ) : (
+            <textarea
+              rows={8}
+              value={form.study_notes}
+              onChange={e => f('study_notes', e.target.value)}
+              placeholder={"Paste or write your notes. Learners open these in a drawer while watching.\n\nSupports headings, math and tables — even tables copied from a web page:\n## What is Matter?\nDensity: $d = \\frac{m}{V}$\n\nBlock formula:\n$$A_r = \\frac{m}{V}$$"}
+              className={`${inputCls} resize-y font-mono text-[13px]`}
+              style={{ lineHeight: 1.6 }}
+            />
+          )}
           <p className="text-[11px] text-[var(--c-ink3)] mt-1">
-            Markdown, tables and LaTeX math (wrap formulas in <code className="px-1 rounded bg-[var(--c-bg2)]">$…$</code>) render beautifully for learners.
+            Headings (<code className="px-1 rounded bg-[var(--c-bg2)]">## Title</code>), inline math <code className="px-1 rounded bg-[var(--c-bg2)]">$…$</code>, block math <code className="px-1 rounded bg-[var(--c-bg2)]">$$…$$</code> and tables all render. Use <strong>Preview</strong> to check a paste before saving.
           </p>
         </div>
         <div className="col-span-2">
