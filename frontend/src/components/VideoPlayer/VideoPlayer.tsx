@@ -468,7 +468,9 @@ export default function VideoPlayer({ videoUrl, markers, videoId, onTimeUpdate, 
             onEnded={() => { setPlaying(false); onVideoEnd?.(); }}
             onClick={() => { setPlaying(!isPlaying); showControlsBriefly(); }}
             preload="metadata"
-            crossOrigin="anonymous"
+            /* No crossOrigin: it forces the host to send CORS headers, which
+               blocks playback of videos from hosts that don't (e.g. media.w3.org,
+               many CDNs). There are no <track>/canvas reads that need it. */
             playsInline
           />
         )}

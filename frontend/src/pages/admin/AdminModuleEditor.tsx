@@ -37,6 +37,20 @@ function blankVideo(order: number): VideoForm {
   return { title: '', description: '', video_url: '', thumbnail_url: '', duration_seconds: '', order_index: order, captions_url: '', is_preview: false, study_notes: '' };
 }
 
+// Turn a FastAPI error (incl. a 422 validation array) into a readable message so
+// admins see WHY a save failed instead of a generic "Failed to save".
+function moduleErrMsg(err: any): string {
+  const detail = err?.response?.data?.detail;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail) && detail.length) {
+    const first = detail[0];
+    const field = Array.isArray(first?.loc) ? first.loc[first.loc.length - 1] : '';
+    const msg = first?.msg || 'is invalid';
+    return field ? `${String(field).replace(/_/g, ' ')}: ${msg}` : msg;
+  }
+  return 'Failed to save. Check the fields and try again.';
+}
+
 // ─── Resource type icons ───────────────────────────────────────────────────────
 
 const RESOURCE_TYPES: { value: ModuleResource['type']; label: string; icon: typeof LinkIcon }[] = [
@@ -144,7 +158,7 @@ export default function AdminModuleEditor() {
         order_index: orderIndex,
         is_published: isPublished,
         is_for_sale: isForSale,
-        price: isForSale && price ? Number(price) : null,
+        price: isForSale && Number(price) > 0 ? Number(price) : null,
         currency: isForSale ? currency : null,
       };
       return isEdit
@@ -157,7 +171,7 @@ export default function AdminModuleEditor() {
       toast.success(isEdit ? 'Module saved!' : 'Module created!');
       if (!isEdit) navigate(`/admin/courses/${res.data.id}/edit`);
     },
-    onError: () => toast.error('Failed to save module'),
+    onError: (err: any) => toast.error(moduleErrMsg(err)),
   });
 
   const saveVideo = useMutation({
@@ -216,6 +230,11 @@ export default function AdminModuleEditor() {
 
   const handleSaveModule = () => {
     if (!title.trim()) { toast.error('Title is required'); return; }
+    if (title.trim().length > 200) { toast.error('Title is too long (max 200 characters)'); return; }
+    if (isForSale) {
+      const p = Number(price);
+      if (!price || !isFinite(p) || p <= 0) { toast.error('Enter a valid price, or turn off “for sale”.'); return; }
+    }
     saveModule.mutate();
   };
 
