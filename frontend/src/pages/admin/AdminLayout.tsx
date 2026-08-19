@@ -42,12 +42,11 @@ const PAGE_TITLES: [string, string][] = [
 // Design tokens
 import { BG, BG2, SURF, RULE, INK, INK2, INK3, ACC, ACC2, GO } from '../../lib/colors';
 
-// The sidebar is ALWAYS a dark panel with light text — its text colours are
-// hardcoded white/rgba-white. So its background must be a FIXED dark colour,
-// not the theme-driven INK token (which flips to near-white in dark mode and
-// turned the whole sidebar white-on-white).
-const SIDEBAR_BG = '#161019';       // fixed deep aubergine-black
-const SIDEBAR_EDGE = '#0a0906';     // right border
+// The sidebar carries light text (hardcoded white/rgba-white), so it needs a
+// fixed saturated ground — now a deep "Calm Purple" violet gradient instead of
+// the old aubergine-black. White text reads cleanly on it and it ties to brand.
+const SIDEBAR_BG = 'linear-gradient(180deg, #5A38C7 0%, #4A2DA6 55%, #3A2482 100%)';
+const SIDEBAR_EDGE = '#2B1B60';     // right border (deep violet)
 
 export default function AdminLayout() {
   const { user, clearAuth } = useAuthStore();

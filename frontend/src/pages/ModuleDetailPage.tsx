@@ -12,7 +12,10 @@ import type { Module, Video, Lesson, ModuleResource, QuizQuestion, QuizSubmissio
 import { BG, SURF, RULE, INK, INK2, INK3, ACC, ACC2 } from '../lib/colors';
 
 // Unified type system (matches the rest of the product)
-const PLUM   = '#1a1320';   // the cinematic hero near-black (theme-independent)
+// "Calm Purple" hero: a bright violet gradient (white text reads on it), and a
+// solid violet for the progress card. Replaces the old cinematic near-black.
+const PLUM       = '#6D4AE0';   // solid violet — progress card ground
+const HERO_GRAD  = 'linear-gradient(135deg, #8B6FE8 0%, #6D4AE0 55%, #5A38C7 100%)';
 const DISP   = "'Cormorant Garamond', Georgia, serif";
 const UIFONT = "'Inter Tight', 'Inter', system-ui, sans-serif";
 const MONO   = "'DM Mono', ui-monospace, monospace";
@@ -36,7 +39,7 @@ function DonutRing({ pct }: { pct: number }) {
         <circle cx="46" cy="46" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
         <circle
           cx="46" cy="46" r={R} fill="none"
-          stroke="#b259c4" strokeWidth="6" strokeLinecap="round"
+          stroke="#D9C9FB" strokeWidth="6" strokeLinecap="round"
           strokeDasharray={`${filled} ${C}`}
           style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1)' }}
         />
@@ -56,7 +59,7 @@ const RESOURCE_ICON: Record<ModuleResource['type'], typeof Globe> = {
 function LoadingSkeleton() {
   return (
     <div style={{ background: BG, minHeight: '100vh' }}>
-      <div style={{ background: PLUM, height: 280 }} className="animate-pulse" />
+      <div style={{ background: HERO_GRAD, height: 280 }} className="animate-pulse" />
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 40px' }} className="grid gap-7 animate-pulse" >
         <Skeleton className="h-48 rounded-md" />
         <Skeleton className="h-64 rounded-md" />
@@ -169,12 +172,12 @@ export default function ModuleDetailPage() {
   return (
     <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
 
-      {/* ══ HERO (dark) ══════════════════════════════════════════════════ */}
-      <section style={{ background: PLUM, position: 'relative', padding: 'clamp(28px,5vw,56px) 0 clamp(40px,6vw,72px)', overflow: 'hidden' }}>
+      {/* ══ HERO (violet gradient) ═══════════════════════════════════════ */}
+      <section style={{ background: HERO_GRAD, position: 'relative', padding: 'clamp(28px,5vw,56px) 0 clamp(40px,6vw,72px)', overflow: 'hidden' }}>
         {/* Ambient glow */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at 70% 50%, rgba(178,89,196,0.14) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(124,179,66,0.08) 0%, transparent 55%)',
+          background: 'radial-gradient(ellipse at 70% 50%, rgba(255,255,255,0.12) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(35,185,154,0.10) 0%, transparent 55%)',
         }} />
         {/* Grid lines */}
         <div style={{
@@ -202,7 +205,7 @@ export default function ModuleDetailPage() {
 
           {/* Status chip */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: MONO, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: status === 'completed' ? '#7cb342' : status === 'in_progress' ? '#b259c4' : 'rgba(255,255,255,0.25)', display: 'inline-block' }} />
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: status === 'completed' ? '#8BE8C4' : status === 'in_progress' ? '#D9C9FB' : 'rgba(255,255,255,0.25)', display: 'inline-block' }} />
             {status === 'not_started' ? 'Not Started' : status === 'in_progress' ? 'In Progress' : 'Completed'}
           </div>
 
@@ -421,7 +424,7 @@ export default function ModuleDetailPage() {
                   { icon: '◎', name: 'Certificate', desc: 'on completion' },
                 ].map(({ icon, name, desc }, i, arr) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                    <span style={{ fontSize: 13, width: 18, textAlign: 'center', flexShrink: 0, opacity: 0.85, color: '#b259c4' }}>{icon}</span>
+                    <span style={{ fontSize: 13, width: 18, textAlign: 'center', flexShrink: 0, opacity: 0.85, color: '#D9C9FB' }}>{icon}</span>
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{name}</span>
                     <span style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{desc}</span>
                   </div>
