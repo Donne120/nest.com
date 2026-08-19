@@ -247,15 +247,11 @@ export default function VideoPage() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // On mobile EVERY playable lesson uses the full-screen immersive (TikTok) view
-  // — uploaded files, YouTube AND Vimeo (the immersive player embeds each in its
-  // own chrome). Only EXTERNAL links (NotebookLM, Drive…) that can't be embedded
-  // fall back to the "open in a new tab" card.
-  const url = video?.video_url ?? '';
-  const isEmbedUrl = /youtu\.?be|youtube\.com|vimeo\.com/i.test(url);
-  const isFileUrl = /\.(mp4|webm|ogg|ogv|mov|m4v|m3u8)(\?|#|$)/i.test(url);
-  const isExternalUrl = /^https?:\/\//i.test(url) && !isEmbedUrl && !isFileUrl;
-  const canGoImmersive = isMobile && !isExternalUrl && !!url;
+  // Mobile now uses the SAME clean white-page layout as desktop — an inline
+  // video on a light page — instead of the full-screen immersive (TikTok) player.
+  // The immersive view is disabled so every mobile lesson watches on a white
+  // screen like the desktop, with the video contained inline.
+  const canGoImmersive = false; // immersive TikTok player disabled — mobile uses the desktop-style white page
 
   if (videoLoading) {
     return (
