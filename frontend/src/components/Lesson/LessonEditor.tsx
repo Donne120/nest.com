@@ -98,12 +98,12 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
 
   const INPUT_STYLE: React.CSSProperties = {
     width: '100%',
-    background: '#0b0c0f',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: '#F6F4FD',
+    border: '1px solid rgba(30,27,46,0.10)',
     borderRadius: 6,
     padding: '10px 14px',
     fontSize: 14,
-    color: '#e8e4dc',
+    color: '#1E1B2E',
     fontFamily: 'inherit',
     outline: 'none',
     lineHeight: 1.6,
@@ -113,8 +113,8 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
   return (
     <div
       style={{
-        background: '#13141a',
-        border: '1px solid rgba(255,255,255,0.07)',
+        background: '#FFFFFF',
+        border: '1px solid rgba(30,27,46,0.10)',
         borderRadius: 10,
         padding: '28px 32px',
         display: 'flex',
@@ -130,7 +130,7 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
               display: 'block',
               fontSize: 11,
               fontWeight: 600,
-              color: '#6b6b78',
+              color: '#A5A1B8',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               marginBottom: 6,
@@ -151,7 +151,7 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
               display: 'block',
               fontSize: 11,
               fontWeight: 600,
-              color: '#6b6b78',
+              color: '#A5A1B8',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               marginBottom: 6,
@@ -172,7 +172,7 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
       <div
         style={{
           height: 1,
-          background: 'rgba(255,255,255,0.06)',
+          background: 'rgba(30,27,46,0.08)',
           margin: '0 -4px',
         }}
       />
@@ -183,7 +183,7 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
           style={{
             fontSize: 11,
             fontWeight: 600,
-            color: '#6b6b78',
+            color: '#A5A1B8',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
           }}
@@ -196,9 +196,9 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
             style={{
               padding: '32px',
               textAlign: 'center',
-              border: '1px dashed rgba(255,255,255,0.1)',
+              border: '1px dashed rgba(30,27,46,0.10)',
               borderRadius: 8,
-              color: '#6b6b78',
+              color: '#A5A1B8',
               fontSize: 13,
             }}
           >
@@ -210,9 +210,9 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
           <div
             key={block.id}
             style={{
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid rgba(30,27,46,0.09)',
               borderRadius: 8,
-              background: '#1c1e27',
+              background: '#EEEAFB',
               overflow: 'hidden',
             }}
           >
@@ -223,20 +223,20 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
                 alignItems: 'center',
                 gap: 8,
                 padding: '10px 14px',
-                borderBottom: '1px solid rgba(255,255,255,0.07)',
-                background: 'rgba(255,255,255,0.02)',
+                borderBottom: '1px solid rgba(30,27,46,0.10)',
+                background: 'rgba(30,27,46,0.04)',
               }}
             >
               {block.type === 'text' ? (
-                <AlignLeft size={13} style={{ color: '#e8c97e' }} />
+                <AlignLeft size={13} style={{ color: '#6D4AE0' }} />
               ) : (
-                <ImageIcon size={13} style={{ color: '#e8c97e' }} />
+                <ImageIcon size={13} style={{ color: '#6D4AE0' }} />
               )}
               <span
                 style={{
                   fontSize: 11,
                   fontWeight: 600,
-                  color: '#9ca3af',
+                  color: '#6E6A85',
                   fontFamily: 'monospace',
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
@@ -256,7 +256,7 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
                     padding: '4px 6px',
                     background: 'none',
                     border: 'none',
-                    color: idx === 0 ? '#3d3d47' : '#6b6b78',
+                    color: idx === 0 ? '#3d3d47' : '#A5A1B8',
                     cursor: idx === 0 ? 'not-allowed' : 'pointer',
                   }}
                   title="Move up"
@@ -270,7 +270,7 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
                     padding: '4px 6px',
                     background: 'none',
                     border: 'none',
-                    color: idx === blocks.length - 1 ? '#3d3d47' : '#6b6b78',
+                    color: idx === blocks.length - 1 ? '#3d3d47' : '#A5A1B8',
                     cursor:
                       idx === blocks.length - 1 ? 'not-allowed' : 'pointer',
                   }}
@@ -318,8 +318,8 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
                       style={{
                         borderRadius: 6,
                         overflow: 'hidden',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        background: '#13141a',
+                        border: '1px solid rgba(30,27,46,0.10)',
+                        background: '#FFFFFF',
                       }}
                     >
                       <img
@@ -337,12 +337,12 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
                     <div
                       style={{
                         height: 120,
-                        border: '1px dashed rgba(255,255,255,0.1)',
+                        border: '1px dashed rgba(30,27,46,0.10)',
                         borderRadius: 6,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#6b6b78',
+                        color: '#A5A1B8',
                         gap: 8,
                         fontSize: 13,
                       }}
@@ -377,9 +377,9 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
                         gap: 6,
                         padding: '7px 14px',
                         borderRadius: 5,
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        background: '#0b0c0f',
-                        color: '#9ca3af',
+                        border: '1px solid rgba(30,27,46,0.10)',
+                        background: '#F6F4FD',
+                        color: '#6E6A85',
                         fontSize: 12,
                         fontWeight: 600,
                         cursor: 'pointer',
@@ -431,9 +431,9 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
             gap: 6,
             padding: '8px 16px',
             borderRadius: 6,
-            border: '1px solid rgba(255,255,255,0.1)',
-            background: '#1c1e27',
-            color: '#9ca3af',
+            border: '1px solid rgba(30,27,46,0.10)',
+            background: '#EEEAFB',
+            color: '#6E6A85',
             fontSize: 13,
             fontWeight: 600,
             cursor: 'pointer',
@@ -452,9 +452,9 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
             gap: 6,
             padding: '8px 16px',
             borderRadius: 6,
-            border: '1px solid rgba(255,255,255,0.1)',
-            background: '#1c1e27',
-            color: '#9ca3af',
+            border: '1px solid rgba(30,27,46,0.10)',
+            background: '#EEEAFB',
+            color: '#6E6A85',
             fontSize: 13,
             fontWeight: 600,
             cursor: 'pointer',
@@ -479,8 +479,8 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
             padding: '10px 24px',
             borderRadius: 6,
             border: 'none',
-            background: save.isPending ? 'rgba(232,201,126,0.4)' : '#e8c97e',
-            color: '#0b0c0f',
+            background: save.isPending ? 'rgba(109,74,224,0.4)' : '#6D4AE0',
+            color: '#F6F4FD',
             fontSize: 13,
             fontWeight: 700,
             cursor: save.isPending ? 'not-allowed' : 'pointer',

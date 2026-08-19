@@ -148,20 +148,20 @@ export default function OnboardingTour() {
           zIndex: 10001,
           borderRadius: 20,
           overflow: 'hidden',
-          background: 'rgba(16,17,23,0.98)',
-          border: '1px solid rgba(255,255,255,0.09)',
-          boxShadow: '0 32px 100px rgba(0,0,0,0.7)',
+          background: '#FFFFFF',
+          border: '1px solid rgba(30,27,46,0.10)',
+          boxShadow: '0 28px 70px rgba(84,52,180,0.24)',
           animation: 'tourIn 0.3s ease',
         }}
       >
         <style>{`@keyframes tourIn { from { opacity:0; transform:translate(-50%,-48%) scale(0.96); } to { opacity:1; transform:translate(-50%,-50%) scale(1); } }`}</style>
 
         {/* Progress bar */}
-        <div style={{ height: 3, background: 'rgba(255,255,255,0.06)' }}>
+        <div style={{ height: 3, background: 'rgba(30,27,46,0.08)' }}>
           <div style={{
             height: '100%',
             width: `${((step + 1) / steps.length) * 100}%`,
-            background: 'linear-gradient(90deg,#e8c97e,#c45c3c)',
+            background: 'linear-gradient(90deg,#8B6FE8,#6D4AE0)',
             transition: 'width 0.35s ease',
             borderRadius: 2,
           }} />
@@ -169,17 +169,17 @@ export default function OnboardingTour() {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 0' }}>
-          <span style={{ fontSize: 11, color: '#6b6b78', letterSpacing: '0.06em', fontWeight: 500 }}>
+          <span style={{ fontSize: 11, color: '#A5A1B8', letterSpacing: '0.06em', fontWeight: 500 }}>
             {step + 1} of {steps.length}
           </span>
           <button
             onClick={dismiss}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer',
-              color: '#6b6b78', padding: 4, borderRadius: 6, lineHeight: 0,
+              color: '#A5A1B8', padding: 4, borderRadius: 6, lineHeight: 0,
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#9ca3af')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
+            onMouseEnter={e => (e.currentTarget.style.color = '#6E6A85')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#A5A1B8')}
           >
             <X size={15} />
           </button>
@@ -193,7 +193,7 @@ export default function OnboardingTour() {
             fontFamily: "'Lora', Georgia, serif",
             fontWeight: 700,
             fontSize: 20,
-            color: '#e8e4dc',
+            color: '#1E1B2E',
             margin: '0 0 10px',
             letterSpacing: '-0.3px',
           }}>
@@ -202,7 +202,7 @@ export default function OnboardingTour() {
 
           <p style={{
             fontSize: 14,
-            color: '#9ca3af',
+            color: '#6E6A85',
             lineHeight: 1.65,
             margin: '0 0 24px',
           }}>
@@ -219,7 +219,7 @@ export default function OnboardingTour() {
                   width: i === step ? 18 : 6,
                   height: 6,
                   borderRadius: 3,
-                  background: i === step ? '#e8c97e' : i < step ? 'rgba(232,201,126,0.35)' : 'rgba(255,255,255,0.12)',
+                  background: i === step ? '#6D4AE0' : i < step ? 'rgba(109,74,224,0.35)' : 'rgba(30,27,46,0.12)',
                   border: 'none',
                   cursor: 'pointer',
                   padding: 0,
@@ -238,17 +238,17 @@ export default function OnboardingTour() {
                   flex: 1,
                   padding: '10px 0',
                   borderRadius: 10,
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.09)',
-                  color: '#9ca3af',
+                  background: 'rgba(30,27,46,0.06)',
+                  border: '1px solid rgba(30,27,46,0.10)',
+                  color: '#6E6A85',
                   fontSize: 13,
                   fontWeight: 500,
                   cursor: 'pointer',
                   fontFamily: 'inherit',
                   transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.09)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(30,27,46,0.10)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(30,27,46,0.06)')}
               >
                 Back
               </button>
@@ -259,9 +259,9 @@ export default function OnboardingTour() {
                 flex: step > 0 ? 2 : 1,
                 padding: '10px 0',
                 borderRadius: 10,
-                background: 'linear-gradient(135deg,#e8c97e,#d4a843)',
+                background: 'linear-gradient(135deg,#8B6FE8,#6D4AE0)',
                 border: 'none',
-                color: '#0b0c0f',
+                color: '#FFFFFF',
                 fontSize: 13,
                 fontWeight: 700,
                 cursor: 'pointer',

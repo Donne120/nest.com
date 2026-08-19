@@ -59,8 +59,8 @@ function PinQuestionModal({
     >
       <div
         style={{
-          background: '#13141a',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: '#FFFFFF',
+          border: '1px solid rgba(30,27,46,0.10)',
           borderRadius: 12,
           width: '100%',
           maxWidth: 'min(460px, calc(100vw - 32px))',
@@ -74,7 +74,7 @@ function PinQuestionModal({
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '18px 22px',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            borderBottom: '1px solid rgba(30,27,46,0.10)',
           }}
         >
           <h3
@@ -82,7 +82,7 @@ function PinQuestionModal({
               fontFamily: "'Lora', Georgia, serif",
               fontSize: 16,
               fontWeight: 700,
-              color: '#e8e4dc',
+              color: '#1E1B2E',
               letterSpacing: '-0.01em',
             }}
           >
@@ -94,7 +94,7 @@ function PinQuestionModal({
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#6b6b78',
+              color: '#A5A1B8',
               padding: 4,
             }}
           >
@@ -111,15 +111,15 @@ function PinQuestionModal({
               gap: 8,
               padding: '8px 12px',
               borderRadius: 6,
-              background: 'rgba(232,201,126,0.06)',
-              border: '1px solid rgba(232,201,126,0.2)',
+              background: 'rgba(109,74,224,0.06)',
+              border: '1px solid rgba(109,74,224,0.2)',
             }}
           >
-            <Pin size={13} style={{ color: '#e8c97e', flexShrink: 0 }} />
+            <Pin size={13} style={{ color: '#6D4AE0', flexShrink: 0 }} />
             <p
               style={{
                 fontSize: 12,
-                color: '#e8c97e',
+                color: '#6D4AE0',
                 fontFamily: 'monospace',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -137,7 +137,7 @@ function PinQuestionModal({
                 display: 'block',
                 fontSize: 12,
                 fontWeight: 600,
-                color: '#9ca3af',
+                color: '#6E6A85',
                 marginBottom: 6,
                 letterSpacing: '0.04em',
               }}
@@ -152,12 +152,12 @@ function PinQuestionModal({
               autoFocus
               style={{
                 width: '100%',
-                background: '#0b0c0f',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: '#F6F4FD',
+                border: '1px solid rgba(30,27,46,0.10)',
                 borderRadius: 6,
                 padding: '10px 14px',
                 fontSize: 14,
-                color: '#e8e4dc',
+                color: '#1E1B2E',
                 fontFamily: 'inherit',
                 resize: 'none',
                 outline: 'none',
@@ -165,13 +165,13 @@ function PinQuestionModal({
                 boxSizing: 'border-box',
               }}
               onFocus={(e) =>
-                (e.target.style.borderColor = 'rgba(232,201,126,0.4)')
+                (e.target.style.borderColor = 'rgba(109,74,224,0.4)')
               }
               onBlur={(e) =>
-                (e.target.style.borderColor = 'rgba(255,255,255,0.1)')
+                (e.target.style.borderColor = 'rgba(30,27,46,0.10)')
               }
             />
-            <p style={{ fontSize: 11, color: '#6b6b78', marginTop: 4 }}>
+            <p style={{ fontSize: 11, color: '#A5A1B8', marginTop: 4 }}>
               {text.length}/500
             </p>
           </div>
@@ -198,8 +198,8 @@ function PinQuestionModal({
                   height: 20,
                   borderRadius: 100,
                   background: isPublic
-                    ? 'rgba(232,201,126,0.5)'
-                    : 'rgba(255,255,255,0.1)',
+                    ? 'rgba(109,74,224,0.5)'
+                    : 'rgba(30,27,46,0.10)',
                   transition: 'background 0.2s',
                   position: 'relative',
                 }}
@@ -219,10 +219,10 @@ function PinQuestionModal({
               </div>
             </div>
             <div>
-              <p style={{ fontSize: 12.5, fontWeight: 600, color: '#e8e4dc' }}>
+              <p style={{ fontSize: 12.5, fontWeight: 600, color: '#1E1B2E' }}>
                 Visible to others
               </p>
-              <p style={{ fontSize: 11, color: '#6b6b78' }}>
+              <p style={{ fontSize: 11, color: '#A5A1B8' }}>
                 {isPublic
                   ? 'Other learners can see this Q&A'
                   : 'Only you and teachers can see this'}
@@ -245,9 +245,9 @@ function PinQuestionModal({
               flex: 1,
               padding: '10px',
               borderRadius: 6,
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid rgba(30,27,46,0.10)',
               background: 'transparent',
-              color: '#9ca3af',
+              color: '#6E6A85',
               fontSize: 13,
               fontWeight: 600,
               cursor: 'pointer',
@@ -266,9 +266,9 @@ function PinQuestionModal({
               border: 'none',
               background:
                 !text.trim() || text.length > 500
-                  ? 'rgba(232,201,126,0.3)'
-                  : '#e8c97e',
-              color: '#0b0c0f',
+                  ? 'rgba(109,74,224,0.3)'
+                  : '#6D4AE0',
+              color: '#F6F4FD',
               fontSize: 13,
               fontWeight: 700,
               cursor:
@@ -363,7 +363,7 @@ export default function LessonPage() {
         style={{
           display: 'flex',
           height: 'calc(100vh - 56px)',
-          background: '#0b0c0f',
+          background: '#F6F4FD',
         }}
       >
         <div style={{ flex: 1, padding: 32 }}>
@@ -384,8 +384,8 @@ export default function LessonPage() {
           alignItems: 'center',
           justifyContent: 'center',
           height: 'calc(100vh - 56px)',
-          background: '#0b0c0f',
-          color: '#6b6b78',
+          background: '#F6F4FD',
+          color: '#A5A1B8',
         }}
       >
         Lesson not found.
@@ -399,7 +399,7 @@ export default function LessonPage() {
         display: 'flex',
         height: 'calc(100vh - 56px)',
         overflow: 'hidden',
-        background: '#0b0c0f',
+        background: '#F6F4FD',
       }}
     >
       {/* ── Main content ── */}
@@ -424,17 +424,17 @@ export default function LessonPage() {
           >
             <Link
               to="/modules"
-              style={{ color: '#6b6b78', textDecoration: 'none' }}
+              style={{ color: '#A5A1B8', textDecoration: 'none' }}
             >
               Modules
             </Link>
-            <span style={{ color: 'rgba(255,255,255,0.2)' }}>/</span>
+            <span style={{ color: 'rgba(30,27,46,0.20)' }}>/</span>
             {module && (
               <>
                 <Link
                   to={`/modules/${module.id}`}
                   style={{
-                    color: '#6b6b78',
+                    color: '#A5A1B8',
                     textDecoration: 'none',
                     maxWidth: 160,
                     overflow: 'hidden',
@@ -445,10 +445,10 @@ export default function LessonPage() {
                 >
                   {module.title}
                 </Link>
-                <span style={{ color: 'rgba(255,255,255,0.2)' }}>/</span>
+                <span style={{ color: 'rgba(30,27,46,0.20)' }}>/</span>
               </>
             )}
-            <span style={{ color: '#e8e4dc', fontWeight: 500 }}>
+            <span style={{ color: '#1E1B2E', fontWeight: 500 }}>
               {lesson.title}
             </span>
           </nav>
@@ -459,7 +459,7 @@ export default function LessonPage() {
               fontFamily: 'monospace',
               fontSize: 10.5,
               letterSpacing: '0.18em',
-              color: '#e8c97e',
+              color: '#6D4AE0',
               textTransform: 'uppercase',
               marginBottom: 10,
               opacity: 0.85,
@@ -477,7 +477,7 @@ export default function LessonPage() {
               fontWeight: 700,
               lineHeight: 1.2,
               letterSpacing: '-0.02em',
-              color: '#e8e4dc',
+              color: '#1E1B2E',
               marginBottom: 8,
             }}
           >
@@ -487,7 +487,7 @@ export default function LessonPage() {
             <p
               style={{
                 fontSize: 15,
-                color: '#6b6b78',
+                color: '#A5A1B8',
                 lineHeight: 1.65,
                 marginBottom: 32,
               }}
@@ -504,7 +504,7 @@ export default function LessonPage() {
               justifyContent: 'space-between',
               marginBottom: 32,
               paddingBottom: 16,
-              borderBottom: '1px solid rgba(255,255,255,0.07)',
+              borderBottom: '1px solid rgba(30,27,46,0.10)',
             }}
           >
             <div
@@ -514,7 +514,7 @@ export default function LessonPage() {
                 gap: 6,
                 fontFamily: 'monospace',
                 fontSize: 10.5,
-                color: '#6b6b78',
+                color: '#A5A1B8',
                 letterSpacing: '0.08em',
               }}
             >
@@ -534,9 +534,9 @@ export default function LessonPage() {
                 padding: '10px 16px',
                 minHeight: 44,
                 borderRadius: 4,
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: '#1c1e27',
-                color: '#9ca3af',
+                border: '1px solid rgba(30,27,46,0.10)',
+                background: '#EEEAFB',
+                color: '#6E6A85',
                 fontSize: 13,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -563,7 +563,7 @@ export default function LessonPage() {
                 gap: 12,
                 marginTop: 48,
                 paddingTop: 24,
-                borderTop: '1px solid rgba(255,255,255,0.07)',
+                borderTop: '1px solid rgba(30,27,46,0.10)',
               }}
             >
               <button
@@ -577,9 +577,9 @@ export default function LessonPage() {
                   gap: 8,
                   padding: '10px 14px',
                   borderRadius: 8,
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  background: '#13141a',
-                  color: '#9ca3af',
+                  border: '1px solid rgba(30,27,46,0.10)',
+                  background: '#FFFFFF',
+                  color: '#6E6A85',
                   fontSize: 13,
                   cursor: prevLesson ? 'pointer' : 'not-allowed',
                   opacity: prevLesson ? 1 : 0.3,
@@ -606,7 +606,7 @@ export default function LessonPage() {
                   textAlign: 'center',
                   fontFamily: 'monospace',
                   fontSize: 11,
-                  color: '#6b6b78',
+                  color: '#A5A1B8',
                   letterSpacing: '0.06em',
                   whiteSpace: 'nowrap',
                 }}
@@ -625,9 +625,9 @@ export default function LessonPage() {
                   gap: 8,
                   padding: '10px 14px',
                   borderRadius: 8,
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  background: '#13141a',
-                  color: '#9ca3af',
+                  border: '1px solid rgba(30,27,46,0.10)',
+                  background: '#FFFFFF',
+                  color: '#6E6A85',
                   fontSize: 13,
                   cursor: nextLesson ? 'pointer' : 'not-allowed',
                   opacity: nextLesson ? 1 : 0.3,

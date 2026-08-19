@@ -259,7 +259,7 @@ export default function VideoPage() {
 
   if (videoLoading) {
     return (
-      <div className="flex h-[calc(100vh-56px)]" style={{ background: '#0b0c0f' }}>
+      <div className="flex h-[calc(100vh-56px)]" style={{ background: '#F6F4FD' }}>
         <div className="flex-1 p-6">
           <Skeleton className="aspect-video w-full rounded-xl" />
         </div>
@@ -269,8 +269,8 @@ export default function VideoPage() {
 
   if (!video) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-56px)]" style={{ background: '#0b0c0f' }}>
-        <p style={{ color: '#6b6b78' }}>Video not found.</p>
+      <div className="flex items-center justify-center h-[calc(100vh-56px)]" style={{ background: '#F6F4FD' }}>
+        <p style={{ color: '#A5A1B8' }}>Video not found.</p>
       </div>
     );
   }
@@ -286,7 +286,7 @@ export default function VideoPage() {
   ).filter(t => t.show);
 
   return (
-    <div className="flex h-screen lg:h-[calc(100vh-56px)] overflow-hidden" style={{ background: '#0b0c0f' }}>
+    <div className="flex h-screen lg:h-[calc(100vh-56px)] overflow-hidden" style={{ background: '#F6F4FD' }}>
 
       {/* ── Main content ── */}
       <div className="flex-1 overflow-y-auto">
@@ -311,11 +311,11 @@ export default function VideoPage() {
           )}
 
           {/* Progress bar — thin strip directly below video */}
-          <div style={{ height: 3, background: '#1c1e27' }}>
+          <div style={{ height: 3, background: '#EEEAFB' }}>
             <div style={{
               height: '100%',
               width: `${progressPct}%`,
-              background: '#b259c4',
+              background: '#6D4AE0',
               transition: 'width 0.5s ease',
             }} />
           </div>
@@ -328,12 +328,12 @@ export default function VideoPage() {
             }}>
               <span style={{
                 fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em',
-                textTransform: 'uppercase', color: '#b259c4', opacity: 0.9,
+                textTransform: 'uppercase', color: '#6D4AE0', opacity: 0.9,
               }}>
                 {currentIndex + 1} / {moduleVideos.length}
               </span>
               <span style={{
-                fontFamily: MONO, fontSize: 10, color: '#6b6b78',
+                fontFamily: MONO, fontSize: 10, color: '#A5A1B8',
                 letterSpacing: '0.05em',
               }}>
                 {fmtTime(displayDuration)} · {progressPct}%
@@ -342,7 +342,7 @@ export default function VideoPage() {
             <h1 style={{
               fontFamily: DISP,
               fontSize: 18, fontWeight: 700, lineHeight: 1.3,
-              letterSpacing: '-0.01em', color: '#e8e4dc',
+              letterSpacing: '-0.01em', color: '#1E1B2E',
               margin: 0,
             }}>
               {video.title}
@@ -471,8 +471,8 @@ export default function VideoPage() {
                 disabled={!prevVideo}
                 style={{
                   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  background: '#13141a', border: '1px solid rgba(255,255,255,0.07)',
-                  color: '#9ca3af', fontSize: 13, fontWeight: 500,
+                  background: '#FFFFFF', border: '1px solid rgba(30,27,46,0.10)',
+                  color: '#6E6A85', fontSize: 13, fontWeight: 500,
                   borderRadius: 8, padding: '10px', cursor: prevVideo ? 'pointer' : 'not-allowed',
                   opacity: prevVideo ? 1 : 0.3, fontFamily: 'inherit',
                   overflow: 'hidden',
@@ -488,9 +488,9 @@ export default function VideoPage() {
                 disabled={!nextVideo}
                 style={{
                   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  background: nextVideo ? '#b259c4' : '#13141a',
-                  border: nextVideo ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                  color: nextVideo ? '#ffffff' : '#9ca3af',
+                  background: nextVideo ? '#6D4AE0' : '#FFFFFF',
+                  border: nextVideo ? 'none' : '1px solid rgba(30,27,46,0.10)',
+                  color: nextVideo ? '#ffffff' : '#6E6A85',
                   fontSize: 13, fontWeight: nextVideo ? 700 : 500,
                   borderRadius: 8, padding: '10px', cursor: nextVideo ? 'pointer' : 'not-allowed',
                   opacity: nextVideo ? 1 : 0.3, fontFamily: 'inherit',
@@ -509,7 +509,7 @@ export default function VideoPage() {
           <div style={{ marginTop: 16 }}>
             <div style={{
               display: 'flex', overflowX: 'auto', scrollbarWidth: 'none',
-              borderBottom: '1px solid rgba(255,255,255,0.07)',
+              borderBottom: '1px solid rgba(30,27,46,0.10)',
             }}>
               {tabs.map(t => (
                 <button
@@ -518,7 +518,7 @@ export default function VideoPage() {
                   style={{
                     background: 'none', border: 'none',
                     borderBottom: activeTab === t.key ? '2px solid #b259c4' : '2px solid transparent',
-                    color: activeTab === t.key ? '#e8e4dc' : '#6b6b78',
+                    color: activeTab === t.key ? '#1E1B2E' : '#A5A1B8',
                     fontFamily: 'inherit', fontSize: 13,
                     fontWeight: activeTab === t.key ? 600 : 400,
                     padding: '10px 16px', cursor: 'pointer',
@@ -536,7 +536,7 @@ export default function VideoPage() {
               {activeTab === 'playlist' && <PlaylistTabContent moduleVideos={moduleVideos} videoId={videoId!} navigate={navigate} />}
               {activeTab === 'assignments' && <AssignmentsTabContent moduleAssignments={moduleAssignments} />}
               {activeTab === 'about' && video.description && (
-                <p style={{ fontSize: 14, color: '#9ca3af', lineHeight: 1.75 }}>{video.description}</p>
+                <p style={{ fontSize: 14, color: '#6E6A85', lineHeight: 1.75 }}>{video.description}</p>
               )}
             </div>
           </div>
@@ -547,32 +547,32 @@ export default function VideoPage() {
 
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 mb-6 overflow-hidden" style={{ fontSize: 12, letterSpacing: '0.04em' }}>
-            <Link to="/modules" style={{ color: '#6b6b78', textDecoration: 'none', transition: 'color 0.2s', flexShrink: 0 }}
-              onMouseEnter={e => ((e.target as HTMLElement).style.color = '#e8e4dc')}
-              onMouseLeave={e => ((e.target as HTMLElement).style.color = '#6b6b78')}
+            <Link to="/modules" style={{ color: '#A5A1B8', textDecoration: 'none', transition: 'color 0.2s', flexShrink: 0 }}
+              onMouseEnter={e => ((e.target as HTMLElement).style.color = '#1E1B2E')}
+              onMouseLeave={e => ((e.target as HTMLElement).style.color = '#A5A1B8')}
             >Modules</Link>
             {module && (
               <>
-                <span style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>/</span>
-                <Link to={`/modules/${module.id}`} style={{ color: '#6b6b78', textDecoration: 'none', transition: 'color 0.2s' }}
-                  onMouseEnter={e => ((e.target as HTMLElement).style.color = '#e8e4dc')}
-                  onMouseLeave={e => ((e.target as HTMLElement).style.color = '#6b6b78')}
+                <span style={{ color: 'rgba(30,27,46,0.20)', flexShrink: 0 }}>/</span>
+                <Link to={`/modules/${module.id}`} style={{ color: '#A5A1B8', textDecoration: 'none', transition: 'color 0.2s' }}
+                  onMouseEnter={e => ((e.target as HTMLElement).style.color = '#1E1B2E')}
+                  onMouseLeave={e => ((e.target as HTMLElement).style.color = '#A5A1B8')}
                   className="truncate max-w-[200px]"
                 >{module.title}</Link>
-                <span style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>/</span>
-                <span className="truncate" style={{ color: '#e8e4dc', fontWeight: 500 }}>{video.title}</span>
+                <span style={{ color: 'rgba(30,27,46,0.20)', flexShrink: 0 }}>/</span>
+                <span className="truncate" style={{ color: '#1E1B2E', fontWeight: 500 }}>{video.title}</span>
               </>
             )}
           </nav>
 
-          <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.18em', color: '#b259c4', textTransform: 'uppercase', marginBottom: 10, opacity: 0.85 }}>
+          <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.18em', color: '#6D4AE0', textTransform: 'uppercase', marginBottom: 10, opacity: 0.85 }}>
             {module?.title ?? 'Module'}&nbsp;&nbsp;·&nbsp;&nbsp;Lesson {String(currentIndex + 1).padStart(2, '0')}
           </div>
 
-          <h1 style={{ fontFamily: DISP, fontSize: 'clamp(24px, 2.5vw, 34px)', fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.02em', color: '#e8e4dc', marginBottom: 28, maxWidth: 640 }}>
+          <h1 style={{ fontFamily: DISP, fontSize: 'clamp(24px, 2.5vw, 34px)', fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.02em', color: '#1E1B2E', marginBottom: 28, maxWidth: 640 }}>
             {video.title}
             {video.description && (
-              <span style={{ display: 'block', fontStyle: 'italic', color: '#b259c4', marginTop: 4, fontSize: 'clamp(13px, 1.5vw, 16px)' }}>
+              <span style={{ display: 'block', fontStyle: 'italic', color: '#6D4AE0', marginTop: 4, fontSize: 'clamp(13px, 1.5vw, 16px)' }}>
                 {video.description.length > 80 ? video.description.slice(0, 80) + '…' : video.description}
               </span>
             )}
@@ -580,7 +580,7 @@ export default function VideoPage() {
 
           {/* Video — desktop instance, only mounted when not mobile */}
           {!isMobile && (
-            <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 40px 80px rgba(0,0,0,0.55)', marginBottom: 16 }}>
+            <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(30,27,46,0.10)', boxShadow: '0 24px 60px rgba(84,52,180,0.16)', marginBottom: 16 }}>
               <VideoPlayer
                 videoUrl={video.video_url}
                 markers={markers}
@@ -593,8 +593,8 @@ export default function VideoPage() {
 
           {/* Desktop action bar */}
           <div className="flex items-center gap-2 mb-6">
-            <span style={{ fontFamily: MONO, fontSize: 11, color: '#6b6b78', background: '#1c1e27', border: '1px solid rgba(255,255,255,0.07)', padding: '5px 10px', borderRadius: 100, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-              {fmtTime(displayDuration)} · <span style={{ color: '#b259c4' }}>{progressPct}%</span>
+            <span style={{ fontFamily: MONO, fontSize: 11, color: '#A5A1B8', background: '#EEEAFB', border: '1px solid rgba(30,27,46,0.10)', padding: '5px 10px', borderRadius: 100, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+              {fmtTime(displayDuration)} · <span style={{ color: '#6D4AE0' }}>{progressPct}%</span>
             </span>
             <div style={{ flex: 1 }} />
             {video.study_notes && (
@@ -607,7 +607,7 @@ export default function VideoPage() {
             )}
             <button
               onClick={() => { setPlaying(false); setSidebarOpen(true); openQuestionForm(currentTime); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#b259c4', color: '#ffffff', border: '1px solid rgba(178,89,196,0.4)', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#6D4AE0', color: '#ffffff', border: '1px solid rgba(109,74,224,0.4)', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
             >
               <MessageSquare size={12} /> Ask a question
             </button>
@@ -616,7 +616,7 @@ export default function VideoPage() {
                 <CheckCircle size={12} /> Completed
               </span>
             ) : (
-              <button onClick={handleMarkComplete} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#b259c4', color: '#ffffff', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, border: 'none', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+              <button onClick={handleMarkComplete} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#6D4AE0', color: '#ffffff', fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 4, border: 'none', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
                 Mark complete{quizQuestions.length > 0 ? ' & quiz' : ''}
               </button>
@@ -625,9 +625,9 @@ export default function VideoPage() {
 
           {/* Desktop tabs */}
           <div>
-            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid rgba(30,27,46,0.10)' }}>
               {tabs.map(t => (
-                <button key={t.key} onClick={() => setActiveTab(t.key)} style={{ background: 'none', border: 'none', borderBottom: activeTab === t.key ? '2px solid #b259c4' : '2px solid transparent', color: activeTab === t.key ? '#e8e4dc' : '#6b6b78', fontFamily: 'inherit', fontSize: 13, fontWeight: activeTab === t.key ? 600 : 400, padding: '10px 16px', cursor: 'pointer', transition: 'color 0.15s, border-color 0.15s', marginBottom: -1, whiteSpace: 'nowrap', minHeight: 44 }}>
+                <button key={t.key} onClick={() => setActiveTab(t.key)} style={{ background: 'none', border: 'none', borderBottom: activeTab === t.key ? '2px solid #b259c4' : '2px solid transparent', color: activeTab === t.key ? '#1E1B2E' : '#A5A1B8', fontFamily: 'inherit', fontSize: 13, fontWeight: activeTab === t.key ? 600 : 400, padding: '10px 16px', cursor: 'pointer', transition: 'color 0.15s, border-color 0.15s', marginBottom: -1, whiteSpace: 'nowrap', minHeight: 44 }}>
                   {t.label}
                 </button>
               ))}
@@ -637,31 +637,31 @@ export default function VideoPage() {
               {activeTab === 'playlist' && <PlaylistTabContent moduleVideos={moduleVideos} videoId={videoId!} navigate={navigate} />}
               {activeTab === 'assignments' && <AssignmentsTabContent moduleAssignments={moduleAssignments} />}
               {activeTab === 'about' && video.description && (
-                <p style={{ fontSize: 14, color: '#9ca3af', lineHeight: 1.75 }}>{video.description}</p>
+                <p style={{ fontSize: 14, color: '#6E6A85', lineHeight: 1.75 }}>{video.description}</p>
               )}
             </div>
           </div>
 
           {/* Desktop prev/next */}
           {moduleVideos.length > 1 && (
-            <div className="flex items-center gap-3 mt-10 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="flex items-center gap-3 mt-10 pt-6" style={{ borderTop: '1px solid rgba(30,27,46,0.10)' }}>
               <button
                 onClick={() => prevVideo && navigate(`/video/${prevVideo.id}`)}
                 disabled={!prevVideo}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', color: '#9ca3af', fontSize: 14, fontWeight: 500, borderRadius: 8, cursor: prevVideo ? 'pointer' : 'not-allowed', opacity: prevVideo ? 1 : 0.3, fontFamily: 'inherit', maxWidth: '40%', overflow: 'hidden' }}
-                onMouseEnter={e => { if (prevVideo) (e.currentTarget as HTMLElement).style.borderColor = 'rgba(178,89,196,0.3)'; }}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)')}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#FFFFFF', border: '1px solid rgba(30,27,46,0.10)', color: '#6E6A85', fontSize: 14, fontWeight: 500, borderRadius: 8, cursor: prevVideo ? 'pointer' : 'not-allowed', opacity: prevVideo ? 1 : 0.3, fontFamily: 'inherit', maxWidth: '40%', overflow: 'hidden' }}
+                onMouseEnter={e => { if (prevVideo) (e.currentTarget as HTMLElement).style.borderColor = 'rgba(109,74,224,0.3)'; }}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,27,46,0.10)')}
               >
                 <ChevronLeft size={16} style={{ flexShrink: 0 }} />
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prevVideo?.title ?? 'Previous'}</span>
               </button>
-              <span style={{ color: '#6b6b78', fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', margin: '0 auto', whiteSpace: 'nowrap' }}>
+              <span style={{ color: '#A5A1B8', fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', margin: '0 auto', whiteSpace: 'nowrap' }}>
                 {currentIndex + 1} / {moduleVideos.length}
               </span>
               <button
                 onClick={() => nextVideo && navigate(`/video/${nextVideo.id}`)}
                 disabled={!nextVideo}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: nextVideo ? '#b259c4' : '#13141a', border: nextVideo ? 'none' : '1px solid rgba(255,255,255,0.07)', color: nextVideo ? '#ffffff' : '#9ca3af', fontSize: 14, fontWeight: nextVideo ? 700 : 500, borderRadius: 8, cursor: nextVideo ? 'pointer' : 'not-allowed', opacity: nextVideo ? 1 : 0.3, fontFamily: 'inherit', maxWidth: '40%', overflow: 'hidden' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: nextVideo ? '#6D4AE0' : '#FFFFFF', border: nextVideo ? 'none' : '1px solid rgba(30,27,46,0.10)', color: nextVideo ? '#ffffff' : '#6E6A85', fontSize: 14, fontWeight: nextVideo ? 700 : 500, borderRadius: 8, cursor: nextVideo ? 'pointer' : 'not-allowed', opacity: nextVideo ? 1 : 0.3, fontFamily: 'inherit', maxWidth: '40%', overflow: 'hidden' }}
                 onMouseEnter={e => { if (nextVideo) (e.currentTarget as HTMLElement).style.opacity = '0.88'; }}
                 onMouseLeave={e => { if (nextVideo) (e.currentTarget as HTMLElement).style.opacity = '1'; }}
               >
@@ -707,11 +707,11 @@ export default function VideoPage() {
               display: 'flex',
               flexDirection: 'column',
               paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-              background: '#13141a',
+              background: '#FFFFFF',
             }}
           >
-            <div style={{ background: '#13141a', padding: '10px 0 4px', display: 'flex', justifyContent: 'center', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
+            <div style={{ background: '#FFFFFF', padding: '10px 0 4px', display: 'flex', justifyContent: 'center', flexShrink: 0, borderBottom: '1px solid rgba(30,27,46,0.08)' }}>
+              <div style={{ width: 36, height: 4, background: 'rgba(30,27,46,0.14)', borderRadius: 2 }} />
             </div>
             <QASidebar videoId={videoId} activeQuestionId={activeQuestionId} onClose={() => setSidebarOpen(false)} />
           </div>
@@ -827,8 +827,8 @@ function AssignmentCard({ a }: { a: Assignment }) {
   return (
     <div
       style={{
-        background: '#13141a',
-        border: '1px solid rgba(255,255,255,0.07)',
+        background: '#FFFFFF',
+        border: '1px solid rgba(30,27,46,0.10)',
         borderRadius: 8,
         padding: '14px 18px',
         display: 'flex',
@@ -837,8 +837,8 @@ function AssignmentCard({ a }: { a: Assignment }) {
         gap: 14,
         transition: 'border-color 0.2s',
       }}
-      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(178,89,196,0.25)')}
-      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)')}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(109,74,224,0.25)')}
+      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,27,46,0.10)')}
     >
       <div style={{ minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
@@ -858,9 +858,9 @@ function AssignmentCard({ a }: { a: Assignment }) {
             </span>
           )}
         </div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: '#e8e4dc', marginBottom: 2 }}>{a.title}</p>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#1E1B2E', marginBottom: 2 }}>{a.title}</p>
         {a.deadline && (
-          <p style={{ fontSize: 11, color: '#6b6b78', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <p style={{ fontSize: 11, color: '#A5A1B8', display: 'flex', alignItems: 'center', gap: 4 }}>
             <Clock size={10} />
             Due {formatDistanceToNow(parseISO(a.deadline), { addSuffix: true })}
           </p>
@@ -871,7 +871,7 @@ function AssignmentCard({ a }: { a: Assignment }) {
         style={{
           flexShrink: 0,
           display: 'flex', alignItems: 'center', gap: 6,
-          background: '#b259c4', color: '#ffffff',
+          background: '#6D4AE0', color: '#ffffff',
           fontSize: 12, fontWeight: 700,
           padding: '8px 14px', borderRadius: 4,
           textDecoration: 'none', whiteSpace: 'nowrap',
@@ -915,53 +915,53 @@ function NotesTabContent({ notes, noteDraft, setNoteDraft, notePinTime, setNoteP
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {notes.length > 0 && (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#6b6b78', background: 'transparent', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#A5A1B8', background: 'transparent', border: '1px solid rgba(30,27,46,0.10)', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Export
           </button>
         </div>
       )}
-      <div style={{ background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '14px 16px' }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid rgba(30,27,46,0.10)', borderRadius: 8, padding: '14px 16px' }}>
         <textarea
           value={noteDraft} onChange={e => setNoteDraft(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleNoteSave(); }}
           placeholder="Write a note…" rows={3}
-          style={{ width: '100%', background: 'transparent', border: 'none', color: '#e8e4dc', fontSize: 14, fontFamily: 'inherit', lineHeight: 1.6, resize: 'none', outline: 'none', boxSizing: 'border-box' }}
+          style={{ width: '100%', background: 'transparent', border: 'none', color: '#1E1B2E', fontSize: 14, fontFamily: 'inherit', lineHeight: 1.6, resize: 'none', outline: 'none', boxSizing: 'border-box' }}
         />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <button onClick={() => setNotePinTime(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: notePinTime ? '#b259c4' : '#6b6b78', background: notePinTime ? 'rgba(178,89,196,0.1)' : 'transparent', border: notePinTime ? '1px solid rgba(178,89,196,0.25)' : '1px solid transparent', borderRadius: 4, padding: '4px 8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 10, borderTop: '1px solid rgba(30,27,46,0.08)' }}>
+          <button onClick={() => setNotePinTime(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: notePinTime ? '#6D4AE0' : '#A5A1B8', background: notePinTime ? 'rgba(109,74,224,0.1)' : 'transparent', border: notePinTime ? '1px solid rgba(109,74,224,0.25)' : '1px solid transparent', borderRadius: 4, padding: '4px 8px', cursor: 'pointer', fontFamily: 'inherit' }}>
             <Clock size={11} /> {notePinTime ? fmtT(currentTime) : 'Pin timestamp'}
           </button>
-          <button onClick={handleNoteSave} disabled={!noteDraft.trim() || createNote.isPending} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#ffffff', background: !noteDraft.trim() ? 'rgba(178,89,196,0.3)' : '#b259c4', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: !noteDraft.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={handleNoteSave} disabled={!noteDraft.trim() || createNote.isPending} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#ffffff', background: !noteDraft.trim() ? 'rgba(109,74,224,0.3)' : '#6D4AE0', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: !noteDraft.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
             <Plus size={12} /> Save
           </button>
         </div>
       </div>
       {notes.length === 0 ? (
-        <p style={{ color: '#6b6b78', fontSize: 13, fontStyle: 'italic', padding: '4px 0' }}>No notes yet. Write something above.</p>
+        <p style={{ color: '#A5A1B8', fontSize: 13, fontStyle: 'italic', padding: '4px 0' }}>No notes yet. Write something above.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {notes.map(note => (
-            <div key={note.id} style={{ background: '#13141a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '12px 14px' }}>
+            <div key={note.id} style={{ background: '#FFFFFF', border: '1px solid rgba(30,27,46,0.10)', borderRadius: 8, padding: '12px 14px' }}>
               {noteEditId === note.id ? (
                 <div>
-                  <textarea value={noteEditContent} onChange={e => setNoteEditContent(e.target.value)} autoFocus rows={3} style={{ width: '100%', background: '#0b0c0f', border: '1px solid rgba(178,89,196,0.3)', borderRadius: 4, color: '#e8e4dc', fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'none', outline: 'none', padding: '8px 10px', boxSizing: 'border-box' }} />
+                  <textarea value={noteEditContent} onChange={e => setNoteEditContent(e.target.value)} autoFocus rows={3} style={{ width: '100%', background: '#F6F4FD', border: '1px solid rgba(109,74,224,0.3)', borderRadius: 4, color: '#1E1B2E', fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'none', outline: 'none', padding: '8px 10px', boxSizing: 'border-box' }} />
                   <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                    <button onClick={() => updateNote.mutate({ id: note.id, content: noteEditContent.trim() })} disabled={!noteEditContent.trim()} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, background: '#b259c4', color: '#ffffff', border: 'none', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}><Check size={11} /> Save</button>
-                    <button onClick={() => setNoteEditId(null)} style={{ fontSize: 11, color: '#6b6b78', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+                    <button onClick={() => updateNote.mutate({ id: note.id, content: noteEditContent.trim() })} disabled={!noteEditContent.trim()} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, background: '#6D4AE0', color: '#ffffff', border: 'none', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}><Check size={11} /> Save</button>
+                    <button onClick={() => setNoteEditId(null)} style={{ fontSize: 11, color: '#A5A1B8', background: 'transparent', border: '1px solid rgba(30,27,46,0.10)', borderRadius: 4, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
                   </div>
                 </div>
               ) : (
                 <div>
                   {note.timestamp_seconds != null && (
-                    <button onClick={() => seekTo(note.timestamp_seconds!)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#b259c4', fontFamily: MONO, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4 }}>
+                    <button onClick={() => seekTo(note.timestamp_seconds!)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#6D4AE0', fontFamily: MONO, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 4 }}>
                       <Clock size={10} /> {fmtT(note.timestamp_seconds)}
                     </button>
                   )}
-                  <p style={{ fontSize: 13, color: '#e8e4dc', lineHeight: 1.65, whiteSpace: 'pre-wrap', margin: 0 }}>{note.content}</p>
+                  <p style={{ fontSize: 13, color: '#1E1B2E', lineHeight: 1.65, whiteSpace: 'pre-wrap', margin: 0 }}>{note.content}</p>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 8 }}>
-                    <button onClick={() => { setNoteEditId(note.id); setNoteEditContent(note.content); }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#6b6b78', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}><Pencil size={11} /> Edit</button>
-                    <button onClick={() => deleteNote.mutate(note.id)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#6b6b78', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}><Trash2 size={11} /> Delete</button>
+                    <button onClick={() => { setNoteEditId(note.id); setNoteEditContent(note.content); }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#A5A1B8', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}><Pencil size={11} /> Edit</button>
+                    <button onClick={() => deleteNote.mutate(note.id)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#A5A1B8', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit' }}><Trash2 size={11} /> Delete</button>
                   </div>
                 </div>
               )}
@@ -977,17 +977,17 @@ function PlaylistTabContent({ moduleVideos, videoId, navigate }: {
   moduleVideos: Video[]; videoId: string; navigate: (path: string) => void;
 }) {
   return (
-    <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, overflow: 'hidden' }}>
+    <div style={{ border: '1px solid rgba(30,27,46,0.10)', borderRadius: 8, overflow: 'hidden' }}>
       {moduleVideos.map((v, idx) => {
         const isCurrent = v.id === videoId;
         return (
-          <button key={v.id} onClick={() => !isCurrent && navigate(`/video/${v.id}`)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: isCurrent ? 'rgba(178,89,196,0.08)' : '#13141a', borderTop: 'none', borderRight: 'none', borderBottom: idx < moduleVideos.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', borderLeft: `3px solid ${isCurrent ? '#b259c4' : 'transparent'}`, cursor: isCurrent ? 'default' : 'pointer', textAlign: 'left', fontFamily: 'inherit', minHeight: 52 }}>
-            <span style={{ fontFamily: MONO, fontSize: 10, color: isCurrent ? '#b259c4' : '#6b6b78', width: 20, flexShrink: 0, letterSpacing: '0.08em' }}>{String(idx + 1).padStart(2, '0')}</span>
-            <div style={{ width: 28, height: 28, borderRadius: 4, background: isCurrent ? 'rgba(178,89,196,0.15)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Play size={11} fill={isCurrent ? '#b259c4' : '#6b6b78'} style={{ color: isCurrent ? '#b259c4' : '#6b6b78', marginLeft: 1 }} />
+          <button key={v.id} onClick={() => !isCurrent && navigate(`/video/${v.id}`)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: isCurrent ? 'rgba(109,74,224,0.08)' : '#FFFFFF', borderTop: 'none', borderRight: 'none', borderBottom: idx < moduleVideos.length - 1 ? '1px solid rgba(30,27,46,0.07)' : 'none', borderLeft: `3px solid ${isCurrent ? '#6D4AE0' : 'transparent'}`, cursor: isCurrent ? 'default' : 'pointer', textAlign: 'left', fontFamily: 'inherit', minHeight: 52 }}>
+            <span style={{ fontFamily: MONO, fontSize: 10, color: isCurrent ? '#6D4AE0' : '#A5A1B8', width: 20, flexShrink: 0, letterSpacing: '0.08em' }}>{String(idx + 1).padStart(2, '0')}</span>
+            <div style={{ width: 28, height: 28, borderRadius: 4, background: isCurrent ? 'rgba(109,74,224,0.15)' : 'rgba(30,27,46,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Play size={11} fill={isCurrent ? '#6D4AE0' : '#A5A1B8'} style={{ color: isCurrent ? '#6D4AE0' : '#A5A1B8', marginLeft: 1 }} />
             </div>
-            <span style={{ flex: 1, fontSize: 14, fontWeight: isCurrent ? 600 : 400, color: isCurrent ? '#e8e4dc' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.title}</span>
-            {v.duration_seconds > 0 && <span style={{ fontFamily: MONO, fontSize: 11, color: '#6b6b78', flexShrink: 0 }}>{fmtDur(v.duration_seconds)}</span>}
+            <span style={{ flex: 1, fontSize: 14, fontWeight: isCurrent ? 600 : 400, color: isCurrent ? '#1E1B2E' : '#6E6A85', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.title}</span>
+            {v.duration_seconds > 0 && <span style={{ fontFamily: MONO, fontSize: 11, color: '#A5A1B8', flexShrink: 0 }}>{fmtDur(v.duration_seconds)}</span>}
           </button>
         );
       })}
@@ -996,6 +996,6 @@ function PlaylistTabContent({ moduleVideos, videoId, navigate }: {
 }
 
 function AssignmentsTabContent({ moduleAssignments }: { moduleAssignments: Assignment[] }) {
-  if (moduleAssignments.length === 0) return <p style={{ color: '#6b6b78', fontSize: 13, fontStyle: 'italic' }}>No assignments for this module yet.</p>;
+  if (moduleAssignments.length === 0) return <p style={{ color: '#A5A1B8', fontSize: 13, fontStyle: 'italic' }}>No assignments for this module yet.</p>;
   return <div className="space-y-3">{moduleAssignments.map(a => <AssignmentCard key={a.id} a={a} />)}</div>;
 }

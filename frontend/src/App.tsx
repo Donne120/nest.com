@@ -232,7 +232,7 @@ export default function App() {
             path="/lesson/:lessonId"
             element={
               <RequireAuth>
-                <div className="min-h-screen font-sans flex flex-col" style={{ background: '#0b0c0f' }}>
+                <div className="min-h-screen font-sans flex flex-col" style={{ background: 'var(--c-bg)' }}>
                   <Navbar />
                   <LessonPage />
                 </div>

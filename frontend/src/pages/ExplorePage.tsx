@@ -6,7 +6,7 @@ import { Search, MapPin, BookOpen, MessageCircle, Phone, Mail, Globe, X, ArrowLe
 const INK    = '#0B0A0F';
 const INK2   = '#141219';
 const RAISE  = '#1C1922';
-const HAIR   = 'rgba(255,255,255,0.09)';
+const HAIR   = 'rgba(30,27,46,0.10)';
 const TEXT   = '#F2F0F5';
 const MUTE   = '#A8A3B2';
 const FAINT  = '#6F6A7A';
@@ -88,7 +88,7 @@ export default function ExplorePage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: 'env(safe-area-inset-top, 0px) clamp(16px,4vw,44px) 0',
         borderBottom: `1px solid ${HAIR}`,
-        background: 'rgba(11,10,15,0.8)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        background: 'rgba(246,244,253,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       }}>
         <Link to="/" className="press" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <div style={{ width: 28, height: 28, borderRadius: 7, background: `linear-gradient(135deg, ${GOLD}, #C98A2E)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: INK, fontFamily: DISP }}>N</div>
@@ -120,7 +120,7 @@ export default function ExplorePage() {
       <div style={{
         position: 'sticky', top: 'calc(60px + env(safe-area-inset-top, 0px))', zIndex: 15,
         borderTop: `1px solid ${HAIR}`, borderBottom: `1px solid ${HAIR}`,
-        background: 'rgba(11,10,15,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        background: 'rgba(246,244,253,0.88)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
       }}>
         <div className="exp-filters" style={{ maxWidth: 1080, margin: '0 auto', padding: '12px clamp(16px,4vw,44px)', display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
@@ -140,7 +140,7 @@ export default function ExplorePage() {
             />
             {query && (
               <button onClick={() => setQuery('')} aria-label="Clear search"
-                style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', color: MUTE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', width: 24, height: 24, borderRadius: '50%', background: 'rgba(30,27,46,0.09)', border: 'none', cursor: 'pointer', color: MUTE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <X size={13} />
               </button>
             )}

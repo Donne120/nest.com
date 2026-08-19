@@ -79,10 +79,10 @@ export default function ModuleCard({ module }: Props) {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
-        background: '#12101a',
+        background: '#2B1B60',
         // Finished courses look different in kind, not just ticked.
-        border: done ? `1px solid rgba(232,176,75,0.55)` : `1px solid ${BORDER}`,
-        boxShadow: done ? '0 10px 34px -14px rgba(232,176,75,0.4)' : '0 10px 30px -16px rgba(0,0,0,0.55)',
+        border: done ? `1px solid rgba(35,185,154,0.55)` : `1px solid ${BORDER}`,
+        boxShadow: done ? '0 10px 34px -14px rgba(35,185,154,0.35)' : '0 10px 30px -16px rgba(0,0,0,0.55)',
       }}
     >
       {/* Poster image */}
@@ -96,7 +96,7 @@ export default function ModuleCard({ module }: Props) {
       ) : (
         <div style={{
           position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'linear-gradient(150deg, color-mix(in srgb, var(--c-acc) 22%, #12101a) 0%, #12101a 60%, color-mix(in srgb, var(--c-go) 12%, #12101a) 100%)',
+          background: 'linear-gradient(150deg, color-mix(in srgb, var(--c-acc) 22%, #2B1B60) 0%, #2B1B60 60%, color-mix(in srgb, var(--c-go) 12%, #2B1B60) 100%)',
         }}>
           <BookOpen size={34} style={{ color: 'rgba(255,255,255,0.18)' }} />
         </div>
@@ -108,7 +108,7 @@ export default function ModuleCard({ module }: Props) {
         background: 'linear-gradient(0deg, rgba(9,8,13,0.96) 6%, rgba(9,8,13,0.75) 34%, rgba(9,8,13,0.25) 62%, rgba(9,8,13,0.35) 100%)',
       }} />
       {done && (
-        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(232,176,75,0.14), transparent 55%)' }} />
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(35,185,154,0.14), transparent 55%)' }} />
       )}
 
       {/* Top row — status / price */}
@@ -116,7 +116,7 @@ export default function ModuleCard({ module }: Props) {
         {/* Only ever a chip for something the learner has DONE or is DOING.
             An unstarted course is an invitation, not a grey "NOT STARTED" shame badge. */}
         {done ? (
-          <Chip color={GOLD} bg="rgba(232,176,75,0.18)" icon={<CheckCircle2 size={11} />}>Finished</Chip>
+          <Chip color="#8BE8C4" bg="rgba(35,185,154,0.20)" icon={<CheckCircle2 size={11} />}>Finished</Chip>
         ) : learning ? (
           <Chip color="#D9A0E8" bg="rgba(199,125,218,0.2)" dot>Learning now</Chip>
         ) : <span />}

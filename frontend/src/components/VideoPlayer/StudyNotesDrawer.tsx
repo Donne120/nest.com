@@ -53,7 +53,7 @@ export default function StudyNotesDrawer({ videoId, notes, onClose }: Props) {
         style={{
           position: 'absolute', left: 0, right: 0, bottom: 0,
           height: 'min(86vh, 100dvh - 44px)',
-          background: '#141219', border: '1px solid rgba(255,255,255,0.09)',
+          background: '#FFFFFF', border: '1px solid rgba(30,27,46,0.10)',
           borderRadius: '20px 20px 0 0', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           transform: entered ? 'translateY(0)' : 'translateY(100%)',
@@ -76,19 +76,19 @@ export default function StudyNotesDrawer({ videoId, notes, onClose }: Props) {
           }
         `}</style>
         {/* Grabber + header */}
-        <div style={{ flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ flexShrink: 0, borderBottom: '1px solid rgba(30,27,46,0.10)' }}>
           <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 2px' }}>
-            <div style={{ width: 38, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.16)' }} />
+            <div style={{ width: 38, height: 4, borderRadius: 2, background: 'rgba(30,27,46,0.14)' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 18px 14px' }}>
             <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(199,125,218,0.16)', border: '1px solid rgba(199,125,218,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C77DDA' }}>
               <BookOpen size={16} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontFamily: "'Inter Tight','Inter',system-ui,sans-serif", fontSize: 14.5, fontWeight: 700, color: '#F2F0F5', margin: 0 }}>Study material</p>
+              <p style={{ fontFamily: "'Inter Tight','Inter',system-ui,sans-serif", fontSize: 14.5, fontWeight: 700, color: '#1E1B2E', margin: 0 }}>Study material</p>
               <p style={{ fontFamily: "'DM Mono',ui-monospace,monospace", fontSize: 10.5, color: '#756D80', margin: '2px 0 0', letterSpacing: '0.04em' }}>Notes for this lesson</p>
             </div>
-            <button onClick={close} aria-label="Close" style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: 'none', color: '#A8A3B2', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <button onClick={close} aria-label="Close" style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(30,27,46,0.08)', border: 'none', color: '#6E6A85', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <X size={18} />
             </button>
           </div>
@@ -96,11 +96,11 @@ export default function StudyNotesDrawer({ videoId, notes, onClose }: Props) {
 
         {/* Note body — rich rendered */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 8px' }}>
-          <RichText tone="on-dark">{notes}</RichText>
+          <RichText >{notes}</RichText>
 
           {/* Helpfulness vote */}
-          <div style={{ marginTop: 26, paddingTop: 18, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-            <p style={{ fontFamily: "'Inter Tight','Inter',system-ui,sans-serif", fontSize: 13.5, fontWeight: 600, color: '#A8A3B2', textAlign: 'center', marginBottom: 12 }}>
+          <div style={{ marginTop: 26, paddingTop: 18, borderTop: '1px solid rgba(30,27,46,0.09)' }}>
+            <p style={{ fontFamily: "'Inter Tight','Inter',system-ui,sans-serif", fontSize: 13.5, fontWeight: 600, color: '#6E6A85', textAlign: 'center', marginBottom: 12 }}>
               Were these notes helpful?
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
@@ -139,9 +139,9 @@ function VoteBtn({ active, onClick, icon, label, count, accent }: {
         display: 'inline-flex', alignItems: 'center', gap: 8,
         minHeight: 44, padding: '0 18px', borderRadius: 12, cursor: 'pointer',
         fontFamily: "'Inter Tight','Inter',system-ui,sans-serif", fontSize: 13.5, fontWeight: 700,
-        color: active ? '#0B0A0F' : '#F2F0F5',
-        background: active ? accent : 'rgba(255,255,255,0.06)',
-        border: `1px solid ${active ? accent : 'rgba(255,255,255,0.14)'}`,
+        color: active ? '#0B0A0F' : '#1E1B2E',
+        background: active ? accent : 'rgba(30,27,46,0.08)',
+        border: `1px solid ${active ? accent : 'rgba(30,27,46,0.12)'}`,
         transition: 'all 0.15s',
       }}
     >

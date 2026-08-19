@@ -27,7 +27,7 @@ export default function LessonViewer({
         style={{
           padding: '48px 24px',
           textAlign: 'center',
-          color: '#6b6b78',
+          color: '#A5A1B8',
           fontSize: 14,
           fontStyle: 'italic',
         }}
@@ -57,11 +57,11 @@ export default function LessonViewer({
             style={{
               position: 'relative',
               padding: '20px 0',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(30,27,46,0.08)',
               background: isActive
-                ? 'rgba(232,201,126,0.04)'
+                ? 'rgba(109,74,224,0.04)'
                 : isHovered
-                ? 'rgba(255,255,255,0.015)'
+                ? 'rgba(30,27,46,0.03)'
                 : 'transparent',
               transition: 'background 0.2s',
               borderRadius: 4,
@@ -94,11 +94,11 @@ export default function LessonViewer({
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 3,
-                    color: '#e8c97e',
+                    color: '#6D4AE0',
                     opacity: 0.7,
                   }}
                 >
-                  <Pin size={9} fill="#e8c97e" />
+                  <Pin size={9} fill="#6D4AE0" />
                   pinned
                 </span>
               )}
@@ -117,8 +117,8 @@ export default function LessonViewer({
                   style={{
                     borderRadius: 6,
                     overflow: 'hidden',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    background: '#1c1e27',
+                    border: '1px solid rgba(30,27,46,0.09)',
+                    background: '#EEEAFB',
                     maxWidth: 720,
                   }}
                 >
@@ -131,7 +131,7 @@ export default function LessonViewer({
                         display: 'block',
                         maxHeight: 500,
                         objectFit: 'contain',
-                        background: '#13141a',
+                        background: '#FFFFFF',
                       }}
                     />
                   ) : (
@@ -153,7 +153,7 @@ export default function LessonViewer({
                     style={{
                       marginTop: 8,
                       fontSize: 12,
-                      color: '#6b6b78',
+                      color: '#A5A1B8',
                       fontStyle: 'italic',
                     }}
                   >
@@ -177,9 +177,9 @@ export default function LessonViewer({
                 minHeight: 36,
                 padding: '0 14px',
                 borderRadius: 100,
-                border: '1px solid rgba(178,89,196,0.35)',
-                background: 'rgba(178,89,196,0.1)',
-                color: '#b259c4',
+                border: '1px solid rgba(109,74,224,0.35)',
+                background: 'rgba(109,74,224,0.1)',
+                color: '#6D4AE0',
                 fontSize: 12,
                 fontWeight: 600,
                 cursor: 'pointer',

@@ -87,12 +87,12 @@ export default function BlockQASidebar({
   return (
     <aside
       className="flex flex-col h-full w-full md:w-[360px] md:flex-shrink-0"
-      style={{ background: '#13141a', borderLeft: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: '#FFFFFF', borderLeft: '1px solid rgba(30,27,46,0.10)' }}
     >
       {/* Header */}
       <div
         className="px-5 pt-5 pb-4"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderBottom: '1px solid rgba(30,27,46,0.08)' }}
       >
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -100,7 +100,7 @@ export default function BlockQASidebar({
               className="font-bold text-base"
               style={{
                 fontFamily: "'Lora', Georgia, serif",
-                color: '#e8e4dc',
+                color: '#1E1B2E',
                 letterSpacing: '-0.01em',
               }}
             >
@@ -111,7 +111,7 @@ export default function BlockQASidebar({
               style={{
                 fontFamily: 'monospace',
                 fontSize: 11,
-                color: '#6b6b78',
+                color: '#A5A1B8',
                 letterSpacing: '0.06em',
               }}
             >
@@ -119,7 +119,7 @@ export default function BlockQASidebar({
               {pendingCount > 0 && (
                 <span
                   className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold"
-                  style={{ background: '#b259c4', color: '#fff' }}
+                  style={{ background: '#6D4AE0', color: '#1E1B2E' }}
                 >
                   {pendingCount}
                 </span>
@@ -130,7 +130,7 @@ export default function BlockQASidebar({
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg transition-colors md:hidden"
-              style={{ color: '#6b6b78' }}
+              style={{ color: '#A5A1B8' }}
               aria-label="Close Q&A"
             >
               <X size={16} />
@@ -142,11 +142,11 @@ export default function BlockQASidebar({
         <div
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-4"
           style={{
-            background: 'rgba(178,89,196,0.08)',
-            border: '1px solid rgba(178,89,196,0.2)',
+            background: 'rgba(109,74,224,0.08)',
+            border: '1px solid rgba(109,74,224,0.2)',
             fontFamily: 'monospace',
             fontSize: 10.5,
-            color: '#b259c4',
+            color: '#6D4AE0',
             letterSpacing: '0.08em',
           }}
         >
@@ -159,7 +159,7 @@ export default function BlockQASidebar({
           <Search
             size={13}
             className="absolute left-3 top-1/2 -translate-y-1/2"
-            style={{ color: '#6b6b78' }}
+            style={{ color: '#A5A1B8' }}
           />
           <input
             value={search}
@@ -167,18 +167,18 @@ export default function BlockQASidebar({
             placeholder="Search questions…"
             className="w-full pl-8 pr-3 outline-none transition-colors"
             style={{
-              background: '#0b0c0f',
-              border: '1px solid rgba(255,255,255,0.07)',
+              background: '#F6F4FD',
+              border: '1px solid rgba(30,27,46,0.10)',
               borderRadius: 4,
-              color: '#e8e4dc',
+              color: '#1E1B2E',
               fontFamily: 'inherit',
               minHeight: 44,
             }}
             onFocus={(e) =>
-              (e.target.style.borderColor = 'rgba(178,89,196,0.35)')
+              (e.target.style.borderColor = 'rgba(109,74,224,0.35)')
             }
             onBlur={(e) =>
-              (e.target.style.borderColor = 'rgba(255,255,255,0.07)')
+              (e.target.style.borderColor = 'rgba(30,27,46,0.10)')
             }
           />
           {search && (
@@ -186,7 +186,7 @@ export default function BlockQASidebar({
               onClick={() => setSearch('')}
               className="absolute right-2 top-1/2 -translate-y-1/2"
             >
-              <X size={13} style={{ color: '#6b6b78' }} />
+              <X size={13} style={{ color: '#A5A1B8' }} />
             </button>
           )}
         </div>
@@ -194,7 +194,7 @@ export default function BlockQASidebar({
         {/* Filter tabs */}
         <div
           className="flex gap-0.5 p-0.5 rounded-md"
-          style={{ background: '#0b0c0f' }}
+          style={{ background: '#F6F4FD' }}
         >
           {FILTERS.map(({ key, label }) => (
             <button
@@ -203,8 +203,8 @@ export default function BlockQASidebar({
               className="flex-1 text-center text-xs font-medium rounded transition-all"
               style={
                 filter === key
-                  ? { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1c1e27', color: '#e8e4dc', border: '1px solid rgba(255,255,255,0.07)' }
-                  : { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b6b78', border: '1px solid transparent' }
+                  ? { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#EEEAFB', color: '#1E1B2E', border: '1px solid rgba(30,27,46,0.10)' }
+                  : { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A5A1B8', border: '1px solid transparent' }
               }
             >
               {label}
@@ -216,7 +216,7 @@ export default function BlockQASidebar({
       {/* Question list */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {isLoading ? (
-          <div style={{ color: '#6b6b78', fontSize: 13, padding: '24px 0', textAlign: 'center' }}>
+          <div style={{ color: '#A5A1B8', fontSize: 13, padding: '24px 0', textAlign: 'center' }}>
             Loading…
           </div>
         ) : filtered.length === 0 ? (
@@ -224,8 +224,8 @@ export default function BlockQASidebar({
             <div
               className="w-11 h-11 rounded-full flex items-center justify-center text-lg mb-1"
               style={{
-                background: '#1c1e27',
-                border: '1px solid rgba(255,255,255,0.07)',
+                background: '#EEEAFB',
+                border: '1px solid rgba(30,27,46,0.10)',
               }}
             >
               📌
@@ -235,7 +235,7 @@ export default function BlockQASidebar({
                 fontFamily: "'Lora', Georgia, serif",
                 fontSize: 16,
                 fontWeight: 700,
-                color: '#e8e4dc',
+                color: '#1E1B2E',
                 letterSpacing: '-0.01em',
               }}
             >
@@ -244,7 +244,7 @@ export default function BlockQASidebar({
             <p
               style={{
                 fontSize: 12.5,
-                color: '#6b6b78',
+                color: '#A5A1B8',
                 textAlign: 'center',
                 lineHeight: 1.5,
               }}
@@ -266,11 +266,11 @@ export default function BlockQASidebar({
                     padding: '14px 16px',
                     borderRadius: 8,
                     border: isActive
-                      ? '1px solid rgba(178,89,196,0.35)'
-                      : '1px solid rgba(255,255,255,0.07)',
+                      ? '1px solid rgba(109,74,224,0.35)'
+                      : '1px solid rgba(30,27,46,0.10)',
                     background: isActive
-                      ? 'rgba(178,89,196,0.04)'
-                      : '#1c1e27',
+                      ? 'rgba(109,74,224,0.04)'
+                      : '#EEEAFB',
                     cursor: 'pointer',
                     transition: 'border-color 0.2s',
                   }}
@@ -283,11 +283,11 @@ export default function BlockQASidebar({
                       gap: 4,
                       padding: '2px 8px',
                       borderRadius: 100,
-                      background: 'rgba(178,89,196,0.1)',
-                      border: '1px solid rgba(178,89,196,0.2)',
+                      background: 'rgba(109,74,224,0.1)',
+                      border: '1px solid rgba(109,74,224,0.2)',
                       fontFamily: 'monospace',
                       fontSize: 9.5,
-                      color: '#b259c4',
+                      color: '#6D4AE0',
                       letterSpacing: '0.08em',
                       marginBottom: 8,
                     }}
@@ -299,7 +299,7 @@ export default function BlockQASidebar({
                   <p
                     style={{
                       fontSize: 13.5,
-                      color: '#e8e4dc',
+                      color: '#1E1B2E',
                       lineHeight: 1.5,
                       marginBottom: 8,
                     }}
@@ -313,7 +313,7 @@ export default function BlockQASidebar({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       fontSize: 11,
-                      color: '#6b6b78',
+                      color: '#A5A1B8',
                     }}
                   >
                     <span>{q.asked_by_user.full_name}</span>
@@ -334,7 +334,7 @@ export default function BlockQASidebar({
                               ? 'rgba(74,222,128,0.1)'
                               : 'rgba(196,92,60,0.12)',
                           color:
-                            q.status === 'answered' ? '#4ade80' : '#b259c4',
+                            q.status === 'answered' ? '#4ade80' : '#6D4AE0',
                         }}
                       >
                         {q.status}
@@ -348,7 +348,7 @@ export default function BlockQASidebar({
                       style={{
                         marginTop: 10,
                         paddingTop: 10,
-                        borderTop: '1px solid rgba(255,255,255,0.06)',
+                        borderTop: '1px solid rgba(30,27,46,0.08)',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 8,
@@ -363,10 +363,10 @@ export default function BlockQASidebar({
                               gap: 6,
                               marginBottom: 3,
                               fontSize: 11,
-                              color: '#6b6b78',
+                              color: '#A5A1B8',
                             }}
                           >
-                            <span style={{ fontWeight: 600, color: a.is_official ? '#b259c4' : '#9ca3af' }}>
+                            <span style={{ fontWeight: 600, color: a.is_official ? '#6D4AE0' : '#6E6A85' }}>
                               {a.answered_by_user.full_name}
                             </span>
                             {a.is_official && (
@@ -375,8 +375,8 @@ export default function BlockQASidebar({
                                   fontSize: 9,
                                   padding: '1px 5px',
                                   borderRadius: 100,
-                                  background: 'rgba(178,89,196,0.15)',
-                                  color: '#b259c4',
+                                  background: 'rgba(109,74,224,0.15)',
+                                  color: '#6D4AE0',
                                   fontWeight: 600,
                                   letterSpacing: '0.06em',
                                 }}
@@ -406,7 +406,7 @@ export default function BlockQASidebar({
                     style={{
                       marginTop: 8,
                       fontSize: 11,
-                      color: '#6b6b78',
+                      color: '#A5A1B8',
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
@@ -423,8 +423,8 @@ export default function BlockQASidebar({
                   <div
                     className="mt-2 rounded-xl p-3"
                     style={{
-                      background: '#1c1e27',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      background: '#EEEAFB',
+                      border: '1px solid rgba(30,27,46,0.09)',
                     }}
                   >
                     <textarea
@@ -435,9 +435,9 @@ export default function BlockQASidebar({
                       rows={2}
                       className="w-full text-sm px-3 py-2 resize-none outline-none rounded-lg"
                       style={{
-                        background: '#0b0c0f',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        color: '#e8e4dc',
+                        background: '#F6F4FD',
+                        border: '1px solid rgba(30,27,46,0.10)',
+                        color: '#1E1B2E',
                         fontFamily: 'inherit',
                       }}
                     />
@@ -472,9 +472,9 @@ export default function BlockQASidebar({
       <div
         className="px-5 py-4"
         style={{
-          borderTop: '1px solid rgba(255,255,255,0.06)',
+          borderTop: '1px solid rgba(30,27,46,0.08)',
           fontSize: 12,
-          color: '#6b6b78',
+          color: '#A5A1B8',
           lineHeight: 1.6,
         }}
       >

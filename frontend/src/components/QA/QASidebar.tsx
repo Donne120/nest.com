@@ -75,19 +75,19 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
   return (
     <aside
       className="flex flex-col h-full w-full md:w-[360px] md:flex-shrink-0"
-      style={{ background: '#13141a', borderLeft: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: '#FFFFFF', borderLeft: '1px solid rgba(30,27,46,0.10)' }}
     >
       {/* Header */}
-      <div className="px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(30,27,46,0.08)' }}>
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="font-bold text-base" style={{ fontFamily: DISP, color: '#e8e4dc', letterSpacing: '-0.01em' }}>
+            <h2 className="font-bold text-base" style={{ fontFamily: DISP, color: '#1E1B2E', letterSpacing: '-0.01em' }}>
               Timeline Q&amp;A
             </h2>
-            <p className="mt-0.5 flex items-center gap-1.5" style={{ fontFamily: MONO, fontSize: 11, color: '#6b6b78', letterSpacing: '0.06em' }}>
+            <p className="mt-0.5 flex items-center gap-1.5" style={{ fontFamily: MONO, fontSize: 11, color: '#A5A1B8', letterSpacing: '0.06em' }}>
               {questions.length} QUESTION{questions.length !== 1 ? 'S' : ''}
               {pendingCount > 0 && (
-                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold" style={{ background: '#b259c4', color: '#fff' }}>
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold" style={{ background: '#6D4AE0', color: '#1E1B2E' }}>
                   {pendingCount}
                 </span>
               )}
@@ -98,7 +98,7 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
               <button
                 onClick={onClose}
                 className="p-1.5 rounded-lg transition-colors md:hidden"
-                style={{ color: '#6b6b78' }}
+                style={{ color: '#A5A1B8' }}
                 aria-label="Close Q&A"
               >
                 <X size={16} />
@@ -111,24 +111,24 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
         <div
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-4"
           style={{
-            background: 'rgba(178,89,196,0.08)',
-            border: '1px solid rgba(178,89,196,0.2)',
+            background: 'rgba(109,74,224,0.08)',
+            border: '1px solid rgba(109,74,224,0.2)',
             fontFamily: MONO,
             fontSize: 10.5,
-            color: '#b259c4',
+            color: '#6D4AE0',
             letterSpacing: '0.1em',
           }}
         >
           <span
             className="w-1.5 h-1.5 rounded-full"
-            style={{ background: '#b259c4', animation: 'pulse 2s infinite' }}
+            style={{ background: '#6D4AE0', animation: 'pulse 2s infinite' }}
           />
           AT {formatTime(currentTime)}
         </div>
 
         {/* Search */}
         <div className="relative mb-3">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6b6b78' }} />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#A5A1B8' }} />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -137,32 +137,32 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
             style={{
               minHeight: 44,
               fontSize: 13,
-              background: '#0b0c0f',
-              border: '1px solid rgba(255,255,255,0.07)',
+              background: '#F6F4FD',
+              border: '1px solid rgba(30,27,46,0.10)',
               borderRadius: 4,
-              color: '#e8e4dc',
+              color: '#1E1B2E',
               fontFamily: 'inherit',
             }}
-            onFocus={e => (e.target.style.borderColor = 'rgba(178,89,196,0.35)')}
-            onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.07)')}
+            onFocus={e => (e.target.style.borderColor = 'rgba(109,74,224,0.35)')}
+            onBlur={e => (e.target.style.borderColor = 'rgba(30,27,46,0.10)')}
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2">
-              <X size={13} style={{ color: '#6b6b78' }} />
+              <X size={13} style={{ color: '#A5A1B8' }} />
             </button>
           )}
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-0.5 p-0.5 rounded-md" style={{ background: '#0b0c0f' }}>
+        <div className="flex gap-0.5 p-0.5 rounded-md" style={{ background: '#F6F4FD' }}>
           {FILTERS.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
               className="flex-1 text-center text-xs font-medium rounded transition-all"
               style={filter === key
-                ? { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1c1e27', color: '#e8e4dc', border: '1px solid rgba(255,255,255,0.07)' }
-                : { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b6b78', border: '1px solid transparent' }
+                ? { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#EEEAFB', color: '#1E1B2E', border: '1px solid rgba(30,27,46,0.10)' }
+                : { minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A5A1B8', border: '1px solid transparent' }
               }
             >
               {label}
@@ -179,14 +179,14 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
           <div className="flex flex-col items-center justify-center py-16 gap-2.5">
             <div
               className="w-11 h-11 rounded-full flex items-center justify-center text-lg mb-1"
-              style={{ background: '#1c1e27', border: '1px solid rgba(255,255,255,0.07)' }}
+              style={{ background: '#EEEAFB', border: '1px solid rgba(30,27,46,0.10)' }}
             >
               💬
             </div>
-            <p style={{ fontFamily: DISP, fontSize: 16, fontWeight: 700, color: '#e8e4dc', letterSpacing: '-0.01em' }}>
+            <p style={{ fontFamily: DISP, fontSize: 16, fontWeight: 700, color: '#1E1B2E', letterSpacing: '-0.01em' }}>
               No questions yet
             </p>
-            <p style={{ fontSize: 12.5, color: '#6b6b78', textAlign: 'center', lineHeight: 1.5 }}>
+            <p style={{ fontSize: 12.5, color: '#A5A1B8', textAlign: 'center', lineHeight: 1.5 }}>
               {filter === 'all' ? 'Be the first to ask something\nabout this lesson.' : `No ${filter} questions`}
             </p>
           </div>
@@ -203,7 +203,7 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
               {replyingTo === q.id && (
                 <div
                   className="mt-2 rounded-xl p-3 animate-fade-in"
-                  style={{ background: '#1c1e27', border: '1px solid rgba(255,255,255,0.08)' }}
+                  style={{ background: '#EEEAFB', border: '1px solid rgba(30,27,46,0.09)' }}
                 >
                   <textarea
                     autoFocus
@@ -213,9 +213,9 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
                     rows={2}
                     className="w-full text-sm px-3 py-2 resize-none outline-none rounded-lg"
                     style={{
-                      background: '#0b0c0f',
-                      border: '1px solid rgba(255,255,255,0.07)',
-                      color: '#e8e4dc',
+                      background: '#F6F4FD',
+                      border: '1px solid rgba(30,27,46,0.10)',
+                      color: '#1E1B2E',
                       fontFamily: 'inherit',
                     }}
                   />
@@ -238,7 +238,7 @@ export default function QASidebar({ videoId, activeQuestionId, onClose }: Props)
       </div>
 
       {/* Footer note */}
-      <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 12, color: '#6b6b78', lineHeight: 1.6 }}>
+      <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(30,27,46,0.08)', fontSize: 12, color: '#A5A1B8', lineHeight: 1.6 }}>
         Questions are pinned to the timestamp where you ask them — great for following along with the content.
       </div>
     </aside>

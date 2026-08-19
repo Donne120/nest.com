@@ -13,7 +13,7 @@ const META = {
 };
 
 const BRAND_COLORS = [
-  { name: 'Midnight',  hex: '#0a0907', role: 'Background — the canvas everything lives on.' },
+  { name: 'Midnight',  hex: '#F6F4FD', role: 'Background — the canvas everything lives on.' },
   { name: 'Gold',      hex: '#c8a96e', role: 'Primary accent — CTAs, highlights, brand elements.' },
   { name: 'Gold Light',hex: '#e8d4a0', role: 'Secondary accent — headings, subtle warmth.' },
   { name: 'Ink',       hex: '#f0ebe2', role: 'Primary text — warm white, not pure white.' },
@@ -50,8 +50,8 @@ const BOILERPLATE = `Nest is an AI-powered education platform that enables educa
 const SHORT_DESCRIPTION = `Nest is an AI-powered learning platform where video courses build a living knowledge base. Learners ask questions at exact timestamps; AI answers using the actual transcript — and every answer is saved for every future learner.`;
 
 // ── Tokens ───────────────────────────────────────────────────────────────────
-const BG    = '#0a0907';
-const CARD  = '#161410';
+const BG    = '#F6F4FD';
+const CARD  = '#FFFFFF';
 const INK   = '#f0ebe2';
 const INK2  = '#8a8070';
 const INK3  = '#4a4238';
@@ -125,7 +125,7 @@ export default function MediaKitPage() {
           <H2>The Nest mark.</H2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1 }}>
             {/* Dark bg */}
-            <div style={{ background: '#0a0907', border: `1px solid ${RULE}`, borderRadius: 8, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+            <div style={{ background: '#F6F4FD', border: `1px solid ${RULE}`, borderRadius: 8, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 40, height: 40, border: `1.5px solid rgba(200,169,110,0.4)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: GOLD, fontFamily: UI }}>N</div>
                 <span style={{ fontFamily: DISP, fontSize: 30, fontWeight: 600, color: GOLD2, letterSpacing: '0.01em' }}>Nest</span>
@@ -135,8 +135,8 @@ export default function MediaKitPage() {
             {/* Light bg */}
             <div style={{ background: '#f0ebe2', border: `1px solid ${RULE}`, borderRadius: 8, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 40, height: 40, border: `1.5px solid rgba(10,9,7,0.2)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#0a0907', fontFamily: UI }}>N</div>
-                <span style={{ fontFamily: DISP, fontSize: 30, fontWeight: 600, color: '#0a0907', letterSpacing: '0.01em' }}>Nest</span>
+                <div style={{ width: 40, height: 40, border: `1.5px solid rgba(10,9,7,0.2)`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#F6F4FD', fontFamily: UI }}>N</div>
+                <span style={{ fontFamily: DISP, fontSize: 30, fontWeight: 600, color: '#F6F4FD', letterSpacing: '0.01em' }}>Nest</span>
               </div>
               <span style={{ fontFamily: MONO, fontSize: 8, color: '#4a4238', letterSpacing: '0.16em', textTransform: 'uppercase' }}>Light background</span>
             </div>
@@ -204,7 +204,7 @@ export default function MediaKitPage() {
               </div>
             ))}
           </div>
-          <div style={{ background: '#161410', border: `1px solid ${RULE}`, borderRadius: 8, padding: '20px 24px' }}>
+          <div style={{ background: '#FFFFFF', border: `1px solid ${RULE}`, borderRadius: 8, padding: '20px 24px' }}>
             <div style={{ fontFamily: MONO, fontSize: 9, color: '#c45c2c', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 12 }}>Please don't</div>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {DONT.map(d => (

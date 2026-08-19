@@ -95,7 +95,7 @@ To the fullest extent permitted by law, Nest shall not be liable for any indirec
 ];
 
 // ── Tokens ───────────────────────────────────────────────────────────────────
-const BG   = '#0a0907';
+const BG   = '#F6F4FD';
 const INK  = '#f0ebe2';
 const INK2 = '#8a8070';
 const INK3 = '#4a4238';
@@ -146,7 +146,7 @@ export default function TermsPage() {
         </div>
 
         {/* Table of contents */}
-        <nav style={{ background: '#161410', border: `1px solid ${RULE}`, borderRadius: 12, padding: '20px 24px', marginBottom: 48 }}>
+        <nav style={{ background: '#FFFFFF', border: `1px solid ${RULE}`, borderRadius: 12, padding: '20px 24px', marginBottom: 48 }}>
           <div style={{ fontFamily: MONO, fontSize: 9, color: GOLD, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 14 }}>Contents</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {SECTIONS.map(s => (

@@ -66,14 +66,14 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
       style={{
         borderRadius: 10,
         border: isActive
-          ? '1px solid rgba(178,89,196,0.45)'
+          ? '1px solid rgba(109,74,224,0.45)'
           : isPending
           ? '1px solid rgba(196,92,60,0.35)'
-          : '1px solid rgba(255,255,255,0.08)',
+          : '1px solid rgba(30,27,46,0.09)',
         borderLeft: isPending && !isActive ? '3px solid #b259c4' : undefined,
         background: isActive
-          ? 'rgba(178,89,196,0.06)'
-          : '#1c1e27',
+          ? 'rgba(109,74,224,0.06)'
+          : '#EEEAFB',
         overflow: 'hidden',
         transition: 'border-color 0.2s',
       }}
@@ -91,9 +91,9 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
               display: 'flex',
               alignItems: 'center',
               gap: 4,
-              background: '#0b0c0f',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: '#b259c4',
+              background: '#F6F4FD',
+              border: '1px solid rgba(30,27,46,0.10)',
+              color: '#6D4AE0',
               fontSize: 11,
               fontFamily: 'monospace',
               fontWeight: 600,
@@ -103,8 +103,8 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
               letterSpacing: '0.06em',
               transition: 'border-color 0.15s',
             }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(178,89,196,0.5)')}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(109,74,224,0.5)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(30,27,46,0.10)')}
           >
             <Clock size={10} />
             {formatTime(question.timestamp_seconds)}
@@ -121,12 +121,12 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
                   onChange={e => setEditText(e.target.value)}
                   style={{
                     width: '100%',
-                    background: '#0b0c0f',
-                    border: '1px solid rgba(178,89,196,0.4)',
+                    background: '#F6F4FD',
+                    border: '1px solid rgba(109,74,224,0.4)',
                     borderRadius: 6,
                     padding: '8px 10px',
                     fontSize: 13,
-                    color: '#e8e4dc',
+                    color: '#1E1B2E',
                     fontFamily: 'inherit',
                     resize: 'none',
                     outline: 'none',
@@ -141,7 +141,7 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 4,
                       padding: '4px 10px', borderRadius: 5, border: 'none',
-                      background: '#b259c4', color: '#ffffff',
+                      background: '#6D4AE0', color: '#ffffff',
                       fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
                     }}
                   >
@@ -152,8 +152,8 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 4,
                       padding: '4px 10px', borderRadius: 5,
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      background: 'transparent', color: '#9ca3af',
+                      border: '1px solid rgba(30,27,46,0.10)',
+                      background: 'transparent', color: '#6E6A85',
                       fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
                     }}
                   >
@@ -164,7 +164,7 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
             ) : (
               <p style={{
                 fontSize: 13.5,
-                color: '#e8e4dc',
+                color: '#1E1B2E',
                 lineHeight: 1.55,
                 fontWeight: 500,
                 margin: 0,
@@ -188,11 +188,11 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
             borderRadius: 100,
             background: isAnswered
               ? 'rgba(74,222,128,0.12)'
-              : 'rgba(178,89,196,0.12)',
-            color: isAnswered ? '#4ade80' : '#b259c4',
+              : 'rgba(109,74,224,0.12)',
+            color: isAnswered ? '#4ade80' : '#6D4AE0',
             border: isAnswered
               ? '1px solid rgba(74,222,128,0.25)'
-              : '1px solid rgba(178,89,196,0.25)',
+              : '1px solid rgba(109,74,224,0.25)',
           }}>
             {isPending ? '● Pending' : '✓ Answered'}
           </span>
@@ -201,13 +201,13 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
         {/* Meta row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
           <Avatar name={question.asked_by_user.full_name} url={question.asked_by_user.avatar_url} size="sm" />
-          <span style={{ fontSize: 11.5, color: '#9ca3af' }}>
+          <span style={{ fontSize: 11.5, color: '#6E6A85' }}>
             {question.asked_by_user.full_name}
             {isMine && (
-              <span style={{ marginLeft: 4, color: '#b259c4', fontWeight: 600 }}>(you)</span>
+              <span style={{ marginLeft: 4, color: '#6D4AE0', fontWeight: 600 }}>(you)</span>
             )}
           </span>
-          <span style={{ fontSize: 11, color: '#6b6b78', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 11, color: '#A5A1B8', marginLeft: 'auto' }}>
             {formatDistanceToNow(new Date(question.created_at), { addSuffix: true })}
           </span>
           {!editingQuestion && (
@@ -218,10 +218,10 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
                   title="Edit question"
                   style={{
                     padding: '3px 5px', background: 'none', border: 'none',
-                    color: '#6b6b78', cursor: 'pointer', borderRadius: 4,
+                    color: '#A5A1B8', cursor: 'pointer', borderRadius: 4,
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#b259c4')}
-                  onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#6D4AE0')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#A5A1B8')}
                 >
                   <Pencil size={11} />
                 </button>
@@ -232,10 +232,10 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
                   title="Delete question"
                   style={{
                     padding: '3px 5px', background: 'none', border: 'none',
-                    color: '#6b6b78', cursor: 'pointer', borderRadius: 4,
+                    color: '#A5A1B8', cursor: 'pointer', borderRadius: 4,
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#b259c4')}
-                  onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#6D4AE0')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#A5A1B8')}
                 >
                   <Trash2 size={11} />
                 </button>
@@ -258,7 +258,7 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
               padding: '8px 16px',
               background: 'rgba(74,222,128,0.05)',
               borderTop: '1px solid rgba(74,222,128,0.12)',
-              borderBottom: expanded ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              borderBottom: expanded ? '1px solid rgba(30,27,46,0.08)' : 'none',
               borderLeft: 'none',
               borderRight: 'none',
               color: '#4ade80',
@@ -291,25 +291,25 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
         alignItems: 'center',
         gap: 8,
         padding: '8px 16px',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
+        borderTop: '1px solid rgba(30,27,46,0.07)',
       }}>
         <button
           onClick={() => onReply?.(question.id)}
           style={{
             display: 'flex', alignItems: 'center', gap: 5,
             background: 'none', border: 'none',
-            color: '#6b6b78', fontSize: 11.5,
+            color: '#A5A1B8', fontSize: 11.5,
             cursor: 'pointer', fontFamily: 'inherit',
             padding: 0,
           }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#b259c4')}
-          onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
+          onMouseEnter={e => (e.currentTarget.style.color = '#6D4AE0')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#A5A1B8')}
         >
           <MessageSquare size={12} />
           Reply
         </button>
         {question.view_count > 0 && (
-          <span style={{ fontSize: 11, color: '#6b6b78', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 11, color: '#A5A1B8', marginLeft: 'auto' }}>
             {question.view_count} views
           </span>
         )}
@@ -354,11 +354,11 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
     <div
       style={{
         padding: '12px 16px',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
-        background: 'rgba(255,255,255,0.015)',
+        borderBottom: '1px solid rgba(30,27,46,0.07)',
+        background: 'rgba(30,27,46,0.03)',
       }}
-      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.025)')}
-      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.015)')}
+      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(30,27,46,0.05)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(30,27,46,0.03)')}
     >
       {/* Answer meta */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
@@ -376,7 +376,7 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
               <Sparkles size={9} /> AI Teacher
             </span>
           ) : (
-            <span style={{ fontSize: 12, fontWeight: 600, color: answer.is_official ? '#b259c4' : '#c4c0ba' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: answer.is_official ? '#6D4AE0' : '#c4c0ba' }}>
               {answer.answered_by_user.full_name}
             </span>
           )}
@@ -384,14 +384,14 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
             <span style={{
               marginLeft: 6, fontSize: 9, fontWeight: 700,
               letterSpacing: '0.08em', padding: '2px 6px',
-              borderRadius: 100, background: 'rgba(178,89,196,0.15)',
-              color: '#b259c4',
+              borderRadius: 100, background: 'rgba(109,74,224,0.15)',
+              color: '#6D4AE0',
             }}>
               OFFICIAL
             </span>
           )}
         </div>
-        <span style={{ fontSize: 10.5, color: '#6b6b78' }}>
+        <span style={{ fontSize: 10.5, color: '#A5A1B8' }}>
           {formatDistanceToNow(new Date(answer.created_at), { addSuffix: true })}
         </span>
         <div style={{ display: 'flex', gap: 2 }}>
@@ -401,10 +401,10 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
               title="Edit answer"
               style={{
                 padding: '3px 4px', background: 'none', border: 'none',
-                color: '#6b6b78', cursor: 'pointer', borderRadius: 4,
+                color: '#A5A1B8', cursor: 'pointer', borderRadius: 4,
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#b259c4')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
+              onMouseEnter={e => (e.currentTarget.style.color = '#6D4AE0')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#A5A1B8')}
             >
               <Pencil size={10} />
             </button>
@@ -415,10 +415,10 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
               title="Delete answer"
               style={{
                 padding: '3px 4px', background: 'none', border: 'none',
-                color: '#6b6b78', cursor: 'pointer', borderRadius: 4,
+                color: '#A5A1B8', cursor: 'pointer', borderRadius: 4,
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#b259c4')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
+              onMouseEnter={e => (e.currentTarget.style.color = '#6D4AE0')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#A5A1B8')}
             >
               <Trash2 size={10} />
             </button>
@@ -436,12 +436,12 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
             onChange={e => setEditText(e.target.value)}
             style={{
               width: '100%',
-              background: '#0b0c0f',
-              border: '1px solid rgba(178,89,196,0.4)',
+              background: '#F6F4FD',
+              border: '1px solid rgba(109,74,224,0.4)',
               borderRadius: 6,
               padding: '8px 10px',
               fontSize: 13,
-              color: '#e8e4dc',
+              color: '#1E1B2E',
               fontFamily: 'inherit',
               resize: 'none',
               outline: 'none',
@@ -456,7 +456,7 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '4px 10px', borderRadius: 5, border: 'none',
-                background: '#b259c4', color: '#ffffff',
+                background: '#6D4AE0', color: '#ffffff',
                 fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -467,8 +467,8 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '4px 10px', borderRadius: 5,
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'transparent', color: '#9ca3af',
+                border: '1px solid rgba(30,27,46,0.10)',
+                background: 'transparent', color: '#6E6A85',
                 fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
