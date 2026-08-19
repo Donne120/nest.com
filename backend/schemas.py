@@ -265,7 +265,8 @@ class UserOut(BaseModel):
 
 class ModuleCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = Field(None, max_length=2000)
+    # Rich-text (HTML) description — the markup inflates the length, so allow room.
+    description: Optional[str] = Field(None, max_length=20000)
     resources: Optional[list] = None
     thumbnail_url: Optional[str] = Field(None, max_length=500)
     order_index: int = 0
@@ -277,7 +278,7 @@ class ModuleCreate(BaseModel):
 
 class ModuleUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = Field(None, max_length=2000)
+    description: Optional[str] = Field(None, max_length=20000)
     resources: Optional[list] = None
     thumbnail_url: Optional[str] = Field(None, max_length=500)
     order_index: Optional[int] = None
@@ -321,7 +322,7 @@ class ModuleWithProgress(ModuleOut):
 class VideoCreate(BaseModel):
     module_id: str
     title: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = Field(None, max_length=2000)
+    description: Optional[str] = Field(None, max_length=20000)
     video_url: str = Field(..., max_length=500)
     thumbnail_url: Optional[str] = Field(None, max_length=500)
     duration_seconds: int = 0
@@ -333,7 +334,7 @@ class VideoCreate(BaseModel):
 
 class VideoUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = Field(None, max_length=2000)
+    description: Optional[str] = Field(None, max_length=20000)
     video_url: Optional[str] = Field(None, max_length=500)
     thumbnail_url: Optional[str] = Field(None, max_length=500)
     duration_seconds: Optional[int] = None
