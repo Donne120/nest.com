@@ -374,6 +374,9 @@ class Video(Base):
     order_index = Column(Integer, default=0)
     captions_url = Column(String, nullable=True)
     is_preview = Column(Boolean, default=False, nullable=False, server_default='false')
+    # Educator-authored study material for THIS video (markdown + LaTeX/tables).
+    # Shown to learners in a drawer on the video page; they can rate it helpful.
+    study_notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     module = relationship("Module", back_populates="videos")
@@ -533,6 +536,20 @@ class VideoNote(Base):
 
     user = relationship("User", foreign_keys=[user_id])
     video = relationship("Video", foreign_keys=[video_id])
+
+
+class StudyNoteRating(Base):
+    """One learner's helpful/not-helpful vote on a video's study material.
+    One row per (user, video); the vote can be flipped."""
+    __tablename__ = "study_note_ratings"
+    __table_args__ = (UniqueConstraint("user_id", "video_id", name="uq_study_rating_user_video"),)
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    video_id = Column(String, ForeignKey("videos.id", ondelete="CASCADE"), nullable=False)
+    helpful = Column(Boolean, nullable=False)   # True = 👍, False = 👎
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 
 # ─── Notifications ────────────────────────────────────────────────────────────

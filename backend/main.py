@@ -184,6 +184,8 @@ END $$""",
             # Daily-learning streak
             "ALTER TABLE users ADD COLUMN streak_count INTEGER DEFAULT 0 NOT NULL",
             "ALTER TABLE users ADD COLUMN streak_last_day DATE",
+            # Per-video educator study material
+            "ALTER TABLE videos ADD COLUMN study_notes TEXT",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:

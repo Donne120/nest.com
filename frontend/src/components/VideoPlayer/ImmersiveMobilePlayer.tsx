@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { X, ChevronUp, ChevronDown, ChevronRight, MoreVertical, HelpCircle, Play, Pause, ListChecks } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, ChevronRight, MoreVertical, HelpCircle, Play, Pause, ListChecks, BookOpen } from 'lucide-react';
 import type { Video } from '../../types';
 import { getYouTubeId, getVimeoId, loadYouTubeAPI } from '../../lib/youtube';
 
@@ -20,7 +20,9 @@ interface Props {
   onAsk: (atTime: number) => void;   // pass the CURRENT playback time so the question is timestamped
   onQuiz?: () => void;
   hasQuiz?: boolean;
-  overlayOpen?: boolean;             // an Ask/Quiz overlay is up → pause; on close → resume
+  onNotes?: () => void;              // open the study-material drawer
+  hasNotes?: boolean;
+  overlayOpen?: boolean;             // an Ask/Quiz/Notes overlay is up → pause; on close → resume
 }
 
 function fmt(s: number) {
@@ -39,7 +41,7 @@ function fmt(s: number) {
  */
 export default function ImmersiveMobilePlayer({
   video, videoUrl, index, total, hasPrev, hasNext,
-  onPrev, onNext, onExit, onAsk, onQuiz, hasQuiz, overlayOpen = false,
+  onPrev, onNext, onExit, onAsk, onQuiz, hasQuiz, onNotes, hasNotes, overlayOpen = false,
 }: Props) {
   // What kind of media backs this lesson: a real file we drive via <video>, or a
   // YouTube / Vimeo embed we drive via its iframe API — all shown full-screen in
@@ -58,6 +60,15 @@ export default function ImmersiveMobilePlayer({
   const [hint, setHint]         = useState(true);      // first-run swipe hint
   const [swipe, setSwipe]       = useState<'up' | 'down' | null>(null);
   const [railOpen, setRailOpen] = useState(true);      // collapsible Ask/Quiz rail
+  // The big centre play/pause icon auto-hides so a PAUSED frame (a diagram or
+  // text a learner paused to read) isn't covered. A tap reveals it briefly.
+  const [showCenter, setShowCenter] = useState(true);
+  const hideTimer = useRef<any>(null);
+  const flashCenter = useCallback(() => {
+    setShowCenter(true);
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setShowCenter(false), 1100);
+  }, []);
 
   const touchStart = useRef<{ y: number; t: number } | null>(null);
   const resumeAfterOverlay = useRef(false);
@@ -149,7 +160,14 @@ export default function ImmersiveMobilePlayer({
     return () => clearTimeout(t);
   }, []);
 
+  // Auto-hide the centre button shortly after mount, and clean the timer.
+  useEffect(() => {
+    flashCenter();
+    return () => clearTimeout(hideTimer.current);
+  }, [flashCenter]);
+
   const togglePlay = useCallback(() => {
+    flashCenter();
     if (kind === 'youtube') {
       const p = ytRef.current; if (!p) return;
       try {
@@ -234,23 +252,31 @@ export default function ImmersiveMobilePlayer({
         </div>
       )}
 
-      {/* Tap-to-play affordance (native + youtube; vimeo uses its own controls) */}
-      {!playing && kind !== 'vimeo' && (
-        <button
-          onClick={togglePlay}
-          aria-label="Play"
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.25)' }}
-        >
-          <span style={{ width: 74, height: 74, borderRadius: '50%', background: 'rgba(0,0,0,0.55)', border: '1.5px solid rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)' }}>
-            <Play size={30} fill="#fff" color="#fff" style={{ marginLeft: 4 }} />
-          </span>
-        </button>
+      {/* Full-screen tap area toggles play/pause (native + youtube). For YouTube
+          the iframe is pointer-events:none, so this is also how taps reach us.
+          It's transparent so a PAUSED frame stays fully visible. */}
+      {kind !== 'vimeo' && (
+        <button onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play'} className="absolute inset-0" style={{ background: 'transparent', zIndex: 1 }} />
       )}
-      {/* For YouTube the iframe has pointer-events:none so taps hit our overlay —
-          this transparent layer captures the tap to toggle play. */}
-      {kind === 'youtube' && (
-        <button onClick={togglePlay} aria-label="Play/pause" className="absolute inset-0" style={{ background: 'transparent', zIndex: 1 }} />
+
+      {/* Centre play/pause icon — auto-hides so it never covers the frame the
+          learner paused to read. Fades in on tap, fades out after ~1s. */}
+      {kind !== 'vimeo' && (
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          aria-hidden
+          style={{
+            zIndex: 2, pointerEvents: 'none',
+            opacity: showCenter ? 1 : 0,
+            transition: 'opacity 0.45s ease',
+          }}
+        >
+          <span style={{ width: 74, height: 74, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: '1.5px solid rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)' }}>
+            {playing
+              ? <Pause size={28} fill="#fff" color="#fff" />
+              : <Play size={30} fill="#fff" color="#fff" style={{ marginLeft: 4 }} />}
+          </span>
+        </div>
       )}
 
       {/* Top bar — exit + position */}
@@ -296,6 +322,7 @@ export default function ImmersiveMobilePlayer({
             accent
             onClick={() => onAsk(readTime())}
           ><HelpCircle size={24} /></RailBtn>
+          {hasNotes && onNotes && <RailBtn label="Notes" onClick={onNotes}><BookOpen size={24} /></RailBtn>}
           {hasQuiz && onQuiz && <RailBtn label="Quiz" onClick={onQuiz}><ListChecks size={24} /></RailBtn>}
           <RailBtn label="Prev" onClick={onPrev} disabled={!hasPrev}><ChevronUp size={24} /></RailBtn>
           <RailBtn label="Next" onClick={onNext} disabled={!hasNext}><ChevronDown size={24} /></RailBtn>

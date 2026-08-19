@@ -325,6 +325,26 @@ html.dark {
   -webkit-overflow-scrolling: touch;
 }
 .nest-rich .katex { color: var(--rt-ink); font-size: 1.05em; }
+
+/* Markdown tables — scroll horizontally on a phone instead of blowing out. */
+.nest-rich .rt-table-wrap {
+  margin: 0.9rem 0; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--rt-rule); border-radius: 10px;
+}
+.nest-rich .rt-table {
+  border-collapse: collapse; width: 100%; font-size: 13.5px;
+}
+.nest-rich .rt-th, .nest-rich .rt-td {
+  padding: 8px 12px; text-align: left; vertical-align: top;
+  border-bottom: 1px solid var(--rt-rule); white-space: nowrap;
+}
+.nest-rich .rt-th {
+  font-weight: 700; color: var(--rt-ink); background: var(--rt-surf);
+  font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;
+}
+.nest-rich .rt-td { color: var(--rt-ink2); }
+.nest-rich .rt-table tr:last-child .rt-td { border-bottom: none; }
+.nest-rich .rt-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--rt-surf) 55%, transparent); }
 .nest-rich .katex-display { margin: 0; overflow-x: auto; overflow-y: hidden; }
 
 /* Press feedback. Phones can't hover, so without this the product gives a

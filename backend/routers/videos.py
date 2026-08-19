@@ -275,3 +275,61 @@ def delete_video(
     v = _org_video(video_id, current_user.organization_id, db)
     db.delete(v)
     db.commit()
+
+
+# ─── Study-note helpfulness rating (learners) ─────────────────────────────────
+
+def _rating_summary(video_id: str, user_id: str, db: Session) -> schemas.StudyRatingOut:
+    helpful = db.query(func.count(models.StudyNoteRating.id)).filter(
+        models.StudyNoteRating.video_id == video_id,
+        models.StudyNoteRating.helpful.is_(True),
+    ).scalar() or 0
+    not_helpful = db.query(func.count(models.StudyNoteRating.id)).filter(
+        models.StudyNoteRating.video_id == video_id,
+        models.StudyNoteRating.helpful.is_(False),
+    ).scalar() or 0
+    mine = db.query(models.StudyNoteRating).filter(
+        models.StudyNoteRating.video_id == video_id,
+        models.StudyNoteRating.user_id == user_id,
+    ).first()
+    return schemas.StudyRatingOut(
+        helpful_count=helpful,
+        not_helpful_count=not_helpful,
+        my_vote=mine.helpful if mine else None,
+    )
+
+
+@router.get("/{video_id}/study-rating", response_model=schemas.StudyRatingOut)
+def get_study_rating(
+    video_id: str,
+    current_user: models.User = Depends(auth_utils.get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Any authenticated user in the org may see the tally.
+    _org_video(video_id, current_user.organization_id, db)
+    return _rating_summary(video_id, current_user.id, db)
+
+
+@router.post("/{video_id}/study-rating", response_model=schemas.StudyRatingOut)
+def set_study_rating(
+    video_id: str,
+    payload: schemas.StudyRatingIn,
+    current_user: models.User = Depends(auth_utils.get_current_user),
+    db: Session = Depends(get_db),
+):
+    _org_video(video_id, current_user.organization_id, db)
+    row = db.query(models.StudyNoteRating).filter(
+        models.StudyNoteRating.video_id == video_id,
+        models.StudyNoteRating.user_id == current_user.id,
+    ).first()
+    if row and row.helpful == payload.helpful:
+        # Tapping the same vote again clears it (toggle off).
+        db.delete(row)
+    elif row:
+        row.helpful = payload.helpful
+    else:
+        db.add(models.StudyNoteRating(
+            user_id=current_user.id, video_id=video_id, helpful=payload.helpful,
+        ))
+    db.commit()
+    return _rating_summary(video_id, current_user.id, db)

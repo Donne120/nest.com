@@ -328,6 +328,7 @@ class VideoCreate(BaseModel):
     order_index: int = 0
     captions_url: Optional[str] = Field(None, max_length=500)
     is_preview: bool = False
+    study_notes: Optional[str] = Field(None, max_length=50000)
 
 
 class VideoUpdate(BaseModel):
@@ -338,6 +339,7 @@ class VideoUpdate(BaseModel):
     duration_seconds: Optional[int] = None
     captions_url: Optional[str] = Field(None, max_length=500)
     is_preview: Optional[bool] = None
+    study_notes: Optional[str] = Field(None, max_length=50000)
 
 
 class VideoOut(BaseModel):
@@ -351,12 +353,25 @@ class VideoOut(BaseModel):
     order_index: int
     captions_url: Optional[str]
     is_preview: bool = False
+    study_notes: Optional[str] = None
     created_at: datetime
     question_count: int = 0
     has_transcript: bool = False
 
     class Config:
         from_attributes = True
+
+
+# ─── Study-note helpfulness rating ────────────────────────────────────────────
+
+class StudyRatingIn(BaseModel):
+    helpful: bool
+
+
+class StudyRatingOut(BaseModel):
+    helpful_count: int = 0
+    not_helpful_count: int = 0
+    my_vote: Optional[bool] = None   # this learner's vote (None = hasn't voted)
 
 
 # ─── Answer ───────────────────────────────────────────────────────────────────

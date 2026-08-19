@@ -14,6 +14,7 @@ import { useQueryInvalidation } from '../hooks/useQueryInvalidation';
 import { Skeleton } from '../components/UI/Skeleton';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import WhiteboardModal from '../components/AI/WhiteboardModal';
+import StudyNotesDrawer from '../components/VideoPlayer/StudyNotesDrawer';
 import AskAIModal from '../components/AI/AskAIModal';
 import ImmersiveMobilePlayer from '../components/VideoPlayer/ImmersiveMobilePlayer';
 import LessonCompleteOverlay from '../components/VideoPlayer/LessonCompleteOverlay';
@@ -51,6 +52,7 @@ export default function VideoPage() {
   const getPlayerDuration = () => usePlayerStore.getState().duration;
   const [showQuiz, setShowQuiz] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
+  const [showStudyNotes, setShowStudyNotes] = useState(false);
   // The immersive full-screen (TikTok-style) view is the ONLY lesson player on
   // mobile for uploaded videos — one way to watch, no duplicate inline player.
   // We keep an `immersive` flag purely so modals (Ask, Quiz) can momentarily
@@ -438,6 +440,27 @@ export default function VideoPage() {
             </button>
           </div>
 
+          {/* Study material — opens the rich notes drawer */}
+          {video.study_notes && (
+            <div style={{ padding: '8px 16px 0' }}>
+              <button
+                onClick={() => setShowStudyNotes(true)}
+                className="press"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  width: '100%', minHeight: 44,
+                  fontSize: 13, fontWeight: 700,
+                  background: 'rgba(199,125,218,0.14)', color: '#C77DDA',
+                  border: '1px solid rgba(199,125,218,0.32)', borderRadius: 10,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                <BookOpen size={15} />
+                Study notes for this lesson
+              </button>
+            </div>
+          )}
+
           {/* Prev / Next lesson row — mobile */}
           {moduleVideos.length > 1 && (
             <div style={{
@@ -702,7 +725,18 @@ export default function VideoPage() {
           onAsk={(atTime) => { setSidebarOpen(true); openQuestionForm(atTime); }}
           onQuiz={quizQuestions.length > 0 ? () => setShowQuiz(true) : undefined}
           hasQuiz={quizQuestions.length > 0}
-          overlayOpen={showQuestionForm || showQuiz || aiAskOpen}
+          onNotes={video.study_notes ? () => setShowStudyNotes(true) : undefined}
+          hasNotes={!!video.study_notes}
+          overlayOpen={showQuestionForm || showQuiz || aiAskOpen || showStudyNotes}
+        />
+      )}
+
+      {/* Study material drawer */}
+      {showStudyNotes && videoId && video?.study_notes && (
+        <StudyNotesDrawer
+          videoId={videoId}
+          notes={video.study_notes}
+          onClose={() => setShowStudyNotes(false)}
         />
       )}
 

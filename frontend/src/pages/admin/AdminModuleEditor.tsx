@@ -30,10 +30,11 @@ interface VideoForm {
   order_index: number;
   captions_url: string;
   is_preview: boolean;
+  study_notes: string;
 }
 
 function blankVideo(order: number): VideoForm {
-  return { title: '', description: '', video_url: '', thumbnail_url: '', duration_seconds: '', order_index: order, captions_url: '', is_preview: false };
+  return { title: '', description: '', video_url: '', thumbnail_url: '', duration_seconds: '', order_index: order, captions_url: '', is_preview: false, study_notes: '' };
 }
 
 // ─── Resource type icons ───────────────────────────────────────────────────────
@@ -168,6 +169,7 @@ export default function AdminModuleEditor() {
         thumbnail_url: v.thumbnail_url || null,
         captions_url: v.captions_url || null,
         description: v.description || null,
+        study_notes: v.study_notes?.trim() || null,
       };
       return v.id ? api.put(`/videos/${v.id}`, payload) : api.post('/videos', payload);
     },
@@ -583,6 +585,7 @@ export default function AdminModuleEditor() {
                           duration_seconds: v.duration_seconds, order_index: v.order_index,
                           captions_url: v.captions_url || '',
                           is_preview: v.is_preview ?? false,
+                          study_notes: (v as any).study_notes || '',
                         });
                         setQuizVideoId(null);
                         setTranscriptVideoId(null);
@@ -998,6 +1001,24 @@ function VideoFormCard({ form, setForm, onSave, onCancel, saving }: VideoFormCar
         <div className="col-span-2">
           <label className="block text-xs font-semibold text-[var(--c-ink2)] mb-1">Description</label>
           <textarea rows={2} value={form.description} onChange={e => f('description', e.target.value)} placeholder="Brief description…" className={`${inputCls} resize-none`} />
+        </div>
+
+        {/* Study material — shown to learners in a drawer on the video page */}
+        <div className="col-span-2">
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-[var(--c-ink2)] mb-1">
+            <FileText size={13} style={{ color: 'var(--c-acc)' }} /> Study material <span className="text-[var(--c-ink3)] font-normal">(optional)</span>
+          </label>
+          <textarea
+            rows={6}
+            value={form.study_notes}
+            onChange={e => f('study_notes', e.target.value)}
+            placeholder={"Notes for this lesson. Learners open these in a drawer while watching.\n\nSupports Markdown, tables and math:\n## What is Matter?\nMatter is anything with mass…\n\n| State | Shape | Volume |\n|-------|-------|--------|\n| Solid | Fixed | Fixed |\n\nDensity: $d = \\frac{m}{V}$"}
+            className={`${inputCls} resize-y font-mono text-[13px]`}
+            style={{ lineHeight: 1.6 }}
+          />
+          <p className="text-[11px] text-[var(--c-ink3)] mt-1">
+            Markdown, tables and LaTeX math (wrap formulas in <code className="px-1 rounded bg-[var(--c-bg2)]">$…$</code>) render beautifully for learners.
+          </p>
         </div>
         <div className="col-span-2">
           <label className="block text-xs font-semibold text-[var(--c-ink2)] mb-1">Captions URL <span className="text-[var(--c-ink3)] font-normal">(optional)</span></label>
