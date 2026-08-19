@@ -2,17 +2,18 @@ import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { Search, MapPin, BookOpen, MessageCircle, Phone, Mail, Globe, X, ArrowLeft, GraduationCap } from 'lucide-react';
 
-// ── Tokens — dark cinematic, matches the landing page ───────────────────────
-const INK    = '#0B0A0F';
-const INK2   = '#141219';
-const RAISE  = '#1C1922';
+// ── Tokens — "Calm Purple" light, matches the landing page ──────────────────
+// Names are historical (INK/GOLD/TEXT); values are the light identity.
+const INK    = '#F6F4FD';   // page canvas — soft lilac-white (was near-black)
+const INK2   = '#FFFFFF';   // raised surface — white cards
+const RAISE  = '#EEEAFB';   // recessed well
 const HAIR   = 'rgba(30,27,46,0.10)';
-const TEXT   = '#F2F0F5';
-const MUTE   = '#A8A3B2';
-const FAINT  = '#6F6A7A';
-const ACC    = '#C77DDA';   // orchid
-const GOLD   = '#EBB95C';
-const LIME   = '#A9DC6A';
+const TEXT   = '#1E1B2E';   // primary text — deep aubergine-slate
+const MUTE   = '#6E6A85';   // secondary text
+const FAINT  = '#A5A1B8';   // muted / captions
+const ACC    = '#6D4AE0';   // brand violet (was orchid)
+const GOLD   = '#6D4AE0';   // CTAs / key numbers — now violet
+const LIME   = '#23B99A';   // success / mint accent
 const DISP   = "'Cormorant Garamond', Georgia, serif";
 const UI     = "'Inter Tight', 'Inter', system-ui, sans-serif";
 const MONO   = "'DM Mono', ui-monospace, monospace";
@@ -91,7 +92,7 @@ export default function ExplorePage() {
         background: 'rgba(246,244,253,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       }}>
         <Link to="/" className="press" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: `linear-gradient(135deg, ${GOLD}, #C98A2E)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: INK, fontFamily: DISP }}>N</div>
+          <div style={{ width: 28, height: 28, borderRadius: 7, background: `linear-gradient(135deg, #8B6FE8, #5A38C7)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: INK, fontFamily: DISP }}>N</div>
           <span style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: TEXT }}>Nest</span>
         </Link>
         <Link to="/login" className="press" style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: INK, background: GOLD, padding: '9px 18px', borderRadius: 8, textDecoration: 'none' }}>
@@ -135,7 +136,7 @@ export default function ExplorePage() {
                 fontSize: 15, fontFamily: 'inherit',
                 background: INK2, border: `1px solid ${HAIR}`, borderRadius: 10, color: TEXT, outline: 'none',
               }}
-              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(199,125,218,0.5)')}
+              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(109,74,224,0.5)')}
               onBlur={e => (e.currentTarget.style.borderColor = HAIR)}
             />
             {query && (
@@ -292,7 +293,7 @@ function CreatorCard({ org }: { org: PublicOrg }) {
               width: '100%', minHeight: 46, marginBottom: 12,
               background: GOLD, color: INK, border: 'none', borderRadius: 11,
               textDecoration: 'none', fontFamily: UI, fontSize: 14.5, fontWeight: 800,
-              boxShadow: '0 8px 22px -10px rgba(235,185,92,0.7)',
+              boxShadow: '0 8px 22px -10px rgba(109,74,224,0.5)',
             }}
           >
             <GraduationCap size={17} /> Enroll now
