@@ -81,7 +81,7 @@ export default function StudyNotesDrawer({ videoId, notes, onClose }: Props) {
             <div style={{ width: 38, height: 4, borderRadius: 2, background: 'rgba(30,27,46,0.14)' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 18px 14px' }}>
-            <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(199,125,218,0.16)', border: '1px solid rgba(199,125,218,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C77DDA' }}>
+            <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(109,74,224,0.16)', border: '1px solid rgba(109,74,224,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6D4AE0' }}>
               <BookOpen size={16} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>

@@ -48,7 +48,7 @@ export default function QuestionForm({ videoId }: Props) {
         style={{ background: '#FFFFFF', border: '1px solid rgba(30,27,46,0.10)', borderRadius: '20px 20px 0 0', boxShadow: '0 -20px 60px -10px rgba(84,52,180,0.20)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(30,27,46,0.09)' }}>
-          <h3 className="font-semibold" style={{ color: '#ECE8F0', fontSize: 16 }}>Ask a Question</h3>
+          <h3 className="font-semibold" style={{ color: '#1E1B2E', fontSize: 16 }}>Ask a Question</h3>
           <button onClick={closeQuestionForm} className="flex items-center justify-center rounded-lg transition-colors" style={{ minWidth: 40, minHeight: 40, color: '#756D80' }}>
             <X size={20} />
           </button>
@@ -56,9 +56,9 @@ export default function QuestionForm({ videoId }: Props) {
 
         <div className="px-5 py-5 space-y-4">
           {/* Timestamp */}
-          <div className="flex items-center gap-2 rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(30,27,46,0.09)' }}>
+          <div className="flex items-center gap-2 rounded-lg px-3 py-2.5" style={{ background: '#F6F4FD', border: '1px solid rgba(30,27,46,0.09)' }}>
             <Clock size={15} style={{ color: '#756D80' }} />
-            <span className="text-sm" style={{ color: '#A79FB0' }}>Linked to</span>
+            <span className="text-sm" style={{ color: '#6E6A85' }}>Linked to</span>
             <span className="font-mono font-semibold ml-auto text-sm" style={{ color: '#6D4AE0' }}>
               {formatTime(timestamp)}
             </span>
@@ -66,7 +66,7 @@ export default function QuestionForm({ videoId }: Props) {
 
           {/* Question text */}
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#ECE8F0' }}>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: '#1E1B2E' }}>
               What's your question?
             </label>
             <textarea
@@ -76,7 +76,7 @@ export default function QuestionForm({ videoId }: Props) {
               rows={4}
               autoFocus
               className="w-full rounded-xl px-4 py-3 resize-none focus:outline-none transition-all"
-              style={{ fontSize: 15, color: '#ECE8F0', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(30,27,46,0.10)' }}
+              style={{ fontSize: 15, color: '#1E1B2E', background: '#F6F4FD', border: '1px solid rgba(30,27,46,0.10)' }}
               onFocus={e => (e.currentTarget.style.borderColor = 'rgba(109,74,224,0.5)')}
               onBlur={e => (e.currentTarget.style.borderColor = 'rgba(30,27,46,0.10)')}
             />
@@ -91,8 +91,8 @@ export default function QuestionForm({ videoId }: Props) {
               <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4" />
             </div>
             <div>
-              <p className="text-sm font-medium" style={{ color: '#ECE8F0' }}>Visible to others</p>
-              <p className="text-xs" style={{ color: '#A79FB0' }}>
+              <p className="text-sm font-medium" style={{ color: '#1E1B2E' }}>Visible to others</p>
+              <p className="text-xs" style={{ color: '#6E6A85' }}>
                 {isPublic ? 'Other learners can see this Q&A' : 'Only you and your instructor can see this'}
               </p>
             </div>
@@ -100,7 +100,7 @@ export default function QuestionForm({ videoId }: Props) {
         </div>
 
         <div className="px-5 pb-5 flex gap-3">
-          <button onClick={closeQuestionForm} className="flex-1 rounded-xl transition-colors" style={{ minHeight: 48, color: '#A79FB0', background: 'transparent', border: '1px solid rgba(30,27,46,0.12)', fontWeight: 500, fontSize: 14 }}>
+          <button onClick={closeQuestionForm} className="flex-1 rounded-xl transition-colors" style={{ minHeight: 48, color: '#6E6A85', background: 'transparent', border: '1px solid rgba(30,27,46,0.12)', fontWeight: 500, fontSize: 14 }}>
             Cancel
           </button>
           <button

@@ -189,7 +189,7 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
             background: isAnswered
               ? 'rgba(74,222,128,0.12)'
               : 'rgba(109,74,224,0.12)',
-            color: isAnswered ? '#4ade80' : '#6D4AE0',
+            color: isAnswered ? '#1F9E85' : '#6D4AE0',
             border: isAnswered
               ? '1px solid rgba(74,222,128,0.25)'
               : '1px solid rgba(109,74,224,0.25)',
@@ -261,7 +261,7 @@ export default function QuestionCard({ question, isActive, onReply }: Props) {
               borderBottom: expanded ? '1px solid rgba(30,27,46,0.08)' : 'none',
               borderLeft: 'none',
               borderRight: 'none',
-              color: '#4ade80',
+              color: '#1F9E85',
               fontSize: 12,
               fontWeight: 600,
               cursor: 'pointer',
@@ -370,13 +370,13 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
               fontSize: 10, background: 'rgba(99,102,241,0.15)',
-              color: '#818cf8', padding: '2px 7px', borderRadius: 100,
+              color: '#6D4AE0', padding: '2px 7px', borderRadius: 100,
               fontWeight: 700, letterSpacing: '0.06em',
             }}>
               <Sparkles size={9} /> AI Teacher
             </span>
           ) : (
-            <span style={{ fontSize: 12, fontWeight: 600, color: answer.is_official ? '#6D4AE0' : '#c4c0ba' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: answer.is_official ? '#6D4AE0' : '#1E1B2E' }}>
               {answer.answered_by_user.full_name}
             </span>
           )}
@@ -479,7 +479,7 @@ function AnswerRow({ answer, questionId }: { answer: Answer; questionId: string 
       ) : (
         <p style={{
           fontSize: 13,
-          color: '#c4c0ba',
+          color: '#1E1B2E',
           lineHeight: 1.65,
           margin: 0,
           paddingLeft: 28,

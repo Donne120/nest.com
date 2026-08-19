@@ -299,7 +299,7 @@ export default function VideoPage() {
               full-screen immersive (TikTok) player, so there is never a second
               way to watch on mobile. */}
           {isMobile && !canGoImmersive && (
-            <div style={{ background: '#000', lineHeight: 0, position: 'relative' }}>
+            <div style={{ background: '#F6F4FD', lineHeight: 0, position: 'relative' }}>
               <VideoPlayer
                 videoUrl={video.video_url}
                 markers={markers}
@@ -450,8 +450,8 @@ export default function VideoPage() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                   width: '100%', minHeight: 44,
                   fontSize: 13, fontWeight: 700,
-                  background: 'rgba(199,125,218,0.14)', color: '#C77DDA',
-                  border: '1px solid rgba(199,125,218,0.32)', borderRadius: 10,
+                  background: 'rgba(109,74,224,0.14)', color: '#6D4AE0',
+                  border: '1px solid rgba(109,74,224,0.32)', borderRadius: 10,
                   cursor: 'pointer', fontFamily: 'inherit',
                 }}
               >
@@ -600,7 +600,7 @@ export default function VideoPage() {
             {video.study_notes && (
               <button
                 onClick={() => setShowStudyNotes(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(199,125,218,0.14)', color: '#C77DDA', border: '1px solid rgba(199,125,218,0.35)', fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(109,74,224,0.14)', color: '#6D4AE0', border: '1px solid rgba(109,74,224,0.35)', fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
               >
                 <BookOpen size={12} /> Study notes
               </button>

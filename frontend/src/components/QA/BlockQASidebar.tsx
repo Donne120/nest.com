@@ -319,7 +319,7 @@ export default function BlockQASidebar({
                     <span>{q.asked_by_user.full_name}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {q.answers.length > 0 && (
-                        <span style={{ color: '#4ade80' }}>
+                        <span style={{ color: '#1F9E85' }}>
                           {q.answers.length} answer{q.answers.length !== 1 ? 's' : ''}
                         </span>
                       )}
@@ -334,7 +334,7 @@ export default function BlockQASidebar({
                               ? 'rgba(74,222,128,0.1)'
                               : 'rgba(196,92,60,0.12)',
                           color:
-                            q.status === 'answered' ? '#4ade80' : '#6D4AE0',
+                            q.status === 'answered' ? '#1F9E85' : '#6D4AE0',
                         }}
                       >
                         {q.status}
@@ -388,7 +388,7 @@ export default function BlockQASidebar({
                               {formatDistanceToNow(parseISO(a.created_at), { addSuffix: true })}
                             </span>
                           </div>
-                          <p style={{ fontSize: 13, color: '#d4cfc9', lineHeight: 1.5 }}>
+                          <p style={{ fontSize: 13, color: '#1E1B2E', lineHeight: 1.5 }}>
                             {a.answer_text}
                           </p>
                         </div>
