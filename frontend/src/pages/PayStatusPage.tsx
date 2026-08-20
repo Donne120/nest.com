@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import api from '../api/client';
 
 import { BG, SURF, RULE, INK, INK2, INK3, ACC, GO } from '../lib/colors';
@@ -44,7 +46,25 @@ export default function PayStatusPage() {
   const { data: submissions = [], isLoading } = useQuery<Submission[]>({
     queryKey: ['my-payments'],
     queryFn: () => api.get('/payments/mine').then(r => r.data),
+    // Live signal: while a payment is under review, quietly re-check every 15s
+    // so the learner sees the owner's approval without refreshing. Stops polling
+    // once nothing is pending anymore.
+    refetchInterval: (query) => {
+      const data = query.state.data as Submission[] | undefined;
+      return data?.some(s => s.status === 'pending') ? 15_000 : false;
+    },
+    refetchIntervalInBackground: true,
   });
+
+  // Detect a pending → approved transition and celebrate it in-page.
+  const prevApproved = useRef<number | null>(null);
+  useEffect(() => {
+    const approvedCount = submissions.filter(s => s.status === 'approved').length;
+    if (prevApproved.current !== null && approvedCount > prevApproved.current) {
+      toast.success('Payment approved — your access is now active!', { duration: 6000, icon: '🎉' });
+    }
+    prevApproved.current = approvedCount;
+  }, [submissions]);
 
   return (
     <div style={{ minHeight: '100vh', background: BG, fontFamily: "'Syne', 'Inter', sans-serif" }}>
@@ -101,23 +121,25 @@ export default function PayStatusPage() {
         </div>
 
         {submissions.some(s => s.status === 'approved') && (
-          <div style={{
+          <div className="pay-approved-banner" style={{
             marginBottom: 28,
             background: 'rgba(42,122,75,0.07)',
             border: '1px solid rgba(42,122,75,0.2)',
             borderRadius: 6, padding: '20px 24px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 16, flexWrap: 'wrap',
           }}>
-            <div>
+            <div style={{ minWidth: 0, flex: '1 1 220px' }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: GO, marginBottom: 4 }}>
                 ✓ Payment approved — your access is active
               </div>
               <div style={{ fontSize: 13, color: INK2 }}>
-                You can now access all your course content.
+                You can now access your course content.
               </div>
             </div>
             <button
               onClick={() => navigate('/modules')}
+              className="pay-continue-btn"
               style={{
                 background: GO, color: '#fff',
                 border: 'none', borderRadius: 4,
@@ -279,6 +301,14 @@ export default function PayStatusPage() {
           </div>
         )}
       </div>
+
+      <style>{`
+        /* When the approved banner wraps on a narrow screen, let the Continue
+           button take the full width instead of squashing/overflowing. */
+        @media (max-width: 520px) {
+          .pay-continue-btn { width: 100%; }
+        }
+      `}</style>
     </div>
   );
 }

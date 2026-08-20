@@ -454,6 +454,23 @@ def approve_payment(
             )
             db.add(access)
 
+    # In-app notification so the learner sees it live (the payment page polls,
+    # and the bell updates) without needing a refresh.
+    if sub.payer:
+        module_title = sub.module.title if sub.module else None
+        from models import Notification
+        db.add(Notification(
+            user_id=sub.payer_id,
+            type="payment_approved",
+            title="Payment approved 🎉",
+            message=(
+                f"Your payment for “{module_title}” was approved — access is now active."
+                if module_title else
+                "Your payment was approved — your access is now active."
+            ),
+            reference_id=sub.module_id,
+        ))
+
     db.commit()
 
     # Notify the payer

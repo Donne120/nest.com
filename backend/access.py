@@ -97,18 +97,21 @@ def grant_invite_access(
     granted_by: str | None,
     db: Session,
     expires: bool = True,
+    access_days: int | None = None,
 ) -> None:
     """The ONE place invite-based access is materialised, so it can't be
     bypassed. If all_modules, flip the org-wide pass. Otherwise create a
-    scoped, time-boxed ModuleAccess row per module. `expires` gives guests the
-    30-day clock; pass False for unlimited grants."""
+    scoped, time-boxed ModuleAccess row per module. `expires` gives guests a
+    clock (custom access_days, else the 30-day default); pass expires=False for
+    unlimited grants."""
     if all_modules:
         user.payment_verified = True
         return
     if not module_ids:
         return
+    days = access_days if (access_days and access_days > 0) else GUEST_ACCESS_DAYS
     expires_at = (
-        datetime.now(timezone.utc) + timedelta(days=GUEST_ACCESS_DAYS)
+        datetime.now(timezone.utc) + timedelta(days=days)
         if expires else None
     )
     existing = {

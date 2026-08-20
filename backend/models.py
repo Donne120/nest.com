@@ -235,6 +235,8 @@ class Invitation(Base):
     # Access scope: if True the invitee gets an org-wide pass; otherwise access
     # is limited to the modules listed in InviteModule (invite_kind='invitation').
     all_modules = Column(Boolean, default=False, nullable=False, server_default='false')
+    # How long the granted access lasts, in days (set by the inviter; default 30).
+    access_days = Column(Integer, nullable=True)
 
     organization = relationship("Organization", back_populates="invitations")
     inviter = relationship("User", foreign_keys=[invited_by])
@@ -261,6 +263,8 @@ class InviteLink(Base):
     # Access scope for free_access links: if True → org-wide pass; otherwise the
     # joiner is granted only the modules listed in InviteModule (invite_kind='link').
     all_modules   = Column(Boolean, default=False, nullable=False, server_default='false')
+    # How long a free-access joiner's access lasts, in days (default 30 if null).
+    access_days   = Column(Integer, nullable=True)
 
     # Limits
     max_uses      = Column(Integer, nullable=True)          # None = unlimited

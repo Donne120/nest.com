@@ -241,7 +241,7 @@ def invite_info(token: str, db: Session = Depends(get_db)):
         expires_at=invite.expires_at,
         all_modules=invite.all_modules,
         module_titles=_module_titles(mids, db),
-        access_days=access_utils.GUEST_ACCESS_DAYS if is_guest else None,
+        access_days=(invite.access_days or access_utils.GUEST_ACCESS_DAYS) if is_guest else None,
     )
 
 
@@ -272,6 +272,7 @@ def accept_invite(request: Request, response: Response, background_tasks: Backgr
             module_ids=_invite_module_ids(invite.id, "invitation", db),
             granted_by=invite.invited_by,
             db=db,
+            access_days=invite.access_days,
         )
         invite.is_accepted = True
         db.commit()
@@ -295,6 +296,7 @@ def accept_invite(request: Request, response: Response, background_tasks: Backgr
         module_ids=_invite_module_ids(invite.id, "invitation", db),
         granted_by=invite.invited_by,
         db=db,
+        access_days=invite.access_days,
     )
     _queue_verification_email(user, db, background_tasks)
     db.commit()
@@ -387,7 +389,7 @@ def join_link_info(token: str, db: Session = Depends(get_db)):
         expires_at=link.expires_at,
         all_modules=link.all_modules,
         module_titles=_module_titles(mids, db),
-        access_days=access_utils.GUEST_ACCESS_DAYS if is_guest else None,
+        access_days=(link.access_days or access_utils.GUEST_ACCESS_DAYS) if is_guest else None,
     )
 
 
@@ -455,6 +457,7 @@ def join_via_link(
             module_ids=_invite_module_ids(link.id, "link", db),
             granted_by=link.created_by,
             db=db,
+            access_days=link.access_days,
         )
     _queue_verification_email(user, db, background_tasks)
     db.commit()

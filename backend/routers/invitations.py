@@ -135,13 +135,18 @@ def create_invitation(
             detail="Pick at least one module to grant, or choose all modules.",
         )
 
+    # Accept window: at least 7 days, but never shorter than the access length
+    # the owner chose (so a 90-day access invite doesn't expire in 7).
+    access_days = payload.access_days if (payload.access_days and payload.access_days > 0) else None
+    accept_days = max(7, access_days) if access_days else 7
     invite = models.Invitation(
         organization_id=current_user.organization_id,
         email=payload.email,
         role=payload.role,
         invited_by=current_user.id,
-        expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=accept_days),
         all_modules=all_modules,
+        access_days=access_days,
     )
     db.add(invite)
     db.flush()  # need invite.id for the module rows
@@ -276,6 +281,7 @@ def create_invite_link(
         max_uses=payload.max_uses,
         expires_at=expires_at,
         all_modules=all_modules,
+        access_days=(payload.access_days if (payload.access_days and payload.access_days > 0) else None),
     )
     db.add(link)
     db.flush()

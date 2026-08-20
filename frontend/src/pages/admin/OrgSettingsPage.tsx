@@ -793,6 +793,16 @@ function InviteLinksSection() {
   const [expiresDays, setExpiresDays] = useState('');
   const [creating, setCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  // Free-access scope + access length (only relevant when free_access is on).
+  const [linkScope, setLinkScope] = useState<'all' | 'specific'>('all');
+  const [linkModules, setLinkModules] = useState<string[]>([]);
+  const [linkAccessDays, setLinkAccessDays] = useState<number>(30);
+
+  const { data: modules = [] } = useQuery<{ id: string; title: string }[]>({
+    queryKey: ['modules-for-invite-link'],
+    queryFn: () => api.get('/modules').then(r => r.data),
+    staleTime: 60_000,
+  });
 
   const { data: rawLinks = [], isLoading } = useQuery<InviteLink[]>({
     queryKey: ['invite-links'],
@@ -820,6 +830,12 @@ function InviteLinksSection() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Free-access + specific modules needs at least one module chosen.
+    const linkAll = role !== 'learner' || linkScope === 'all';
+    if (freeAccess && role === 'learner' && !linkAll && linkModules.length === 0) {
+      toast.error('Pick at least one module for this free-access link, or choose all modules.');
+      return;
+    }
     setCreating(true);
     try {
       await api.post('/invitations/links', {
@@ -829,12 +845,16 @@ function InviteLinksSection() {
         access_code: accessCode.trim() || null,
         max_uses: maxUses ? parseInt(maxUses) : null,
         expires_days: expiresDays ? parseInt(expiresDays) : null,
+        all_modules: freeAccess ? linkAll : undefined,
+        module_ids: freeAccess && !linkAll ? linkModules : undefined,
+        access_days: freeAccess && role === 'learner' ? linkAccessDays : undefined,
       });
       qc.invalidateQueries({ queryKey: ['invite-links'] });
       toast.success('Invite link created');
       setShowForm(false);
       setLabel(''); setRole('learner'); setFreeAccess(false);
       setAccessCode(''); setMaxUses(''); setExpiresDays('');
+      setLinkScope('all'); setLinkModules([]); setLinkAccessDays(30);
     } catch (err: any) {
       toast.error(err?.response?.data?.detail || 'Failed to create link');
     } finally {
@@ -937,6 +957,44 @@ function InviteLinksSection() {
               {freeAccess ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
             </button>
           </div>
+
+          {/* Free-access scope + access length — only relevant when free access is on */}
+          {freeAccess && role === 'learner' && (
+            <div className="rounded-xl border border-[var(--c-rule)] bg-[var(--c-surf)] p-3.5">
+              <p className="text-[11px] font-semibold text-[var(--c-ink3)] uppercase tracking-wider mb-2.5">Course access (free joiners)</p>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2.5 cursor-pointer text-[13px] text-[var(--c-ink)]">
+                  <input type="radio" name="linkscope" checked={linkScope === 'all'} onChange={() => setLinkScope('all')} className="accent-brand-600" />
+                  All modules
+                </label>
+                <label className="flex items-center gap-2.5 cursor-pointer text-[13px] text-[var(--c-ink)]">
+                  <input type="radio" name="linkscope" checked={linkScope === 'specific'} onChange={() => setLinkScope('specific')} className="accent-brand-600" />
+                  Specific modules
+                </label>
+              </div>
+              {linkScope === 'specific' && (
+                <div className="mt-3 max-h-40 overflow-y-auto rounded-lg border border-[var(--c-rule)] divide-y divide-[var(--c-rule)]">
+                  {modules.length === 0 ? (
+                    <p className="text-xs text-[var(--c-ink3)] p-3">No modules yet.</p>
+                  ) : modules.map(m => (
+                    <label key={m.id} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer text-[13px] text-[var(--c-ink)] hover:bg-[var(--c-bg2)]">
+                      <input type="checkbox" checked={linkModules.includes(m.id)}
+                        onChange={() => setLinkModules(prev => prev.includes(m.id) ? prev.filter(x => x !== m.id) : [...prev, m.id])}
+                        className="accent-brand-600" />
+                      <span className="truncate">{m.title}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              <div className="mt-3 flex items-center gap-2.5">
+                <label className="text-[13px] text-[var(--c-ink)]">Access lasts</label>
+                <input type="number" min={1} max={3650} value={linkAccessDays}
+                  onChange={e => setLinkAccessDays(Math.max(1, Math.min(3650, Number(e.target.value) || 1)))}
+                  className="w-20 rounded-lg px-2.5 py-1.5 text-[13px] bg-[var(--c-surf)] border border-[var(--c-rule)] text-[var(--c-ink)] focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                <span className="text-[13px] text-[var(--c-ink2)]">days</span>
+              </div>
+            </div>
+          )}
 
           {/* Access code */}
           <div>
@@ -1041,6 +1099,7 @@ function InvitationsTab() {
   // Access scope for learner invites: 'all' or a specific module checklist.
   const [scope, setScope] = useState<'all' | 'specific'>('all');
   const [pickedModules, setPickedModules] = useState<string[]>([]);
+  const [accessDays, setAccessDays] = useState<number>(30);
 
   const { data: invitations = [], isLoading } = useQuery<Invitation[]>({
     queryKey: ['org-invitations'],
@@ -1086,6 +1145,7 @@ function InvitationsTab() {
         role,
         all_modules: allModules,
         module_ids: allModules ? undefined : pickedModules,
+        access_days: isLearner ? accessDays : undefined,
       });
       qc.invalidateQueries({ queryKey: ['org-invitations'] });
       if (data.invite_url) {
@@ -1195,7 +1255,17 @@ function InvitationsTab() {
                   ))}
                 </div>
               )}
-              <p className="text-[11px] text-[var(--c-ink3)] mt-2.5">Invited learners get access for 30 days, then are prompted to subscribe or contact you.</p>
+              {/* Access length */}
+              <div className="mt-3 flex items-center gap-2.5">
+                <label className="text-[13px] text-[var(--c-ink)]">Access lasts</label>
+                <input
+                  type="number" min={1} max={3650} value={accessDays}
+                  onChange={e => setAccessDays(Math.max(1, Math.min(3650, Number(e.target.value) || 1)))}
+                  className="w-20 rounded-lg px-2.5 py-1.5 text-[13px] bg-[var(--c-surf)] border border-[var(--c-rule)] text-[var(--c-ink)] focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+                <span className="text-[13px] text-[var(--c-ink2)]">days</span>
+              </div>
+              <p className="text-[11px] text-[var(--c-ink3)] mt-2">After {accessDays} day{accessDays !== 1 ? 's' : ''}, the learner is prompted to subscribe or contact you (they're warned ~7 days before).</p>
             </div>
           )}
 

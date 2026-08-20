@@ -198,6 +198,9 @@ class InvitationCreate(BaseModel):
     # granted only module_ids (validated server-side to belong to the org).
     all_modules: bool = False
     module_ids: Optional[List[str]] = None
+    # How long the learner's access lasts, in days (default 30). Also extends the
+    # invite-accept window to match. None/0 keeps the default.
+    access_days: Optional[int] = Field(None, ge=1, le=3650)
 
 
 class InvitationOut(BaseModel):
@@ -998,10 +1001,12 @@ class InviteLinkCreate(BaseModel):
     free_access: bool = False
     access_code: Optional[str] = Field(None, min_length=4, max_length=32)
     max_uses: Optional[int] = Field(None, ge=1)
-    expires_days: Optional[int] = Field(None, ge=1, le=365)   # days from now; None = never
+    expires_days: Optional[int] = Field(None, ge=1, le=365)   # link validity; None = never
     # Access scope for free_access links (see InvitationCreate).
     all_modules: bool = False
     module_ids: Optional[List[str]] = None
+    # How long a free-access joiner's access lasts (days); None = 30-day default.
+    access_days: Optional[int] = Field(None, ge=1, le=3650)
 
 
 class InviteLinkOut(BaseModel):

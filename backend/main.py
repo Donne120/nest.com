@@ -194,6 +194,9 @@ END $$""",
             # Guest access expiry (per-learner 1-month clock) + one-shot warn guard
             "ALTER TABLE module_access ADD COLUMN expires_at TIMESTAMP WITH TIME ZONE",
             "ALTER TABLE module_access ADD COLUMN expiry_notified_at TIMESTAMP WITH TIME ZONE",
+            # Custom per-invite access length (days)
+            "ALTER TABLE invitations ADD COLUMN access_days INTEGER",
+            "ALTER TABLE invite_links ADD COLUMN access_days INTEGER",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:
