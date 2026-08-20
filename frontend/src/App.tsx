@@ -45,6 +45,7 @@ const AdminAssignmentEditor = lazy(() => import('./pages/admin/AdminAssignmentEd
 const AdminAssignmentDetail = lazy(() => import('./pages/admin/AdminAssignmentDetail'));
 const AdminSubmissionReview = lazy(() => import('./pages/admin/AdminSubmissionReview'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
+const CareersPage = lazy(() => import('./pages/CareersPage'));
 const PaySubmitPage = lazy(() => import('./pages/PaySubmitPage'));
 const PayStatusPage = lazy(() => import('./pages/PayStatusPage'));
 const AdminPaymentsPage = lazy(() => import('./pages/admin/AdminPaymentsPage'));
@@ -126,6 +127,7 @@ export default function App() {
           <Route path="/join/:token" element={<JoinPage />} />
           <Route path="/certificate/:certId" element={<CertificatePage />} />
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/careers" element={<CareersPage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/pitch" element={<PitchDeck />} />
           <Route path="/one-pager" element={<OnePagerPage />} />

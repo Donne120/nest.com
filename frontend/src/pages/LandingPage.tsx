@@ -622,7 +622,7 @@ function Close() {
             <span style={{ fontFamily: DISP, fontSize: 20, fontWeight: 600, color: TEXT }}>Nest</span>
           </div>
           <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
-            {[['#how','How it works'],['/pricing','Pricing'],['/login','Sign in'],['/signup','Get started']].map(([h, l]) => (
+            {[['#how','How it works'],['/explore','Find courses'],['/pricing','Pricing'],['/careers','Careers'],['/login','Sign in']].map(([h, l]) => (
               h.startsWith('#')
                 ? <a key={l} href={h} style={{ fontFamily: UI, fontSize: 13, color: MUTE, textDecoration: 'none' }}>{l}</a>
                 : <Link key={l} to={h} style={{ fontFamily: UI, fontSize: 13, color: MUTE, textDecoration: 'none' }}>{l}</Link>
