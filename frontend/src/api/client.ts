@@ -14,11 +14,18 @@ const AUTH_PATHS = ['/auth/login', '/auth/logout', '/auth/register'];
 
 let loggingOut = false;
 
-// Request interceptor: add Authorization header from in-memory token as fallback
+// Request interceptor: always attach the bearer token. In production the
+// frontend (Vercel) and backend (Render) are on different domains, so the
+// httpOnly cookie can be dropped — by Safari/iTP, by strict privacy settings,
+// or by request-mangling browser extensions. The Authorization header is the
+// reliable fallback, so we source the token from the store AND, if that's
+// empty (e.g. store not yet rehydrated after a reload), directly from
+// localStorage. Without this a valid owner can get a 403 on writes.
 api.interceptors.request.use((config) => {
-  // If no Authorization header yet, try to get token from store (fallback for cross-origin cookies)
   if (!config.headers.Authorization) {
-    const { token } = useAuthStore.getState();
+    const token =
+      useAuthStore.getState().token ||
+      (typeof localStorage !== 'undefined' ? localStorage.getItem('nest_token') : null);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

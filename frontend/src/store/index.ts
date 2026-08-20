@@ -55,6 +55,16 @@ export const useAuthStore = create<AuthState>()(
       name: 'nest_auth',
       // Only persist non-sensitive user profile — token persisted separately to localStorage
       partialize: (s) => ({ user: s.user, organization: s.organization }),
+      // After the persisted {user, organization} is rehydrated, restore the
+      // token from its own localStorage key so the Authorization-header
+      // fallback works immediately (persist doesn't rehydrate the token,
+      // which otherwise left authenticated writes failing with 403).
+      onRehydrateStorage: () => (state) => {
+        if (state && !state.token && typeof localStorage !== 'undefined') {
+          const t = localStorage.getItem('nest_token');
+          if (t) state.token = t;
+        }
+      },
     }
   )
 );
