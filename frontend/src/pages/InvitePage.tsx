@@ -33,10 +33,36 @@ export default function InvitePage() {
 
   useEffect(() => {
     if (!token) return;
-    api.get<InviteInfo>(`/auth/invite-info/${token}`)
-      .then(({ data }) => setInfo(data))
-      .catch((err) => setError(err?.response?.data?.detail || 'Invalid or expired invite link'))
-      .finally(() => setLoadingInfo(false));
+    let cancelled = false;
+
+    // Fetch with automatic retry. The server (Render free tier) can be asleep
+    // and take 30–60s to wake; a timeout/network error is NOT an invalid link,
+    // so we retry a few times before ever showing an error.
+    const load = async (attempt = 0) => {
+      try {
+        const { data } = await api.get<InviteInfo>(`/auth/invite-info/${token}`, { timeout: 60000 });
+        if (!cancelled) { setInfo(data); setLoadingInfo(false); }
+      } catch (err: any) {
+        if (cancelled) return;
+        const status = err?.response?.status;
+        const detail = err?.response?.data?.detail;
+        // A real HTTP response (link genuinely invalid/expired/used) → show it.
+        if (status && status >= 400 && status < 500) {
+          setError(detail || 'This invite link is invalid, expired, or already used.');
+          setLoadingInfo(false);
+          return;
+        }
+        // No response = network error or server waking up → retry (up to 4x).
+        if (attempt < 4) {
+          setTimeout(() => load(attempt + 1), 3000);
+        } else {
+          setError('We couldn’t reach the server. It may be waking up — please refresh in a moment.');
+          setLoadingInfo(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, [token]);
 
   const handleSubmit = async (e: FormEvent) => {

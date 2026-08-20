@@ -36,10 +36,33 @@ export default function JoinPage() {
 
   useEffect(() => {
     if (!token) return;
-    api.get<JoinLinkInfo>(`/auth/join-info/${token}`)
-      .then(({ data }) => setInfo(data))
-      .catch((err) => setError(err?.response?.data?.detail || 'Invalid or expired invite link'))
-      .finally(() => setLoadingInfo(false));
+    let cancelled = false;
+
+    // Retry on network/timeout errors (Render free tier can be waking up).
+    // Only a real 4xx response means the link is genuinely invalid/expired.
+    const load = async (attempt = 0) => {
+      try {
+        const { data } = await api.get<JoinLinkInfo>(`/auth/join-info/${token}`, { timeout: 60000 });
+        if (!cancelled) { setInfo(data); setLoadingInfo(false); }
+      } catch (err: any) {
+        if (cancelled) return;
+        const status = err?.response?.status;
+        const detail = err?.response?.data?.detail;
+        if (status && status >= 400 && status < 500) {
+          setError(detail || 'This invite link is invalid, expired, or has reached its limit.');
+          setLoadingInfo(false);
+          return;
+        }
+        if (attempt < 4) {
+          setTimeout(() => load(attempt + 1), 3000);
+        } else {
+          setError('We couldn’t reach the server. It may be waking up — please refresh in a moment.');
+          setLoadingInfo(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, [token]);
 
   const handleSubmit = async (e: FormEvent) => {
