@@ -6,21 +6,21 @@ import { useAuthStore } from '../store';
 import type { Token } from '../types';
 import toast from 'react-hot-toast';
 
-// ── Tokens — white form + purple brand panel ────────────────────────────────
+// ── Tokens — white form + violet brand panel ("Calm Purple") ───────────────
 const BG    = '#ffffff';
-const INK   = '#1f1f24';
-const INK2  = '#5c5764';
-const INK3  = '#9b96a3';
-const RULE  = 'rgba(31,31,36,0.10)';
-const GOLD  = '#8e2d9e';   // purple — primary accent
-const GOLD2 = '#7b2d8e';   // deep purple
-const GO    = '#7cb342';   // lime green — secondary
-// Left brand panel (purple splash)
-const PANEL   = '#1a1320';
-const PANEL_INK  = '#f3eef6';
-const PANEL_INK2 = '#bcaecb';
-const PANEL_INK3 = '#7d6f8c';
-const PANEL_ACC  = '#ce92dc';
+const INK   = '#1E1B2E';   // deep aubergine-slate
+const INK2  = '#6E6A85';
+const INK3  = '#A5A1B8';
+const RULE  = 'rgba(30,27,46,0.10)';
+const GOLD  = '#6D4AE0';   // brand violet — primary accent
+const GOLD2 = '#5A38C7';   // deep violet
+const GO    = '#23B99A';   // mint — secondary
+// Left brand panel — bright violet gradient (white text on violet)
+const PANEL   = '#6D4AE0';
+const PANEL_INK  = '#FFFFFF';
+const PANEL_INK2 = 'rgba(255,255,255,0.82)';
+const PANEL_INK3 = 'rgba(255,255,255,0.60)';
+const PANEL_ACC  = '#D9C9FB';
 const DISP  = "'Cormorant Garamond', Georgia, serif";
 const UI    = "'Syne', 'Inter', sans-serif";
 const MONO  = "'DM Mono', monospace";
@@ -34,7 +34,7 @@ function PasswordStrength({ password }: { password: string }) {
   if (!password) return null;
   const checks = [password.length >= 8, /[A-Z]/.test(password), /[0-9]/.test(password), /[^a-zA-Z0-9]/.test(password)];
   const score = checks.filter(Boolean).length;
-  const colors = ['', '#d9534f', '#b88bc4', GOLD, GO];
+  const colors = ['', '#EA5C86', '#8B6FE8', GOLD, GO];
   const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
   return (
     <div style={{ marginTop: 10 }}>
@@ -66,8 +66,8 @@ function Field({ label, id, type = 'text', value, onChange, placeholder, require
         style={{
           width: '100%', padding: '11px 14px',
           background: focused ? '#ffffff' : '#f7f6f8',
-          border: `1px solid ${focused ? 'rgba(142,45,158,0.55)' : RULE}`,
-          boxShadow: focused ? '0 0 0 3px rgba(142,45,158,0.12)' : 'none',
+          border: `1px solid ${focused ? 'rgba(109,74,224,0.55)' : RULE}`,
+          boxShadow: focused ? '0 0 0 3px rgba(109,74,224,0.12)' : 'none',
           borderRadius: 4, outline: 'none',
           color: INK, fontFamily: UI, fontSize: 14,
           transition: 'border-color 0.2s', boxSizing: 'border-box',
@@ -89,7 +89,7 @@ function StepDots({ step }: { step: number }) {
             boxShadow: step >= s ? `0 0 8px ${GOLD}66` : 'none',
             transition: 'background 0.3s, box-shadow 0.3s',
           }} />
-          {i === 0 && <div style={{ width: 32, height: 1, background: step > 1 ? `rgba(142,45,158,0.4)` : RULE, transition: 'background 0.3s' }} />}
+          {i === 0 && <div style={{ width: 32, height: 1, background: step > 1 ? `rgba(109,74,224,0.4)` : RULE, transition: 'background 0.3s' }} />}
         </div>
       ))}
       <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK3, marginLeft: 4 }}>Step {step} of 2</span>
@@ -137,7 +137,7 @@ export default function SignupPage() {
   const slug = toSlug(orgName);
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: UI, position: 'relative', overflow: 'hidden', colorScheme: 'light' }}>
+    <div style={{ minHeight: '100dvh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: UI, position: 'relative', overflow: 'hidden', colorScheme: 'light' }}>
 
       {/* Noise */}
       <div style={{
@@ -156,14 +156,14 @@ export default function SignupPage() {
       {/* Left panel */}
       <div style={{
         width: 440, flexShrink: 0, minHeight: '100vh',
-        background: `linear-gradient(160deg, #241830 0%, ${PANEL} 55%, #14101a 100%)`,
+        background: `linear-gradient(160deg, #8B6FE8 0%, ${PANEL} 55%, #5A38C7 100%)`,
         position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         padding: '56px 56px',
       }}
         className="su-left-panel"
       >
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 60% 40%, rgba(178,89,196,0.16) 0%, transparent 65%), radial-gradient(ellipse at 85% 80%, rgba(124,179,66,0.08) 0%, transparent 50%)' }} />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 60% 40%, rgba(255,255,255,0.14) 0%, transparent 65%), radial-gradient(ellipse at 85% 80%, rgba(35,185,154,0.12) 0%, transparent 50%)' }} />
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           backgroundImage: 'repeating-linear-gradient(90deg,rgba(255,255,255,0.018) 0,rgba(255,255,255,0.018) 1px,transparent 1px,transparent 80px),repeating-linear-gradient(0deg,rgba(255,255,255,0.018) 0,rgba(255,255,255,0.018) 1px,transparent 1px,transparent 80px)',
@@ -194,7 +194,7 @@ export default function SignupPage() {
           <div style={{ marginTop: 36, display: 'flex', flexDirection: 'column', gap: 12 }}>
             {['Unlimited video modules', 'Built-in quiz engine', 'Live Q&A on every lesson', 'Real-time progress tracking'].map(f => (
               <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ width: 16, height: 16, borderRadius: '50%', border: `1px solid rgba(124,179,66,0.5)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ width: 16, height: 16, borderRadius: '50%', border: `1px solid rgba(35,185,154,0.5)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <span style={{ width: 5, height: 5, borderRadius: '50%', background: GO, display: 'inline-block' }} />
                 </span>
                 <span style={{ fontFamily: MONO, fontSize: 11, color: PANEL_INK2, letterSpacing: '0.04em' }}>{f}</span>
@@ -320,14 +320,14 @@ function GoldButton({ loading, label }: { loading: boolean; label: string }) {
       fontFamily: UI, fontSize: 13, fontWeight: 700,
       letterSpacing: '0.06em', textTransform: 'uppercase',
       color: '#ffffff',
-      background: loading ? 'rgba(142,45,158,0.6)' : '#8e2d9e',
+      background: loading ? 'rgba(109,74,224,0.6)' : '#6D4AE0',
       padding: '13px 24px', borderRadius: 4, border: 'none',
       cursor: loading ? 'not-allowed' : 'pointer',
       transition: 'background 0.2s',
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     }}
-      onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#7b2d8e'; }}
-      onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#8e2d9e'; }}
+      onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#5A38C7'; }}
+      onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = '#6D4AE0'; }}
     >
       {loading ? (
         <>
