@@ -259,7 +259,7 @@ export default function VideoPage() {
 
   if (videoLoading) {
     return (
-      <div className="flex h-[calc(100dvh -56px)]" style={{ background: '#F6F4FD' }}>
+      <div className="flex h-[calc(100dvh-56px)]" style={{ background: '#F6F4FD' }}>
         <div className="flex-1 p-6">
           <Skeleton className="aspect-video w-full rounded-xl" />
         </div>
@@ -269,7 +269,7 @@ export default function VideoPage() {
 
   if (!video) {
     return (
-      <div className="flex items-center justify-center h-[calc(100dvh -56px)]" style={{ background: '#F6F4FD' }}>
+      <div className="flex items-center justify-center h-[calc(100dvh-56px)]" style={{ background: '#F6F4FD' }}>
         <p style={{ color: '#A5A1B8' }}>Video not found.</p>
       </div>
     );
@@ -286,7 +286,7 @@ export default function VideoPage() {
   ).filter(t => t.show);
 
   return (
-    <div className="flex h-[100dvh] lg:h-[calc(100dvh -56px)] overflow-hidden" style={{ background: '#F6F4FD' }}>
+    <div className="flex h-[100dvh] lg:h-[calc(100dvh-56px)] overflow-hidden" style={{ background: '#F6F4FD' }}>
 
       {/* ── Main content ── */}
       <div className="flex-1 overflow-y-auto">

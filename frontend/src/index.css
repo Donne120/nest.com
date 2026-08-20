@@ -74,9 +74,9 @@ html.dark { color-scheme: light; }
     overflow-x: hidden;
     max-width: 100%;
     width: 100%;
-    /* Stop the whole page from rubber-band bouncing/chaining scroll between
-       nested containers — the single biggest cause of "wobbly" mobile scroll. */
-    overscroll-behavior-y: none;
+    /* `contain` (not `none`) so vertical page scroll still works everywhere —
+       it only stops the bounce from chaining, it never blocks scrolling. */
+    overscroll-behavior-y: contain;
   }
 
   html {
@@ -84,21 +84,18 @@ html.dark { color-scheme: light; }
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    /* taps register instantly and don't trigger zoom → no accidental mis-clicks */
+  }
+
+  /* Buttons/links should not double-tap-zoom, but do NOT put touch-action or
+     overscroll rules on html/body/scroll-containers — that can freeze page
+     scrolling on some mobile browsers. Keep it scoped to interactive controls. */
+  button, a, [role="button"], [role="tab"], input, select, summary {
     touch-action: manipulation;
   }
 
   body {
-    /* Smooth, momentum scrolling on iOS; a stable gutter so content doesn't
-       shift sideways when a scrollbar appears/disappears. */
+    /* Smooth momentum scrolling on iOS. */
     -webkit-overflow-scrolling: touch;
-  }
-
-  /* Any element that scrolls internally must contain its scroll and use
-     momentum — no scroll-chaining to the page behind it. */
-  [class*="overflow-y-auto"], [class*="overflow-auto"], [class*="overflow-y-scroll"] {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
   }
 
   /* Media never overflows its container (a classic source of horizontal jitter) */
