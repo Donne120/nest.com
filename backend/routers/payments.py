@@ -413,7 +413,14 @@ def approve_payment(
     sub.reviewed_at = datetime.now(timezone.utc)
 
     payer = db.query(User).filter(User.id == sub.payer_id).first()
-    if payer:
+    # SECURITY: payment_verified is the ORG-WIDE "access everything" pass. It
+    # must be set ONLY for org-wide payment types — never for a single
+    # module_purchase (that would leak access to every module). A module
+    # purchase grants access solely through its scoped ModuleAccess row below.
+    if payer and sub.payment_type in (
+        PaymentType.teacher_subscription,
+        PaymentType.learner_access,
+    ):
         payer.payment_verified = True
 
     if sub.payment_type == PaymentType.teacher_subscription:

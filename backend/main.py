@@ -188,6 +188,12 @@ END $$""",
             "ALTER TABLE videos ADD COLUMN study_notes TEXT",
             # Assignment worked example (solved problem shown beside learner's work)
             "ALTER TABLE assignments ADD COLUMN worked_example TEXT",
+            # Scoped invitations: module-level access + org-wide flag
+            "ALTER TABLE invitations ADD COLUMN all_modules BOOLEAN DEFAULT FALSE NOT NULL",
+            "ALTER TABLE invite_links ADD COLUMN all_modules BOOLEAN DEFAULT FALSE NOT NULL",
+            # Guest access expiry (per-learner 1-month clock) + one-shot warn guard
+            "ALTER TABLE module_access ADD COLUMN expires_at TIMESTAMP WITH TIME ZONE",
+            "ALTER TABLE module_access ADD COLUMN expiry_notified_at TIMESTAMP WITH TIME ZONE",
         ]
         # PostgreSQL supports IF NOT EXISTS; wrap each statement for SQLite safety
         for _stmt in _cols:
@@ -361,6 +367,73 @@ def _check_subscriptions():
         db.close()
 
 
+def _check_guest_access():
+    """Warn invited (guest) learners ~7 days before their scoped course access
+    expires — one in-app notification + one email each, sent once per grant."""
+    from datetime import datetime, timezone, timedelta
+    import email_utils
+    db = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        soon = now + timedelta(days=7)
+        rows = db.query(models.ModuleAccess).filter(
+            models.ModuleAccess.expires_at.isnot(None),
+            models.ModuleAccess.expires_at > now,
+            models.ModuleAccess.expires_at <= soon,
+            models.ModuleAccess.expiry_notified_at.is_(None),
+        ).all()
+
+        for acc in rows:
+            end = acc.expires_at
+            if end.tzinfo is None:
+                end = end.replace(tzinfo=timezone.utc)
+            days_left = max(1, (end - now).days)
+
+            learner = db.query(models.User).filter(models.User.id == acc.student_id).first()
+            module = db.query(models.Module).filter(models.Module.id == acc.module_id).first()
+            if not learner or not module or not learner.is_active:
+                acc.expiry_notified_at = now  # don't retry a dangling grant
+                db.commit()
+                continue
+
+            org = db.query(models.Organization).filter(
+                models.Organization.id == learner.organization_id
+            ).first()
+
+            # In-app notification
+            db.add(models.Notification(
+                user_id=learner.id,
+                type="access_expiring",
+                title="Your access is ending soon",
+                message=(
+                    f"Your access to “{module.title}” expires in {days_left} "
+                    f"day{'s' if days_left != 1 else ''}. Subscribe or contact your "
+                    f"tutor to keep learning."
+                ),
+                reference_id=module.id,
+            ))
+            acc.expiry_notified_at = now
+            db.commit()
+
+            # Email (best-effort)
+            try:
+                email_utils.send_access_expiring(
+                    to=learner.email,
+                    learner_name=learner.full_name,
+                    org_name=org.name if org else "your school",
+                    module_name=module.title,
+                    days_left=days_left,
+                    expiry_date=end.strftime("%B %d, %Y"),
+                    action_url=f"{settings.FRONTEND_URL}/pay/submit",
+                )
+            except Exception as e:
+                logger.warning(f"Guest-access email failed for {learner.email}: {e}")
+    except Exception as e:
+        logger.warning(f"Guest-access check error: {e}")
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     import asyncio
@@ -375,6 +448,7 @@ async def lifespan(app: FastAPI):
         while True:
             await asyncio.sleep(86400)  # run every 24 hours
             asyncio.get_event_loop().run_in_executor(None, _check_subscriptions)
+            asyncio.get_event_loop().run_in_executor(None, _check_guest_access)
 
     def _cleanup_revoked_tokens():
         """Delete expired entries from revoked_tokens to keep the table small."""

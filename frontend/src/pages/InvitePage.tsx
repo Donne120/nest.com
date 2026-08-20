@@ -13,6 +13,9 @@ interface InviteInfo {
   org_momo_number: string | null;
   invited_role: string;
   expires_at: string;
+  all_modules?: boolean;
+  module_titles?: string[];
+  access_days?: number | null;
 }
 
 export default function InvitePage() {
@@ -120,6 +123,29 @@ export default function InvitePage() {
               </p>
             </div>
           </div>
+
+          {/* What this invite grants — so the learner sees the scope up front. */}
+          {info && info.invited_role === 'learner' && (
+            <div className="rounded-xl border border-gray-200 px-4 py-3 mb-6">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">You'll get access to</p>
+              {info.all_modules ? (
+                <p className="text-sm text-gray-800 font-medium">All courses</p>
+              ) : info.module_titles && info.module_titles.length > 0 ? (
+                <ul className="text-sm text-gray-800 space-y-0.5">
+                  {info.module_titles.map((t) => (
+                    <li key={t} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-500 flex-shrink-0" /> {t}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">Access will be set by your tutor.</p>
+              )}
+              {info.access_days ? (
+                <p className="text-xs text-gray-500 mt-2">Access lasts {info.access_days} days — you'll be reminded to subscribe or contact your tutor before it ends.</p>
+              ) : null}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

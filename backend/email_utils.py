@@ -586,3 +586,48 @@ def send_subscription_expired(
         to, subject,
         _wrap(body, "Your Nest subscription has expired — submit payment to restore access"),
     )
+
+
+def send_access_expiring(
+    to: str,
+    learner_name: str,
+    org_name: str,
+    module_name: str,
+    days_left: int,
+    expiry_date: str,
+    action_url: str,
+) -> bool:
+    """Sent ~7 days before an invited (guest) learner's course access expires."""
+    learner_name = html.escape(learner_name)
+    org_name = html.escape(org_name)
+    module_name = html.escape(module_name)
+    expiry_date = html.escape(expiry_date)
+    first = html.escape(learner_name.split(" ")[0]) if learner_name else "there"
+    dl = f"{days_left} day{'s' if days_left != 1 else ''}"
+    subject = f"Your access to {module_name} expires in {dl}"
+    body = f"""
+    <div style="padding:36px 40px;">
+      <p style="font-size:13px;font-weight:600;color:#6D4AE0;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Access Reminder</p>
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">Keep your learning going, {first}</h1>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
+        Your access to <strong style="color:#1E1B2E;">{module_name}</strong> at
+        <strong style="color:#1E1B2E;">{org_name}</strong> expires in
+        <strong style="color:#1E1B2E;">{dl}</strong> &mdash; on
+        <strong style="color:#1E1B2E;">{expiry_date}</strong>.
+      </p>
+      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+        To keep going without interruption, subscribe now, or reach out to your tutor
+        to have your access extended.
+      </p>
+      <div style="background:#F1ECFD;border-radius:12px;border:1px solid #D1BFF6;padding:16px 20px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;color:#5A38C7;line-height:1.6;">
+          After it expires you'll lose access to this course until you subscribe or your
+          tutor updates your status.
+        </p>
+      </div>
+      {_btn(action_url, "Subscribe or contact tutor", "#6D4AE0")}
+    </div>"""
+    return send(
+        to, subject,
+        _wrap(body, f"Your access to {module_name} expires in {dl}"),
+    )

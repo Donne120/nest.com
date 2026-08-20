@@ -12,11 +12,16 @@ Use `require_module_access` at the entry of any endpoint that returns
 content belonging to a single module. Use `has_module_access` when you
 need a boolean for response shaping (e.g. catalog listings).
 """
+from datetime import datetime, timezone, timedelta
 from typing import Iterable
 from fastapi import HTTPException
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 import models
+
+# Guest (invited) access lasts exactly one month from acceptance.
+GUEST_ACCESS_DAYS = 30
 
 _STAFF_ROLES = {
     models.UserRole.educator,
@@ -29,6 +34,14 @@ def _is_staff(user: models.User) -> bool:
     return user.role in _STAFF_ROLES
 
 
+def _unexpired(now: datetime):
+    # A ModuleAccess row counts only if it never expires (NULL) or is still in date.
+    return or_(
+        models.ModuleAccess.expires_at.is_(None),
+        models.ModuleAccess.expires_at > now,
+    )
+
+
 def has_module_access(
     user: models.User,
     module_id: str,
@@ -38,11 +51,13 @@ def has_module_access(
         return True
     if user.payment_verified:
         return True
+    now = datetime.now(timezone.utc)
     row = (
         db.query(models.ModuleAccess.id)
         .filter(
             models.ModuleAccess.student_id == user.id,
             models.ModuleAccess.module_id == module_id,
+            _unexpired(now),
         )
         .first()
     )
@@ -61,15 +76,56 @@ def accessible_module_ids(
         return set(ids)
     if not ids:
         return set()
+    now = datetime.now(timezone.utc)
     rows = (
         db.query(models.ModuleAccess.module_id)
         .filter(
             models.ModuleAccess.student_id == user.id,
             models.ModuleAccess.module_id.in_(ids),
+            _unexpired(now),
         )
         .all()
     )
     return {r[0] for r in rows}
+
+
+def grant_invite_access(
+    user: models.User,
+    *,
+    all_modules: bool,
+    module_ids: list[str],
+    granted_by: str | None,
+    db: Session,
+    expires: bool = True,
+) -> None:
+    """The ONE place invite-based access is materialised, so it can't be
+    bypassed. If all_modules, flip the org-wide pass. Otherwise create a
+    scoped, time-boxed ModuleAccess row per module. `expires` gives guests the
+    30-day clock; pass False for unlimited grants."""
+    if all_modules:
+        user.payment_verified = True
+        return
+    if not module_ids:
+        return
+    expires_at = (
+        datetime.now(timezone.utc) + timedelta(days=GUEST_ACCESS_DAYS)
+        if expires else None
+    )
+    existing = {
+        r[0] for r in db.query(models.ModuleAccess.module_id).filter(
+            models.ModuleAccess.student_id == user.id,
+            models.ModuleAccess.module_id.in_(module_ids),
+        ).all()
+    }
+    for mid in module_ids:
+        if mid in existing:
+            continue
+        db.add(models.ModuleAccess(
+            student_id=user.id,
+            module_id=mid,
+            granted_by=granted_by,
+            expires_at=expires_at,
+        ))
 
 
 def require_module_access(

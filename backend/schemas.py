@@ -194,6 +194,10 @@ class ResetPasswordRequest(BaseModel):
 class InvitationCreate(BaseModel):
     email: EmailStr
     role: UserRole = UserRole.learner
+    # Access scope. all_modules=True → org-wide pass. Otherwise the invitee is
+    # granted only module_ids (validated server-side to belong to the org).
+    all_modules: bool = False
+    module_ids: Optional[List[str]] = None
 
 
 class InvitationOut(BaseModel):
@@ -217,6 +221,10 @@ class InviteInfoOut(BaseModel):
     org_momo_number: Optional[str]
     invited_role: UserRole
     expires_at: datetime
+    # What this invite grants, for the accept screen.
+    all_modules: bool = False
+    module_titles: List[str] = []
+    access_days: Optional[int] = None   # guest access length in days (None = unlimited)
 
 
 class AcceptInviteRequest(BaseModel):
@@ -991,6 +999,9 @@ class InviteLinkCreate(BaseModel):
     access_code: Optional[str] = Field(None, min_length=4, max_length=32)
     max_uses: Optional[int] = Field(None, ge=1)
     expires_days: Optional[int] = Field(None, ge=1, le=365)   # days from now; None = never
+    # Access scope for free_access links (see InvitationCreate).
+    all_modules: bool = False
+    module_ids: Optional[List[str]] = None
 
 
 class InviteLinkOut(BaseModel):
@@ -1021,6 +1032,10 @@ class JoinLinkInfo(BaseModel):
     max_uses: Optional[int]
     use_count: int
     expires_at: Optional[datetime]
+    # What this link grants, for the join screen.
+    all_modules: bool = False
+    module_titles: List[str] = []
+    access_days: Optional[int] = None
 
 
 class JoinLinkRegister(BaseModel):

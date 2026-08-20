@@ -1038,11 +1038,21 @@ function InvitationsTab() {
   const [role, setRole] = useState<UserRole>('learner');
   const [creating, setCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  // Access scope for learner invites: 'all' or a specific module checklist.
+  const [scope, setScope] = useState<'all' | 'specific'>('all');
+  const [pickedModules, setPickedModules] = useState<string[]>([]);
 
   const { data: invitations = [], isLoading } = useQuery<Invitation[]>({
     queryKey: ['org-invitations'],
     queryFn: () => api.get<Invitation[]>('/invitations').then((r) => r.data),
     staleTime: 30_000,
+  });
+
+  // Modules to offer in the scope picker.
+  const { data: modules = [] } = useQuery<{ id: string; title: string }[]>({
+    queryKey: ['modules-for-invite'],
+    queryFn: () => api.get('/modules').then((r) => r.data),
+    staleTime: 60_000,
   });
 
   // Is transactional email actually set up on the server? Drives the warning
@@ -1062,9 +1072,21 @@ function InvitationsTab() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Learner invites must name a scope. Staff (educator/owner) always get all.
+    const isLearner = role === 'learner';
+    const allModules = !isLearner || scope === 'all';
+    if (isLearner && !allModules && pickedModules.length === 0) {
+      toast.error('Pick at least one module to grant, or choose “All modules”.');
+      return;
+    }
     setCreating(true);
     try {
-      const { data } = await api.post<Invitation>('/invitations', { email: email.trim(), role });
+      const { data } = await api.post<Invitation>('/invitations', {
+        email: email.trim(),
+        role,
+        all_modules: allModules,
+        module_ids: allModules ? undefined : pickedModules,
+      });
       qc.invalidateQueries({ queryKey: ['org-invitations'] });
       if (data.invite_url) {
         navigator.clipboard.writeText(data.invite_url).catch(() => {});
@@ -1079,12 +1101,16 @@ function InvitationsTab() {
         });
       }
       setEmail('');
+      setPickedModules([]);
     } catch (err: any) {
       toast.error(err?.response?.data?.detail || 'Failed to create invitation');
     } finally {
       setCreating(false);
     }
   };
+
+  const toggleModule = (id: string) =>
+    setPickedModules((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
 
   const copyLink = async (invite: Invitation) => {
     if (!invite.invite_url) return;
@@ -1121,27 +1147,63 @@ function InvitationsTab() {
             ? 'The link is copied to your clipboard — paste it to the learner directly.'
             : 'We’ll email the invite and also copy the link to your clipboard. Valid for 7 days.'}
         </p>
-        <form onSubmit={handleCreate} className="flex gap-2">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="colleague@company.com"
-            className={`flex-1 ${inputCls}`}
-          />
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as UserRole)}
-            className="border border-[var(--c-rule)] rounded-xl px-3 py-2.5 text-sm bg-[var(--c-surf)] focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-[var(--c-ink2)]"
-          >
-            {ROLE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-          <Button type="submit" loading={creating} size="sm" icon={<Mail size={14} />}>
-            Invite
-          </Button>
+        <form onSubmit={handleCreate} className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="colleague@company.com"
+              className={`flex-1 ${inputCls}`}
+            />
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as UserRole)}
+              className="border border-[var(--c-rule)] rounded-xl px-3 py-2.5 text-sm bg-[var(--c-surf)] focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-[var(--c-ink2)]"
+            >
+              {ROLE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Access scope — learners only (staff see everything). */}
+          {role === 'learner' && (
+            <div className="rounded-xl border border-[var(--c-rule)] bg-[var(--c-surf)] p-3.5">
+              <p className="text-[11px] font-semibold text-[var(--c-ink3)] uppercase tracking-wider mb-2.5">Course access</p>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2.5 cursor-pointer text-[13px] text-[var(--c-ink)]">
+                  <input type="radio" name="scope" checked={scope === 'all'} onChange={() => setScope('all')} className="accent-brand-600" />
+                  All modules <span className="text-[var(--c-ink3)]">— full access to every course</span>
+                </label>
+                <label className="flex items-center gap-2.5 cursor-pointer text-[13px] text-[var(--c-ink)]">
+                  <input type="radio" name="scope" checked={scope === 'specific'} onChange={() => setScope('specific')} className="accent-brand-600" />
+                  Specific modules <span className="text-[var(--c-ink3)]">— only what you pick</span>
+                </label>
+              </div>
+
+              {scope === 'specific' && (
+                <div className="mt-3 max-h-44 overflow-y-auto rounded-lg border border-[var(--c-rule)] divide-y divide-[var(--c-rule)]">
+                  {modules.length === 0 ? (
+                    <p className="text-xs text-[var(--c-ink3)] p-3">No modules yet — create a course first.</p>
+                  ) : modules.map((m) => (
+                    <label key={m.id} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer text-[13px] text-[var(--c-ink)] hover:bg-[var(--c-bg2)]">
+                      <input type="checkbox" checked={pickedModules.includes(m.id)} onChange={() => toggleModule(m.id)} className="accent-brand-600" />
+                      <span className="truncate">{m.title}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              <p className="text-[11px] text-[var(--c-ink3)] mt-2.5">Invited learners get access for 30 days, then are prompted to subscribe or contact you.</p>
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <Button type="submit" loading={creating} size="sm" icon={<Mail size={14} />}>
+              Send invite
+            </Button>
+          </div>
         </form>
       </div>
 
@@ -1400,22 +1462,22 @@ export default function OrgSettingsPage() {
 
   return (
     <div>
-      <div className="mx-auto max-w-5xl px-6 py-12 lg:px-8 lg:py-16">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
         {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-[var(--c-ink)]">Settings</h1>
-          <p className="text-base text-[var(--c-ink2)] mt-2">
+        <div className="mb-8 sm:mb-10">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--c-ink)]">Settings</h1>
+          <p className="text-sm sm:text-base text-[var(--c-ink2)] mt-2">
             Manage your workspace, team members, and integrations
           </p>
         </div>
 
-        {/* Tab bar */}
-        <div className="flex gap-0 border-b border-[var(--c-rule)] mb-8">
+        {/* Tab bar — scrolls horizontally on a phone instead of crowding */}
+        <div className="flex gap-0 border-b border-[var(--c-rule)] mb-8 overflow-x-auto scrollbar-none">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+              className={`flex flex-shrink-0 items-center gap-2 px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
                 activeTab === id
                   ? 'border-brand-600 text-brand-700'
                   : 'border-transparent text-[var(--c-ink2)] hover:text-[var(--c-ink)] hover:border-[var(--c-rule)]'
@@ -1428,7 +1490,7 @@ export default function OrgSettingsPage() {
         </div>
 
         {/* Content */}
-        <div className="bg-[var(--c-surf)] rounded-2xl border border-[var(--c-rule)] p-8 lg:p-10 shadow-sm">
+        <div className="bg-[var(--c-surf)] rounded-2xl border border-[var(--c-rule)] p-4 sm:p-8 lg:p-10 shadow-sm">
           {activeTab === 'organization' && <OrgTab />}
           {activeTab === 'team' && <TeamTab />}
           {activeTab === 'invitations' && <InvitationsTab />}

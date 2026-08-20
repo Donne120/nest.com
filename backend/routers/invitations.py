@@ -15,6 +15,36 @@ router = APIRouter(prefix="/api/invitations", tags=["invitations"])
 _IS_SUPER = models.UserRole.super_admin
 
 
+def _validate_org_modules(module_ids, org_id, db) -> list[str]:
+    """Return the given module ids, guaranteeing every one belongs to `org_id`.
+    SECURITY: blocks a tutor from granting access to another org's module."""
+    ids = [m for m in (module_ids or []) if m]
+    if not ids:
+        return []
+    owned = {
+        r[0] for r in db.query(models.Module.id).filter(
+            models.Module.id.in_(ids),
+            models.Module.organization_id == org_id,
+        ).all()
+    }
+    bad = [m for m in ids if m not in owned]
+    if bad:
+        raise HTTPException(
+            status_code=400,
+            detail="One or more selected modules do not belong to your organisation.",
+        )
+    # de-dupe, preserve order
+    seen: set[str] = set()
+    return [m for m in ids if not (m in seen or seen.add(m))]
+
+
+def _save_invite_modules(invite_id: str, invite_kind: str, module_ids: list[str], db) -> None:
+    for mid in module_ids:
+        db.add(models.InviteModule(
+            invite_id=invite_id, invite_kind=invite_kind, module_id=mid,
+        ))
+
+
 @router.get("/email-status")
 def email_status(current_user: models.User = Depends(auth_utils.require_educator)):
     """Whether transactional email is configured on this server (booleans only, no
@@ -91,14 +121,31 @@ def create_invitation(
             detail="User is already a member of this organisation",
         )
 
+    # Resolve access scope. Learners get scoped access; staff invites are
+    # all_modules by definition (educators/owners see everything anyway).
+    is_staff_invite = payload.role != models.UserRole.learner
+    all_modules = bool(payload.all_modules) or is_staff_invite
+    module_ids = (
+        [] if all_modules
+        else _validate_org_modules(payload.module_ids, current_user.organization_id, db)
+    )
+    if not all_modules and not module_ids:
+        raise HTTPException(
+            status_code=400,
+            detail="Pick at least one module to grant, or choose all modules.",
+        )
+
     invite = models.Invitation(
         organization_id=current_user.organization_id,
         email=payload.email,
         role=payload.role,
         invited_by=current_user.id,
         expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+        all_modules=all_modules,
     )
     db.add(invite)
+    db.flush()  # need invite.id for the module rows
+    _save_invite_modules(invite.id, "invitation", module_ids, db)
     db.commit()
     db.refresh(invite)
 
@@ -204,17 +251,35 @@ def create_invite_link(
             + timedelta(days=payload.expires_days)
         )
 
+    role = models.UserRole(payload.role)
+    is_staff_link = role != models.UserRole.learner
+    all_modules = bool(payload.all_modules) or is_staff_link
+    # Scope only matters when the link auto-grants access (free_access). A
+    # non-free link routes joiners to payment, so no module rows are needed.
+    module_ids = (
+        [] if (all_modules or not payload.free_access)
+        else _validate_org_modules(payload.module_ids, current_user.organization_id, db)
+    )
+    if payload.free_access and not all_modules and not module_ids:
+        raise HTTPException(
+            status_code=400,
+            detail="A free-access link must grant at least one module, or all modules.",
+        )
+
     link = models.InviteLink(
         organization_id=current_user.organization_id,
         created_by=current_user.id,
         label=payload.label,
-        role=models.UserRole(payload.role),
+        role=role,
         free_access=payload.free_access,
         access_code=payload.access_code,
         max_uses=payload.max_uses,
         expires_at=expires_at,
+        all_modules=all_modules,
     )
     db.add(link)
+    db.flush()
+    _save_invite_modules(link.id, "link", module_ids, db)
     db.commit()
     db.refresh(link)
     return link

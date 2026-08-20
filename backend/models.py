@@ -232,6 +232,9 @@ class Invitation(Base):
     is_accepted = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     expires_at = Column(DateTime(timezone=True), nullable=False)
+    # Access scope: if True the invitee gets an org-wide pass; otherwise access
+    # is limited to the modules listed in InviteModule (invite_kind='invitation').
+    all_modules = Column(Boolean, default=False, nullable=False, server_default='false')
 
     organization = relationship("Organization", back_populates="invitations")
     inviter = relationship("User", foreign_keys=[invited_by])
@@ -255,6 +258,9 @@ class InviteLink(Base):
     # Access control
     free_access   = Column(Boolean, default=False, nullable=False)  # skip payment
     access_code   = Column(String, nullable=True)           # optional PIN to enter on join
+    # Access scope for free_access links: if True → org-wide pass; otherwise the
+    # joiner is granted only the modules listed in InviteModule (invite_kind='link').
+    all_modules   = Column(Boolean, default=False, nullable=False, server_default='false')
 
     # Limits
     max_uses      = Column(Integer, nullable=True)          # None = unlimited
@@ -266,6 +272,22 @@ class InviteLink(Base):
 
     organization  = relationship("Organization", back_populates="invite_links")
     creator       = relationship("User", foreign_keys=[created_by])
+
+
+# ─── InviteModule (which modules an invite/link grants) ──────────────────────
+# One row per (invite, module). invite_kind distinguishes a single-use
+# Invitation from a shareable InviteLink. When the invite's all_modules flag is
+# set these rows are unused (the invitee gets an org-wide pass instead).
+
+class InviteModule(Base):
+    __tablename__ = "invite_modules"
+
+    id          = Column(String, primary_key=True, default=gen_uuid)
+    invite_id   = Column(String, nullable=False, index=True)   # Invitation.id or InviteLink.id
+    invite_kind = Column(String, nullable=False)               # 'invitation' | 'link'
+    module_id   = Column(String, ForeignKey("modules.id", ondelete="CASCADE"), nullable=False)
+
+    module      = relationship("Module", foreign_keys=[module_id])
 
 
 # ─── User ─────────────────────────────────────────────────────────────────────
@@ -844,6 +866,11 @@ class ModuleAccess(Base):
     payment_submission_id = Column(String, ForeignKey("payment_submissions.id", ondelete="SET NULL"), nullable=True)
     granted_by = Column(String, ForeignKey("users.id"), nullable=True)
     granted_at = Column(DateTime(timezone=True), server_default=func.now())
+    # Guest access is time-boxed: expires_at = accepted + 30 days. NULL means
+    # never expires (paid module purchases). Access is denied once it lapses.
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    # One-shot guard so the pre-expiry warning email/notification is sent once.
+    expiry_notified_at = Column(DateTime(timezone=True), nullable=True)
 
     student = relationship("User", foreign_keys=[student_id])
     module = relationship("Module", foreign_keys=[module_id])

@@ -9,8 +9,36 @@ from database import get_db
 import models
 import schemas
 import auth as auth_utils
+import access as access_utils
 from config import settings
 import email_utils
+
+
+def _aware(dt):
+    """Normalise a DB datetime to tz-aware UTC. SQLite returns naive datetimes;
+    Postgres returns aware. Comparing the two raises, so coerce naive → UTC."""
+    if dt is not None and dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def _invite_module_ids(invite_id: str, invite_kind: str, db: Session) -> list[str]:
+    return [
+        r[0] for r in db.query(models.InviteModule.module_id).filter(
+            models.InviteModule.invite_id == invite_id,
+            models.InviteModule.invite_kind == invite_kind,
+        ).all()
+    ]
+
+
+def _module_titles(module_ids: list[str], db: Session) -> list[str]:
+    if not module_ids:
+        return []
+    return [
+        r[0] for r in db.query(models.Module.title).filter(
+            models.Module.id.in_(module_ids),
+        ).all()
+    ]
 
 _IS_PROD = settings.ENVIRONMENT not in ("development", "dev")
 
@@ -112,10 +140,13 @@ async def login(request: Request, response: Response, db: Session = Depends(get_
         email = form.get("username") or form.get("email", "")
         password = form.get("password", "")
     user = db.query(models.User).filter(models.User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="No account found with that email. Check for a typo or ask for an invite link.")
-    if not auth_utils.verify_password(password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Incorrect password. Try again or use 'Forgot password'.")
+    # Use ONE generic message for both "no such account" and "wrong password"
+    # so an attacker can't enumerate which emails have accounts.
+    if not user or not auth_utils.verify_password(password, user.hashed_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect email or password. Try again, use 'Forgot password', or ask for an invite.",
+        )
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Your account has been deactivated. Contact your admin.")
     return _build_token_response(user, db, response)
@@ -198,14 +229,19 @@ def invite_info(token: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Invite not found")
     if invite.is_accepted:
         raise HTTPException(status_code=400, detail="Invite already used")
-    if invite.expires_at < datetime.now(timezone.utc):
+    if _aware(invite.expires_at) < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invite has expired")
+    mids = [] if invite.all_modules else _invite_module_ids(invite.id, "invitation", db)
+    is_guest = invite.role == models.UserRole.learner and not invite.all_modules
     return schemas.InviteInfoOut(
         org_name=invite.organization.name,
         org_logo_url=invite.organization.logo_url,
         org_momo_number=invite.organization.momo_number,
         invited_role=invite.role,
         expires_at=invite.expires_at,
+        all_modules=invite.all_modules,
+        module_titles=_module_titles(mids, db),
+        access_days=access_utils.GUEST_ACCESS_DAYS if is_guest else None,
     )
 
 
@@ -219,7 +255,7 @@ def accept_invite(request: Request, response: Response, background_tasks: Backgr
         raise HTTPException(status_code=404, detail="Invite not found")
     if invite.is_accepted:
         raise HTTPException(status_code=400, detail="Invite already used")
-    if invite.expires_at < datetime.now(timezone.utc):
+    if _aware(invite.expires_at) < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invite has expired")
     existing = db.query(models.User).filter(models.User.email == invite.email).first()
     if existing:
@@ -230,6 +266,13 @@ def accept_invite(request: Request, response: Response, background_tasks: Backgr
             )
         # User already created (e.g. from a previous failed attempt) — just
         # mark the invite accepted and log them in without creating a duplicate.
+        access_utils.grant_invite_access(
+            existing,
+            all_modules=invite.all_modules,
+            module_ids=_invite_module_ids(invite.id, "invitation", db),
+            granted_by=invite.invited_by,
+            db=db,
+        )
         invite.is_accepted = True
         db.commit()
         return _build_token_response(existing, db, response)
@@ -244,6 +287,15 @@ def accept_invite(request: Request, response: Response, background_tasks: Backgr
     db.add(user)
     invite.is_accepted = True
     db.flush()
+    # Materialise access in exactly one place (staff → org-wide, learner →
+    # scoped, time-boxed rows). This is the sole grant path for invites.
+    access_utils.grant_invite_access(
+        user,
+        all_modules=invite.all_modules,
+        module_ids=_invite_module_ids(invite.id, "invitation", db),
+        granted_by=invite.invited_by,
+        db=db,
+    )
     _queue_verification_email(user, db, background_tasks)
     db.commit()
     db.refresh(user)
@@ -286,7 +338,7 @@ def reset_password(request: Request, payload: schemas.ResetPasswordRequest, db: 
         models.PasswordResetToken.token == payload.token,
     ).first()
 
-    if not record or record.used or record.expires_at < datetime.now(timezone.utc):
+    if not record or record.used or _aware(record.expires_at) < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invalid or expired reset token")
 
     user = db.query(models.User).filter(models.User.id == record.user_id).first()
@@ -314,13 +366,15 @@ def join_link_info(token: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Invite link not found")
     if not link.is_active:
         raise HTTPException(status_code=400, detail="This invite link has been deactivated")
-    if link.expires_at and link.expires_at < datetime.now(timezone.utc):
+    if link.expires_at and _aware(link.expires_at) < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="This invite link has expired")
     if link.max_uses is not None and link.use_count >= link.max_uses:
         raise HTTPException(status_code=400, detail="This invite link has reached its maximum number of uses")
     org = db.query(models.Organization).filter(models.Organization.id == link.organization_id).first()
     # The public-directory link uses a reserved internal label; never show it to learners.
     display_label = None if link.label == "__public_directory__" else link.label
+    mids = [] if (link.all_modules or not link.free_access) else _invite_module_ids(link.id, "link", db)
+    is_guest = link.free_access and not link.all_modules
     return schemas.JoinLinkInfo(
         org_name=org.name if org else "Unknown Organization",
         org_logo_url=org.logo_url if org else None,
@@ -331,6 +385,9 @@ def join_link_info(token: str, db: Session = Depends(get_db)):
         max_uses=link.max_uses,
         use_count=link.use_count,
         expires_at=link.expires_at,
+        all_modules=link.all_modules,
+        module_titles=_module_titles(mids, db),
+        access_days=access_utils.GUEST_ACCESS_DAYS if is_guest else None,
     )
 
 
@@ -350,7 +407,7 @@ def join_via_link(
         raise HTTPException(status_code=404, detail="Invite link not found")
     if not link.is_active:
         raise HTTPException(status_code=400, detail="This invite link has been deactivated")
-    if link.expires_at and link.expires_at < datetime.now(timezone.utc):
+    if link.expires_at and _aware(link.expires_at) < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="This invite link has expired")
     if link.max_uses is not None and link.use_count >= link.max_uses:
         raise HTTPException(status_code=400, detail="This invite link has reached its maximum number of uses")
@@ -383,11 +440,22 @@ def join_via_link(
         full_name=payload.full_name.strip(),
         hashed_password=auth_utils.hash_password(payload.password),
         role=link.role,
-        payment_verified=link.free_access,   # grant access immediately if free_access
+        # NOTE: no blanket payment_verified. Access is granted below, scoped.
     )
     db.add(user)
     link.use_count += 1
     db.flush()
+    # A free-access link grants access immediately — org-wide if all_modules,
+    # else scoped, time-boxed rows for the link's modules. A non-free link
+    # grants nothing here; the joiner is routed to payment as before.
+    if link.free_access:
+        access_utils.grant_invite_access(
+            user,
+            all_modules=link.all_modules,
+            module_ids=_invite_module_ids(link.id, "link", db),
+            granted_by=link.created_by,
+            db=db,
+        )
     _queue_verification_email(user, db, background_tasks)
     db.commit()
     db.refresh(user)
@@ -449,7 +517,7 @@ def verify_email(
         models.EmailVerificationToken.token == token,
     ).first()
 
-    if not record or record.used or record.expires_at < datetime.now(timezone.utc):
+    if not record or record.used or _aware(record.expires_at) < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invalid or expired verification link.")
 
     user = db.query(models.User).filter(models.User.id == record.user_id).first()
