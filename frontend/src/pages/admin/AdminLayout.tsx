@@ -92,7 +92,7 @@ export default function AdminLayout() {
   const initials = (user?.full_name ?? 'A').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: BG, fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif" }}>
+    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: BG, fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif" }}>
 
       {/* Mobile backdrop */}
       {mobileSidebarOpen && (
@@ -378,7 +378,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Page content */}
-        <main style={{ flex: 1, overflowY: 'auto', background: BG }}>
+        <main style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', background: BG }}>
           <Outlet />
         </main>
       </div>
