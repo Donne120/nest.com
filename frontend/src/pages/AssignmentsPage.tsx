@@ -257,7 +257,7 @@ export default function AssignmentsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
+      <div style={{ background: BG, minHeight: '100dvh', fontFamily: UIFONT }}>
         <div style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(16px,4vw,32px) clamp(14px,4vw,24px)', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ height: 120, background: RAISE, borderRadius: 18, animation: 'pulse 2s infinite' }} />
           {[0, 1, 2].map(i => (
@@ -269,7 +269,7 @@ export default function AssignmentsPage() {
   }
 
   return (
-    <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
+    <div style={{ background: BG, minHeight: '100dvh', fontFamily: UIFONT }}>
       <div className="admin-page-content" style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(16px,4vw,32px) clamp(14px,4vw,24px) 40px' }}>
 
         {/* ── Hero header ── */}

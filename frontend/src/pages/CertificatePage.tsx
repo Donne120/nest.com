@@ -66,7 +66,7 @@ export default function CertificatePage() {
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100dvh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: 32, height: 32, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
@@ -75,7 +75,7 @@ export default function CertificatePage() {
 
   if (isError || !cert) {
     return (
-      <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ minHeight: '100dvh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ width: 64, height: 64, background: 'rgba(255,255,255,0.08)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
             <Shield size={28} style={{ color: 'rgba(255,255,255,0.5)' }} />
@@ -91,7 +91,7 @@ export default function CertificatePage() {
   const issuedDate = new Date(cert.issued_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
-    <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+    <div style={{ minHeight: '100dvh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div style={{ width: '100%', maxWidth: 680 }}>
 
         {/* Certificate card */}

@@ -97,7 +97,7 @@ export default function JoinPage() {
 
   if (loadingInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-gradient-to-br from-brand-50 via-white to-blue-50 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -105,7 +105,7 @@ export default function JoinPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-[100dvh] bg-gradient-to-br from-brand-50 via-white to-blue-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-elevated border border-gray-100 p-8 max-w-sm w-full text-center">
           <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle size={28} className="text-red-500" />
@@ -123,7 +123,7 @@ export default function JoinPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-brand-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">

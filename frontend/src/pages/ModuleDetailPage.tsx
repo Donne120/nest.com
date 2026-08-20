@@ -58,7 +58,7 @@ const RESOURCE_ICON: Record<ModuleResource['type'], typeof Globe> = {
 
 function LoadingSkeleton() {
   return (
-    <div style={{ background: BG, minHeight: '100vh' }}>
+    <div style={{ background: BG, minHeight: '100dvh' }}>
       <div style={{ background: HERO_GRAD, height: 280 }} className="animate-pulse" />
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 40px' }} className="grid gap-7 animate-pulse" >
         <Skeleton className="h-48 rounded-md" />
@@ -170,7 +170,7 @@ export default function ModuleDetailPage() {
   const BLUE    = ACC2;
 
   return (
-    <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
+    <div style={{ background: BG, minHeight: '100dvh', fontFamily: UIFONT }}>
 
       {/* ══ HERO (violet gradient) ═══════════════════════════════════════ */}
       <section style={{ background: HERO_GRAD, position: 'relative', padding: 'clamp(28px,5vw,56px) 0 clamp(40px,6vw,72px)', overflow: 'hidden' }}>

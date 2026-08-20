@@ -151,7 +151,7 @@ export default function MeetingsPage() {
   const past      = meetings.filter(m => m.status === 'declined' || m.status === 'completed');
 
   return (
-    <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
+    <div style={{ background: BG, minHeight: '100dvh', fontFamily: UIFONT }}>
       <div className="admin-page-content" style={{ maxWidth: 640, margin: '0 auto', padding: 'clamp(16px,4vw,32px) clamp(14px,4vw,20px) 40px' }}>
 
         {/* ── Hero header ── */}

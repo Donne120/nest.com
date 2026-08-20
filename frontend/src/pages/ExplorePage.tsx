@@ -81,7 +81,7 @@ export default function ExplorePage() {
   const totalCourses = (orgs ?? []).reduce((n, o) => n + o.course_count, 0);
 
   return (
-    <div style={{ background: INK, color: TEXT, minHeight: '100vh', fontFamily: UI }}>
+    <div style={{ background: INK, color: TEXT, minHeight: '100dvh', fontFamily: UI }}>
       {/* Slim top bar */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 20,

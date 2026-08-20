@@ -72,7 +72,7 @@ export default function ModulesPage() {
   }, [modules, filter, search]);
 
   return (
-    <div style={{ background: DARK, minHeight: '100vh', fontFamily: UIFONT }}>
+    <div style={{ background: DARK, minHeight: '100dvh', fontFamily: UIFONT }}>
 
       {/* ══ DASHBOARD HERO — the approved Calm Purple design ═══════════════
           A violet "continue learning" card + a progress ring, so a learner

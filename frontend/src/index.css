@@ -63,6 +63,9 @@ html.dark { color-scheme: light; }
 @layer base {
   * {
     box-sizing: border-box;
+    /* Kill the 300ms tap delay + double-tap zoom that makes taps feel laggy and
+       land on the wrong element. This alone makes the whole app feel "native". */
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Safety net: never let a stray wide element create a horizontal scroll
@@ -70,6 +73,10 @@ html.dark { color-scheme: light; }
   html, body {
     overflow-x: hidden;
     max-width: 100%;
+    width: 100%;
+    /* Stop the whole page from rubber-band bouncing/chaining scroll between
+       nested containers — the single biggest cause of "wobbly" mobile scroll. */
+    overscroll-behavior-y: none;
   }
 
   html {
@@ -77,6 +84,32 @@ html.dark { color-scheme: light; }
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* taps register instantly and don't trigger zoom → no accidental mis-clicks */
+    touch-action: manipulation;
+  }
+
+  body {
+    /* Smooth, momentum scrolling on iOS; a stable gutter so content doesn't
+       shift sideways when a scrollbar appears/disappears. */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Any element that scrolls internally must contain its scroll and use
+     momentum — no scroll-chaining to the page behind it. */
+  [class*="overflow-y-auto"], [class*="overflow-auto"], [class*="overflow-y-scroll"] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* Media never overflows its container (a classic source of horizontal jitter) */
+  img, video, canvas, svg { max-width: 100%; }
+
+  /* Interactive elements get a comfortable minimum tap target on touch devices
+     so a fingertip can't miss and hit the neighbour. */
+  @media (hover: none) and (pointer: coarse) {
+    button, a[role="button"], [role="tab"], .press {
+      min-height: 40px;
+    }
   }
 
   body {
@@ -441,10 +474,8 @@ html {
   display: none;
 }
 
-/* Ensure tap highlight is subtle on mobile */
-* {
-  -webkit-tap-highlight-color: rgba(123, 45, 142, 0.15);
-}
+/* Tap highlight is handled transparently in the base layer (we use .press for
+   feedback instead) — no grey/purple flash box on tap. */
 
 /* PaySubmit country grid: 2 cols on small phones */
 @media (max-width: 480px) {

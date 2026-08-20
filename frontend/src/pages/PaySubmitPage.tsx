@@ -151,7 +151,7 @@ export default function PaySubmitPage() {
   const instructions = activeCountry?.instructions ?? organization?.payment_instructions;
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, fontFamily: "'Syne', 'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100dvh', background: BG, fontFamily: "'Syne', 'Inter', sans-serif" }}>
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '56px 24px 80px' }}>
 
         {/* Back */}

@@ -67,7 +67,7 @@ export default function PayStatusPage() {
   }, [submissions]);
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, fontFamily: "'Syne', 'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100dvh', background: BG, fontFamily: "'Syne', 'Inter', sans-serif" }}>
       <div style={{ maxWidth: 700, margin: '0 auto', padding: '56px 24px 80px' }}>
 
         {/* Back */}

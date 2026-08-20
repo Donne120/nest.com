@@ -66,7 +66,7 @@ export default function PricingPage() {
   const { token } = useAuthStore();
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, fontFamily: "'Syne', 'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100dvh', background: BG, fontFamily: "'Syne', 'Inter', sans-serif" }}>
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <div style={{ textAlign: 'center', padding: '72px 24px 48px' }}>

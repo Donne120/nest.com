@@ -75,7 +75,7 @@ export default function ProfilePage() {
   const previewName = name.trim() || (user?.full_name ?? '');
 
   return (
-    <div style={{ background: BG, minHeight: '100vh', fontFamily: UIFONT }}>
+    <div style={{ background: BG, minHeight: '100dvh', fontFamily: UIFONT }}>
       <div className="admin-page-content" style={{ maxWidth: 640, margin: '0 auto', padding: '0 0 40px' }}>
 
         {/* ── Hero header — a real app profile top ── */}

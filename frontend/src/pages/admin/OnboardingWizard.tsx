@@ -531,7 +531,7 @@ export default function OnboardingWizard() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, fontFamily: UI, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 16px', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100dvh', background: BG, fontFamily: UI, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 16px', position: 'relative', overflow: 'hidden' }}>
 
       {/* Background grid */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', backgroundImage: 'repeating-linear-gradient(90deg,rgba(26,23,20,0.025) 0,rgba(26,23,20,0.025) 1px,transparent 1px,transparent 60px),repeating-linear-gradient(0deg,rgba(26,23,20,0.025) 0,rgba(26,23,20,0.025) 1px,transparent 1px,transparent 60px)' }} />

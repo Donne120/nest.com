@@ -343,7 +343,7 @@ function FloatChip({ cls, label, sub, accent, top, bottom, left, right, delay }:
 function Hero() {
   return (
     <section style={{
-      minHeight: '100vh', display: 'flex', flexDirection: 'column',
+      minHeight: '100dvh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', textAlign: 'center',
       padding: 'clamp(96px,12vw,120px) clamp(16px,5vw,48px) clamp(48px,6vw,72px)',
       position: 'relative', overflow: 'hidden',

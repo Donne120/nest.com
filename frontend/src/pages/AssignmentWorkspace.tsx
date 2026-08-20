@@ -591,7 +591,7 @@ export default function AssignmentWorkspace() {
   }
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col bg-[var(--c-bg2)] dark:bg-[var(--c-bg)]">
+    <div className="h-[calc(100dvh -64px)] flex flex-col bg-[var(--c-bg2)] dark:bg-[var(--c-bg)]">
 
       {/* ─── Top bar ─────────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 bg-[var(--c-surf)] border-b border-[var(--c-rule)]">

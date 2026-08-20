@@ -148,14 +148,14 @@ export default function SignupPage() {
 
       {/* Card */}
       <div style={{
-        display: 'flex', width: '100%', maxWidth: 960, minHeight: '100vh',
+        display: 'flex', width: '100%', maxWidth: 960, minHeight: '100dvh',
         position: 'relative', zIndex: 1,
         margin: '0 auto',
       }}>
 
       {/* Left panel */}
       <div style={{
-        width: 440, flexShrink: 0, minHeight: '100vh',
+        width: 440, flexShrink: 0, minHeight: '100dvh',
         background: `linear-gradient(160deg, #8B6FE8 0%, ${PANEL} 55%, #5A38C7 100%)`,
         position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',

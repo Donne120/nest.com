@@ -94,7 +94,7 @@ function RequireManager({ children }: { children: ReactNode }) {
 
 function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 font-sans">
+    <div className="min-h-[100dvh] bg-white dark:bg-slate-950 font-sans">
       <Navbar />
       <main className="md:pb-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)' }}>
         <style>{`@media (min-width: 768px) { main { padding-bottom: 0 !important; } }`}</style>
@@ -116,7 +116,7 @@ export default function App() {
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <BrandColorApplier />
         <ErrorBoundary>
-        <Suspense fallback={<div className="min-h-screen bg-white dark:bg-slate-950" />}>
+        <Suspense fallback={<div className="min-h-[100dvh] bg-white dark:bg-slate-950" />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -199,7 +199,7 @@ export default function App() {
             path="/assignments/:assignmentId/work"
             element={
               <RequireAuth>
-                <div className="min-h-screen bg-[#FAF7F2] dark:bg-slate-950 font-sans flex flex-col">
+                <div className="min-h-[100dvh] bg-[#FAF7F2] dark:bg-slate-950 font-sans flex flex-col">
                   <Navbar />
                   <AssignmentWorkspace />
                 </div>
@@ -222,7 +222,7 @@ export default function App() {
             path="/video/:videoId"
             element={
               <RequireAuth>
-                <div className="min-h-screen bg-[#FAF7F2] font-sans flex flex-col">
+                <div className="min-h-[100dvh] bg-[#FAF7F2] font-sans flex flex-col">
                   <div className="hidden lg:block"><Navbar /></div>
                   <VideoPage />
                 </div>
@@ -234,7 +234,7 @@ export default function App() {
             path="/lesson/:lessonId"
             element={
               <RequireAuth>
-                <div className="min-h-screen font-sans flex flex-col" style={{ background: 'var(--c-bg)' }}>
+                <div className="min-h-[100dvh] font-sans flex flex-col" style={{ background: 'var(--c-bg)' }}>
                   <Navbar />
                   <LessonPage />
                 </div>

@@ -838,7 +838,7 @@ export default function PitchDeck() {
   const SlideComp = SLIDES[current].component;
 
   return (
-    <div style={{ background: BG, width: '100vw', height: '100vh', overflow: 'hidden', fontFamily: UI, position: 'relative' }}>
+    <div style={{ background: BG, width: '100vw', height: '100dvh', overflow: 'hidden', fontFamily: UI, position: 'relative' }}>
       <ProgressBar current={current} total={TOTAL_SLIDES} />
 
       {/* Top bar */}

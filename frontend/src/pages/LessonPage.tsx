@@ -362,7 +362,7 @@ export default function LessonPage() {
       <div
         style={{
           display: 'flex',
-          height: 'calc(100vh - 56px)',
+          height: 'calc(100dvh - 56px)',
           background: '#F6F4FD',
         }}
       >
@@ -383,7 +383,7 @@ export default function LessonPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          height: 'calc(100vh - 56px)',
+          height: 'calc(100dvh - 56px)',
           background: '#F6F4FD',
           color: '#A5A1B8',
         }}
@@ -397,7 +397,7 @@ export default function LessonPage() {
     <div
       style={{
         display: 'flex',
-        height: 'calc(100vh - 56px)',
+        height: 'calc(100dvh - 56px)',
         overflow: 'hidden',
         background: '#F6F4FD',
       }}
