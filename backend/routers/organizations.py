@@ -159,12 +159,23 @@ def update_my_org(
             status_code=404, detail="Organization not found"
         )
     updates = payload.model_dump(exclude_unset=True)
+
+    # Custom branding (logo/brand colour) is plan-gated. But the settings form
+    # sends these fields on every save even when untouched, which would block
+    # unrelated edits (tagline, payment, etc.). So only enforce — and only apply —
+    # branding when it's ACTUALLY being changed to a new non-empty value.
     branding_keys = {"logo_url", "brand_color"}
-    if (
-        branding_keys & updates.keys()
-        and current_user.role != _SUPER
-    ):
+    for key in branding_keys:
+        if key in updates:
+            new_val = (updates[key] or "").strip() if isinstance(updates[key], str) else updates[key]
+            current_val = getattr(org, key, None) or ""
+            if not new_val or new_val == current_val:
+                # unchanged or cleared — don't gate, don't treat as a branding change
+                updates.pop(key)
+
+    if (branding_keys & updates.keys()) and current_user.role != _SUPER:
         plan_limits.check_custom_branding(org)
+
     for field, value in updates.items():
         setattr(org, field, value)
     db.commit()
