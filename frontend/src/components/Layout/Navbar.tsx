@@ -115,9 +115,11 @@ export default function Navbar() {
           // top of the row — hiding the notification bell on notched phones.
           height: 'calc(56px + env(safe-area-inset-top, 0px))',
           paddingTop: 'env(safe-area-inset-top, 0px)',
-          background:    tk.headerBg,
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
+          // Solid background (no backdrop-filter): a persistent sticky blur
+          // forces a full re-blur on every scroll frame, which is what makes
+          // mobile scrolling stutter and feel heavy. The bg was already 95%
+          // opaque so this looks the same but scrolls smoothly.
+          background:    'var(--c-surf)',
           borderBottom:  `1px solid ${tk.headerBorder}`,
           boxShadow:     tk.headerShadow,
           transition:    'background 0.2s, border-color 0.2s',

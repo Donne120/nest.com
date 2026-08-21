@@ -159,14 +159,14 @@ export default function BottomNav() {
       </nav>
 
       <style>{`
-        /* Theme-aware floating glass bar — reads native in both light & dark. */
+        /* Solid bar (no backdrop-filter). A blurred fixed bar re-blurs the whole
+           page behind it on every scroll frame — the #1 cause of heavy, stuttery
+           mobile scrolling. A solid surface looks native and scrolls buttery. */
         .nest-bottomnav {
-          background: color-mix(in srgb, var(--c-surf) 82%, transparent);
-          backdrop-filter: blur(24px) saturate(1.4);
-          -webkit-backdrop-filter: blur(24px) saturate(1.4);
+          background: var(--c-surf);
           border-top: 1px solid var(--c-rule);
           box-shadow: 0 -0.5px 0 color-mix(in srgb, var(--c-ink) 6%, transparent),
-                      0 -10px 34px -18px rgba(0,0,0,0.55);
+                      0 -10px 34px -18px rgba(84,52,180,0.18);
         }
         .nest-tab { -webkit-tap-highlight-color: transparent; }
         /* Icon capsule springs on press for a tactile, app-native feel. */

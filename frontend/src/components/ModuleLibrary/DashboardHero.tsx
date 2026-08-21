@@ -127,11 +127,11 @@ export default function DashboardHero({
             >
               <Play size={15} fill="#5A38C7" /> {pct(resume) > 0 ? 'Resume' : 'Start learning'}
             </Link>
-            <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(4px)', borderRadius: 999, padding: '8px 14px', fontSize: 13, fontWeight: 600 }}>
+            <span style={{ background: 'rgba(255,255,255,0.22)', borderRadius: 999, padding: '8px 14px', fontSize: 13, fontWeight: 600 }}>
               {pct(resume)}% complete
             </span>
             {streak > 0 && (
-              <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(4px)', borderRadius: 999, padding: '8px 14px', fontSize: 13, fontWeight: 600 }}>
+              <span style={{ background: 'rgba(255,255,255,0.22)', borderRadius: 999, padding: '8px 14px', fontSize: 13, fontWeight: 600 }}>
                 🔥 {streak}-day streak
               </span>
             )}

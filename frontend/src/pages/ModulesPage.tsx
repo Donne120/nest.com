@@ -88,7 +88,7 @@ export default function ModulesPage() {
 
       {/* ══ TOOLBAR ═══════════════════════════════════════════════════════ */}
       {/* top:56px clears the sticky 56px Navbar (z-40) so it doesn't hide behind it */}
-      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'color-mix(in srgb, var(--c-bg) 92%, transparent)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 56, zIndex: 20 }}>
+      <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: 'var(--c-bg)', position: 'sticky', top: 56, zIndex: 20 }}>
         <div className="toolbar-inner" style={{ maxWidth: 1400, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
 
           {/* Filter tabs */}
