@@ -1,12 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Video, UserCircle, LayoutDashboard, MessageSquare, ClipboardList, Sparkles } from 'lucide-react';
-import { useAuthStore, useUIStore } from '../../store';
+import { BookOpen, Video, UserCircle, LayoutDashboard, MessageSquare, ClipboardList } from 'lucide-react';
+import { useAuthStore } from '../../store';
 import clsx from 'clsx';
 
 const learnerTabs = [
   { to: '/modules',     icon: BookOpen,      label: 'Learn'       },
   { to: '/assignments', icon: ClipboardList, label: 'Tasks'       },
-  { id: 'assistant',    icon: Sparkles,      label: 'Assistant'   },
   { to: '/meetings',    icon: Video,         label: 'Meetings'    },
   { to: '/profile',     icon: UserCircle,    label: 'Profile'     },
 ];
@@ -14,14 +13,12 @@ const learnerTabs = [
 const managerTabs = [
   { to: '/admin',           icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/admin/courses',   icon: BookOpen,        label: 'Courses'   },
-  { id: 'assistant',        icon: Sparkles,        label: 'Assistant' },
   { to: '/admin/questions', icon: MessageSquare,   label: 'Questions' },
   { to: '/profile',         icon: UserCircle,      label: 'Profile'   },
 ];
 
 export default function BottomNav() {
   const { user } = useAuthStore();
-  const { toggleNestAssistant, nestAssistantOpen } = useUIStore();
   const location = useLocation();
 
   const isManager = user?.role === 'educator' || user?.role === 'owner';
@@ -45,74 +42,6 @@ export default function BottomNav() {
         <div className="flex items-stretch nest-bottomnav-row">
           {tabs.map((tab) => {
             const Icon = tab.icon;
-
-            // ── Nest Assistant centre button ──────────────────────────────
-            if ('id' in tab && tab.id === 'assistant') {
-              const active = nestAssistantOpen;
-              return (
-                <button
-                  key="assistant"
-                  onClick={toggleNestAssistant}
-                  aria-label="Nest Assistant"
-                  className="nest-tab flex-1 flex flex-col items-center justify-center gap-1 relative"
-                  style={{
-                    minHeight: 58,
-                    paddingTop: 8,
-                    paddingBottom: 8,
-                    border: 'none',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {/* Glowing centre pill — Nest AI orchid */}
-                  <div
-                    className="nest-tab-cap"
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 14,
-                      background: active
-                        ? 'linear-gradient(135deg,#b06cc6,#7b2d8e)'
-                        : 'linear-gradient(135deg,rgba(176,108,198,0.20),rgba(123,45,142,0.20))',
-                      border: active
-                        ? '1px solid rgba(176,108,198,0.6)'
-                        : '1px solid rgba(176,108,198,0.28)',
-                      boxShadow: active
-                        ? '0 0 20px rgba(176,108,198,0.45), 0 4px 12px rgba(0,0,0,0.3)'
-                        : '0 0 12px rgba(176,108,198,0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
-                      transform: active ? 'scale(1.08)' : 'scale(1)',
-                      marginBottom: 2,
-                    }}
-                  >
-                    <Sparkles
-                      size={18}
-                      style={{
-                        color: active ? '#fff' : '#b06cc6',
-                        transition: 'color 0.2s',
-                      }}
-                    />
-                  </div>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.03em',
-                      lineHeight: 1,
-                      color: active ? '#c06fd0' : 'rgba(255,255,255,0.35)',
-                      transition: 'color 0.2s',
-                    }}
-                  >
-                    {tab.label}
-                  </span>
-                </button>
-              );
-            }
-
-            // ── Regular nav tab ──────────────────────────────────────────
             const active = isActive(tab.to);
             return (
               <Link
