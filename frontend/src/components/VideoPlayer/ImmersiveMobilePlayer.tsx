@@ -73,6 +73,22 @@ export default function ImmersiveMobilePlayer({
   const touchStart = useRef<{ y: number; t: number } | null>(null);
   const resumeAfterOverlay = useRef(false);
 
+  // ── Finger-following swipe (TikTok-style) ──────────────────────────────────
+  // For smoothness we move the stage by writing transform DIRECTLY to the DOM
+  // node on each touchmove (no React re-render per frame → no jank while a video
+  // is decoding). React state is used only to toggle the spring transition.
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const startY = useRef(0);
+  const lastY = useRef(0);
+  const lastT = useRef(0);
+  const velocity = useRef(0);
+  const curDrag = useRef(0);
+  const setStageTransform = (y: number) => {
+    curDrag.current = y;
+    if (stageRef.current) stageRef.current.style.transform = `translateY(${y}px)`;
+  };
+
   // Read current playback time regardless of source (for Ask timestamp).
   const readTime = useCallback((): number => {
     if (kind === 'youtube') { try { return ytRef.current?.getCurrentTime?.() ?? current; } catch { return current; } }
@@ -186,30 +202,80 @@ export default function ImmersiveMobilePlayer({
     else { v.pause(); setPlaying(false); }
   }, [kind]);
 
-  // Swipe up = next lesson, swipe down = previous
-  const onTouchStart = (e: React.TouchEvent) => {
-    touchStart.current = { y: e.touches[0].clientY, t: Date.now() };
+  // ── Swipe: the video follows the finger, then snaps to next/prev (up = next,
+  //    down = previous), or springs back. This is what makes it feel native. ──
+  // Don't hijack a swipe that starts on a real control (seek slider, rail
+  // buttons, links). The full-screen play/pause button is marked data-swipe-ok
+  // so the swipe still works across the whole video area.
+  const onControl = (t: EventTarget | null) => {
+    if (!(t instanceof Element)) return false;
+    const el = t.closest('button, a, input, [role="button"], [data-no-swipe]');
+    if (!el) return false;
+    return !el.hasAttribute('data-swipe-ok');
   };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    const s = touchStart.current;
-    touchStart.current = null;
-    if (!s) return;
-    const dy = e.changedTouches[0].clientY - s.y;
-    const dt = Date.now() - s.t;
-    // deliberate vertical flick only
-    if (Math.abs(dy) < 70 || dt > 700) return;
-    if (dy < 0 && hasNext) { setSwipe('up'); onNext(); }
-    else if (dy > 0 && hasPrev) { setSwipe('down'); onPrev(); }
-    setTimeout(() => setSwipe(null), 320);
+
+  const swipeActive = useRef(false);
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (onControl(e.target)) { swipeActive.current = false; return; }
+    swipeActive.current = true;
+    const y = e.touches[0].clientY;
+    startY.current = y;
+    lastY.current = y;
+    lastT.current = Date.now();
+    velocity.current = 0;
+    setDragging(true);           // disables the spring transition during drag
+    if (hint) setHint(false);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!swipeActive.current) return;
+    const y = e.touches[0].clientY;
+    let dy = y - startY.current;
+    // Rubber-band resistance at the ends (no next/prev to go to).
+    if ((dy < 0 && !hasNext) || (dy > 0 && !hasPrev)) dy *= 0.28;
+    const now = Date.now();
+    const dt = now - lastT.current;
+    if (dt > 0) velocity.current = (y - lastY.current) / dt; // px/ms
+    lastY.current = y;
+    lastT.current = now;
+    setStageTransform(dy);       // direct DOM write — no re-render, no jank
+  };
+
+  const onTouchEnd = () => {
+    if (!swipeActive.current) return;
+    swipeActive.current = false;
+    setDragging(false);          // re-enables the spring transition
+    const dy = curDrag.current;
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
+    const THRESHOLD = vh * 0.20; // dragged past 20% of screen
+    const FLICK = 0.5;           // or a fast flick (px/ms)
+    const v = velocity.current;
+
+    const goNext = hasNext && (dy < -THRESHOLD || v < -FLICK);
+    const goPrev = hasPrev && (dy > THRESHOLD || v > FLICK);
+
+    // Spring the stage back to 0. The new lesson (if any) mounts fresh at 0,
+    // so resetting the transform here gives a clean, smooth settle either way.
+    setStageTransform(0);
+    if (goNext) { setSwipe('up'); onNext(); setTimeout(() => setSwipe(null), 340); }
+    else if (goPrev) { setSwipe('down'); onPrev(); setTimeout(() => setSwipe(null), 340); }
   };
 
   const pct = duration > 0 ? (current / duration) * 100 : 0;
 
   return (
     <div
+      ref={stageRef}
       className="fixed inset-0"
-      style={{ zIndex: 70, background: '#F6F4FD', animation: 'imm-in 0.25s ease both' }}
+      style={{
+        zIndex: 70, background: '#F6F4FD', animation: 'imm-in 0.25s ease both',
+        // Transform is written directly via ref during drag (no per-frame
+        // re-render). When not dragging, this spring smoothly settles it.
+        transition: dragging ? 'none' : 'transform 0.34s cubic-bezier(0.22, 1, 0.36, 1)',
+        willChange: 'transform',
+      }}
       onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
       {kind === 'native' ? (
@@ -229,7 +295,7 @@ export default function ImmersiveMobilePlayer({
             src={videoUrl}
             autoPlay playsInline preload="metadata"
             className="absolute inset-0 w-full h-full"
-            style={{ objectFit: 'contain', animation: swipe ? `imm-${swipe} 0.32s ease` : undefined }}
+            style={{ objectFit: 'contain', animation: 'imm-content 0.34s ease both' }}
             onClick={togglePlay}
             onTimeUpdate={e => { setCurrent(e.currentTarget.currentTime); syncBg(e.currentTarget.currentTime, !e.currentTarget.paused); }}
             onLoadedMetadata={e => setDuration(e.currentTarget.duration)}
@@ -241,12 +307,12 @@ export default function ImmersiveMobilePlayer({
         </>
       ) : kind === 'youtube' ? (
         // YouTube fills the screen; the YT IFrame API drives play/pause/time.
-        <div className="absolute inset-0" style={{ animation: swipe ? `imm-${swipe} 0.32s ease` : undefined }}>
+        <div className="absolute inset-0" style={{ animation: 'imm-content 0.34s ease both' }}>
           <div id={ytBoxId} className="w-full h-full" style={{ pointerEvents: 'none' }} />
         </div>
       ) : (
         // Vimeo — full-bleed iframe (autoplay muted-less relies on Vimeo defaults).
-        <div className="absolute inset-0" style={{ animation: swipe ? `imm-${swipe} 0.32s ease` : undefined }}>
+        <div className="absolute inset-0" style={{ animation: 'imm-content 0.34s ease both' }}>
           <iframe
             src={`https://player.vimeo.com/video/${viId}?autoplay=1&playsinline=1&title=0&byline=0&portrait=0`}
             className="w-full h-full" style={{ border: 0 }}
@@ -259,7 +325,7 @@ export default function ImmersiveMobilePlayer({
           the iframe is pointer-events:none, so this is also how taps reach us.
           It's transparent so a PAUSED frame stays fully visible. */}
       {kind !== 'vimeo' && (
-        <button onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play'} className="absolute inset-0" style={{ background: 'transparent', zIndex: 1 }} />
+        <button data-swipe-ok onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play'} className="absolute inset-0" style={{ background: 'transparent', zIndex: 1 }} />
       )}
 
       {/* Centre play/pause icon — auto-hides so it never covers the frame the
@@ -380,10 +446,10 @@ export default function ImmersiveMobilePlayer({
       )}
 
       <style>{`
-        @keyframes imm-in   { from{opacity:0} to{opacity:1} }
-        @keyframes imm-up   { from{transform:translateY(28px);opacity:0.4} to{transform:translateY(0);opacity:1} }
-        @keyframes imm-down { from{transform:translateY(-28px);opacity:0.4} to{transform:translateY(0);opacity:1} }
-        @keyframes imm-hint { 0%{opacity:0} 15%{opacity:1} 75%{opacity:1} 100%{opacity:0} }
+        @keyframes imm-in      { from{opacity:0} to{opacity:1} }
+        /* New lesson's content settles in gently after a swipe/mount. */
+        @keyframes imm-content { from{opacity:0; transform:scale(1.012)} to{opacity:1; transform:scale(1)} }
+        @keyframes imm-hint    { 0%{opacity:0} 15%{opacity:1} 75%{opacity:1} 100%{opacity:0} }
         @media (prefers-reduced-motion: reduce) {
           [style*="imm-"] { animation: none !important; }
         }
