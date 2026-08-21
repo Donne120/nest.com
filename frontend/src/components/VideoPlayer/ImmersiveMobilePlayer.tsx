@@ -89,11 +89,14 @@ export default function ImmersiveMobilePlayer({
     if (!isPlaying && !b.paused) b.pause();
   }, []);
 
-  // Lock body scroll while immersive
+  // Lock body scroll while immersive. IMPORTANT: always RESTORE to '' (not the
+  // previous value). Capturing `prev` was buggy — if the lock was already
+  // 'hidden' (e.g. re-mount, or another overlay), restoring to `prev` left the
+  // whole app permanently unscrollable. Empty string returns scrolling to the
+  // page's own CSS.
   useEffect(() => {
-    const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    return () => { document.body.style.overflow = ''; };
   }, []);
 
   // Ask / Quiz overlay open → pause the lesson at the current moment. When the

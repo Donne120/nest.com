@@ -8,7 +8,7 @@ import BottomNav from './components/Layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
 import NestAssistant from './components/AI/NestAssistant';
 import OnboardingTour from './components/Onboarding/OnboardingTour';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -110,11 +110,26 @@ function BrandColorApplier() {
   return null;
 }
 
+// Safety net: whenever the route changes, make sure page scrolling is unlocked.
+// Modals/players lock document.body.overflow while open; if one ever fails to
+// clean up (e.g. unmounted by a navigation instead of a close handler), the whole
+// app would be stuck unscrollable. Resetting on every navigation guarantees a
+// fresh page can always scroll.
+function ScrollUnlocker() {
+  const location = useLocation();
+  useEffect(() => {
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+  }, [location.pathname]);
+  return null;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <BrandColorApplier />
+        <ScrollUnlocker />
         <ErrorBoundary>
         <Suspense fallback={<div className="min-h-[100dvh] bg-white dark:bg-slate-950" />}>
         <Routes>
