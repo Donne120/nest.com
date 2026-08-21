@@ -302,6 +302,12 @@ html.dark { color-scheme: light; }
   -webkit-overflow-scrolling: touch;
 }
 .nest-rich .katex { color: var(--rt-ink); font-size: 1.05em; }
+/* Math shown while KaTeX lazy-loads — a subtle monospace placeholder, not raw
+   dollar-signs. Swapped for the real equation the instant KaTeX arrives. */
+.nest-rich .rt-math-pending {
+  font-family: 'DM Mono', ui-monospace, monospace;
+  color: var(--rt-ink2); opacity: 0.75;
+}
 
 /* Markdown tables — scroll horizontally on a phone instead of blowing out. */
 .nest-rich .rt-table-wrap {
