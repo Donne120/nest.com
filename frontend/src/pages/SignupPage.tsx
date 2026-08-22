@@ -172,7 +172,7 @@ export default function SignupPage() {
         {/* Logo */}
         <div style={{ position: 'relative', zIndex: 1 }}>
           <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 30, height: 30, border: `1.5px solid rgba(206,146,220,0.5)`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: PANEL_ACC, fontFamily: UI }}>N</div>
+            <img src="/nest-mark-white.png" alt="" style={{ height: 30, width: 'auto', display: 'block' }} />
             <span style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: PANEL_INK, letterSpacing: '0.01em' }}>Nest</span>
           </Link>
         </div>

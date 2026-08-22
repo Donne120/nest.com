@@ -150,14 +150,8 @@ function Nav() {
       background: 'rgba(246,244,253,0.82)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
       fontFamily: UI, gap: 12,
     }}>
-      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 11, flexShrink: 0 }}>
-        <div style={{
-          width: 30, height: 30, borderRadius: 8,
-          background: `linear-gradient(135deg, ${GOLD}, ${GOLDD})`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14, fontWeight: 800, color: INK, fontFamily: DISP,
-          boxShadow: '0 0 0 1px rgba(109,74,224,0.3), 0 4px 14px rgba(109,74,224,0.35)',
-        }}>N</div>
+      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        <img src="/nest-mark.png" alt="" style={{ height: 30, width: 'auto', display: 'block' }} />
         <span style={{ fontFamily: DISP, fontSize: 25, fontWeight: 600, color: TEXT, letterSpacing: '0.01em' }}>Nest</span>
       </Link>
 
@@ -618,7 +612,7 @@ function Close() {
       <div style={{ borderTop: `1px solid ${HAIR}`, position: 'relative' }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', padding: '28px clamp(16px,4vw,48px)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-            <div style={{ width: 26, height: 26, borderRadius: 7, background: `linear-gradient(135deg, ${GOLD}, ${GOLDD})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: INK, fontFamily: DISP }}>N</div>
+            <img src="/nest-mark.png" alt="" style={{ height: 26, width: 'auto', display: 'block' }} />
             <span style={{ fontFamily: DISP, fontSize: 20, fontWeight: 600, color: TEXT }}>Nest</span>
           </div>
           <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>

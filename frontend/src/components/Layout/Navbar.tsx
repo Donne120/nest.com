@@ -131,9 +131,7 @@ export default function Navbar() {
           {organization?.logo_url ? (
             <img src={organization.logo_url} alt={orgName} className="h-7 w-auto object-contain max-w-[100px]" />
           ) : (
-            <span className="nav-org-name" style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 900, fontSize: 20, color: tk.orgNameColor, letterSpacing: '-0.5px', transition: 'color 0.2s', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {orgName.toLowerCase()}
-            </span>
+            <img src="/nest-wordmark.png" alt="Nest" className="h-6 w-auto object-contain" style={{ maxWidth: 96 }} />
           )}
         </Link>
 
