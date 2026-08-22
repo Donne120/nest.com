@@ -124,14 +124,7 @@ export default function AdminLayout() {
         <div style={{ padding: '20px 20px 18px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <Link to="/admin" style={{ textDecoration: 'none' }} onClick={() => setMobileSidebarOpen(false)}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 28, height: 28, background: ACC, borderRadius: 6,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 13, fontWeight: 800, color: '#fff', flexShrink: 0,
-                boxShadow: `0 0 0 1px rgba(123,45,142,0.4), 0 4px 12px rgba(123,45,142,0.35)`,
-              }}>
-                N
-              </div>
+              <img src="/nest-mark-white.png" alt="" style={{ height: 28, width: 'auto', display: 'block', flexShrink: 0 }} />
               <span style={{
                 fontFamily: "'Fraunces', Georgia, serif",
                 fontWeight: 600, fontSize: 23,

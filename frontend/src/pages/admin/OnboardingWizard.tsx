@@ -542,7 +542,7 @@ export default function OnboardingWizard() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: SURF, border: `1px solid ${RULE}`, borderRadius: 40, padding: '7px 18px 7px 10px', boxShadow: '0 1px 4px rgba(26,23,20,0.06)', marginBottom: 16 }}>
-            <div style={{ width: 26, height: 26, background: ACC, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: UI, fontSize: 13, fontWeight: 800, color: SURF }}>N</div>
+            <img src="/nest-mark.png" alt="" style={{ height: 24, width: 'auto', display: 'block' }} />
             <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: INK2 }}>Setup Wizard</span>
           </div>
           <p style={{ fontFamily: UI, fontSize: 13.5, color: INK2 }}>

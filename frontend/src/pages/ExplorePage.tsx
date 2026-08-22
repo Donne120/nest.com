@@ -92,7 +92,7 @@ export default function ExplorePage() {
         background: 'rgba(246,244,253,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       }}>
         <Link to="/" className="press" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: `linear-gradient(135deg, #8B6FE8, #5A38C7)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: INK, fontFamily: DISP }}>N</div>
+          <img src="/nest-mark.png" alt="" style={{ height: 28, width: 'auto', display: 'block' }} />
           <span style={{ fontFamily: DISP, fontSize: 22, fontWeight: 600, color: TEXT }}>Nest</span>
         </Link>
         <Link to="/login" className="press" style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: INK, background: GOLD, padding: '9px 18px', borderRadius: 8, textDecoration: 'none' }}>
