@@ -9,53 +9,82 @@ import ErrorBoundary from './components/ErrorBoundary';
 import NestAssistant from './components/AI/NestAssistant';
 import OnboardingTour from './components/Onboarding/OnboardingTour';
 import { lazy, Suspense, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, ComponentType } from 'react';
 
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
-const ModulesPage = lazy(() => import('./pages/ModulesPage'));
-const ModuleDetailPage = lazy(() => import('./pages/ModuleDetailPage'));
-const VideoPage = lazy(() => import('./pages/VideoPage'));
-const LessonPage = lazy(() => import('./pages/LessonPage'));
-const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
-const AdminQuestionsPage = lazy(() => import('./pages/admin/AdminQuestionsPage'));
-const AdminQuestionDetail = lazy(() => import('./pages/admin/AdminQuestionDetail'));
-const AdminAnalyticsPage = lazy(() => import('./pages/admin/AdminAnalyticsPage'));
-const AdminCoursesPage = lazy(() => import('./pages/admin/AdminCoursesPage'));
-const AdminModuleEditor = lazy(() => import('./pages/admin/AdminModuleEditor'));
-const OnboardingWizard = lazy(() => import('./pages/admin/OnboardingWizard'));
-const SignupPage = lazy(() => import('./pages/SignupPage'));
-const InvitePage = lazy(() => import('./pages/InvitePage'));
-const JoinPage = lazy(() => import('./pages/JoinPage'));
-const OrgSettingsPage = lazy(() => import('./pages/admin/OrgSettingsPage'));
-const LandingPage = lazy(() => import('./pages/LandingPage'));
-const ExplorePage = lazy(() => import('./pages/ExplorePage'));
-const MeetingsPage = lazy(() => import('./pages/MeetingsPage'));
-const AdminMeetingsPage = lazy(() => import('./pages/admin/AdminMeetingsPage'));
-const AdminPeoplePage = lazy(() => import('./pages/admin/AdminPeoplePage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const CertificatePage = lazy(() => import('./pages/CertificatePage'));
-const AssignmentsPage = lazy(() => import('./pages/AssignmentsPage'));
-const AssignmentWorkspace = lazy(() => import('./pages/AssignmentWorkspace'));
-const GroupMergedView = lazy(() => import('./pages/GroupMergedView'));
-const AdminAssignmentsPage = lazy(() => import('./pages/admin/AdminAssignmentsPage'));
-const AdminAssignmentEditor = lazy(() => import('./pages/admin/AdminAssignmentEditor'));
-const AdminAssignmentDetail = lazy(() => import('./pages/admin/AdminAssignmentDetail'));
-const AdminSubmissionReview = lazy(() => import('./pages/admin/AdminSubmissionReview'));
-const PricingPage = lazy(() => import('./pages/PricingPage'));
-const CareersPage = lazy(() => import('./pages/CareersPage'));
-const PaySubmitPage = lazy(() => import('./pages/PaySubmitPage'));
-const PayStatusPage = lazy(() => import('./pages/PayStatusPage'));
-const AdminPaymentsPage = lazy(() => import('./pages/admin/AdminPaymentsPage'));
-const PitchDeck = lazy(() => import('./pages/PitchDeck'));
-const OnePagerPage = lazy(() => import('./pages/OnePagerPage'));
-const BusinessPlanPage = lazy(() => import('./pages/BusinessPlanPage'));
-const TermsPage = lazy(() => import('./pages/TermsPage'));
-const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
-const MediaKitPage = lazy(() => import('./pages/MediaKitPage'));
-const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
+// Lazy import that survives slow/flaky connections and stale chunks after a
+// deploy. If a chunk fails to load, retry once after a short delay; if it still
+// fails (usually an old hashed URL that no longer exists post-deploy), force a
+// one-time reload so the user gets the fresh index instead of a blank screen.
+function lazyWithReload<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (err) {
+      // Retry once — covers a transient network drop on a slow connection.
+      try {
+        await new Promise((r) => setTimeout(r, 600));
+        return await factory();
+      } catch (err2) {
+        const KEY = 'nest_chunk_reloaded';
+        try {
+          if (!sessionStorage.getItem(KEY)) {
+            sessionStorage.setItem(KEY, '1');
+            window.location.reload();
+            // Return a never-resolving promise; the reload takes over.
+            return await new Promise<{ default: T }>(() => {});
+          }
+        } catch { /* sessionStorage blocked — fall through to the error */ }
+        throw err2;
+      }
+    }
+  });
+}
+
+const LoginPage = lazyWithReload(() => import('./pages/LoginPage'));
+const ForgotPasswordPage = lazyWithReload(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazyWithReload(() => import('./pages/ResetPasswordPage'));
+const ModulesPage = lazyWithReload(() => import('./pages/ModulesPage'));
+const ModuleDetailPage = lazyWithReload(() => import('./pages/ModuleDetailPage'));
+const VideoPage = lazyWithReload(() => import('./pages/VideoPage'));
+const LessonPage = lazyWithReload(() => import('./pages/LessonPage'));
+const AdminLayout = lazyWithReload(() => import('./pages/admin/AdminLayout'));
+const AdminDashboard = lazyWithReload(() => import('./pages/admin/AdminDashboard'));
+const AdminQuestionsPage = lazyWithReload(() => import('./pages/admin/AdminQuestionsPage'));
+const AdminQuestionDetail = lazyWithReload(() => import('./pages/admin/AdminQuestionDetail'));
+const AdminAnalyticsPage = lazyWithReload(() => import('./pages/admin/AdminAnalyticsPage'));
+const AdminCoursesPage = lazyWithReload(() => import('./pages/admin/AdminCoursesPage'));
+const AdminModuleEditor = lazyWithReload(() => import('./pages/admin/AdminModuleEditor'));
+const OnboardingWizard = lazyWithReload(() => import('./pages/admin/OnboardingWizard'));
+const SignupPage = lazyWithReload(() => import('./pages/SignupPage'));
+const InvitePage = lazyWithReload(() => import('./pages/InvitePage'));
+const JoinPage = lazyWithReload(() => import('./pages/JoinPage'));
+const OrgSettingsPage = lazyWithReload(() => import('./pages/admin/OrgSettingsPage'));
+const LandingPage = lazyWithReload(() => import('./pages/LandingPage'));
+const ExplorePage = lazyWithReload(() => import('./pages/ExplorePage'));
+const MeetingsPage = lazyWithReload(() => import('./pages/MeetingsPage'));
+const AdminMeetingsPage = lazyWithReload(() => import('./pages/admin/AdminMeetingsPage'));
+const AdminPeoplePage = lazyWithReload(() => import('./pages/admin/AdminPeoplePage'));
+const ProfilePage = lazyWithReload(() => import('./pages/ProfilePage'));
+const CertificatePage = lazyWithReload(() => import('./pages/CertificatePage'));
+const AssignmentsPage = lazyWithReload(() => import('./pages/AssignmentsPage'));
+const AssignmentWorkspace = lazyWithReload(() => import('./pages/AssignmentWorkspace'));
+const GroupMergedView = lazyWithReload(() => import('./pages/GroupMergedView'));
+const AdminAssignmentsPage = lazyWithReload(() => import('./pages/admin/AdminAssignmentsPage'));
+const AdminAssignmentEditor = lazyWithReload(() => import('./pages/admin/AdminAssignmentEditor'));
+const AdminAssignmentDetail = lazyWithReload(() => import('./pages/admin/AdminAssignmentDetail'));
+const AdminSubmissionReview = lazyWithReload(() => import('./pages/admin/AdminSubmissionReview'));
+const PricingPage = lazyWithReload(() => import('./pages/PricingPage'));
+const CareersPage = lazyWithReload(() => import('./pages/CareersPage'));
+const PaySubmitPage = lazyWithReload(() => import('./pages/PaySubmitPage'));
+const PayStatusPage = lazyWithReload(() => import('./pages/PayStatusPage'));
+const AdminPaymentsPage = lazyWithReload(() => import('./pages/admin/AdminPaymentsPage'));
+const PitchDeck = lazyWithReload(() => import('./pages/PitchDeck'));
+const OnePagerPage = lazyWithReload(() => import('./pages/OnePagerPage'));
+const BusinessPlanPage = lazyWithReload(() => import('./pages/BusinessPlanPage'));
+const TermsPage = lazyWithReload(() => import('./pages/TermsPage'));
+const PrivacyPage = lazyWithReload(() => import('./pages/PrivacyPage'));
+const MediaKitPage = lazyWithReload(() => import('./pages/MediaKitPage'));
+const VerifyEmailPage = lazyWithReload(() => import('./pages/VerifyEmailPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -110,6 +139,35 @@ function BrandColorApplier() {
   return null;
 }
 
+// Branded loader shown while a page's code chunk downloads. Replaces the old
+// blank-white div, which on a slow/failed load looked like a broken page.
+function PageLoader() {
+  return (
+    <div
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--c-bg, #F6F4FD)',
+      }}
+    >
+      <div
+        aria-label="Loading"
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: '50%',
+          border: '3px solid rgba(109,74,224,0.18)',
+          borderTopColor: '#6D4AE0',
+          animation: 'nestspin 0.7s linear infinite',
+        }}
+      />
+      <style>{`@keyframes nestspin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
+
 // Safety net: whenever the route changes, make sure page scrolling is unlocked.
 // Modals/players lock document.body.overflow while open; if one ever fails to
 // clean up (e.g. unmounted by a navigation instead of a close handler), the whole
@@ -125,13 +183,18 @@ function ScrollUnlocker() {
 }
 
 export default function App() {
+  // A successful mount means the last (possibly reloaded) load worked — reset
+  // the one-time chunk-reload budget so a future stale chunk can reload again.
+  useEffect(() => {
+    try { sessionStorage.removeItem('nest_chunk_reloaded'); } catch { /* ignore */ }
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <BrandColorApplier />
         <ScrollUnlocker />
         <ErrorBoundary>
-        <Suspense fallback={<div className="min-h-[100dvh] bg-white dark:bg-slate-950" />}>
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />

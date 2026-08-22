@@ -366,8 +366,12 @@ html.dark { color-scheme: light; }
    dark input backgrounds and/or white text — which collided with our light
    forms and left typed text invisible until highlighted. Pinning color-scheme
    to the page's actual theme stops the browser from second-guessing it. */
+/* The app is light-only (dark theme retired). Pin color-scheme to light on
+   EVERY element so a phone whose OS is in dark mode can never make the browser
+   repaint form controls with dark chrome (which caused white-on-white,
+   invisible typed text in login/signup on dark-mode devices). */
 :root { color-scheme: light; }
-html.dark { color-scheme: dark; }
+html, html.dark, body { color-scheme: light; }
 
 /* Auth screens (login, signup, join, invite, password reset) are ALWAYS drawn
    light — they use fixed light tokens even when html.dark is set. So force a

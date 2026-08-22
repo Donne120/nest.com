@@ -315,26 +315,9 @@ export default function SearchModal({ open, onClose }: Props) {
           --search-active:   rgba(232,201,126,0.10);
           --search-clear-bg: rgba(0,0,0,0.06);
         }
-        @media (prefers-color-scheme: dark) {
-          .search-panel {
-            --search-bg:       #1e2030;
-            --search-border:   rgba(255,255,255,0.08);
-            --search-text:     #e8e4dc;
-            --search-hint:     #6b6b78;
-            --search-icon:     #6b6b78;
-            --search-active:   rgba(232,201,126,0.10);
-            --search-clear-bg: rgba(255,255,255,0.07);
-          }
-        }
-        .dark .search-panel {
-          --search-bg:       #1e2030;
-          --search-border:   rgba(255,255,255,0.08);
-          --search-text:     #e8e4dc;
-          --search-hint:     #6b6b78;
-          --search-icon:     #6b6b78;
-          --search-active:   rgba(232,201,126,0.10);
-          --search-clear-bg: rgba(255,255,255,0.07);
-        }
+        /* App is light-only (dark theme retired). No prefers-color-scheme /
+           .dark overrides here — they made the search box go dark on phones
+           whose OS was in dark mode, mismatching the light app. */
 
         /* ── Desktop: centred card ── */
         .search-panel {
