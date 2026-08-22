@@ -8,6 +8,7 @@ import {
   MessageSquare, PanelLeftOpen, X, Lightbulb, Maximize2, ChevronDown,
 } from 'lucide-react';
 import RichText from '../components/UI/RichText';
+import SafeHtml from '../components/UI/SafeHtml';
 
 // ─── Collapsible + expandable content viewer ──────────────────────────────────
 // In the narrow brief column each section can be COLLAPSED (click the header /
@@ -30,9 +31,9 @@ function ExpandableRich({
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const isHtml = !isRichMarkdown(content);
   const body = isHtml
-    ? <div
+    ? <SafeHtml
         className="prose prose-sm dark:prose-invert max-w-none text-[var(--c-ink)] dark:text-[var(--c-ink2)] leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: content }}
+        html={content}
       />
     : <RichText className="text-[13px]">{content}</RichText>;
 
@@ -97,9 +98,9 @@ function ExpandableRich({
             </div>
             <div className="overflow-y-auto px-5 sm:px-8 py-5">
               {isHtml
-                ? <div
+                ? <SafeHtml
                     className="prose dark:prose-invert max-w-none text-[var(--c-ink)] dark:text-[var(--c-ink2)] leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: content }}
+                    html={content}
                   />
                 : <RichText className="text-[15px]">{content}</RichText>}
             </div>

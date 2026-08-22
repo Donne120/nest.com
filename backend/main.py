@@ -9,6 +9,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 import os
+import re
 import logging
 
 from config import settings
@@ -501,23 +502,38 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 def _is_origin_allowed(origin: str) -> bool:
     """Return True if this origin should receive CORS headers.
 
-    Checks the explicit allow-list from CORS_ORIGINS env var plus Vercel
-    preview URLs (*.vercel.app) which change with every deployment.
-    Re-reads the env var at call time so Render config changes take
-    effect without a service restart.
+    SECURITY: this is load-bearing. Because the auth cookie is SameSite=None in
+    prod and CORS reflects the origin with Allow-Credentials:true, an allowed
+    origin can make credentialed cross-origin requests. So the match must be an
+    EXACT allow-list — never a loose prefix/suffix.
+
+    Sources (re-read live so Render env changes apply without a restart):
+      1. Exact origins from CORS_ORIGINS.
+      2. An optional CORS_ORIGIN_REGEX for preview deploys — must be a full-match
+         regex bound to your own Vercel team slug (empty by default = disabled).
+
+    The old `startswith("https://nest-com") and endswith(".vercel.app")` match
+    was removed: it trusted attacker-registrable subdomains like
+    `https://nest-com-evil.vercel.app` with credentials.
     """
     if not origin:
         return False
-    # Re-read live so env-var updates on Render work without redeploy
+    # 1) exact allow-list
     try:
         allowed = set(settings.get_cors_origins())
     except Exception:
         allowed = set()
     if origin in allowed:
         return True
-    # Allow only nest-com Vercel preview URLs (not any *.vercel.app project)
-    if origin.startswith("https://nest-com") and origin.endswith(".vercel.app"):
-        return True
+    # 2) optional, opt-in preview regex (full match only)
+    pattern = (getattr(settings, "CORS_ORIGIN_REGEX", "") or "").strip()
+    if pattern:
+        try:
+            if re.fullmatch(pattern, origin):
+                return True
+        except re.error:
+            # A misconfigured regex must fail closed, never open.
+            return False
     return False
 
 

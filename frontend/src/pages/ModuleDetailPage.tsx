@@ -20,6 +20,7 @@ const DISP   = "'Cormorant Garamond', Georgia, serif";
 const UIFONT = "'Inter Tight', 'Inter', system-ui, sans-serif";
 const MONO   = "'DM Mono', ui-monospace, monospace";
 import { Skeleton } from '../components/UI/Skeleton';
+import SafeHtml from '../components/UI/SafeHtml';
 import BookMeetingModal from '../components/Meetings/BookMeetingModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -291,10 +292,10 @@ export default function ModuleDetailPage() {
           {/* About */}
           {module.description && (
             <SectionCard title="About this course" style={{ marginBottom: 18 }}>
-              <div
+              <SafeHtml
                 style={{ fontSize: 15.5, lineHeight: 1.8, color: INK2 }}
                 className="about-prose"
-                dangerouslySetInnerHTML={{ __html: module.description }}
+                html={module.description}
               />
             </SectionCard>
           )}

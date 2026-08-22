@@ -11,6 +11,14 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
     CORS_ORIGINS: str = '["http://localhost:5173","http://localhost:3000"]'
+    # Optional regex for trusted preview origins (e.g. Vercel branch deploys).
+    # SECURITY: leave empty to disable — the old startswith("https://nest-com")
+    # + endswith(".vercel.app") match trusted attacker-registrable subdomains
+    # (e.g. nest-com-evil.vercel.app) WITH credentials. Set this only to a regex
+    # bound to your own Vercel team slug, e.g.:
+    #   ^https://nest-com-[a-z0-9-]+-<yourteamslug>\.vercel\.app$
+    # A foreign project cannot include your team slug, so it cannot match.
+    CORS_ORIGIN_REGEX: str = ""
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_MB: int = 500
     ENVIRONMENT: str = "development"

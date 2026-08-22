@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from jose import JWTError, jwt
+# PyJWT (maintained) — replaced python-jose 3.3.0, which is unmaintained and
+# carries CVE-2024-33663 (alg confusion) + CVE-2024-33664 (JWT-bomb DoS).
+import jwt
+from jwt import PyJWTError
 import bcrypt
 import uuid
 from fastapi import Depends, HTTPException, Request, status
@@ -67,7 +70,7 @@ def get_current_user(
         jti: Optional[str] = payload.get("jti")
         if user_id is None:
             raise credentials_exception
-    except JWTError:
+    except PyJWTError:
         raise credentials_exception
 
     # Check token revocation blocklist

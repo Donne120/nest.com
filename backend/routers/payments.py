@@ -24,7 +24,7 @@ from fastapi import (
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, aliased
 
 from auth import get_current_user
 from config import settings
@@ -70,6 +70,27 @@ def _require_approver(user: User):
             status_code=403,
             detail="Only an owner or super-admin can approve payments.",
         )
+
+
+def _scope_payments_to_org(q, user: User):
+    """Restrict a PaymentSubmission query to the caller's organization.
+
+    SECURITY (cross-tenant IDOR fix): PaymentSubmission has no organization_id
+    column — a payment belongs to an org through its PAYER. Without this filter,
+    an owner could list/approve/reject another org's payments by id (and even
+    flip another org's plan on a teacher_subscription approval). super_admin is
+    intentionally cross-org; every other role is pinned to their own org via the
+    payer's organization_id. Educators are additionally narrowed to their own
+    payees by the callers that need it.
+    """
+    if user.role == UserRole.super_admin:
+        return q
+    # Join to the payer and require same org. joinedload uses a separate query,
+    # so add an explicit join for the filter (aliased to avoid clobbering it).
+    payer = aliased(User)
+    return q.join(payer, PaymentSubmission.payer_id == payer.id).filter(
+        payer.organization_id == user.organization_id
+    )
 
 
 def _serialize(sub: PaymentSubmission) -> dict:
@@ -352,6 +373,9 @@ def get_pending_payments(
         joinedload(PaymentSubmission.module),
     ).filter(PaymentSubmission.status == PaymentStatus.pending)
 
+    # SECURITY: pin non-super-admins to their own org (cross-tenant IDOR fix).
+    q = _scope_payments_to_org(q, current_user)
+
     # Educators only see their own module purchase proofs
     if current_user.role == UserRole.educator:
         q = q.filter(
@@ -374,6 +398,9 @@ def get_all_payments(
         joinedload(PaymentSubmission.payer),
         joinedload(PaymentSubmission.module),
     )
+    # SECURITY: pin non-super-admins to their own org (cross-tenant IDOR fix).
+    q = _scope_payments_to_org(q, current_user)
+
     if current_user.role == UserRole.educator:
         q = q.filter(
             PaymentSubmission.payee_id == current_user.id
@@ -396,9 +423,12 @@ def approve_payment(
 ):
     _require_approver(current_user)
 
-    sub = db.query(PaymentSubmission).options(
-        joinedload(PaymentSubmission.payer),
-    ).filter(PaymentSubmission.id == payment_id).first()
+    sub = _scope_payments_to_org(
+        db.query(PaymentSubmission).options(
+            joinedload(PaymentSubmission.payer),
+        ).filter(PaymentSubmission.id == payment_id),
+        current_user,
+    ).first()
     if not sub:
         raise HTTPException(
             status_code=404, detail="Payment not found"
@@ -508,9 +538,12 @@ def reject_payment(
 ):
     _require_approver(current_user)
 
-    sub = db.query(PaymentSubmission).options(
-        joinedload(PaymentSubmission.payer),
-    ).filter(PaymentSubmission.id == payment_id).first()
+    sub = _scope_payments_to_org(
+        db.query(PaymentSubmission).options(
+            joinedload(PaymentSubmission.payer),
+        ).filter(PaymentSubmission.id == payment_id),
+        current_user,
+    ).first()
     if not sub:
         raise HTTPException(
             status_code=404, detail="Payment not found"
