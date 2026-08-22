@@ -19,6 +19,19 @@ frontend/.env
 .idea/
 tools/nest-gen/.env
 
+# Private working docs — keep local, never publish
+ASSIGNMENTS_FEATURE.md
+AU_IEA_APPLICATION_2026.md
+ONSPACE_AI_PROMPT.md
+*APPLICATION*.md
+*_PROMPT.md
+*BUSINESS_PLAN*.md
+*PITCH*.md
+NARRATION_SCRIPTS.md
+video/public/audio/NARRATION_SCRIPTS.md
+timbuktoo-*
+notes/
+
 # Generated media (nest-gen output + remotion temp)
 tools/nest-gen/output/*.mp3
 tools/nest-gen/output/*.png
