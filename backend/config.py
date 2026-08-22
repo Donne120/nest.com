@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     #   ^https://nest-com-[a-z0-9-]+-<yourteamslug>\.vercel\.app$
     # A foreign project cannot include your team slug, so it cannot match.
     CORS_ORIGIN_REGEX: str = ""
+    # Host header allow-list (TrustedHostMiddleware). Comma-separated.
+    # Default "*" = disabled, so Render's health checks / internal hosts are never
+    # accidentally blocked. To ENABLE host validation in prod, set ALLOWED_HOSTS
+    # env to your real hosts, e.g.:
+    #   nest-com.onrender.com,*.onrender.com,localhost,127.0.0.1
+    # (Include whatever host Render's health check uses, or it will 400.)
+    ALLOWED_HOSTS: str = "*"
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_MB: int = 500
     ENVIRONMENT: str = "development"

@@ -12,7 +12,9 @@ import access as access_utils
 from config import settings
 import httpx
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
@@ -175,7 +177,8 @@ Your role is to answer the student's question as a great teacher would:
                 collected.append(token)
                 yield f"data: {json.dumps({'token': token})}\n\n"
         except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            logger.exception("AI stream error")
+            yield f"data: {json.dumps({'error': 'The assistant hit an error. Please try again.'})}\n\n"
             return
 
         full_answer = "".join(collected)
@@ -354,7 +357,8 @@ async def platform_ask_stream(
             async for token in _stream_groq(messages):
                 yield f"data: {json.dumps({'token': token})}\n\n"
         except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            logger.exception("AI stream error")
+            yield f"data: {json.dumps({'error': 'The assistant hit an error. Please try again.'})}\n\n"
             return
         yield f"data: {json.dumps({'done': True})}\n\n"
 
@@ -439,7 +443,8 @@ Write a concise, accurate answer the educator can review and edit before posting
             async for token in _stream_groq(messages):
                 yield f"data: {json.dumps({'token': token})}\n\n"
         except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            logger.exception("AI stream error")
+            yield f"data: {json.dumps({'error': 'The assistant hit an error. Please try again.'})}\n\n"
             return
         yield f"data: {json.dumps({'done': True})}\n\n"
 
@@ -536,7 +541,8 @@ Your role is to answer the learner's question as a great teacher would:
             async for token in _stream_groq(messages):
                 yield f"data: {json.dumps({'token': token})}\n\n"
         except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            logger.exception("AI stream error")
+            yield f"data: {json.dumps({'error': 'The assistant hit an error. Please try again.'})}\n\n"
             return
         yield f"data: {json.dumps({'done': True})}\n\n"
 

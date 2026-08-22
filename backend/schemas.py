@@ -172,21 +172,21 @@ class RegisterOrgRequest(BaseModel):
     org_name: str = Field(..., min_length=2, max_length=100)
     full_name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
-    password: str = Field(..., min_length=8)
+    password: str = Field(..., min_length=8, max_length=128)
 
 
 # ─── Password Reset / Change ──────────────────────────────────────────────────
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
-    new_password: str = Field(..., min_length=8)
+    new_password: str = Field(..., min_length=8, max_length=128)
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 class ResetPasswordRequest(BaseModel):
     token: str
-    new_password: str = Field(..., min_length=8)
+    new_password: str = Field(..., min_length=8, max_length=128)
 
 
 # ─── Invitations ──────────────────────────────────────────────────────────────
@@ -233,7 +233,7 @@ class InviteInfoOut(BaseModel):
 class AcceptInviteRequest(BaseModel):
     token: str
     full_name: str = Field(..., min_length=2, max_length=100)
-    password: str = Field(..., min_length=8)
+    password: str = Field(..., min_length=8, max_length=128)
 
 
 # ─── User ─────────────────────────────────────────────────────────────────────
@@ -1047,5 +1047,5 @@ class JoinLinkRegister(BaseModel):
     """Payload the student submits to register via a bulk invite link."""
     full_name: str = Field(..., min_length=1, max_length=120)
     email: str
-    password: str = Field(..., min_length=6)
+    password: str = Field(..., min_length=8, max_length=128)
     access_code: Optional[str] = None   # required if link has an access_code set

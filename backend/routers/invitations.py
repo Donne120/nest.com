@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from pydantic import Field
 from database import get_db
 import models
 import schemas
@@ -313,10 +314,15 @@ def list_invite_links(
     )
 
 
+class _InviteLinkUpdate(schemas.BaseModel):
+    is_active: bool | None = None
+    label: str | None = Field(default=None, max_length=200)
+
+
 @router.patch("/links/{link_id}", response_model=schemas.InviteLinkOut)
 def update_invite_link(
     link_id: str,
-    payload: dict,
+    payload: _InviteLinkUpdate,
     current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
@@ -328,10 +334,11 @@ def update_invite_link(
         raise HTTPException(
             status_code=404, detail="Invite link not found"
         )
-    if "is_active" in payload:
-        link.is_active = bool(payload["is_active"])
-    if "label" in payload:
-        link.label = payload["label"]
+    fields = payload.model_dump(exclude_unset=True)
+    if "is_active" in fields:
+        link.is_active = bool(fields["is_active"])
+    if "label" in fields:
+        link.label = fields["label"]
     db.commit()
     db.refresh(link)
     return link

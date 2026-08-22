@@ -123,12 +123,17 @@ def _do_transcription(video_id: str, video_url: str, db: Session) -> None:
 
     except httpx.HTTPStatusError as e:
         transcript.status = models.TranscriptStatus.failed
-        transcript.error_message = f"Groq API error {e.response.status_code}: {e.response.text[:200]}"
+        # Keep the raw upstream detail in the server log only; store a generic
+        # message on the record so internal/API detail isn't surfaced to users.
+        transcript.error_message = "Transcription failed. Please try again."
         db.commit()
-        logger.error(f"Transcription failed for video {video_id}: {e}")
+        logger.error(
+            f"Transcription failed for video {video_id}: "
+            f"Groq API error {e.response.status_code}: {e.response.text[:200]}"
+        )
     except Exception as e:
         transcript.status = models.TranscriptStatus.failed
-        transcript.error_message = str(e)[:300]
+        transcript.error_message = "Transcription failed. Please try again."
         db.commit()
         logger.error(f"Transcription failed for video {video_id}: {e}")
 

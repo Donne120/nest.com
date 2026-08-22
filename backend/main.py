@@ -499,6 +499,12 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Host-header validation — reject requests with a spoofed/unknown Host.
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+_allowed_hosts = [h.strip() for h in (settings.ALLOWED_HOSTS or "").split(",") if h.strip()]
+if _allowed_hosts:
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=_allowed_hosts)
 def _is_origin_allowed(origin: str) -> bool:
     """Return True if this origin should receive CORS headers.
 
