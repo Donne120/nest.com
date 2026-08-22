@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from database import get_db
 import models
 import schemas
@@ -9,6 +11,9 @@ import auth as auth_utils
 import storage
 import plan_limits
 import access as access_utils
+
+# Rate limiter for upload endpoints (storage-fill / DoS protection).
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/api/videos", tags=["videos"])
 
@@ -216,7 +221,9 @@ def _check_ext(filename: str, allowed_ext: set, label: str):
 
 
 @router.post("/upload/video", status_code=201)
+@limiter.limit("30/hour")
 async def upload_video_file(
+    request: Request,
     file: UploadFile = File(...),
     current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
@@ -241,7 +248,9 @@ async def upload_video_file(
 
 
 @router.post("/upload/thumbnail", status_code=201)
+@limiter.limit("60/hour")
 async def upload_thumbnail_file(
+    request: Request,
     file: UploadFile = File(...),
     current_user: models.User = Depends(auth_utils.require_educator),
 ):

@@ -139,16 +139,25 @@ async def login(request: Request, response: Response, db: Session = Depends(get_
         form = await request.form()
         email = form.get("username") or form.get("email", "")
         password = form.get("password", "")
+    # Per-account lockout: block brute force that rotates IPs against one email.
+    if auth_utils.login_locked_until(email):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many failed attempts. Please wait a few minutes and try again, or use 'Forgot password'.",
+        )
+
     user = db.query(models.User).filter(models.User.email == email).first()
     # Use ONE generic message for both "no such account" and "wrong password"
     # so an attacker can't enumerate which emails have accounts.
     if not user or not auth_utils.verify_password(password, user.hashed_password):
+        auth_utils.register_login_failure(email)
         raise HTTPException(
             status_code=401,
             detail="Incorrect email or password. Try again, use 'Forgot password', or ask for an invite.",
         )
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Your account has been deactivated. Contact your admin.")
+    auth_utils.clear_login_failures(email)
     return _build_token_response(user, db, response)
 
 

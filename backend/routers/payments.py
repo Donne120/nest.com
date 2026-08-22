@@ -415,7 +415,9 @@ def get_all_payments(
 # ── approve ───────────────────────────────────────────────────────────
 
 @router.post("/{payment_id}/approve")
+@limiter.limit("60/hour")
 def approve_payment(
+    request: Request,
     payment_id: str,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -529,7 +531,9 @@ class RejectBody(BaseModel):
 
 
 @router.post("/{payment_id}/reject")
+@limiter.limit("60/hour")
 def reject_payment(
+    request: Request,
     payment_id: str,
     body: RejectBody,
     background_tasks: BackgroundTasks,

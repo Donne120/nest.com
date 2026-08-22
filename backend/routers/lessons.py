@@ -174,17 +174,35 @@ def delete_lesson(
     db.commit()
 
 
+_IMAGE_MAX_BYTES = 10 * 1024 * 1024    # 10 MB
+_ALLOWED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+_ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+
+
 @router.post("/api/lessons/{lesson_id}/upload-image")
+@limiter.limit("60/hour")
 async def upload_lesson_image(
+    request: Request,
     lesson_id: str,
     file: UploadFile = File(...),
     current_user: models.User = Depends(auth_utils.require_educator),
     db: Session = Depends(get_db),
 ):
     _org_lesson(lesson_id, current_user.organization_id, db)
+    # Validate type + extension + size (this endpoint previously trusted the
+    # upload blindly — an unvalidated, unrated storage-fill / abuse vector).
+    import os
+    base_ct = (file.content_type or "").split(";")[0].strip().lower()
+    if base_ct not in _ALLOWED_IMAGE_MIME:
+        raise HTTPException(status_code=400, detail=f"Unsupported image type: {file.content_type}")
+    ext = os.path.splitext((file.filename or "image.jpg").lower())[1]
+    if ext not in _ALLOWED_IMAGE_EXT:
+        raise HTTPException(status_code=400, detail=f"Unsupported image extension: {ext}")
     content = await file.read()
+    if len(content) > _IMAGE_MAX_BYTES:
+        raise HTTPException(status_code=413, detail="Image exceeds maximum size of 10 MB")
     url = storage_helper.upload_thumbnail(
-        content, file.filename or "image.jpg", file.content_type or "image/jpeg"
+        content, file.filename or "image.jpg", base_ct or "image/jpeg"
     )
     return {"url": url}
 

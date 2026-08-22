@@ -556,7 +556,52 @@ class DynamicCORSMiddleware(BaseHTTPMiddleware):
             )
         return response
 
+class CSRFProtectionMiddleware(BaseHTTPMiddleware):
+    """Reject cross-site state-changing requests that authenticate via cookie.
+
+    The auth cookie is SameSite=None in prod (required for the cross-domain
+    Vercel<->Render setup), so the browser attaches it on cross-site requests.
+    That's the CSRF surface. We defend it with a strict Origin/Referer check on
+    all mutating methods.
+
+    Scope (deliberately narrow so nothing legitimate breaks):
+      - Only POST/PUT/PATCH/DELETE are checked (safe methods pass).
+      - Only requests that rely on the COOKIE are checked. A request carrying an
+        `Authorization: Bearer` header is not CSRF-exploitable — a browser can't
+        add that header cross-origin without a preflight, which our CORS blocks
+        for foreign origins. So Bearer clients, native apps and curl are exempt.
+      - Login/register are exempt: they run before any session cookie exists, so
+        there is nothing to forge; they're rate-limited instead.
+    If a cookie-authenticated mutating request presents an Origin (or, failing
+    that, a Referer) that isn't allow-listed, it's rejected with 403.
+    """
+
+    _SAFE_METHODS = {"GET", "HEAD", "OPTIONS", "TRACE"}
+    _EXEMPT_PREFIXES = ("/api/auth/login", "/api/auth/register", "/api/auth/logout")
+
+    async def dispatch(self, request: Request, call_next):
+        if request.method not in self._SAFE_METHODS:
+            path = request.url.path
+            has_bearer = bool(request.headers.get("authorization"))
+            has_cookie = bool(request.cookies.get("nest_token"))
+            exempt = any(path.startswith(p) for p in self._EXEMPT_PREFIXES)
+            # Only cookie-only auth on a non-exempt mutating route is at risk.
+            if has_cookie and not has_bearer and not exempt:
+                origin = request.headers.get("origin", "")
+                if not origin:
+                    # Fall back to the origin portion of the Referer.
+                    m = re.match(r"^(https?://[^/]+)", request.headers.get("referer", ""))
+                    origin = m.group(1) if m else ""
+                if not origin or not _is_origin_allowed(origin):
+                    return JSONResponse(
+                        {"detail": "Cross-site request blocked."},
+                        status_code=403,
+                    )
+        return await call_next(request)
+
+
 app.add_middleware(DynamicCORSMiddleware)
+app.add_middleware(CSRFProtectionMiddleware)
 
 # Routers
 app.include_router(auth.router)

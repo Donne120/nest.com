@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import List
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from database import get_db
 import models
 import schemas
@@ -11,6 +13,8 @@ import email_utils
 import plan_limits
 
 router = APIRouter(prefix="/api/invitations", tags=["invitations"])
+# Rate limiter — invite creation sends email, so cap it (spam amplification).
+limiter = Limiter(key_func=get_remote_address)
 
 _IS_SUPER = models.UserRole.super_admin
 
@@ -65,7 +69,9 @@ def email_status(current_user: models.User = Depends(auth_utils.require_educator
 
 
 @router.post("", response_model=schemas.InvitationOut, status_code=201)
+@limiter.limit("30/hour")
 def create_invitation(
+    request: Request,
     payload: schemas.InvitationCreate,
     background_tasks: BackgroundTasks,
     current_user: models.User = Depends(auth_utils.require_educator),

@@ -108,7 +108,7 @@ def revoke_token(token: str, db: Session) -> None:
             if not db.query(models.RevokedToken).filter(models.RevokedToken.jti == jti).first():
                 db.add(models.RevokedToken(jti=jti, expires_at=expires_at))
                 db.commit()
-    except JWTError:
+    except PyJWTError:
         pass  # Invalid token — nothing to revoke
 
 
@@ -145,3 +145,61 @@ def require_super_admin(
     if current_user.role != models.UserRole.super_admin:
         raise HTTPException(status_code=403, detail="Super-admin access required")
     return current_user
+
+
+# ─── Per-account login lockout ────────────────────────────────────────────────
+# The login endpoint is rate-limited per IP (10/min), but that does nothing
+# against a distributed / rotating-IP attacker hammering ONE account. This adds a
+# per-account failed-attempt counter with a temporary lockout, keyed on the email
+# (lower-cased). In-memory with a TTL — no schema change; fine for the single
+# Render web instance. Resets on a successful login. Keeps the generic error so
+# account existence still isn't leaked (a locked account and a non-existent one
+# both eventually just say "try later" the same way).
+import threading
+
+_LOGIN_MAX_FAILS = 5
+_LOGIN_LOCK_SECONDS = 15 * 60          # lock 15 min after threshold
+_LOGIN_WINDOW_SECONDS = 15 * 60        # failures older than this don't count
+_login_fail_state: dict[str, dict] = {}   # email -> {"fails": int, "first": ts, "locked_until": ts}
+_login_lock = threading.Lock()
+
+
+def _login_key(email: str) -> str:
+    return (email or "").strip().lower()
+
+
+def login_locked_until(email: str) -> Optional[datetime]:
+    """Return the datetime the account is locked until, or None if not locked."""
+    key = _login_key(email)
+    if not key:
+        return None
+    now = datetime.now(timezone.utc).timestamp()
+    with _login_lock:
+        st = _login_fail_state.get(key)
+        if st and st.get("locked_until", 0) > now:
+            return datetime.fromtimestamp(st["locked_until"], tz=timezone.utc)
+    return None
+
+
+def register_login_failure(email: str) -> None:
+    """Record a failed login; lock the account once the threshold is reached."""
+    key = _login_key(email)
+    if not key:
+        return
+    now = datetime.now(timezone.utc).timestamp()
+    with _login_lock:
+        st = _login_fail_state.get(key)
+        # reset the window if the last failure streak is stale
+        if not st or (now - st.get("first", now)) > _LOGIN_WINDOW_SECONDS:
+            st = {"fails": 0, "first": now, "locked_until": 0}
+        st["fails"] += 1
+        if st["fails"] >= _LOGIN_MAX_FAILS:
+            st["locked_until"] = now + _LOGIN_LOCK_SECONDS
+        _login_fail_state[key] = st
+
+
+def clear_login_failures(email: str) -> None:
+    """Clear the failure counter on a successful login."""
+    key = _login_key(email)
+    with _login_lock:
+        _login_fail_state.pop(key, None)
