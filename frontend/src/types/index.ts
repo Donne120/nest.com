@@ -97,6 +97,7 @@ export interface User {
   department: string | null;
   is_active: boolean;
   payment_verified: boolean;
+  email_verified: boolean;
   created_at: string;
 }
 

@@ -246,6 +246,22 @@ export default function SignupPage() {
 
               {/* Step 1 */}
               {step === 1 && (
+                <>
+                  {/* Honest expectation-setting: this page creates a TEACHING
+                      workspace. Learners don't sign up here to browse courses. */}
+                  <div style={{
+                    display: 'flex', gap: 10, alignItems: 'flex-start',
+                    background: '#F3EEFF', border: `1px solid ${GOLD}33`,
+                    borderRadius: 10, padding: '12px 14px', marginBottom: 20,
+                  }}>
+                    <span style={{ fontSize: 18, lineHeight: 1 }}>👋</span>
+                    <div style={{ fontFamily: UI, fontSize: 13, color: INK2, lineHeight: 1.55 }}>
+                      <strong style={{ color: INK }}>This creates a space to teach on Nest.</strong>{' '}
+                      Just here to learn? You don’t sign up to browse — you get courses
+                      by an <strong>invite from your tutor</strong> or via{' '}
+                      <Link to="/explore" style={{ color: GOLD, fontWeight: 700, textDecoration: 'none' }}>Find Courses →</Link>.
+                    </div>
+                  </div>
                 <form onSubmit={handleStep1} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   <Field label="Company Name" id="orgName" value={orgName} onChange={setOrgName} placeholder="Acme Corp" required autoFocus />
                   {orgName.length >= 2 && (
@@ -255,6 +271,7 @@ export default function SignupPage() {
                   )}
                   <GoldButton loading={false} label="Continue →" />
                 </form>
+                </>
               )}
 
               {/* Step 2 */}

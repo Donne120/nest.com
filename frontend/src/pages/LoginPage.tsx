@@ -224,6 +224,13 @@ export default function LoginPage() {
                 Register your organisation →
               </Link>
             </p>
+            <p style={{ fontSize: 13, color: INK3, textAlign: 'center', marginTop: 10 }}>
+              Looking for courses to learn? You get them by an{' '}
+              <strong style={{ color: INK }}>invite from your tutor</strong>, or{' '}
+              <Link to="/explore" style={{ color: GOLD, textDecoration: 'none', fontWeight: 600 }}>
+                Find Courses →
+              </Link>
+            </p>
           </div>
         </div>
       </div>

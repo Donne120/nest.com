@@ -8,6 +8,7 @@ import BottomNav from './components/Layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
 import NestAssistant from './components/AI/NestAssistant';
 import OnboardingTour from './components/Onboarding/OnboardingTour';
+import EmailVerificationBanner from './components/UI/EmailVerificationBanner';
 import { lazy, Suspense, useEffect } from 'react';
 import type { ReactNode, ComponentType } from 'react';
 
@@ -125,6 +126,7 @@ function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-[100dvh] bg-white dark:bg-slate-950 font-sans">
       <Navbar />
+      <EmailVerificationBanner />
       <main className="md:pb-0" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)' }}>
         <style>{`@media (min-width: 768px) { main { padding-bottom: 0 !important; } }`}</style>
         {children}
