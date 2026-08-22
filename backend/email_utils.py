@@ -85,8 +85,18 @@ def send(to: str, subject: str, body_html: str) -> bool:
 
 # ─── Shared layout helper ──────────────────────────────────────────────────────
 
+# Brand — Calm Purple. The logo is served from the live frontend so email
+# clients can load it over https (relative paths / CID don't work reliably).
+_SITE = (settings.FRONTEND_URL or "https://nest-com.vercel.app").rstrip("/")
+_LOGO_URL = f"{_SITE}/nest-wordmark.png"
+_VIOLET = "#6D4AE0"
+_DEEP = "#5A38C7"
+_INK = "#1E1B2E"
+_MUTE = "#6E6A85"
+
+
 def _wrap(body: str, preheader: str = "") -> str:
-    """Wrap body HTML in a consistent, mobile-friendly email shell."""
+    """Wrap body HTML in a warm, on-brand, mobile-friendly email shell."""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,33 +104,29 @@ def _wrap(body: str, preheader: str = "") -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nest</title>
 </head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Inter',Arial,sans-serif;">
-  {"<div style='display:none;max-height:0;overflow:hidden;'>" + preheader + "</div>" if preheader else ""}
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 16px;">
+<body style="margin:0;padding:0;background:#F6F4FD;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  {"<div style='display:none;max-height:0;overflow:hidden;opacity:0;'>" + preheader + "</div>" if preheader else ""}
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#F6F4FD;padding:32px 16px;">
     <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;">
 
-        <!-- Logo header -->
-        <tr><td style="padding-bottom:24px;">
-          <table cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="width:36px;height:36px;background:#7b2d8e;border-radius:10px;text-align:center;vertical-align:middle;">
-                <span style="color:#fff;font-weight:700;font-size:18px;line-height:36px;">N</span>
-              </td>
-              <td style="padding-left:10px;font-size:15px;font-weight:700;color:#1e293b;">Nest</td>
-            </tr>
-          </table>
+        <!-- Brand header: white wordmark on the Calm Purple gradient -->
+        <tr><td style="background:linear-gradient(135deg,#8B6FE8 0%,{_VIOLET} 55%,{_DEEP} 100%);background-color:{_VIOLET};border-radius:18px 18px 0 0;padding:30px 40px 26px;text-align:center;">
+          <img src="{_LOGO_URL}" width="132" alt="Nest" style="display:inline-block;height:auto;max-width:132px;border:0;outline:none;filter:brightness(0) invert(1);" />
         </td></tr>
 
         <!-- Card -->
-        <tr><td style="background:#ffffff;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;">
+        <tr><td style="background:#ffffff;border-radius:0 0 18px 18px;border:1px solid #ECE7FA;border-top:0;overflow:hidden;">
           {body}
         </td></tr>
 
         <!-- Footer -->
-        <tr><td style="padding-top:24px;text-align:center;">
-          <p style="font-size:11px;color:#94a3b8;margin:0;">
-            &copy; Nest &mdash; You received this because you have an account on Nest.
+        <tr><td style="padding:22px 8px 4px;text-align:center;">
+          <p style="font-size:12px;color:{_MUTE};margin:0 0 4px;line-height:1.6;">
+            Made with care in Kigali, for learners across Africa. 💜
+          </p>
+          <p style="font-size:11px;color:#A5A1B8;margin:0;line-height:1.6;">
+            &copy; Nest &middot; You’re receiving this because you have a Nest account.
           </p>
         </td></tr>
 
@@ -131,10 +137,10 @@ def _wrap(body: str, preheader: str = "") -> str:
 </html>"""
 
 
-def _btn(url: str, label: str, color: str = "#7b2d8e") -> str:
-    return f"""<table cellpadding="0" cellspacing="0" style="margin-top:24px;">
-  <tr><td style="background:{color};border-radius:10px;">
-    <a href="{url}" style="display:inline-block;padding:12px 28px;color:#fff;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.01em;">{label}</a>
+def _btn(url: str, label: str, color: str = _VIOLET) -> str:
+    return f"""<table cellpadding="0" cellspacing="0" role="presentation" style="margin-top:26px;">
+  <tr><td style="background:{color};border-radius:12px;box-shadow:0 6px 18px rgba(109,74,224,0.28);">
+    <a href="{url}" style="display:inline-block;padding:14px 34px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.01em;">{label}</a>
   </td></tr>
 </table>"""
 
@@ -148,19 +154,19 @@ def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
     subject = f"You're invited to join {org_name} on Nest"
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Team Invitation</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">You've been invited to join {org_name}</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 4px;">
-        Someone at <strong style="color:#0f172a;">{org_name}</strong> has invited you as a
-        <strong style="color:#0f172a;text-transform:capitalize;">{role}</strong>.
+      <p style="font-size:13px;font-weight:600;color:#6D4AE0;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Team Invitation</p>
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">You've been invited to join {org_name}</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 4px;">
+        Someone at <strong style="color:#1E1B2E;">{org_name}</strong> has invited you as a
+        <strong style="color:#1E1B2E;text-transform:capitalize;">{role}</strong>.
       </p>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0;">
         Click the button below to set up your account and get started.
       </p>
       {_btn(invite_url, "Accept Invitation")}
       <p style="font-size:12px;color:#64748b;margin:16px 0 0;line-height:1.6;">
         Button not showing? Copy and paste this link into your browser:<br>
-        <a href="{safe_url}" style="color:#7b2d8e;word-break:break-all;">{safe_url}</a>
+        <a href="{safe_url}" style="color:#6D4AE0;word-break:break-all;">{safe_url}</a>
       </p>
       <p style="font-size:12px;color:#94a3b8;margin:12px 0 0;">
         This invitation expires in 7 days. If you weren't expecting this, you can safely ignore it.
@@ -174,24 +180,25 @@ def send_invitation(to: str, org_name: str, invite_url: str, role: str) -> bool:
 def send_verification_email(to: str, full_name: str, verify_url: str) -> bool:
     first = html.escape(full_name.split(" ")[0]) if full_name else "there"
     safe_url = html.escape(verify_url)
-    subject = "Verify your Nest email address"
+    subject = "Welcome to Nest — just confirm your email 💜"
     body = f"""
-    <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Welcome to Nest</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Hi {first}, confirm your email</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 4px;">
-        Thanks for signing up. Click the button below to verify your email address and activate your account.
+    <div style="padding:38px 40px;">
+      <p style="font-size:12px;font-weight:700;color:{_VIOLET};text-transform:uppercase;letter-spacing:0.1em;margin:0 0 14px;">Welcome to Nest</p>
+      <h1 style="font-size:24px;font-weight:800;color:{_INK};margin:0 0 14px;line-height:1.25;">Hi {first}, you’re almost in 🎉</h1>
+      <p style="font-size:15px;color:{_MUTE};line-height:1.7;margin:0;">
+        We’re so glad you’re here. Tap the button below to confirm your email, and your
+        Nest account is ready to go — a tutor in your pocket, whenever you need it.
       </p>
-      {_btn(verify_url, "Verify my email")}
-      <p style="font-size:12px;color:#64748b;margin:16px 0 0;line-height:1.6;">
-        Button not showing? Copy and paste this link into your browser:<br>
-        <a href="{safe_url}" style="color:#7b2d8e;word-break:break-all;">{safe_url}</a>
+      {_btn(verify_url, "Confirm my email")}
+      <p style="font-size:12.5px;color:{_MUTE};margin:20px 0 0;line-height:1.6;">
+        Button not working? Copy and paste this link into your browser:<br>
+        <a href="{safe_url}" style="color:{_VIOLET};word-break:break-all;">{safe_url}</a>
       </p>
-      <p style="font-size:12px;color:#94a3b8;margin:12px 0 0;">
-        This link expires in 24 hours. If you didn't create a Nest account, you can safely ignore this email.
+      <p style="font-size:12px;color:#A5A1B8;margin:14px 0 0;line-height:1.6;">
+        This link expires in 24 hours. Didn’t sign up for Nest? No worries — you can safely ignore this email.
       </p>
     </div>"""
-    return send(to, subject, _wrap(body, "Confirm your Nest email address"))
+    return send(to, subject, _wrap(body, "One tap to confirm your email and start learning on Nest."))
 
 
 # ─── Password reset ────────────────────────────────────────────────────────────
@@ -201,16 +208,16 @@ def send_password_reset(to: str, reset_url: str) -> bool:
     subject = "Reset your Nest password"
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Security</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Reset your password</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+      <p style="font-size:13px;font-weight:600;color:#6D4AE0;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Security</p>
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">Reset your password</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0;">
         We received a password reset request for your Nest account.
-        This link will expire in <strong style="color:#0f172a;">1 hour</strong>.
+        This link will expire in <strong style="color:#1E1B2E;">1 hour</strong>.
       </p>
       {_btn(reset_url, "Choose New Password")}
       <p style="font-size:12px;color:#64748b;margin:16px 0 0;line-height:1.6;">
         Button not showing? Copy and paste this link into your browser:<br>
-        <a href="{safe_url}" style="color:#7b2d8e;word-break:break-all;">{safe_url}</a>
+        <a href="{safe_url}" style="color:#6D4AE0;word-break:break-all;">{safe_url}</a>
       </p>
       <div style="margin-top:24px;padding:14px 16px;background:#fef3c7;border-radius:10px;border:1px solid #fde68a;">
         <p style="font-size:12px;color:#92400e;margin:0;line-height:1.6;">
@@ -231,26 +238,26 @@ def send_welcome(to: str, admin_name: str, org_name: str, dashboard_url: str) ->
     subject = f"Welcome to Nest, {first} — your workspace is ready"
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Getting Started</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Welcome aboard, {first}!</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
-        Your <strong style="color:#0f172a;">{org_name}</strong> workspace is live on Nest.
-        You're on a <strong style="color:#0f172a;">14-day free trial</strong> — no credit card required.
+      <p style="font-size:13px;font-weight:600;color:#6D4AE0;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Getting Started</p>
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">Welcome aboard, {first}!</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 8px;">
+        Your <strong style="color:#1E1B2E;">{org_name}</strong> workspace is live on Nest.
+        You're on a <strong style="color:#1E1B2E;">14-day free trial</strong> — no credit card required.
       </p>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0;">
         Here's what to do next:
       </p>
       <table cellpadding="0" cellspacing="0" style="margin:20px 0;width:100%;">
         <tr>
           <td style="padding:12px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:8px;">
-            <p style="margin:0;font-size:14px;color:#0f172a;font-weight:600;">1. Create your first course</p>
+            <p style="margin:0;font-size:14px;color:#1E1B2E;font-weight:600;">1. Create your first course</p>
             <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Upload videos and build your course program.</p>
           </td>
         </tr>
         <tr><td style="height:8px;"></td></tr>
         <tr>
           <td style="padding:12px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
-            <p style="margin:0;font-size:14px;color:#0f172a;font-weight:600;">2. Invite your team</p>
+            <p style="margin:0;font-size:14px;color:#1E1B2E;font-weight:600;">2. Invite your team</p>
             <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Send invite links to managers and employees.</p>
           </td>
         </tr>
@@ -273,18 +280,18 @@ def send_quiz_result(to: str, employee_name: str, video_title: str, passed: bool
     if passed:
         badge_bg, badge_color, badge_text = "#dcfce7", "#166534", "Passed"
         heading = f"Well done, {first}!"
-        message = f"You scored <strong style='color:#0f172a;'>{pct}%</strong> on the quiz for <em>{video_title}</em>. Keep it up!"
+        message = f"You scored <strong style='color:#1E1B2E;'>{pct}%</strong> on the quiz for <em>{video_title}</em>. Keep it up!"
         accent = "#16a34a"
     else:
         badge_bg, badge_color, badge_text = "#fee2e2", "#991b1b", "Not Passed"
         heading = f"Quiz result, {first}"
-        message = f"You scored <strong style='color:#0f172a;'>{pct}%</strong> on the quiz for <em>{video_title}</em>. You need 70% to pass — you can try again!"
+        message = f"You scored <strong style='color:#1E1B2E;'>{pct}%</strong> on the quiz for <em>{video_title}</em>. You need 70% to pass — you can try again!"
         accent = "#dc2626"
 
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Quiz Result</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 16px;line-height:1.3;">{heading}</h1>
+      <p style="font-size:13px;font-weight:600;color:#6D4AE0;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Quiz Result</p>
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 16px;line-height:1.3;">{heading}</h1>
 
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
         <span style="display:inline-block;padding:4px 14px;background:{badge_bg};color:{badge_color};font-size:13px;font-weight:700;border-radius:999px;">{badge_text}</span>
@@ -296,7 +303,7 @@ def send_quiz_result(to: str, employee_name: str, video_title: str, passed: bool
         <p style="margin:4px 0 0;font-size:13px;color:#64748b;">{int(score)} out of {max_score} questions correct</p>
       </div>
 
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">{message}</p>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0;">{message}</p>
     </div>"""
     return send(to, subject, _wrap(body, f"Your quiz result for {video_title}"))
 
@@ -323,10 +330,10 @@ def send_meeting_request_to_manager(
     )
     body = f"""
     <div style="padding:36px 40px;">
-      <p style="font-size:13px;font-weight:600;color:#7b2d8e;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Meeting Request</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Hey {first}, someone wants to meet</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
-        <strong style="color:#0f172a;">{employee_name}</strong> has requested a 1-on-1 meeting
+      <p style="font-size:13px;font-weight:600;color:#6D4AE0;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Meeting Request</p>
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">Hey {first}, someone wants to meet</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0;">
+        <strong style="color:#1E1B2E;">{employee_name}</strong> has requested a 1-on-1 meeting
         and is waiting for your confirmation.
       </p>
       {note_block}
@@ -345,8 +352,8 @@ def send_meeting_confirmed(to: str, employee_name: str, confirmed_at: str, meeti
     body = f"""
     <div style="padding:36px 40px;">
       <p style="font-size:13px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Meeting Confirmed</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">You're all set, {first}!</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">You're all set, {first}!</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 20px;">
         Your 1-on-1 session has been confirmed. Here are the details:
       </p>
       <div style="background:#f0fdf4;border-radius:12px;border:1px solid #bbf7d0;padding:20px 24px;margin-bottom:20px;">
@@ -354,14 +361,14 @@ def send_meeting_confirmed(to: str, employee_name: str, confirmed_at: str, meeti
           <tr>
             <td style="padding-bottom:10px;">
               <p style="margin:0;font-size:11px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.08em;">When</p>
-              <p style="margin:4px 0 0;font-size:14px;font-weight:600;color:#0f172a;">{confirmed_at}</p>
+              <p style="margin:4px 0 0;font-size:14px;font-weight:600;color:#1E1B2E;">{confirmed_at}</p>
             </td>
           </tr>
           <tr>
             <td>
               <p style="margin:0;font-size:11px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.08em;">Meeting Link</p>
-              <p style="margin:4px 0 0;font-size:13px;color:#7b2d8e;word-break:break-all;">
-                <a href="{meeting_link}" style="color:#7b2d8e;">{meeting_link}</a>
+              <p style="margin:4px 0 0;font-size:13px;color:#6D4AE0;word-break:break-all;">
+                <a href="{meeting_link}" style="color:#6D4AE0;">{meeting_link}</a>
               </p>
             </td>
           </tr>
@@ -387,26 +394,26 @@ def send_payment_submitted(
     currency = html.escape(currency)
     detail_line = ""
     if plan:
-        detail_line = f"<p style='font-size:13px;color:#475569;margin:4px 0 0;'>Plan: <strong style='color:#0f172a;'>{html.escape(plan.title())}</strong></p>"
+        detail_line = f"<p style='font-size:13px;color:#4A4661;margin:4px 0 0;'>Plan: <strong style='color:#1E1B2E;'>{html.escape(plan.title())}</strong></p>"
     elif module_title:
-        detail_line = f"<p style='font-size:13px;color:#475569;margin:4px 0 0;'>Module: <strong style='color:#0f172a;'>{html.escape(module_title)}</strong></p>"
+        detail_line = f"<p style='font-size:13px;color:#4A4661;margin:4px 0 0;'>Module: <strong style='color:#1E1B2E;'>{html.escape(module_title)}</strong></p>"
 
     subject = f"New payment proof submitted — {payer_name}"
     body = f"""
     <div style="padding:36px 40px;">
       <p style="font-size:13px;font-weight:600;color:#f59e0b;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Action Required</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">New payment proof to review</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">New payment proof to review</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 20px;">
         A user has submitted a payment proof and is waiting for access to be granted.
       </p>
       <div style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:20px;">
         <p style="margin:0;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">From</p>
-        <p style="margin:4px 0 8px;font-size:14px;font-weight:600;color:#0f172a;">{payer_name} &mdash; <span style="font-weight:400;color:#64748b;">{payer_email}</span></p>
+        <p style="margin:4px 0 8px;font-size:14px;font-weight:600;color:#1E1B2E;">{payer_name} &mdash; <span style="font-weight:400;color:#64748b;">{payer_email}</span></p>
         <p style="margin:0;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Type</p>
-        <p style="margin:4px 0 8px;font-size:14px;color:#0f172a;">{payment_type}</p>
+        <p style="margin:4px 0 8px;font-size:14px;color:#1E1B2E;">{payment_type}</p>
         {detail_line}
         <p style="margin:8px 0 0;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Amount</p>
-        <p style="margin:4px 0 0;font-size:20px;font-weight:800;color:#7b2d8e;">{amount:,.0f} {currency}</p>
+        <p style="margin:4px 0 0;font-size:20px;font-weight:800;color:#6D4AE0;">{amount:,.0f} {currency}</p>
       </div>
       {_btn(review_url, "Review Payment", "#f59e0b")}
     </div>"""
@@ -428,19 +435,19 @@ def send_payment_approved(
     currency = html.escape(currency)
     what_unlocked = ""
     if plan:
-        what_unlocked = f"Your workspace has been upgraded to the <strong style='color:#0f172a;'>{html.escape(plan.title())}</strong> plan."
+        what_unlocked = f"Your workspace has been upgraded to the <strong style='color:#1E1B2E;'>{html.escape(plan.title())}</strong> plan."
     elif module_title:
-        what_unlocked = f"You now have full access to <strong style='color:#0f172a;'>{html.escape(module_title)}</strong>."
+        what_unlocked = f"You now have full access to <strong style='color:#1E1B2E;'>{html.escape(module_title)}</strong>."
 
     subject = "Payment approved — your access is ready"
     body = f"""
     <div style="padding:36px 40px;">
       <p style="font-size:13px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Payment Approved</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Great news, {first}!</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
-        Your payment of <strong style="color:#0f172a;">{amount:,.0f} {currency}</strong> has been verified and approved.
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">Great news, {first}!</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 8px;">
+        Your payment of <strong style="color:#1E1B2E;">{amount:,.0f} {currency}</strong> has been verified and approved.
       </p>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 20px;">
         {what_unlocked}
       </p>
       {_btn(dashboard_url, "Go to Dashboard", "#16a34a")}
@@ -471,12 +478,12 @@ def send_payment_rejected(
     body = f"""
     <div style="padding:36px 40px;">
       <p style="font-size:13px;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Payment Update</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">We couldn't verify your payment, {first}</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
-        Your payment proof of <strong style="color:#0f172a;">{amount:,.0f} {currency}</strong> could not be verified.
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">We couldn't verify your payment, {first}</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0;">
+        Your payment proof of <strong style="color:#1E1B2E;">{amount:,.0f} {currency}</strong> could not be verified.
       </p>
       {reason_block}
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:16px 0 0;">
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:16px 0 0;">
         Please double-check your proof and resubmit, or contact us for help.
       </p>
       {_btn(support_url, "Resubmit Payment", "#dc2626")}
@@ -502,8 +509,8 @@ def send_meeting_declined(to: str, employee_name: str, reason: str | None, meeti
     body = f"""
     <div style="padding:36px 40px;">
       <p style="font-size:13px;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Meeting Update</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Sorry, {first}</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0;">
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">Sorry, {first}</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0;">
         Your 1-on-1 meeting request was declined.
         You can submit a new request at a different time.
       </p>
@@ -532,13 +539,13 @@ def send_subscription_renewal_reminder(
     body = f"""
     <div style="padding:36px 40px;">
       <p style="font-size:13px;font-weight:600;color:#f59e0b;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Subscription Reminder</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Renew your subscription, {first}</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
-        Your <strong style="color:#0f172a;">{org_name}</strong> subscription on Nest expires in
-        <strong style="color:#0f172a;">{days_left} day{'s' if days_left != 1 else ''}</strong>
-        &mdash; on <strong style="color:#0f172a;">{expiry_date}</strong>.
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">Renew your subscription, {first}</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 8px;">
+        Your <strong style="color:#1E1B2E;">{org_name}</strong> subscription on Nest expires in
+        <strong style="color:#1E1B2E;">{days_left} day{'s' if days_left != 1 else ''}</strong>
+        &mdash; on <strong style="color:#1E1B2E;">{expiry_date}</strong>.
       </p>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 20px;">
         To keep your team's access uninterrupted, renew by submitting your payment proof
         before the expiry date.
       </p>
@@ -572,12 +579,12 @@ def send_subscription_expired(
     body = f"""
     <div style="padding:36px 40px;">
       <p style="font-size:13px;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Subscription Expired</p>
-      <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 12px;line-height:1.3;">Your subscription has ended, {first}</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
-        The subscription for <strong style="color:#0f172a;">{org_name}</strong> on Nest has expired.
+      <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">Your subscription has ended, {first}</h1>
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 8px;">
+        The subscription for <strong style="color:#1E1B2E;">{org_name}</strong> on Nest has expired.
         Your team members no longer have access to courses.
       </p>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 20px;">
         To restore access, submit a new payment proof and an admin will approve it promptly.
       </p>
       {_btn(renew_url, "Renew Now", "#dc2626")}
@@ -609,13 +616,13 @@ def send_access_expiring(
     <div style="padding:36px 40px;">
       <p style="font-size:13px;font-weight:600;color:#6D4AE0;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Access Reminder</p>
       <h1 style="font-size:22px;font-weight:800;color:#1E1B2E;margin:0 0 12px;line-height:1.3;">Keep your learning going, {first}</h1>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 8px;">
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 8px;">
         Your access to <strong style="color:#1E1B2E;">{module_name}</strong> at
         <strong style="color:#1E1B2E;">{org_name}</strong> expires in
         <strong style="color:#1E1B2E;">{dl}</strong> &mdash; on
         <strong style="color:#1E1B2E;">{expiry_date}</strong>.
       </p>
-      <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
+      <p style="font-size:14px;color:#4A4661;line-height:1.7;margin:0 0 20px;">
         To keep going without interruption, subscribe now, or reach out to your tutor
         to have your access extended.
       </p>
