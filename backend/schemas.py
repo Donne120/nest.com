@@ -266,6 +266,7 @@ class UserOut(BaseModel):
     department: Optional[str]
     is_active: bool
     payment_verified: bool
+    email_verified: bool
     created_at: datetime
 
     class Config:
