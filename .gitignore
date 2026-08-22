@@ -32,6 +32,9 @@ video/public/audio/NARRATION_SCRIPTS.md
 timbuktoo-*
 notes/
 
+# Remotion video-generation project (standalone tooling, not part of the app)
+video/
+
 # Generated media (nest-gen output + remotion temp)
 tools/nest-gen/output/*.mp3
 tools/nest-gen/output/*.png
