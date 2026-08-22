@@ -1,57 +1,130 @@
-# Nest — Interactive Learning Platform
+<div align="center">
 
-Transform passive video watching into an active learning experience. Learners ask questions timestamped directly to video moments. AI answers using the actual video transcript. Every answer builds a permanent, searchable knowledge base for the whole community.
+<img src="./docs/hero.png" alt="Nest — learning that answers back" width="100%" />
 
-**Live:** [nest-com.vercel.app](https://nest-com.vercel.app) · Backend: [nest-com.onrender.com](https://nest-com.onrender.com)
+<br/>
+
+# Nest
+
+### The tutor every African student can afford — a lesson that answers back.
+
+Nest turns a video lesson into a conversation. A student watches a short lesson, taps the exact
+second they get lost, and asks a question — and the answer comes back **grounded in that specific
+lesson**, not a generic web result. Built mobile-first, bilingual, and mobile-money native, for
+students and exam-prep learners across Africa.
+
+<br/>
+
+[![Live App](https://img.shields.io/badge/Live-nest--com.vercel.app-6D4AE0?style=for-the-badge&logo=vercel&logoColor=white)](https://nest-com.vercel.app)
+[![API](https://img.shields.io/badge/API-nest--com.onrender.com-5A38C7?style=for-the-badge&logo=fastapi&logoColor=white)](https://nest-com.onrender.com)
+
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?logo=postgresql&logoColor=white)
+![Made in Africa](https://img.shields.io/badge/Made%20in-Africa-6D4AE0)
+
+</div>
 
 ---
 
-## Features
+## Why Nest exists
 
-| Feature | Description |
-|---|---|
-| **Interactive Video Timeline** | Ask questions at exact timestamps — pins appear on the scrubber |
-| **AI-Powered Answers** | Groq LLM answers using the video transcript as context |
-| **Nest Assistant** | Global AI chat (✨ in navbar) — knows all platform features, multi-turn, streaming |
-| **Timestamped Q&A** | Reusable knowledge base — every question/answer persists for future learners |
-| **Module Library** | Progress tracking and completion status per module |
-| **Onboarding Tour** | 6-step first-login walkthrough for learners and educators |
-| **Role-based Access** | Learner / Educator / Admin / Super Admin roles |
-| **Payment System** | MoMo/bank transfer proof-of-payment — admin approval flow with email notifications |
-| **Real-time Notifications** | WebSocket push for new questions, answers, and approvals |
-| **Admin Dashboard** | Analytics, pending queue, resolution metrics, org management |
+Across Africa a student's future is decided by exams they are systematically under-prepared for.
+The best teaching sits behind private tutoring most families can't afford, classrooms hold 60+
+students to one teacher, and existing online learning is built for a laptop and a credit card —
+passive video with **no one to ask when you get stuck**.
+
+Nest closes that gap. The moment a student is confused is the moment learning either happens or
+dies — so Nest makes the lesson itself answer back.
+
+> **One line:** *Nest is the tutor every African student can afford — a lesson that answers back, on the phone already in their hand.*
 
 ---
 
-## Stack
+## What makes it different
+
+|  | Generic video platforms | **Nest** |
+|---|---|---|
+| The moment of confusion | You're on your own | **Ask at the exact second, answered from that lesson** |
+| Device | Desktop-first | **Mobile-first, built for slow data & low-end Android** |
+| Language | English-only | **English + French** |
+| Payment | Card required | **Mobile money — no bank card needed** |
+| Educators | Faceless | **Local tutors, publish courses & get paid** |
+
+The moat isn't a single feature — it's the whole system being built natively for the African
+student, end to end, with a two-sided flywheel: students get affordable help, tutors earn income,
+and each side pulls the other in.
+
+---
+
+## Product
+
+Nest is a **live, working platform** — not a prototype.
+
+### For learners
+- 📺 **Short video lessons** — built for attention spans and data budgets
+- ⏱️ **Timestamped Q&A** — pin a question to the exact second; a scrubber pin marks it
+- 🤖 **AI answers from the transcript** — grounded in the lesson, not a generic chatbot
+- 📝 **Quizzes & assignments** — practice, worked examples, and graded work with a rich editor
+- 📊 **Progress tracking & streaks** — see completion per module and keep momentum
+- 🎓 **Certificates** — earn a shareable certificate on course completion
+- 📅 **Live meetings** — scheduled sessions with educators
+- 🔔 **Real-time notifications** — WebSocket push for answers, approvals, and updates
+
+### For educators & schools
+- 🎬 **Publish courses** — upload lessons, auto-transcription, build quizzes & assignments
+- ✉️ **Scoped invitations** — invite a learner to one module or all, with time-bounded access
+- 💳 **Mobile-money payments** — proof-of-payment submission with an admin approval flow
+- 🏫 **Branded org spaces** — a school runs its own logo/colour learning space on Nest
+- 📈 **Admin dashboard** — analytics, pending queues, resolution metrics, user management
+- 💼 **Careers / ATS** — a built-in application pipeline (`/careers`)
+
+<!--
+  📸 PRODUCT SCREENSHOTS
+  Drop real screenshots into docs/ (e.g. docs/shot-lesson.png, docs/shot-dashboard.png,
+  docs/shot-qa.png) and uncomment the block below. Phone-frame captures look best.
+
+  <div align="center">
+    <img src="./docs/shot-lesson.png" alt="Lesson with timestamped Q&A" width="30%" />
+    <img src="./docs/shot-dashboard.png" alt="Learner dashboard" width="30%" />
+    <img src="./docs/shot-qa.png" alt="AI answer from transcript" width="30%" />
+  </div>
+-->
+
+---
+
+## Tech stack
 
 | Layer | Technology |
 |---|---|
-| Backend | FastAPI + SQLAlchemy + PostgreSQL (Supabase) |
-| Frontend | React + TypeScript + Vite + Tailwind CSS |
-| AI | Groq LLM (transcript-aware Q&A + platform assistant) |
-| Storage | Supabase (videos, thumbnails) |
-| Email | SendGrid HTTP API |
-| Hosting | Render (backend) + Vercel (frontend) |
+| **Frontend** | React 18 · TypeScript · Vite 5 · Tailwind CSS · Zustand · TanStack Query · React Router |
+| **Editor / content** | TipTap (rich text) · KaTeX (math, lazy-loaded) · Recharts (analytics) · DOMPurify (sanitisation) |
+| **Backend** | FastAPI · SQLAlchemy 2 · Pydantic v2 · WebSockets · SlowAPI (rate limiting) |
+| **Database** | PostgreSQL (Supabase) in production · SQLite locally |
+| **AI** | Transcript-aware Q&A + platform assistant (LLM) |
+| **Auth** | bcrypt password hashing · JWT (HS256, hardcoded algorithm) · httpOnly cookie |
+| **Storage** | Supabase (videos, thumbnails, uploads) |
+| **Email** | SendGrid / Resend (HTTP API) |
+| **Payments** | Mobile money (MTN · Airtel · Orange) — proof-of-payment + approval |
+| **Hosting** | Vercel (frontend) · Render (backend) · Supabase (DB) |
+| **PWA** | Installable, offline-resilient service worker (network-first HTML, cache-first hashed assets) |
 
 ---
 
-## Quick Start (Development)
+## Quick start
 
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
+**Prerequisites:** Python 3.11+ · Node.js 18+
 
 ### Backend
 ```bash
 cd backend
-cp .env.example .env
-# Set GROQ_API_KEY, DATABASE_URL, SECRET_KEY in .env
+cp .env.example .env          # set SECRET_KEY, DATABASE_URL, AI + email keys
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
-
-API docs: http://localhost:8000/api/docs
+API docs (dev only): http://localhost:8000/api/docs
 
 ### Frontend
 ```bash
@@ -59,19 +132,21 @@ cd frontend
 npm install
 npm run dev
 ```
-
 App: http://localhost:5173
+
+> On Windows you can run both at once with `./start-dev.sh` (Git Bash), or Docker with
+> `docker-compose up`.
 
 ---
 
 ## Roles
 
-| Role | Access |
+| Role | Can do |
 |---|---|
-| **Learner** | Watch videos, ask questions, view answers |
-| **Educator** | Upload videos, answer questions, manage modules |
-| **Admin** | Manage users, approve payments, view analytics |
-| **Super Admin** | Full org management |
+| **Learner** | Watch lessons, ask timestamped questions, take quizzes/assignments, earn certificates |
+| **Educator** | Publish courses, answer questions, grade work, run meetings, invite learners |
+| **Admin / Owner** | Approve payments, manage users, view analytics, brand the org space |
+| **Super Admin** | Full cross-org management |
 
 ---
 
@@ -79,81 +154,64 @@ App: http://localhost:5173
 
 ```
 nest.com/
-├── backend/                # FastAPI
-│   ├── main.py             # App entry, middleware, security headers
-│   ├── models.py           # SQLAlchemy ORM models
-│   ├── schemas.py          # Pydantic request/response schemas
-│   ├── auth.py             # JWT authentication (HS256, iat claim)
-│   ├── config.py           # Settings — crashes on weak SECRET_KEY in prod
+├── backend/                    # FastAPI
+│   ├── main.py                 # app entry, middleware, security headers, startup migrations
+│   ├── models.py               # SQLAlchemy ORM
+│   ├── schemas.py              # Pydantic request/response models
+│   ├── auth.py                 # bcrypt + JWT (HS256), login/register/reset
+│   ├── access.py               # single source of truth for module access checks
+│   ├── config.py               # settings — refuses to boot on a weak SECRET_KEY in prod
 │   └── routers/
-│       ├── auth.py         # Login, register, password reset
-│       ├── modules.py      # Module CRUD
-│       ├── videos.py       # Video CRUD + timeline markers
-│       ├── questions.py    # Question + answer CRUD
-│       ├── analytics.py    # Dashboard stats, notifications
-│       ├── progress.py     # User progress tracking
-│       ├── payments.py     # Proof-of-payment submission and approval
-│       ├── ai_assist.py    # Transcript Q&A + platform assistant endpoints
-│       └── ws.py           # WebSocket connection manager
+│       ├── auth · organizations · invitations      # accounts, orgs, scoped invites
+│       ├── modules · lessons · videos · quiz        # content
+│       ├── questions · ai_assist · transcription    # Q&A + AI + transcripts
+│       ├── assignments · notes · certificates       # coursework
+│       ├── meetings · search · progress             # sessions, discovery, tracking
+│       ├── payments · analytics · admin             # money, dashboards, ops
+│       ├── ats                                       # careers / applications
+│       └── ws.py                                     # WebSocket connection manager
 │
-└── frontend/               # React + TypeScript + Vite
+└── frontend/                   # React + TypeScript + Vite
+    ├── public/                 # PWA manifest, service worker, brand assets
     └── src/
         ├── components/
-        │   ├── VideoPlayer/   # Custom player + timeline + controls
-        │   ├── QA/            # Sidebar, question cards, form
-        │   ├── ModuleLibrary/ # Module grid cards
-        │   ├── NestAssistant/ # Global AI chat widget
-        │   └── UI/            # Button, Badge, Avatar, Skeleton
-        ├── pages/
-        │   ├── LoginPage
-        │   ├── ModulesPage
-        │   ├── ModuleDetailPage
-        │   ├── VideoPage      # Main video + Q&A view
-        │   └── admin/         # Dashboard, Questions, Analytics
-        ├── store/             # Zustand (auth, player, UI state)
-        ├── api/               # Axios client
-        └── hooks/             # WebSocket, query invalidation
+        │   ├── VideoPlayer/    # custom player, ImmersiveMobilePlayer, timeline
+        │   ├── QA/  ModuleLibrary/  NestAssistant/  Layout/  UI/
+        ├── pages/              # Landing, Login, Modules, Video, admin/*, Careers, …
+        ├── store/              # Zustand (auth, player, UI)
+        ├── api/                # Axios client
+        └── hooks/              # WebSocket, query invalidation
 ```
-
----
-
-## Key API Endpoints
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/auth/login` | POST | Login (returns JWT) |
-| `/api/auth/register` | POST | Register user |
-| `/api/modules` | GET/POST | List or create modules |
-| `/api/videos/{id}/timeline` | GET | Timeline markers for video |
-| `/api/questions` | GET/POST | List or create questions |
-| `/api/questions/{id}/answers` | POST | Add answer |
-| `/api/ai/ask` | POST | AI answer using video transcript |
-| `/api/ai/platform-ask` | POST | Nest Assistant (platform-wide chat) |
-| `/api/payments/submit` | POST | Submit proof of payment |
-| `/api/payments/{id}/approve` | POST | Approve payment (admin only) |
-| `/api/analytics/dashboard` | GET | Admin stats |
-| `/ws/{user_id}` | WS | Real-time event stream |
 
 ---
 
 ## Security
 
-- JWT signed HS256 with `iat` claim — algorithm hardcoded, not env-swappable
-- CSP, HSTS (2yr + preload), Permissions-Policy headers
-- Rate limiting on all AI, auth, and payment endpoints
-- DOMPurify sanitization on all AI-rendered HTML
-- API docs disabled in production
-- Payment approval restricted to owner/super_admin only
+- 🔐 **bcrypt** password hashing; **JWT HS256** with the algorithm hardcoded (not env-swappable)
+- 🎯 **Scoped, time-bounded access** — an invited guest reaches only what they were invited to, and access expires; enforced by rows, never a global flag
+- 🛡️ **CSP, HSTS (2yr + preload), Permissions-Policy** security headers
+- ⏳ **Rate limiting** on all auth, AI, and payment endpoints (SlowAPI)
+- 🧼 **DOMPurify** sanitisation on all AI-rendered HTML
+- 🚫 **API docs disabled in production**; payment approval restricted to owner/super-admin
+- 🔑 **Config refuses to boot** on a weak `SECRET_KEY` in production
 
 ---
 
-## Production Checklist
+## Impact
 
-- [ ] `SECRET_KEY` — strong random value: `python -c "import secrets; print(secrets.token_hex(32))"`
-- [ ] `GROQ_API_KEY` — set in Render env vars
-- [ ] `CORS_ORIGINS` — set to your actual domain
-- [ ] `DATABASE_URL` — PostgreSQL connection string (Supabase)
-- [ ] `SENDGRID_API_KEY` + `SENDGRID_FROM` — single sender verified in SendGrid
-- [ ] `FRONTEND_URL` — set to Vercel deployment URL
-- [ ] Make GitHub repo private (Settings → Danger Zone)
-- [ ] Move JWT from localStorage to httpOnly cookies (future hardening)
+Every learner helped is a trajectory changed; every tutor paid is a livelihood created.
+
+**SDG 4** Quality Education · **SDG 8** Decent Work & Growth · **SDG 10** Reduced Inequalities
+
+Nest makes passing an exam no longer depend on a family's income or postcode.
+
+---
+
+<div align="center">
+
+**Nest** — a classroom with no walls.
+Built in Kigali, Rwanda · for students across Africa.
+
+[nest-com.vercel.app](https://nest-com.vercel.app)
+
+</div>
