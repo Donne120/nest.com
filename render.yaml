@@ -1,31 +1,41 @@
 services:
-  # ── Backend (FastAPI — Render free web service) ───────────────────────────────
+  # ── Backend (FastAPI — Render web service) ────────────────────────────────────
   - type: web
     name: nest-api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /api/health
+    # All values below are set in the Render dashboard (sync: false = not stored here).
     envVars:
-      - key: DATABASE_URL
+      # Core
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL          # Supabase Postgres connection string
         sync: false
-      - key: SECRET_KEY
+      - key: SECRET_KEY            # 32+ char random; app refuses to boot on a weak key
         sync: false
+      - key: CORS_ORIGINS          # JSON array, e.g. ["https://nest-com.vercel.app"]
+        sync: false
+      - key: FRONTEND_URL          # used in email links, e.g. https://nest-com.vercel.app
+        sync: false
+
+      # AI
       - key: GROQ_API_KEY
         sync: false
+
+      # Supabase storage (video / thumbnail uploads)
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_KEY
         sync: false
-      - key: CORS_ORIGINS
-        sync: false          # set to your Vercel URL e.g. https://nest-app.vercel.app
-      - key: SMTP_HOST
+
+      # Email — SendGrid is preferred; Resend is the fallback
+      - key: SENDGRID_API_KEY
         sync: false
-      - key: SMTP_PORT
+      - key: SENDGRID_FROM         # a verified single sender
         sync: false
-      - key: SMTP_USER
+      - key: RESEND_API_KEY        # optional fallback
         sync: false
-      - key: SMTP_PASS
-        sync: false
-      - key: SMTP_FROM
+      - key: ADMIN_NOTIFICATION_EMAIL   # where new-payment alerts go
         sync: false
