@@ -635,6 +635,72 @@ function Close() {
 }
 
 // ═══ PAGE ════════════════════════════════════════════════════════════════════
+// ── Product video — click-to-play, poster shown first (data-friendly) ────────
+function VideoShowcase() {
+  const [playing, setPlaying] = useState(false);
+  const ref = useRef<HTMLVideoElement>(null);
+  const play = () => {
+    setPlaying(true);
+    // load + play only on click, so the 2.5MB clip never downloads on page load
+    requestAnimationFrame(() => { ref.current?.play().catch(() => {}); });
+  };
+  return (
+    <section className="rv" style={{ background: PAPER, color: TEXT, padding: 'clamp(64px,8vw,120px) 0', position: 'relative' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 clamp(16px,5vw,56px)', textAlign: 'center' }}>
+        <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLDD }}>See it in action</span>
+        <h2 style={{ fontFamily: DISP, fontSize: 'clamp(30px,5vw,52px)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.01em', margin: '14px 0 8px', color: TEXT }}>
+          A lesson that <em style={{ fontStyle: 'italic', color: ORCHID }}>answers back.</em>
+        </h2>
+        <p style={{ fontFamily: UI, fontSize: 16, color: MUTE, maxWidth: 520, margin: '0 auto 40px', lineHeight: 1.7 }}>
+          Watch a short lesson, tap the exact second you’re stuck, get an answer from that lesson. On the phone already in your hand.
+        </p>
+
+        {/* Phone-frame video (9:16) */}
+        <div style={{
+          position: 'relative', width: 'min(300px, 78vw)', margin: '0 auto',
+          aspectRatio: '9 / 16', borderRadius: 30, overflow: 'hidden',
+          background: '#000', border: '8px solid #1E1B2E',
+          boxShadow: '0 30px 80px -30px rgba(90,56,199,0.55), 0 0 0 1px rgba(30,27,46,0.06)',
+        }}>
+          <video
+            ref={ref}
+            src="/nest-promo.mp4"
+            poster="/nest-promo-poster.jpg"
+            playsInline
+            controls={playing}
+            preload="none"
+            onEnded={() => setPlaying(false)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+          {!playing && (
+            <button
+              onClick={play}
+              aria-label="Play the Nest product video"
+              style={{
+                position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'linear-gradient(180deg, rgba(30,27,46,0.05), rgba(30,27,46,0.35))',
+                border: 'none', cursor: 'pointer',
+              }}
+            >
+              <span style={{
+                width: 72, height: 72, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 10px 30px rgba(90,56,199,0.45)',
+              }}>
+                <span style={{
+                  width: 0, height: 0, marginLeft: 5,
+                  borderTop: '13px solid transparent', borderBottom: '13px solid transparent',
+                  borderLeft: `20px solid ${GOLDD}`,
+                }} />
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function LandingPage() {
   useReveal();
   return (
@@ -649,6 +715,7 @@ export default function LandingPage() {
       <Nav />
       <Hero />
       <PromiseStrip />
+      <VideoShowcase />
       <ThreeMoves />
       <Manifesto />
       <Directory />
