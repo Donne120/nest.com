@@ -86,6 +86,7 @@ const TermsPage = lazyWithReload(() => import('./pages/TermsPage'));
 const PrivacyPage = lazyWithReload(() => import('./pages/PrivacyPage'));
 const MediaKitPage = lazyWithReload(() => import('./pages/MediaKitPage'));
 const VerifyEmailPage = lazyWithReload(() => import('./pages/VerifyEmailPage'));
+const ClipPage = lazyWithReload(() => import('./pages/ClipPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -209,6 +210,7 @@ export default function App() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/c/:videoId" element={<ClipPage />} />
           <Route path="/pitch" element={<PitchDeck />} />
           <Route path="/one-pager" element={<OnePagerPage />} />
           <Route path="/business-plan" element={<BusinessPlanPage />} />

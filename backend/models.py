@@ -400,6 +400,10 @@ class Video(Base):
     order_index = Column(Integer, default=0)
     captions_url = Column(String, nullable=True)
     is_preview = Column(Boolean, default=False, nullable=False, server_default='false')
+    # Public shareable clip: when true, this lesson can be watched by ANYONE with the
+    # link, no account (the growth loop). Distinct from is_preview, which is only
+    # "free for logged-in org members". Educator opts a lesson in.
+    is_shareable = Column(Boolean, default=False, nullable=False, server_default='false')
     # Educator-authored study material for THIS video (markdown + LaTeX/tables).
     # Shown to learners in a drawer on the video page; they can rate it helpful.
     study_notes = Column(Text, nullable=True)

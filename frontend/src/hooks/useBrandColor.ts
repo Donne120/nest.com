@@ -45,6 +45,18 @@ function buildPalette(hex: string): Record<string, string> {
 }
 
 /**
+ * Apply an org brand color to :root directly (no auth store) — for public
+ * pages like the shareable clip page, where an anonymous visitor has no
+ * logged-in organization but we still want the tutor/school's branding.
+ */
+export function applyBrandColor(hex?: string | null) {
+  if (!hex) return;
+  const palette = buildPalette(hex);
+  const root = document.documentElement;
+  Object.entries(palette).forEach(([key, value]) => root.style.setProperty(key, value));
+}
+
+/**
  * Reads the org brand_color from the auth store and injects CSS custom
  * properties onto :root so every Tailwind `brand-*` class follows the org's
  * color in real-time.

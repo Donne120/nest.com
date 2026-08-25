@@ -155,6 +155,7 @@ export interface Video {
   order_index: number;
   captions_url: string | null;
   is_preview: boolean;
+  is_shareable?: boolean;
   study_notes?: string | null;
   created_at: string;
   question_count: number;

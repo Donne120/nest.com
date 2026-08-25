@@ -31,11 +31,12 @@ interface VideoForm {
   order_index: number;
   captions_url: string;
   is_preview: boolean;
+  is_shareable: boolean;
   study_notes: string;
 }
 
 function blankVideo(order: number): VideoForm {
-  return { title: '', description: '', video_url: '', thumbnail_url: '', duration_seconds: '', order_index: order, captions_url: '', is_preview: false, study_notes: '' };
+  return { title: '', description: '', video_url: '', thumbnail_url: '', duration_seconds: '', order_index: order, captions_url: '', is_preview: false, is_shareable: false, study_notes: '' };
 }
 
 // Turn a FastAPI error (incl. a 422 validation array) into a readable message so
@@ -605,6 +606,7 @@ export default function AdminModuleEditor() {
                           duration_seconds: v.duration_seconds, order_index: v.order_index,
                           captions_url: v.captions_url || '',
                           is_preview: v.is_preview ?? false,
+                          is_shareable: (v as any).is_shareable ?? false,
                           study_notes: (v as any).study_notes || '',
                         });
                         setQuizVideoId(null);
@@ -1076,6 +1078,22 @@ function VideoFormCard({ form, setForm, onSave, onCancel, saving }: VideoFormCar
               <span className="block text-xs font-semibold text-[var(--c-ink)]">Free preview</span>
               <span className="block text-[11px] text-[var(--c-ink2)] mt-0.5">
                 Learners who haven't purchased the module can still play this video. Use it as a sample to convert browsers into buyers.
+              </span>
+            </span>
+          </label>
+        </div>
+        <div className="col-span-2">
+          <label className="flex items-start gap-2.5 cursor-pointer p-3 rounded-lg border border-[var(--c-rule)] hover:border-brand-300 transition-all">
+            <input
+              type="checkbox"
+              checked={form.is_shareable}
+              onChange={e => f('is_shareable', e.target.checked)}
+              className="mt-0.5 w-4 h-4 accent-brand-600"
+            />
+            <span className="flex-1">
+              <span className="block text-xs font-semibold text-[var(--c-ink)]">Shareable lesson (public link)</span>
+              <span className="block text-[11px] text-[var(--c-ink2)] mt-0.5">
+                Anyone with the link can watch this lesson — no account needed. Great for WhatsApp: they watch free, then sign up to ask their own question. Only turn on for lessons you're happy to share publicly.
               </span>
             </span>
           </label>

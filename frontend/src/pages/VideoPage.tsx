@@ -12,6 +12,7 @@ import QuizModal from '../components/Quiz/QuizModal';
 import { useUIStore, usePlayerStore } from '../store';
 import { useQueryInvalidation } from '../hooks/useQueryInvalidation';
 import { Skeleton } from '../components/UI/Skeleton';
+import ShareLessonButton from '../components/UI/ShareLessonButton';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import WhiteboardModal from '../components/AI/WhiteboardModal';
 import StudyNotesDrawer from '../components/VideoPlayer/StudyNotesDrawer';
@@ -577,6 +578,12 @@ export default function VideoPage() {
               </span>
             )}
           </h1>
+
+          {video.is_shareable && (
+            <div style={{ marginTop: -16, marginBottom: 24 }}>
+              <ShareLessonButton videoId={video.id} title={video.title} shareable={video.is_shareable} />
+            </div>
+          )}
 
           {/* Video — desktop instance, only mounted when not mobile */}
           {!isMobile && (

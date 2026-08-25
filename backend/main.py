@@ -18,6 +18,7 @@ from sqlalchemy import text
 import models
 from routers import auth, modules, videos, questions, analytics, progress, ws, quiz, organizations, invitations, notes, meetings, ai_assist, transcription, certificates, ats, search, assignments, payments, admin
 from routers import lessons as lessons_router
+from routers import public as public_router
 from sqlalchemy import text
 import storage as storage_helper
 
@@ -172,6 +173,7 @@ END $$""",
             "ALTER TABLE organizations ADD COLUMN payment_instructions TEXT",
             "ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE NOT NULL",
             "ALTER TABLE videos ADD COLUMN is_preview BOOLEAN DEFAULT FALSE NOT NULL",
+            "ALTER TABLE videos ADD COLUMN is_shareable BOOLEAN DEFAULT FALSE NOT NULL",
             # Public directory profile
             "ALTER TABLE organizations ADD COLUMN tagline VARCHAR",
             "ALTER TABLE organizations ADD COLUMN description TEXT",
@@ -631,6 +633,7 @@ app.include_router(assignments.router)
 app.include_router(payments.router)
 app.include_router(admin.router)
 app.include_router(lessons_router.router)
+app.include_router(public_router.router)
 
 
 @app.get("/api/health")
