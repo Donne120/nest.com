@@ -441,6 +441,13 @@ export default function VideoPage() {
             </button>
           </div>
 
+          {/* Share (mobile) — only on shareable lessons */}
+          {video.is_shareable && (
+            <div style={{ padding: '10px 16px 0', display: 'flex', justifyContent: 'center' }}>
+              <ShareLessonButton videoId={video.id} title={video.title} shareable={video.is_shareable} compact />
+            </div>
+          )}
+
           {/* Study material — opens the rich notes drawer */}
           {video.study_notes && (
             <div style={{ padding: '8px 16px 0' }}>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { X, ChevronUp, ChevronDown, ChevronRight, MoreVertical, HelpCircle, Play, Pause, ListChecks, BookOpen } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, ChevronRight, MoreVertical, HelpCircle, Play, Pause, ListChecks, BookOpen, Share2 } from 'lucide-react';
 import type { Video } from '../../types';
 import { getYouTubeId, getVimeoId, loadYouTubeAPI } from '../../lib/youtube';
 
@@ -391,6 +391,16 @@ export default function ImmersiveMobilePlayer({
             accent
             onClick={() => onAsk(readTime())}
           ><HelpCircle size={24} /></RailBtn>
+          {video.is_shareable && (
+            <RailBtn
+              label="Share"
+              onClick={() => {
+                const url = `${window.location.origin}/c/${video.id}`;
+                const msg = `📚 "${video.title}" — watch this quick lesson on Nest, it answers your questions: ${url}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+              }}
+            ><Share2 size={24} /></RailBtn>
+          )}
           {hasNotes && onNotes && <RailBtn label="Notes" onClick={onNotes}><BookOpen size={24} /></RailBtn>}
           {hasQuiz && onQuiz && <RailBtn label="Quiz" onClick={onQuiz}><ListChecks size={24} /></RailBtn>}
           <RailBtn label="Prev" onClick={onPrev} disabled={!hasPrev}><ChevronUp size={24} /></RailBtn>
