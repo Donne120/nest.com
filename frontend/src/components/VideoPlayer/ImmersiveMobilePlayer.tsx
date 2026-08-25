@@ -3,7 +3,7 @@ import { X, ChevronUp, ChevronDown, ChevronRight, MoreVertical, HelpCircle, Play
 import type { Video } from '../../types';
 import { getYouTubeId, getVimeoId, loadYouTubeAPI } from '../../lib/youtube';
 
-const ACC  = '#b259c4';
+const ACC  = '#6D4AE0';   // Calm Purple violet (was off-palette pink-orchid #b259c4)
 const UI   = "'Inter Tight', 'Inter', system-ui, sans-serif";
 const MONO = "'DM Mono', ui-monospace, monospace";
 

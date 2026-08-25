@@ -203,7 +203,7 @@ export default function NestAssistant() {
               background: 'transparent', border: 'none', cursor: 'pointer',
               color: '#6b6b78', padding: 4, borderRadius: 6,
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#b259c4')}
+            onMouseEnter={e => (e.currentTarget.style.color = '#6D4AE0')}
             onMouseLeave={e => (e.currentTarget.style.color = '#6b6b78')}
           >
             <X size={14} />

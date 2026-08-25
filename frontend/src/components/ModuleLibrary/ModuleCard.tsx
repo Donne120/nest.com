@@ -4,8 +4,8 @@ import type { Module } from '../../types';
 
 // ── Design tokens — theme-aware (follow light/dark via CSS vars) ────────────
 const ACC    = 'var(--c-acc)';   // brand purple
-const GOLD   = '#E8B04B';        // earned things only
-const GREEN  = '#3a9d5d';
+const GOLD   = 'var(--c-gold)';  // earned things only (was off-palette #E8B04B)
+const GREEN  = 'var(--c-ok)';    // success (was off-palette #3a9d5d)
 const INK    = 'var(--c-ink)';
 const INK2   = 'var(--c-ink2)';
 const BORDER = 'var(--c-rule)';

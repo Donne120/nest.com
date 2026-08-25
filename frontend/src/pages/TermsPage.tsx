@@ -96,11 +96,11 @@ To the fullest extent permitted by law, Nest shall not be liable for any indirec
 
 // ── Tokens ───────────────────────────────────────────────────────────────────
 const BG   = '#F6F4FD';
-const INK  = '#f0ebe2';
-const INK2 = '#8a8070';
-const INK3 = '#4a4238';
-const RULE = 'rgba(255,255,255,0.07)';
-const GOLD = '#c8a96e';
+const INK  = '#1E1B2E';   // deep aubergine ink (was near-white #f0ebe2 → invisible on light bg)
+const INK2 = '#6E6A85';   // secondary
+const INK3 = '#A5A1B8';   // muted
+const RULE = 'rgba(30,27,46,0.10)';
+const GOLD = '#6D4AE0';   // Calm Purple violet accent
 const DISP = "'Cormorant Garamond', Georgia, serif";
 const UI   = "'Syne', sans-serif";
 const MONO = "'DM Mono', monospace";

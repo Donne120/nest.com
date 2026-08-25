@@ -14,8 +14,8 @@ import { BG, SURF, RULE, INK, INK2, INK3, ACC, ACC2 } from '../lib/colors';
 // Unified type system (matches the rest of the product)
 // "Calm Purple" hero: a bright violet gradient (white text reads on it), and a
 // solid violet for the progress card. Replaces the old cinematic near-black.
-const PLUM       = '#6D4AE0';   // solid violet — progress card ground
-const HERO_GRAD  = 'linear-gradient(135deg, #8B6FE8 0%, #6D4AE0 55%, #5A38C7 100%)';
+const PLUM       = 'var(--c-acc)';    // solid violet — progress card ground (token, was #6D4AE0)
+const HERO_GRAD  = 'var(--c-grad)';   // brand gradient (token, was hand-rolled)
 const DISP   = "'Cormorant Garamond', Georgia, serif";
 const UIFONT = "'Inter Tight', 'Inter', system-ui, sans-serif";
 const MONO   = "'DM Mono', ui-monospace, monospace";
