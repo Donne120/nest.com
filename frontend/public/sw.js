@@ -8,7 +8,10 @@
  * - Static assets (hashed JS/CSS/img/fonts): cache-first (safe: filenames are
  *   content-hashed by Vite, so a new deploy = new URLs).
  */
-const VERSION = 'nest-v1';
+// Bump this on every deploy that must purge old caches. The activate handler
+// deletes any cache not starting with VERSION, so a stale shell (which points
+// at old, now-deleted chunk filenames) can't survive across the bump.
+const VERSION = 'nest-v2';
 const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
 
@@ -50,20 +53,33 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets → cache-first (hashed URLs make this safe across deploys).
+  // Hashed static assets (js/css/fonts/images) → cache-first; content-hashed
+  // filenames make that safe. BUT if a chunk is missing (a stale shell points at
+  // an old, deleted filename after a deploy) and it's not cached, we must NOT let
+  // the fetch reject unhandled — that leaves the app permanently broken. Instead
+  // return a valid (empty) response and tell the page to reload for fresh code.
   if (/\.(?:js|css|woff2?|ttf|png|jpe?g|svg|webp|ico|json)$/.test(url.pathname)) {
     event.respondWith(
-      caches.match(req).then(
-        (hit) =>
-          hit ||
-          fetch(req).then((res) => {
+      caches.match(req).then((hit) => {
+        if (hit) return hit;
+        return fetch(req)
+          .then((res) => {
             if (res.ok) {
               const copy = res.clone();
               caches.open(ASSETS).then((c) => c.put(req, copy)).catch(() => {});
             }
             return res;
           })
-      )
+          .catch(async () => {
+            // Missing chunk from a stale deploy. Drop the cached shell so the
+            // next navigation fetches the fresh index (with correct chunks),
+            // and ask open pages to reload once.
+            await caches.delete(SHELL).catch(() => {});
+            const clientsArr = await self.clients.matchAll({ type: 'window' }).catch(() => []);
+            clientsArr.forEach((c) => c.postMessage({ type: 'NEST_SW_STALE_RELOAD' }));
+            return new Response('', { status: 503, statusText: 'stale-chunk' });
+          });
+      })
     );
   }
 });
