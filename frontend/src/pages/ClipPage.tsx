@@ -118,15 +118,22 @@ export default function ClipPage() {
           <VideoPlayer videoUrl={clip.video_url} videoId={clip.video_id} markers={[]} showIntro={false} />
         </div>
 
-        {/* The hook — ask your own question */}
+        {/* The hook — primary: get the full course from this instructor */}
         <div style={{ marginTop: 26, background: SURF, border: `1px solid ${RULE}`, borderRadius: 18, padding: 'clamp(20px,4vw,30px)', textAlign: 'center' }}>
           <h2 style={{ fontFamily: DISP, fontWeight: 500, fontSize: 'clamp(20px,3.4vw,28px)', marginBottom: 8 }}>
-            Stuck on something? <span style={{ color: ACC, fontStyle: 'italic' }}>Ask this lesson.</span>
+            Liked this lesson? <span style={{ color: ACC, fontStyle: 'italic' }}>Get the full course.</span>
           </h2>
-          <p style={{ color: MUTE, maxWidth: 460, margin: '0 auto 20px', fontSize: 15.5, lineHeight: 1.6 }}>
-            Tap the exact second you're confused and get an answer from this lesson — not a random web search. That's Nest.
+          <p style={{ color: MUTE, maxWidth: 480, margin: '0 auto 22px', fontSize: 15.5, lineHeight: 1.6 }}>
+            See everything <strong style={{ color: INK }}>{clip.org_name}</strong> teaches — full lessons, quizzes, and one-on-one help. Enrol straight from their page.
           </p>
-          <button onClick={onAsk} style={cta(false)}>Ask your own question →</button>
+          {clip.org_slug
+            ? <Link to={`/explore?org=${encodeURIComponent(clip.org_slug)}`} style={cta(false)}>See {clip.org_name}'s course →</Link>
+            : <Link to="/explore" style={cta(false)}>Explore courses on Nest →</Link>}
+          <div style={{ marginTop: 14 }}>
+            <button onClick={onAsk} style={{ background: 'none', border: 'none', color: ACC, fontFamily: UI, fontWeight: 600, fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+              Or ask your own question
+            </button>
+          </div>
         </div>
       </div>
 

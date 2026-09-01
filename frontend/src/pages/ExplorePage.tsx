@@ -46,6 +46,12 @@ export default function ExplorePage() {
   const [failed, setFailed] = useState(false);
   const [query, setQuery]   = useState('');
   const [country, setCountry] = useState<string>('all');
+  // ?org=<slug> focuses a single tutor — used when someone lands here from a
+  // shared clip ("see the full course from this instructor").
+  const focusSlug = useMemo(() => {
+    try { return new URLSearchParams(window.location.search).get('org'); }
+    catch { return null; }
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -62,8 +68,15 @@ export default function ExplorePage() {
     return Array.from(set).sort();
   }, [orgs]);
 
+  const focusedOrg = useMemo(
+    () => (focusSlug && orgs ? orgs.find(o => o.slug === focusSlug) ?? null : null),
+    [focusSlug, orgs],
+  );
+
   const filtered = useMemo(() => {
     let list = orgs ?? [];
+    // A shared-clip visitor is focused on ONE instructor — show just them.
+    if (focusSlug && focusedOrg) return [focusedOrg];
     if (country !== 'all') list = list.filter(o => o.country === country);
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -76,7 +89,7 @@ export default function ExplorePage() {
       );
     }
     return list;
-  }, [orgs, query, country]);
+  }, [orgs, query, country, focusSlug, focusedOrg]);
 
   const totalCourses = (orgs ?? []).reduce((n, o) => n + o.course_count, 0);
 
@@ -165,7 +178,17 @@ export default function ExplorePage() {
 
       {/* Results */}
       <main style={{ maxWidth: 1080, margin: '0 auto', padding: 'clamp(20px,4vw,36px) clamp(16px,4vw,44px) 64px' }}>
-        {orgs && orgs.length > 0 && (
+        {focusedOrg && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: RAISE, border: `1px solid ${HAIR}`, borderRadius: 12, padding: '12px 16px', marginBottom: 20 }}>
+            <span style={{ fontFamily: UI, fontSize: 14, color: TEXT }}>
+              You watched a lesson from <strong>{focusedOrg.name}</strong>. Here's their full course.
+            </span>
+            <Link to="/explore" style={{ marginLeft: 'auto', fontFamily: UI, fontSize: 13, fontWeight: 600, color: ACC, textDecoration: 'none' }}>
+              Browse all teachers →
+            </Link>
+          </div>
+        )}
+        {orgs && orgs.length > 0 && !focusedOrg && (
           <p style={{ fontFamily: MONO, fontSize: 11, color: FAINT, letterSpacing: '0.06em', marginBottom: 20 }}>
             {filtered.length} teacher{filtered.length !== 1 ? 's' : ''} · {totalCourses} course{totalCourses !== 1 ? 's' : ''}
           </p>
