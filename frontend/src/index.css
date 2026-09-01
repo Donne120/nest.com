@@ -330,6 +330,50 @@ html.dark { color-scheme: light; }
 .nest-rich .rt-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--rt-surf) 55%, transparent); }
 .nest-rich .katex-display { margin: 0; overflow-x: auto; overflow-y: hidden; }
 
+/* ── Academic study rendering — the "textbook" layer ─────────────────────────
+   Extra elements + callout cards that make notes feel like a premium revision
+   platform. All theme-token driven; wide content still scrolls, never overflows. */
+.nest-rich .rt-h4 { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--rt-acc); margin: 1rem 0 0.3rem; }
+.nest-rich .rt-hr { border: 0; height: 1px; margin: 1.6rem 0;
+  background: linear-gradient(90deg, transparent, var(--rt-rule) 20%, var(--rt-rule) 80%, transparent); }
+.nest-rich .rt-quote { margin: 0.9rem 0; padding: 0.6rem 0 0.6rem 1.1rem;
+  border-left: 3px solid color-mix(in srgb, var(--rt-acc) 45%, transparent);
+  color: var(--rt-ink2); font-style: italic; font-size: 15px; line-height: 1.7; }
+
+/* A subtle accent tick before major section headings — gives the reading a
+   sense of structure without decoration. */
+.nest-rich .rt-h2 { position: relative; padding-left: 0.9rem; }
+.nest-rich .rt-h2::before { content: ''; position: absolute; left: 0; top: 0.28em;
+  width: 4px; height: 1.05em; border-radius: 3px;
+  background: linear-gradient(180deg, var(--c-acc-l, #8B6FE8), var(--rt-acc)); }
+
+/* Callout cards: definition / example / warning / formula / remember / note. */
+.nest-rich .rt-callout {
+  --co: var(--rt-acc); --co-wash: color-mix(in srgb, var(--rt-acc) 8%, transparent);
+  margin: 1.1rem 0; border: 1px solid color-mix(in srgb, var(--co) 30%, var(--rt-rule));
+  border-left: 4px solid var(--co); border-radius: 12px;
+  background: var(--co-wash); overflow: hidden;
+}
+.nest-rich .rt-co-head { display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px 7px; }
+.nest-rich .rt-co-ico { font-size: 14px; line-height: 1; }
+.nest-rich .rt-co-title { font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--co); }
+.nest-rich .rt-co-body { padding: 0 15px 12px; font-size: 15px; line-height: 1.72;
+  color: var(--rt-ink); }
+.nest-rich .rt-co-body .rt-math-block { background: rgba(255,255,255,0.5); }
+/* per-type accent (kept inside the token system so dark surfaces still read) */
+.nest-rich .rt-co-def      { --co: var(--c-acc, #6D4AE0); }
+.nest-rich .rt-co-ex       { --co: var(--c-info, #2F7ACC); }
+.nest-rich .rt-co-warn     { --co: var(--c-warn, #C77A1E); }
+.nest-rich .rt-co-formula  { --co: var(--c-ok, #1F9E85); }
+.nest-rich .rt-co-remember { --co: var(--c-gold, #C98A2E); }
+.nest-rich .rt-co-note     { --co: var(--rt-acc); }
+.nest-rich-dark .nest-rich .rt-co-body .rt-math-block,
+.nest-rich-dark .rt-co-body .rt-math-block { background: rgba(255,255,255,0.05); }
+
 /* Press feedback. Phones can't hover, so without this the product gives a
    learner NO physical response to a tap. transform-only = cheap on low-end
    Android. Put `class="press"` on any card/button. */
