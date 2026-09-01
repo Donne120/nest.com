@@ -247,7 +247,7 @@ export default function ScreenRecorderModal({ onClose, onUploaded }: ScreenRecor
       fd.append('file', file);
 
       const { data } = await api.post<{ url: string }>('/videos/upload/video', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined },  // axios sets the multipart boundary
         onUploadProgress: (evt) => {
           if (evt.total) setUploadPct(Math.round((evt.loaded / evt.total) * 100));
         },

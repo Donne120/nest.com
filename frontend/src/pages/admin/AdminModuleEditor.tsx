@@ -804,7 +804,7 @@ function UploadField({ label, value, onChange, accept, endpoint, urlPlaceholder,
       const fd = new FormData();
       fd.append('file', file);
       const { data } = await api.post<{ url: string }>(endpoint, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined },  // let axios set the multipart boundary
       });
       onChange(data.url);
       toast.success('Uploaded!');

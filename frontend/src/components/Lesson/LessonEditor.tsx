@@ -83,7 +83,7 @@ export default function LessonEditor({ lesson, onSaved }: Props) {
       const res = await api.post(
         `/lessons/${lesson.id}/upload-image`,
         form,
-        { headers: { 'Content-Type': 'multipart/form-data' } },
+        { headers: { 'Content-Type': undefined } },  // axios sets the multipart boundary
       );
       updateBlock(blockId, { url: res.data.url });
       toast.success('Image uploaded');

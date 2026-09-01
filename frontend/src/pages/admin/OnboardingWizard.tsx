@@ -356,7 +356,7 @@ function PayStep({ plan, onDone, onBack }: {
       form.append('notes', notes);
       if (file) form.append('proof_image', file);
       await api.post('/payments/submit', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined },  // axios sets the multipart boundary
       });
       toast.success('Payment submitted!');
       onDone();

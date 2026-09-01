@@ -128,13 +128,21 @@ export default function PaySubmitPage() {
       if (planKey && !isModule) form.append('plan', planKey);
       if (moduleId) form.append('module_id', moduleId);
       if (file) form.append('proof_image', file);
-      return api.post('/payments/submit', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      // Let the browser/axios set Content-Type WITH the multipart boundary.
+      // Manually setting 'multipart/form-data' (no boundary) — or inheriting the
+      // client's default application/json — makes the server unable to parse the
+      // form, so proof_image arrives empty and the upload silently fails.
+      return api.post('/payments/submit', form, { headers: { 'Content-Type': undefined } });
     },
     onSuccess: () => {
       toast.success("Payment submitted! We'll verify within 24 hours.");
       navigate('/pay/status');
     },
-    onError: () => toast.error('Something went wrong. Please try again.'),
+    onError: (err: any) => {
+      // Surface the real reason so upload problems are diagnosable, not silent.
+      const detail = err?.response?.data?.detail;
+      toast.error(typeof detail === 'string' ? detail : 'Could not submit payment. Please check your screenshot and try again.');
+    },
   });
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
