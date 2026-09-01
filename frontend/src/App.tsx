@@ -30,7 +30,24 @@ function lazyWithReload<T extends ComponentType<any>>(factory: () => Promise<{ d
         try {
           if (!sessionStorage.getItem(KEY)) {
             sessionStorage.setItem(KEY, '1');
-            window.location.reload();
+            // A plain reload can re-fetch the SAME stale shell if a service
+            // worker is the one serving it (the SW itself may be an old,
+            // pre-fix version that never checks for updates). Unregister every
+            // SW and clear its caches first, so the reload is guaranteed to hit
+            // the network fresh — this is what actually breaks the stuck loop.
+            const wipe = async () => {
+              try {
+                if ('serviceWorker' in navigator) {
+                  const regs = await navigator.serviceWorker.getRegistrations();
+                  await Promise.all(regs.map((r) => r.unregister()));
+                }
+                if ('caches' in window) {
+                  const keys = await caches.keys();
+                  await Promise.all(keys.map((k) => caches.delete(k)));
+                }
+              } catch { /* best-effort — reload regardless */ }
+            };
+            wipe().finally(() => window.location.reload());
             // Return a never-resolving promise; the reload takes over.
             return await new Promise<{ default: T }>(() => {});
           }
