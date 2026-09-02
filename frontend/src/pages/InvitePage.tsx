@@ -127,9 +127,19 @@ export default function InvitePage() {
     <div className="min-h-[100dvh] bg-gradient-to-br from-brand-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elevated">
-            <span className="text-white font-bold text-2xl">N</span>
-          </div>
+          {info?.org_logo_url ? (
+            <img
+              src={info.org_logo_url}
+              alt={info.org_name}
+              className="h-14 w-auto max-w-[180px] object-contain mx-auto mb-4"
+            />
+          ) : (
+            <div className="w-14 h-14 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elevated">
+              <span className="text-white font-bold text-2xl">
+                {(info?.org_name ?? 'N').charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
           <h1 className="text-2xl font-bold text-gray-900">You've been invited</h1>
           <p className="text-gray-500 mt-1 text-sm">
             Join <span className="font-semibold text-gray-700">{info?.org_name}</span> on Nest
