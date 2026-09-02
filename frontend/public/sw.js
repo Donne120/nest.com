@@ -1,4 +1,5 @@
 /* Nest service worker — minimal, conservative.
+ * (redeploy trigger 2026-09-02)
  *
  * Goals: make the app installable + resilient to a dropped connection, WITHOUT
  * ever serving stale app code or caching private/dynamic data.
