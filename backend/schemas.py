@@ -997,6 +997,29 @@ class LessonQuestionOut(BaseModel):
         from_attributes = True
 
 
+class LessonCheckpointAnswerCreate(BaseModel):
+    block_id: str
+    checkpoint_key: str
+    answer_text: str = Field(..., min_length=1, max_length=5000)
+
+
+class LessonCheckpointAnswerOut(BaseModel):
+    id: str
+    lesson_id: str
+    block_id: str
+    checkpoint_key: str
+    answer_text: str
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class LessonCheckpointAnswerWithStudent(LessonCheckpointAnswerOut):
+    student: UserOut
+
+
 # ─── InviteLink ───────────────────────────────────────────────────────────────
 
 class InviteLinkCreate(BaseModel):

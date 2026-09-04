@@ -374,6 +374,48 @@ html.dark { color-scheme: light; }
 .nest-rich-dark .nest-rich .rt-co-body .rt-math-block,
 .nest-rich-dark .rt-co-body .rt-math-block { background: rgba(255,255,255,0.05); }
 
+/* Checkpoint prompt: a tutor-authored "answer before you continue" card,
+   portaled in as a live React component (see LessonRichText). Same card
+   language as a callout but a dashed border + acc-tinted wash signal it's
+   interactive, not just informational. */
+.nest-rich .rt-checkpoint {
+  --co: var(--c-acc, #6D4AE0);
+  margin: 1.1rem 0; border: 1.5px dashed var(--co); border-radius: 12px;
+  background: color-mix(in srgb, var(--co) 6%, transparent); overflow: hidden;
+}
+.nest-rich .rt-checkpoint .rt-co-head { padding: 11px 14px 6px; }
+.nest-rich .rt-checkpoint .rt-co-body { padding: 0 15px 4px; font-size: 15px;
+  line-height: 1.68; color: var(--rt-ink); }
+.nest-rich .rt-checkpoint-form,
+.nest-rich .rt-checkpoint-saved { padding: 8px 15px 14px; }
+.nest-rich .rt-checkpoint-input {
+  width: 100%; box-sizing: border-box; resize: vertical; min-height: 64px;
+  padding: 10px 12px; font-size: 15px; font-family: inherit; line-height: 1.5;
+  color: var(--rt-ink); background: var(--rt-surf);
+  border: 1px solid var(--rt-rule); border-radius: 8px;
+}
+.nest-rich .rt-checkpoint-input:focus { outline: none; border-color: var(--co); }
+.nest-rich .rt-checkpoint-actions { display: flex; align-items: center; gap: 10px;
+  margin-top: 8px; }
+.nest-rich .rt-checkpoint-submit {
+  font-family: 'DM Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.04em; color: #fff; background: var(--co); border: none;
+  border-radius: 7px; padding: 8px 16px; cursor: pointer;
+}
+.nest-rich .rt-checkpoint-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+.nest-rich .rt-checkpoint-cancel {
+  font-size: 12.5px; color: var(--rt-ink2); background: none;
+  border: none; cursor: pointer; text-decoration: underline;
+}
+.nest-rich .rt-checkpoint-error { margin: 8px 0 0; font-size: 12.5px; color: var(--c-warn, #C77A1E); }
+.nest-rich .rt-checkpoint-saved-text { margin: 0 0 8px; font-size: 15px; line-height: 1.6;
+  color: var(--rt-ink); white-space: pre-wrap; }
+.nest-rich .rt-checkpoint-edit {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 12px;
+  font-weight: 600; color: var(--co); background: none; border: none; cursor: pointer;
+  padding: 0;
+}
+
 /* Press feedback. Phones can't hover, so without this the product gives a
    learner NO physical response to a tap. transform-only = cheap on low-end
    Android. Put `class="press"` on any card/button. */

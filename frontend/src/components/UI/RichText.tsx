@@ -47,6 +47,7 @@ const ALLOWED_ATTR = [
   'style', 'class', 'xmlns', 'd', 'viewBox', 'fill', 'href', 'target', 'rel',
   'stroke', 'stroke-width', 'x1', 'y1', 'x2', 'y2',
   'display', 'encoding', 'x', 'y', 'width', 'height', 'aria-hidden',
+  'data-checkpoint-key',
 ];
 
 function escapeHtml(s: string) {
@@ -89,14 +90,14 @@ function renderCallouts(text: string): string {
   const lines = text.split('\n');
   const out: string[] = [];
   let i = 0;
+  let checkpointOrdinal = 0;
   // NB: escapeHtml has already run, so a leading '>' is now '&gt;'.
   const re = /^&gt;\s*\[!(\w+)\]\s*(.*)$/i;
   while (i < lines.length) {
     const m = lines[i].match(re);
     if (m) {
       const type = m[1].toLowerCase();
-      const meta = CALLOUTS[type] || CALLOUTS.note;
-      const title = m[2].trim() || meta.label;
+      const title = m[2].trim();
       const body: string[] = [];
       i++;
       // consume subsequent '&gt;' lines as the card body
@@ -105,10 +106,26 @@ function renderCallouts(text: string): string {
         i++;
       }
       const inner = body.join('\n').trim();
+
+      if (type === 'checkpoint') {
+        // A tutor-authored interactive prompt, NOT a static card. RichText has
+        // no lesson/student context (it's also used for AI-panel output), so it
+        // only emits an inert placeholder — LessonRichText finds it post-render
+        // and portals in the real, interactive <CheckpointBlock>. The ordinal
+        // here must match extractCheckpoints()'s independent parse exactly
+        // (frontend/src/utils/checkpoints.ts) — both scan the same source text
+        // in the same order, so they agree on the key without shared state.
+        const key = `checkpoint-${checkpointOrdinal++}`;
+        out.push(`<div class="rt-checkpoint-slot" data-checkpoint-key="${key}"></div>`);
+        continue;
+      }
+
+      const meta = CALLOUTS[type] || CALLOUTS.note;
+      const cardTitle = title || meta.label;
       out.push(
         `<div class="rt-callout ${meta.cls}">` +
         `<div class="rt-co-head"><span class="rt-co-ico">${meta.icon}</span>` +
-        `<span class="rt-co-title">${title}</span></div>` +
+        `<span class="rt-co-title">${cardTitle}</span></div>` +
         `<div class="rt-co-body">RTCOBODY${calloutBodies.push(inner) - 1}RTCOBODY</div>` +
         `</div>`
       );
@@ -293,9 +310,13 @@ interface Props {
   tone?: 'auto' | 'on-dark';
   className?: string;
   style?: React.CSSProperties;
+  /** Root-div ref — lets a wrapper (e.g. LessonRichText) find `[data-checkpoint-key]`
+   * placeholders after render and portal in interactive content. RichText itself
+   * stays context-free; it doesn't know or care what uses this ref. */
+  containerRef?: React.Ref<HTMLDivElement>;
 }
 
-export default function RichText({ children, tone = 'auto', className = '', style }: Props) {
+export default function RichText({ children, tone = 'auto', className = '', style, containerRef }: Props) {
   // Math is lazy: on first render KaTeX may not be loaded yet, so equations
   // show as a subtle placeholder. When the content has math and KaTeX isn't
   // ready, kick off the load and re-render once it lands — otherwise the math
@@ -313,6 +334,7 @@ export default function RichText({ children, tone = 'auto', className = '', styl
   const html = useMemo(() => renderRichText(children), [children, mathReady]);
   return (
     <div
+      ref={containerRef}
       className={`nest-rich ${tone === 'on-dark' ? 'nest-rich-dark' : ''} ${className}`}
       style={style}
       dangerouslySetInnerHTML={{ __html: html }}

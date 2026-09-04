@@ -484,3 +484,19 @@ export interface LessonQuestion {
   asked_by_user: User;
   answers: LessonAnswer[];
 }
+
+// ─── Lesson checkpoints ─────────────────────────────────────────────────────
+
+export interface LessonCheckpointAnswer {
+  id: string;
+  lesson_id: string;
+  block_id: string;
+  checkpoint_key: string;
+  answer_text: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface LessonCheckpointAnswerWithStudent extends LessonCheckpointAnswer {
+  student: User;
+}

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Pin, ImageIcon, AlignLeft } from 'lucide-react';
-import type { LessonBlock } from '../../types';
-import RichText from '../UI/RichText';
+import type { LessonBlock, LessonCheckpointAnswer } from '../../types';
+import LessonRichText from './LessonRichText';
 
 interface Props {
+  lessonId: string;
   blocks: LessonBlock[];
   /** Called when learner pins a block to ask a question */
   onPinBlock: (blockId: string, blockPreview: string) => void;
@@ -11,13 +12,17 @@ interface Props {
   pinnedBlockIds?: Set<string>;
   /** Currently highlighted block (scrolled-to from sidebar) */
   activeBlockId?: string | null;
+  /** The current learner's own saved checkpoint answers for this lesson */
+  myCheckpointAnswers?: LessonCheckpointAnswer[];
 }
 
 export default function LessonViewer({
+  lessonId,
   blocks,
   onPinBlock,
   pinnedBlockIds = new Set(),
   activeBlockId = null,
+  myCheckpointAnswers = [],
 }: Props) {
   const [hoveredBlock, setHoveredBlock] = useState<string | null>(null);
 
@@ -108,9 +113,13 @@ export default function LessonViewer({
                 string into a pre-wrap div, so "## Heading" and "$x^2$" showed
                 as literal characters. Nest teaches maths; equations must render. */}
             {block.type === 'text' ? (
-              <RichText tone="on-dark" style={{ wordBreak: 'break-word' }}>
-                {block.content ?? ''}
-              </RichText>
+              <LessonRichText
+                lessonId={lessonId}
+                block={block}
+                myAnswers={myCheckpointAnswers}
+                tone="on-dark"
+                style={{ wordBreak: 'break-word' }}
+              />
             ) : (
               <div>
                 <div

@@ -863,6 +863,31 @@ class LessonAnswer(Base):
     answered_by_user = relationship("User", foreign_keys=[answered_by])
 
 
+class LessonCheckpointAnswer(Base):
+    """A student's answer to a tutor-authored '[!checkpoint]' prompt embedded in a
+    lesson's notes text. One row per (checkpoint, student) — resubmitting updates
+    the same row rather than creating a new one. The prompt text itself is NOT
+    stored here; it lives only in Lesson.content (the source of truth), so a tutor
+    can reword it later without orphaning past answers from their prompt."""
+    __tablename__ = "lesson_checkpoint_answers"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    lesson_id = Column(String, ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
+    block_id = Column(String, nullable=False)
+    checkpoint_key = Column(String, nullable=False)   # f"{block_id}:{ordinal}"
+    student_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    answer_text = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("checkpoint_key", "student_id", name="uq_checkpoint_student"),
+    )
+
+    lesson = relationship("Lesson")
+    student = relationship("User", foreign_keys=[student_id])
+
+
 # ─── Module Access (purchased by student) ────────────────────────────────────
 
 class ModuleAccess(Base):

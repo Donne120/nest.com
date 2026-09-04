@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Pin, X } from 'lucide-react';
 import api from '../api/client';
-import type { Lesson, Module, LessonBlock } from '../types';
+import type { Lesson, Module, LessonBlock, LessonCheckpointAnswer } from '../types';
 import LessonViewer from '../components/Lesson/LessonViewer';
 import BlockQASidebar from '../components/QA/BlockQASidebar';
 import { Skeleton } from '../components/UI/Skeleton';
@@ -335,6 +335,15 @@ export default function LessonPage() {
     (questions as { block_id: string }[]).map((q) => q.block_id),
   );
 
+  // The learner's own saved checkpoint answers, for the interactive
+  // "[!checkpoint]" prompts embedded in this lesson's notes.
+  const { data: myCheckpointAnswers = [] } = useQuery<LessonCheckpointAnswer[]>({
+    queryKey: ['checkpoint-answers', lessonId, 'mine'],
+    queryFn: () =>
+      api.get(`/lessons/${lessonId}/checkpoint-answers/mine`).then((r) => r.data),
+    enabled: !!lessonId,
+  });
+
   const currentIndex = moduleLessons.findIndex((l) => l.id === lessonId);
   const prevLesson = moduleLessons[currentIndex - 1];
   const nextLesson = moduleLessons[currentIndex + 1];
@@ -548,10 +557,12 @@ export default function LessonPage() {
 
           {/* Lesson blocks */}
           <LessonViewer
+            lessonId={lessonId!}
             blocks={blocks}
             onPinBlock={handlePinBlock}
             pinnedBlockIds={pinnedBlockIds}
             activeBlockId={activeBlockId}
+            myCheckpointAnswers={myCheckpointAnswers}
           />
 
           {/* Prev / Next */}

@@ -437,3 +437,83 @@ def delete_lesson_answer(
         raise HTTPException(status_code=403, detail="Not authorized")
     db.delete(answer)
     db.commit()
+
+
+# ─── Lesson checkpoint answers ─────────────────────────────────────────────────
+# Tutor-authored "[!checkpoint]" prompts embedded in a lesson's notes text (see
+# frontend RichText.tsx). A student's typed response is saved here, one row per
+# (checkpoint, student); resubmitting updates the existing row.
+
+@router.put(
+    "/api/lessons/{lesson_id}/checkpoint-answers",
+    response_model=schemas.LessonCheckpointAnswerOut,
+)
+def submit_checkpoint_answer(
+    lesson_id: str,
+    payload: schemas.LessonCheckpointAnswerCreate,
+    current_user: models.User = Depends(auth_utils.get_current_user),
+    db: Session = Depends(get_db),
+):
+    lesson = _org_lesson(lesson_id, current_user.organization_id, db)
+    access_utils.require_module_access(current_user, lesson.module_id, db)
+
+    existing = db.query(models.LessonCheckpointAnswer).filter(
+        models.LessonCheckpointAnswer.checkpoint_key == payload.checkpoint_key,
+        models.LessonCheckpointAnswer.student_id == current_user.id,
+    ).first()
+    if existing:
+        existing.answer_text = payload.answer_text
+        existing.block_id = payload.block_id
+        db.commit()
+        db.refresh(existing)
+        return existing
+
+    answer = models.LessonCheckpointAnswer(
+        lesson_id=lesson_id,
+        block_id=payload.block_id,
+        checkpoint_key=payload.checkpoint_key,
+        student_id=current_user.id,
+        answer_text=payload.answer_text,
+    )
+    db.add(answer)
+    db.commit()
+    db.refresh(answer)
+    return answer
+
+
+@router.get(
+    "/api/lessons/{lesson_id}/checkpoint-answers/mine",
+    response_model=List[schemas.LessonCheckpointAnswerOut],
+)
+def list_my_checkpoint_answers(
+    lesson_id: str,
+    current_user: models.User = Depends(auth_utils.get_current_user),
+    db: Session = Depends(get_db),
+):
+    lesson = _org_lesson(lesson_id, current_user.organization_id, db)
+    access_utils.require_module_access(current_user, lesson.module_id, db)
+
+    return db.query(models.LessonCheckpointAnswer).filter(
+        models.LessonCheckpointAnswer.lesson_id == lesson_id,
+        models.LessonCheckpointAnswer.student_id == current_user.id,
+    ).all()
+
+
+@router.get(
+    "/api/lessons/{lesson_id}/checkpoint-answers",
+    response_model=List[schemas.LessonCheckpointAnswerWithStudent],
+)
+def list_checkpoint_answers(
+    lesson_id: str,
+    checkpoint_key: Optional[str] = Query(None),
+    current_user: models.User = Depends(auth_utils.require_educator),
+    db: Session = Depends(get_db),
+):
+    _org_lesson(lesson_id, current_user.organization_id, db)
+
+    q = db.query(models.LessonCheckpointAnswer).filter(
+        models.LessonCheckpointAnswer.lesson_id == lesson_id,
+    )
+    if checkpoint_key:
+        q = q.filter(models.LessonCheckpointAnswer.checkpoint_key == checkpoint_key)
+    return q.order_by(models.LessonCheckpointAnswer.created_at).all()

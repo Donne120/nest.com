@@ -16,6 +16,7 @@ import QuizBuilder from '../../components/Admin/QuizBuilder';
 import TranscriptManager from '../../components/Admin/TranscriptManager';
 import RichTextEditor from '../../components/Editor/RichTextEditor';
 import LessonEditor from '../../components/Lesson/LessonEditor';
+import LessonCheckpointReview from '../../components/Lesson/LessonCheckpointReview';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -113,6 +114,7 @@ export default function AdminModuleEditor() {
 
   // Lesson management
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const [reviewingLessonId, setReviewingLessonId] = useState<string | null>(null);
 
   // Fetch existing data
   const { data: module } = useQuery<Module>({
@@ -720,6 +722,19 @@ export default function AdminModuleEditor() {
                       {editingLessonId === lesson.id ? 'Close' : 'Edit'}
                     </button>
                     <button
+                      onClick={() =>
+                        setReviewingLessonId(reviewingLessonId === lesson.id ? null : lesson.id)
+                      }
+                      className={clsx(
+                        'text-xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all',
+                        reviewingLessonId === lesson.id
+                          ? 'bg-[var(--c-acc)] text-white border-[var(--c-acc)]'
+                          : 'text-[var(--c-acc)] border-[var(--c-acc)]/30 hover:bg-[var(--c-acc)]/10',
+                      )}
+                    >
+                      {reviewingLessonId === lesson.id ? 'Close' : 'Checkpoints'}
+                    </button>
+                    <button
                       onClick={() => {
                         if (confirm('Delete this lesson and all its Q&A?'))
                           deleteLesson.mutate(lesson.id);
@@ -738,6 +753,13 @@ export default function AdminModuleEditor() {
                       lesson={lesson}
                       onSaved={() => setEditingLessonId(null)}
                     />
+                  </div>
+                )}
+
+                {/* Checkpoint answer review */}
+                {reviewingLessonId === lesson.id && (
+                  <div className="border-t border-[var(--c-acc)]/25 px-4 pb-4 pt-3">
+                    <LessonCheckpointReview lesson={lesson} />
                   </div>
                 )}
               </div>
